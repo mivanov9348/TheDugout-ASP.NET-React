@@ -8,12 +8,14 @@ import Squad from "../pages/Squad";
 import Tactics from "../pages/Tactics";
 import Training from "../pages/Training";
 import Transfers from "../pages/Transfers";
+import Calendar from "../pages/Calendar";
 
 function MainContent({ activePage }) {
   return (
-    <main className="bg-white p-6 overflow-y-auto rounded-tl-xl shadow-inner">
+    <main className="flex-1 bg-white p-6 overflow-y-auto">
       {activePage === "Home" && <Home />}
       {activePage === "Inbox" && <Inbox />}
+      {activePage === "Calendar" && <Calendar />}
       {activePage === "Squad" && <Squad />}
       {activePage === "Tactics" && <Tactics />}
       {activePage === "Training" && <Training />}

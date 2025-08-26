@@ -1,12 +1,13 @@
 import { 
   Home, Mail, Users, Activity, Dumbbell, Calendar, 
-  Trophy, ShoppingCart, Building, Wallet 
+  Trophy, ShoppingCart, Building, Wallet, Calendar1
 } from "lucide-react";
 
 function Sidebar({ activePage, setActivePage }) {
   const menus = [
     { name: "Home", icon: <Home size={18} /> },
     { name: "Inbox", icon: <Mail size={18} /> },
+    { name: "Calendar", icon: <Calendar1 size={18} /> },
     { name: "Squad", icon: <Users size={18} /> },
     { name: "Tactics", icon: <Activity size={18} /> },
     { name: "Training", icon: <Dumbbell size={18} /> },
