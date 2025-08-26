@@ -1,38 +1,100 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
+using System.Linq;
 using TheDugout.Models;
+using TheDugout.Data;
 
 namespace TheDugout.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class InboxController : ControllerBase
+    public class SeasonEventsController : ControllerBase
     {
-        private static List<Message> Messages = new List<Message>
-        {
-            new Message { Id = 1, Subject = "Welcome to The Dugout!", Body = "Thank you for joining The Dugout. We're excited to have you on board.", isRead = false, Date = DateTime.Now.AddDays(-2) },
-            new Message { Id = 2, Subject = "Your Weekly Update", Body = "Here's what happened in the world of football this week...", isRead = true, Date = DateTime.Now.AddDays(-1) },
-        };
+        private readonly DugoutDbContext _context;
 
-        [HttpGet]
-        public IActionResult GetAllMessages()
+        public SeasonEventsController(DugoutDbContext context)
         {
-            return Ok(Messages);
+            _context = context;
         }
 
-        [HttpGet("{id}")]
-        public IActionResult GetMessageById(int id)
+        // GET: api/SeasonEvents/1
+        // Връща всички евенти за конкретен сезон
+        [HttpGet("{seasonId}")]
+        public async Task<IActionResult> GetEventsBySeason(int seasonId)
         {
-            var message = Messages.FirstOrDefault(m => m.Id == id);
-            if (message == null) return NotFound();
-            return Ok(message);
+            var events = await _context.SeasonEvents
+                .Where(e => e.SeasonId == seasonId)
+                .OrderBy(e => e.Date)
+                .ToListAsync();
+
+            return Ok(events);
         }
 
-        [HttpPost("{id}/read")]
-        public IActionResult MarkAsRead(int id)
+        // GET: api/SeasonEvents/details/5
+        // Връща конкретен евент по Id
+        [HttpGet("details/{id}")]
+        public async Task<IActionResult> GetEventById(int id)
         {
-            var message = Messages.FirstOrDefault(m => m.Id == id);
-            if (message == null) return NotFound();
-            message.isRead = true;
+            var seasonEvent = await _context.SeasonEvents
+                .FirstOrDefaultAsync(e => e.Id == id);
+
+            if (seasonEvent == null)
+                return NotFound();
+
+            return Ok(seasonEvent);
+        }
+
+        // POST: api/SeasonEvents
+        // Създава нов евент за сезона
+        [HttpPost]
+        public async Task<IActionResult> CreateEvent([FromBody] SeasonEvent seasonEvent)
+        {
+            if (seasonEvent == null)
+                return BadRequest("Invalid event data");
+
+            // проверка дали сезонът съществува
+            var seasonExists = await _context.Seasons.AnyAsync(s => s.Id == seasonEvent.SeasonId);
+            if (!seasonExists)
+                return BadRequest($"Season with Id {seasonEvent.SeasonId} does not exist.");
+
+            _context.SeasonEvents.Add(seasonEvent);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(GetEventById), new { id = seasonEvent.Id }, seasonEvent);
+        }
+
+        // PUT: api/SeasonEvents/5
+        // Ъпдейт на съществуващ евент
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateEvent(int id, [FromBody] SeasonEvent updatedEvent)
+        {
+            if (id != updatedEvent.Id)
+                return BadRequest("Event ID mismatch");
+
+            var existing = await _context.SeasonEvents.FindAsync(id);
+            if (existing == null)
+                return NotFound();
+
+            existing.Date = updatedEvent.Date;
+            existing.Type = updatedEvent.Type;
+            existing.Description = updatedEvent.Description;
+
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
+
+        // DELETE: api/SeasonEvents/5
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteEvent(int id)
+        {
+            var existing = await _context.SeasonEvents.FindAsync(id);
+            if (existing == null)
+                return NotFound();
+
+            _context.SeasonEvents.Remove(existing);
+            await _context.SaveChangesAsync();
+
             return NoContent();
         }
     }

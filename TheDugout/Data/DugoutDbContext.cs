@@ -17,6 +17,9 @@ namespace TheDugout.Data
         public DbSet<GameSave> GameSaves { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<Player> Players { get; set; }
+        public DbSet<Message> Messages { get; set; }
+        public DbSet<Season> Seasons { get; set; }
+        public DbSet<SeasonEvent> SeasonEvents { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -139,6 +142,59 @@ namespace TheDugout.Data
                       .WithMany(u => u.GameSaves)
                       .HasForeignKey(e => e.UserId)
                       .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasMany(e => e.Messages)
+                      .WithOne(m => m.GameSave)
+                      .HasForeignKey(m => m.GameSaveId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasMany(e => e.Seasons)
+                      .WithOne(s => s.GameSave)
+                      .HasForeignKey(s => s.GameSaveId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            //Season
+            modelBuilder.Entity<Season>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+
+                entity.Property(e => e.StartDate).IsRequired();
+
+                entity.Property(e => e.EndDate).IsRequired();
+
+                entity.Property(e => e.CurrentDate).IsRequired();
+
+                entity.HasOne(e => e.GameSave)
+                      .WithMany(gs => gs.Seasons)
+                      .HasForeignKey(e => e.GameSaveId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasMany(e => e.Events)
+                      .WithOne(ev => ev.Season)
+                      .HasForeignKey(ev => ev.SeasonId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // SeasonEvent
+            modelBuilder.Entity<SeasonEvent>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+
+                entity.Property(e => e.Date).IsRequired();
+
+                entity.Property(e => e.Type)
+                      .IsRequired()
+                      .HasMaxLength(50);
+
+                entity.Property(e => e.Description)
+                      .IsRequired()
+                      .HasMaxLength(500);
+
+                entity.HasOne(e => e.Season)
+                      .WithMany(s => s.Events)
+                      .HasForeignKey(e => e.SeasonId)
+                      .OnDelete(DeleteBehavior.Cascade);
             });
 
             // User
@@ -151,6 +207,31 @@ namespace TheDugout.Data
                 entity.Property(e => e.Email)
                       .IsRequired()
                       .HasMaxLength(100);
+            });
+
+            // Message
+            modelBuilder.Entity<Message>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+
+                entity.Property(e => e.Subject)
+                      .IsRequired()
+                      .HasMaxLength(100);
+
+                entity.Property(e => e.Body)
+                      .IsRequired();
+
+                entity.Property(e => e.IsRead)
+                      .HasDefaultValue(false);
+
+                entity.Property(e => e.Date)
+                      .HasDefaultValueSql("GETUTCDATE()");
+
+                entity.HasOne(m => m.GameSave)
+                      .WithMany(gs => gs.Messages)
+                      .HasForeignKey(m => m.GameSaveId)
+                      .OnDelete(DeleteBehavior.Cascade)
+                      .IsRequired(false);
             });
         }
 
