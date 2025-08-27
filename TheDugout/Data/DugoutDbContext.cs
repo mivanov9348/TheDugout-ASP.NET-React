@@ -42,14 +42,14 @@ namespace TheDugout.Data
                       .HasMaxLength(100);
 
                 entity.HasMany(e => e.TeamTemplates)
-                      .WithOne(t => t.Country)
-                      .HasForeignKey(t => t.CountryId)
-                      .OnDelete(DeleteBehavior.Cascade);
+      .WithOne(t => t.Country)
+      .HasForeignKey(t => t.CountryId)
+      .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasMany(e => e.LeagueTemplates)
-                      .WithOne(l => l.Country)
-                      .HasForeignKey(l => l.CountryId)
-                      .OnDelete(DeleteBehavior.Cascade);
+      .WithOne(l => l.Country)
+      .HasForeignKey(l => l.CountryId)
+      .OnDelete(DeleteBehavior.Cascade);
 
                 entity.HasMany(e => e.Players)
                       .WithOne(p => p.Country)
@@ -73,6 +73,7 @@ namespace TheDugout.Data
                       .WithMany(c => c.LeagueTemplates)
                       .HasForeignKey(e => e.CountryId)
                       .OnDelete(DeleteBehavior.Cascade);
+
             });
 
             // League
@@ -112,8 +113,14 @@ namespace TheDugout.Data
                 entity.HasOne(e => e.Country)
                       .WithMany(c => c.TeamTemplates)
                       .HasForeignKey(e => e.CountryId)
-                      .OnDelete(DeleteBehavior.Cascade);
+                      .OnDelete(DeleteBehavior.Cascade);  
+
+                entity.HasOne(e => e.League)
+      .WithMany(l => l.TeamTemplates)
+      .HasForeignKey(e => e.LeagueId)
+      .OnDelete(DeleteBehavior.Restrict);
             });
+
 
             // Team
             modelBuilder.Entity<Team>(entity =>
@@ -133,9 +140,14 @@ namespace TheDugout.Data
                       .HasForeignKey(e => e.CountryId)
                       .OnDelete(DeleteBehavior.Restrict);
 
-                entity.HasOne<League>()
+                entity.HasOne(e => e.GameSave)
+                      .WithMany(gs => gs.Teams)
+                      .HasForeignKey(e => e.GameSaveId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(e => e.League)
                       .WithMany(l => l.Teams)
-                      .HasForeignKey("LeagueId")
+                      .HasForeignKey(e => e.LeagueId)
                       .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasMany(e => e.Players)
@@ -168,6 +180,11 @@ namespace TheDugout.Data
                       .WithMany(u => u.GameSaves)
                       .HasForeignKey(e => e.UserId)
                       .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(e => e.UserTeam)
+                      .WithMany()
+                      .HasForeignKey(e => e.UserTeamId)
+                      .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasMany(e => e.Messages)
                       .WithOne(m => m.GameSave)

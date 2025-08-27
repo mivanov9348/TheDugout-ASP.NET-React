@@ -13,5 +13,8 @@
         public int TeamsCount { get; set; }
         public int RelegationSpots { get; set; }
         public int PromotionSpots { get; set; }
+
+        public ICollection<TeamTemplate> TeamTemplates { get; set; } = new List<TeamTemplate>();
     }
+
 }

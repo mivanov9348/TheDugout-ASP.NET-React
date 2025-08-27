@@ -12,7 +12,7 @@ using TheDugout.Data;
 namespace TheDugout.Migrations
 {
     [DbContext(typeof(DugoutDbContext))]
-    [Migration("20250827141439_Initial")]
+    [Migration("20250827190103_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -72,9 +72,14 @@ namespace TheDugout.Migrations
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
+                    b.Property<int>("UserTeamId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("UserId");
+
+                    b.HasIndex("UserTeamId");
 
                     b.ToTable("GameSaves");
                 });
@@ -333,10 +338,22 @@ namespace TheDugout.Migrations
                     b.Property<int>("GameSaveId")
                         .HasColumnType("int");
 
+                    b.Property<int>("GoalDifference")
+                        .HasColumnType("int");
+
+                    b.Property<int>("GoalsAgainst")
+                        .HasColumnType("int");
+
+                    b.Property<int>("GoalsFor")
+                        .HasColumnType("int");
+
                     b.Property<int?>("LeagueId")
                         .HasColumnType("int");
 
                     b.Property<int>("Losses")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Matches")
                         .HasColumnType("int");
 
                     b.Property<string>("Name")
@@ -382,6 +399,9 @@ namespace TheDugout.Migrations
                     b.Property<int>("CountryId")
                         .HasColumnType("int");
 
+                    b.Property<int>("LeagueId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -390,6 +410,8 @@ namespace TheDugout.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CountryId");
+
+                    b.HasIndex("LeagueId");
 
                     b.ToTable("TeamTemplates");
                 });
@@ -429,7 +451,15 @@ namespace TheDugout.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("TheDugout.Models.Team", "UserTeam")
+                        .WithMany()
+                        .HasForeignKey("UserTeamId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.Navigation("User");
+
+                    b.Navigation("UserTeam");
                 });
 
             modelBuilder.Entity("TheDugout.Models.League", b =>
@@ -538,7 +568,7 @@ namespace TheDugout.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("TheDugout.Models.League", null)
+                    b.HasOne("TheDugout.Models.League", "League")
                         .WithMany("Teams")
                         .HasForeignKey("LeagueId")
                         .OnDelete(DeleteBehavior.Restrict);
@@ -553,6 +583,8 @@ namespace TheDugout.Migrations
 
                     b.Navigation("GameSave");
 
+                    b.Navigation("League");
+
                     b.Navigation("Template");
                 });
 
@@ -564,7 +596,15 @@ namespace TheDugout.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("TheDugout.Models.LeagueTemplate", "League")
+                        .WithMany("TeamTemplates")
+                        .HasForeignKey("LeagueId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.Navigation("Country");
+
+                    b.Navigation("League");
                 });
 
             modelBuilder.Entity("TheDugout.Models.Country", b =>
@@ -592,6 +632,11 @@ namespace TheDugout.Migrations
             modelBuilder.Entity("TheDugout.Models.League", b =>
                 {
                     b.Navigation("Teams");
+                });
+
+            modelBuilder.Entity("TheDugout.Models.LeagueTemplate", b =>
+                {
+                    b.Navigation("TeamTemplates");
                 });
 
             modelBuilder.Entity("TheDugout.Models.Season", b =>

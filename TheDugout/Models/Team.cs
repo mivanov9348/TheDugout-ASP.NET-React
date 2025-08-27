@@ -13,13 +13,21 @@
 
         public string Name { get; set; } = null!;
         public string Abbreviation { get; set; } = null!;
+
+        public int? LeagueId { get; set; }
+        public League? League { get; set; }
+
         public int CountryId { get; set; }
         public Country Country { get; set; } = null!;
 
         public int Points { get; set; } = 0;
+        public int Matches { get; set; } = 0;
         public int Wins { get; set; } = 0;
         public int Draws { get; set; } = 0;
         public int Losses { get; set; } = 0;
+        public int GoalsFor { get; set; } = 0;
+        public int GoalsAgainst { get; set; } = 0;
+        public int GoalDifference { get; set; } = 0;
         public virtual ICollection<Player> Players { get; set; } = new List<Player>();
 
 

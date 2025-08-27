@@ -111,13 +111,15 @@ public static class SeedData
                     {
                         Name = t.Name,
                         Abbreviation = t.ShortName,
-                        CountryId = league.CountryId
+                        CountryId = league.CountryId,
+                        LeagueId = league.Id
                     });
                 }
                 else
                 {
                     existing.Name = t.Name;
                     existing.CountryId = league.CountryId;
+                    existing.LeagueId = league.Id;
                 }
             }
         }
