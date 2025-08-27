@@ -44,7 +44,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+await TheDugout.Infrastructure.SeedData.EnsureSeededAsync(app.Services, app.Logger);
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

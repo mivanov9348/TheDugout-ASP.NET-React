@@ -1,0 +1,22 @@
+[
+  { "name": "Arsenal", "shortName": "ARS", "competitionCode": "EPL" },
+  { "name": "Aston Villa", "shortName": "AVL", "competitionCode": "EPL" },
+  { "name": "Bournemouth", "shortName": "BOU", "competitionCode": "EPL" },
+  { "name": "Brentford", "shortName": "BRE", "competitionCode": "EPL" },
+  { "name": "Brighton & Hove Albion", "shortName": "BHA", "competitionCode": "EPL" },
+  { "name": "Chelsea", "shortName": "CHE", "competitionCode": "EPL" },
+  { "name": "Crystal Palace", "shortName": "CRY", "competitionCode": "EPL" },
+  { "name": "Everton", "shortName": "EVE", "competitionCode": "EPL" },
+  { "name": "Fulham", "shortName": "FUL", "competitionCode": "EPL" },
+  { "name": "Ipswich Town", "shortName": "IPS", "competitionCode": "EPL" },
+  { "name": "Leicester City", "shortName": "LEI", "competitionCode": "EPL" },
+  { "name": "Liverpool", "shortName": "LIV", "competitionCode": "EPL" },
+  { "name": "Manchester City", "shortName": "MCI", "competitionCode": "EPL" },
+  { "name": "Manchester United", "shortName": "MUN", "competitionCode": "EPL" },
+  { "name": "Newcastle United", "shortName": "NEW", "competitionCode": "EPL" },
+  { "name": "Nottingham Forest", "shortName": "NFO", "competitionCode": "EPL" },
+  { "name": "Southampton", "shortName": "SOU", "competitionCode": "EPL" },
+  { "name": "Tottenham Hotspur", "shortName": "TOT", "competitionCode": "EPL" },
+  { "name": "West Ham United", "shortName": "WHU", "competitionCode": "EPL" },
+  { "name": "Wolverhampton Wanderers", "shortName": "WOL", "competitionCode": "EPL" }
+]

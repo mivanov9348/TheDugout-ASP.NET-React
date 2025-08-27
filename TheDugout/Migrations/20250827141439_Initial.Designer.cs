@@ -12,8 +12,8 @@ using TheDugout.Data;
 namespace TheDugout.Migrations
 {
     [DbContext(typeof(DugoutDbContext))]
-    [Migration("20250826162103_addMessage")]
-    partial class addMessage
+    [Migration("20250827141439_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -33,12 +33,23 @@ namespace TheDugout.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("nvarchar(3)");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.HasIndex("Name")
+                        .IsUnique();
 
                     b.ToTable("Countries");
                 });
@@ -168,15 +179,15 @@ namespace TheDugout.Migrations
                     b.Property<int?>("GameSaveId")
                         .HasColumnType("int");
 
+                    b.Property<bool>("IsRead")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
                     b.Property<string>("Subject")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
-
-                    b.Property<bool>("isRead")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
 
                     b.HasKey("Id");
 
@@ -196,7 +207,7 @@ namespace TheDugout.Migrations
                     b.Property<DateTime>("BirthDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("CountryId")
+                    b.Property<int?>("CountryId")
                         .HasColumnType("int");
 
                     b.Property<string>("FirstName")
@@ -241,6 +252,63 @@ namespace TheDugout.Migrations
                     b.HasIndex("TeamId");
 
                     b.ToTable("Players");
+                });
+
+            modelBuilder.Entity("TheDugout.Models.Season", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CurrentDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("GameSaveId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GameSaveId");
+
+                    b.ToTable("Seasons");
+                });
+
+            modelBuilder.Entity("TheDugout.Models.SeasonEvent", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("SeasonId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Type")
+                        .HasMaxLength(50)
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SeasonId");
+
+                    b.ToTable("SeasonEvents");
                 });
 
             modelBuilder.Entity("TheDugout.Models.Team", b =>
@@ -417,8 +485,7 @@ namespace TheDugout.Migrations
                     b.HasOne("TheDugout.Models.Country", "Country")
                         .WithMany("Players")
                         .HasForeignKey("CountryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("TheDugout.Models.GameSave", null)
                         .WithMany("Players")
@@ -433,6 +500,28 @@ namespace TheDugout.Migrations
                     b.Navigation("Country");
 
                     b.Navigation("Team");
+                });
+
+            modelBuilder.Entity("TheDugout.Models.Season", b =>
+                {
+                    b.HasOne("TheDugout.Models.GameSave", "GameSave")
+                        .WithMany("Seasons")
+                        .HasForeignKey("GameSaveId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("GameSave");
+                });
+
+            modelBuilder.Entity("TheDugout.Models.SeasonEvent", b =>
+                {
+                    b.HasOne("TheDugout.Models.Season", "Season")
+                        .WithMany("Events")
+                        .HasForeignKey("SeasonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Season");
                 });
 
             modelBuilder.Entity("TheDugout.Models.Team", b =>
@@ -495,12 +584,19 @@ namespace TheDugout.Migrations
 
                     b.Navigation("Players");
 
+                    b.Navigation("Seasons");
+
                     b.Navigation("Teams");
                 });
 
             modelBuilder.Entity("TheDugout.Models.League", b =>
                 {
                     b.Navigation("Teams");
+                });
+
+            modelBuilder.Entity("TheDugout.Models.Season", b =>
+                {
+                    b.Navigation("Events");
                 });
 
             modelBuilder.Entity("TheDugout.Models.Team", b =>

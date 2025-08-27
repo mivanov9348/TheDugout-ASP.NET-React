@@ -5,6 +5,7 @@ namespace TheDugout.Models
     public class Country
     {
         public int Id { get; set; }
+        public string Code { get; set; } = null!;   
         public string Name { get; set; } = null!;
 
         public ICollection<TeamTemplate> TeamTemplates { get; set; } = new List<TeamTemplate>();

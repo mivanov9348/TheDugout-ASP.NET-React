@@ -1,0 +1,122 @@
+[
+  {
+    "code": "EPL",
+    "name": "Premier League",
+    "countryCode": "ENG",
+    "type": "League",
+    "tier": 1,
+    "teams": 20,
+    "relegationSpots": 3,
+    "promotionSpots": 0
+  },
+  {
+    "code": "EFL_CH",
+    "name": "EFL Championship",
+    "countryCode": "ENG",
+    "type": "League",
+    "tier": 2,
+    "teams": 24,
+    "relegationSpots": 0,
+    "promotionSpots": 3
+  },
+  {
+    "code": "ITA_A",
+    "name": "Serie A",
+    "countryCode": "ITA",
+    "type": "League",
+    "tier": 1,
+    "teams": 20,
+    "relegationSpots": 3,
+    "promotionSpots": 0
+  },
+  {
+    "code": "ITA_B",
+    "name": "Serie B",
+    "countryCode": "ITA",
+    "type": "League",
+    "tier": 2,
+    "teams": 20,
+    "relegationSpots": 0,
+    "promotionSpots": 3
+  },
+  {
+    "code": "FRA_L1",
+    "name": "Ligue 1",
+    "countryCode": "FRA",
+    "type": "League",
+    "tier": 1,
+    "teams": 18,
+    "relegationSpots": 3,
+    "promotionSpots": 0
+  },
+  {
+    "code": "FRA_L2",
+    "name": "Ligue 2",
+    "countryCode": "FRA",
+    "type": "League",
+    "tier": 2,
+    "teams": 20,
+    "relegationSpots": 0,
+    "promotionSpots": 3
+  },
+  {
+    "code": "GER_1",
+    "name": "Bundesliga",
+    "countryCode": "GER",
+    "type": "League",
+    "tier": 1,
+    "teams": 18,
+    "relegationSpots": 3,
+    "promotionSpots": 0
+  },
+  {
+    "code": "GER_2",
+    "name": "2. Bundesliga",
+    "countryCode": "GER",
+    "type": "League",
+    "tier": 2,
+    "teams": 18,
+    "relegationSpots": 0,
+    "promotionSpots": 3
+  },
+  {
+    "code": "ESP_1",
+    "name": "La Liga",
+    "countryCode": "ESP",
+    "type": "League",
+    "tier": 1,
+    "teams": 20,
+    "relegationSpots": 3,
+    "promotionSpots": 0
+  },
+  {
+    "code": "ESP_2",
+    "name": "Segunda División",
+    "countryCode": "ESP",
+    "type": "League",
+    "tier": 2,
+    "teams": 22,
+    "relegationSpots": 0,
+    "promotionSpots": 3
+  },
+  {
+    "code": "BUL_A",
+    "name": "Parva Liga",
+    "countryCode": "BUL",
+    "type": "League",
+    "tier": 1,
+    "teams": 16,
+    "relegationSpots": 3,
+    "promotionSpots": 0
+  },
+  {
+    "code": "BUL_B",
+    "name": "Vtora Liga",
+    "countryCode": "BUL",
+    "type": "League",
+    "tier": 2,
+    "teams": 20,
+    "relegationSpots": 0,
+    "promotionSpots": 3
+  }
+]

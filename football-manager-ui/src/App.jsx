@@ -16,9 +16,12 @@ function App() {
   const checkAuth = async () => {
     try {
       const res = await fetch("/api/auth/me", { credentials: "include" });
+      console.log(res);
       if (res.ok) {
         const data = await res.json();
-        if (data?.username) {   // 👈 поправяме тук
+        console.log(data);
+        if (data?.username) { 
+          console.log(data);
           setIsAuthenticated(true);
           setUsername(data.username);
         }

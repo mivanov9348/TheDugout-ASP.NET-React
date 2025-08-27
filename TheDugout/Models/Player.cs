@@ -18,8 +18,8 @@
         }
         public int TeamId { get; set; }
         public Team Team { get; set; }
-        public int CountryId { get; set; }
-        public Country Country { get; set; }
+        public int? CountryId { get; set; }
+        public Country? Country { get; set; }
         public string Position { get; set; } = null!;
         public int JerseyNumber { get; set; }
         public double HeightCm { get; set; }

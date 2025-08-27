@@ -1,0 +1,20 @@
+[
+  { "name": "Bayern Munich", "shortName": "FCB", "competitionCode": "GER_1" },
+  { "name": "Bayer Leverkusen", "shortName": "LEV", "competitionCode": "GER_1" },
+  { "name": "Borussia Dortmund", "shortName": "BVB", "competitionCode": "GER_1" },
+  { "name": "RB Leipzig", "shortName": "RBL", "competitionCode": "GER_1" },
+  { "name": "Eintracht Frankfurt", "shortName": "SGE", "competitionCode": "GER_1" },
+  { "name": "SC Freiburg", "shortName": "SCF", "competitionCode": "GER_1" },
+  { "name": "1. FSV Mainz 05", "shortName": "M05", "competitionCode": "GER_1" },
+  { "name": "Werder Bremen", "shortName": "SVW", "competitionCode": "GER_1" },
+  { "name": "VfB Stuttgart", "shortName": "VFB", "competitionCode": "GER_1" },
+  { "name": "Borussia Mönchengladbach", "shortName": "BMG", "competitionCode": "GER_1" },
+  { "name": "TSG Hoffenheim", "shortName": "TSG", "competitionCode": "GER_1" },
+  { "name": "1. FC Heidenheim", "shortName": "FCH", "competitionCode": "GER_1" },
+  { "name": "1. FC Köln", "shortName": "KOE", "competitionCode": "GER_1" },
+  { "name": "Hamburger SV", "shortName": "HSV", "competitionCode": "GER_1" },
+  { "name": "FC St. Pauli", "shortName": "SPA", "competitionCode": "GER_1" },
+  { "name": "1. FC Union Berlin", "shortName": "FCU", "competitionCode": "GER_1" },
+  { "name": "VfL Wolfsburg", "shortName": "WOB", "competitionCode": "GER_1" },
+  { "name": "FC Augsburg", "shortName": "FCA", "competitionCode": "GER_1" }
+]

@@ -1,7 +1,5 @@
 import React, { useState } from "react";
 
-const API_BASE = "https://localhost:7117/api/auth";
-
 const AuthForm = ({ onAuthSuccess }) => {
   const [isRegister, setIsRegister] = useState(false);
   const [form, setForm] = useState({ username: "", email: "", password: "" });
@@ -14,27 +12,19 @@ const AuthForm = ({ onAuthSuccess }) => {
     e.preventDefault();
 
     const endpoint = isRegister ? "register" : "login";
+    const res = await fetch(`/api/auth/${endpoint}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(form),
+      credentials: "include", // важно за бисквитки
+    });
 
-    try {
-      const res = await fetch(`${API_BASE}/${endpoint}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-        credentials: "include", // важно за бисквитки
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        console.log("✅ Auth success:", data);
-        onAuthSuccess();
-      } else {
-        const errorText = await res.text();
-        console.error("❌ Auth error:", res.status, errorText);
-        alert(`Грешка при вход/регистрация: ${res.status}`);
-      }
-    } catch (err) {
-      console.error("❌ Fetch error:", err);
-      alert("Няма връзка с бекенда. Провери дали е пуснат на https://localhost:7117");
+    if (res.ok) {
+      const data = await res.json();
+      console.log(data);
+      onAuthSuccess();
+    } else {
+      alert("Грешка при вход/регистрация");
     }
   };
 

@@ -29,10 +29,34 @@ namespace TheDugout.Data
             modelBuilder.Entity<Country>(entity =>
             {
                 entity.HasKey(e => e.Id);
+
+                entity.HasIndex(e => e.Code).IsUnique();
+                entity.HasIndex(e => e.Name).IsUnique();
+
+                entity.Property(e => e.Code)
+                      .IsRequired()
+                      .HasMaxLength(3);
+
                 entity.Property(e => e.Name)
                       .IsRequired()
                       .HasMaxLength(100);
+
+                entity.HasMany(e => e.TeamTemplates)
+                      .WithOne(t => t.Country)
+                      .HasForeignKey(t => t.CountryId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasMany(e => e.LeagueTemplates)
+                      .WithOne(l => l.Country)
+                      .HasForeignKey(l => l.CountryId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasMany(e => e.Players)
+                      .WithOne(p => p.Country)
+                      .HasForeignKey(p => p.CountryId)
+                      .OnDelete(DeleteBehavior.SetNull);
             });
+
 
             // LeagueTemplate
             modelBuilder.Entity<LeagueTemplate>(entity =>
@@ -76,9 +100,11 @@ namespace TheDugout.Data
             modelBuilder.Entity<TeamTemplate>(entity =>
             {
                 entity.HasKey(e => e.Id);
+
                 entity.Property(e => e.Name)
                       .IsRequired()
                       .HasMaxLength(100);
+
                 entity.Property(e => e.Abbreviation)
                       .IsRequired()
                       .HasMaxLength(10);
