@@ -93,9 +93,10 @@ namespace TheDugout.Controllers
 
             var claims = new[]
             {
-                new Claim(ClaimTypes.Name, user.Username),
-                new Claim(ClaimTypes.Email, user.Email)
-            };
+        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()), 
+        new Claim(ClaimTypes.Name, user.Username),
+        new Claim(ClaimTypes.Email, user.Email)
+    };
 
             var token = new JwtSecurityToken(
                 claims: claims,
@@ -105,6 +106,7 @@ namespace TheDugout.Controllers
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+
 
         private ClaimsPrincipal? ValidateToken(string token)
         {

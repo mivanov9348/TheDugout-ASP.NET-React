@@ -3,7 +3,10 @@
     public class NewGameResponse
     {
         public int GameSaveId { get; set; }
-        public int UserTeamId { get; set; }
-        public string UserTeamName { get; set; } = null!;
+        public string Name { get; set; } = "";
+        public DateTime CreatedAt { get; set; }
+        public int SeasonId { get; set; }
+        public DateTime SeasonStart { get; set; }
+        public DateTime SeasonEnd { get; set; }
     }
 }

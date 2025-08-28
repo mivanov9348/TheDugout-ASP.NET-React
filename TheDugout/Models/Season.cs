@@ -9,5 +9,6 @@
         public DateTime EndDate { get; set; }
         public DateTime CurrentDate { get; set; }
         public ICollection<SeasonEvent> Events { get; set; } = new List<SeasonEvent>();
+        public ICollection<PlayerSeasonStats> PlayerStats { get; set; } = new List<PlayerSeasonStats>();
     }
 }

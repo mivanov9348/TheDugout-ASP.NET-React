@@ -26,6 +26,20 @@ namespace TheDugout.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Position",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Code = table.Column<string>(type: "nvarchar(5)", maxLength: 5, nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Position", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Users",
                 columns: table => new
                 {
@@ -275,17 +289,17 @@ namespace TheDugout.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    FirstName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    LastName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    FirstName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    LastName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     BirthDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     TeamId = table.Column<int>(type: "int", nullable: false),
                     CountryId = table.Column<int>(type: "int", nullable: true),
-                    Position = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
-                    JerseyNumber = table.Column<int>(type: "int", nullable: false),
+                    PositionId = table.Column<int>(type: "int", nullable: false),
+                    KitNumber = table.Column<int>(type: "int", nullable: false),
                     HeightCm = table.Column<double>(type: "float", nullable: false),
                     WeightKg = table.Column<double>(type: "float", nullable: false),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
-                    GameSaveId = table.Column<int>(type: "int", nullable: true)
+                    GameSaveId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -300,13 +314,102 @@ namespace TheDugout.Migrations
                         name: "FK_Players_GameSaves_GameSaveId",
                         column: x => x.GameSaveId,
                         principalTable: "GameSaves",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Players_Position_PositionId",
+                        column: x => x.PositionId,
+                        principalTable: "Position",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Players_Teams_TeamId",
                         column: x => x.TeamId,
                         principalTable: "Teams",
                         principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PlayerAttributes",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    PlayerId = table.Column<int>(type: "int", nullable: false),
+                    Reflexes = table.Column<int>(type: "int", nullable: false),
+                    Handling = table.Column<int>(type: "int", nullable: false),
+                    Tackling = table.Column<int>(type: "int", nullable: false),
+                    Positioning = table.Column<int>(type: "int", nullable: false),
+                    Passing = table.Column<int>(type: "int", nullable: false),
+                    Vision = table.Column<int>(type: "int", nullable: false),
+                    Finishing = table.Column<int>(type: "int", nullable: false),
+                    Pace = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PlayerAttributes", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PlayerAttributes_Players_PlayerId",
+                        column: x => x.PlayerId,
+                        principalTable: "Players",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PlayerMatchStats",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    PlayerId = table.Column<int>(type: "int", nullable: false),
+                    Goals = table.Column<int>(type: "int", nullable: false),
+                    Assists = table.Column<int>(type: "int", nullable: false),
+                    YellowCards = table.Column<int>(type: "int", nullable: false),
+                    RedCards = table.Column<int>(type: "int", nullable: false),
+                    MinutesPlayed = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PlayerMatchStats", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PlayerMatchStats_Players_PlayerId",
+                        column: x => x.PlayerId,
+                        principalTable: "Players",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PlayerSeasonStats",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    PlayerId = table.Column<int>(type: "int", nullable: false),
+                    SeasonId = table.Column<int>(type: "int", nullable: false),
+                    MatchesPlayed = table.Column<int>(type: "int", nullable: false),
+                    Goals = table.Column<int>(type: "int", nullable: false),
+                    Assists = table.Column<int>(type: "int", nullable: false),
+                    YellowCards = table.Column<int>(type: "int", nullable: false),
+                    RedCards = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PlayerSeasonStats", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PlayerSeasonStats_Players_PlayerId",
+                        column: x => x.PlayerId,
+                        principalTable: "Players",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_PlayerSeasonStats_Seasons_SeasonId",
+                        column: x => x.SeasonId,
+                        principalTable: "Seasons",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateIndex(
@@ -357,6 +460,17 @@ namespace TheDugout.Migrations
                 column: "GameSaveId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_PlayerAttributes_PlayerId",
+                table: "PlayerAttributes",
+                column: "PlayerId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PlayerMatchStats_PlayerId",
+                table: "PlayerMatchStats",
+                column: "PlayerId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Players_CountryId",
                 table: "Players",
                 column: "CountryId");
@@ -367,9 +481,24 @@ namespace TheDugout.Migrations
                 column: "GameSaveId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Players_PositionId",
+                table: "Players",
+                column: "PositionId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Players_TeamId",
                 table: "Players",
                 column: "TeamId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PlayerSeasonStats_PlayerId",
+                table: "PlayerSeasonStats",
+                column: "PlayerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PlayerSeasonStats_SeasonId",
+                table: "PlayerSeasonStats",
+                column: "SeasonId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_SeasonEvents_SeasonId",
@@ -431,13 +560,25 @@ namespace TheDugout.Migrations
                 name: "Messages");
 
             migrationBuilder.DropTable(
-                name: "Players");
+                name: "PlayerAttributes");
+
+            migrationBuilder.DropTable(
+                name: "PlayerMatchStats");
+
+            migrationBuilder.DropTable(
+                name: "PlayerSeasonStats");
 
             migrationBuilder.DropTable(
                 name: "SeasonEvents");
 
             migrationBuilder.DropTable(
+                name: "Players");
+
+            migrationBuilder.DropTable(
                 name: "Seasons");
+
+            migrationBuilder.DropTable(
+                name: "Position");
 
             migrationBuilder.DropTable(
                 name: "Teams");
