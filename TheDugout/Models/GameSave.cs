@@ -10,8 +10,8 @@
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public string Name { get; set; } = "New Save";
 
-        public int UserTeamId { get; set; }
-        public Team UserTeam { get; set; } = null!;
+        public int? UserTeamId { get; set; }
+        public Team? UserTeam { get; set; }
 
         public ICollection<League> Leagues { get; set; } = new List<League>();
         public ICollection<Team> Teams { get; set; } = new List<Team>();

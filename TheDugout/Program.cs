@@ -26,33 +26,29 @@ builder.Services.AddCors(options =>
     });
 });
 
-builder.Services.AddAuthentication("JwtBearer")
-    .AddJwtBearer("JwtBearer", options =>
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
     {
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = false,
             ValidateAudience = false,
-            ValidateLifetime = true,
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
+            ValidateLifetime = true
         };
 
+        // Чети token от cookie вместо header (custom)
         options.Events = new JwtBearerEvents
         {
-            OnMessageReceived = ctx =>
+            OnMessageReceived = context =>
             {
-                if (ctx.Request.Cookies.ContainsKey("jwt"))
-                {
-                    ctx.Token = ctx.Request.Cookies["jwt"];
-                }
+                context.Token = context.Request.Cookies["jwt"];
                 return Task.CompletedTask;
             }
         };
     });
 
 builder.Services.AddAuthorization();
-
 
 var app = builder.Build();
 

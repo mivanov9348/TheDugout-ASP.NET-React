@@ -48,24 +48,83 @@ namespace TheDugout.Controllers
             return Ok(list);
         }
 
+        // GET api/games/saves
+        [Authorize]
+        [HttpGet("saves")]
+        public async Task<IActionResult> GetUserGameSaves()
+        {
+            var userId = GetUserIdFromClaims();
+            if (userId == null) return Unauthorized(new { message = "User id not found in token" });
+
+            var saves = await _context.GameSaves
+                .AsNoTracking()
+                .Where(gs => gs.UserId == userId.Value)
+                .OrderByDescending(gs => gs.CreatedAt) // newest first
+                .Select(gs => new
+                {
+                    Id = gs.Id,
+                    Name = gs.Name,
+                    CreatedAt = gs.CreatedAt
+                })
+                .ToListAsync();
+
+            return Ok(saves);
+        }
+
+        // DELETE api/games/{id}
+        [Authorize]
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteGameSave(int id)
+        {
+            var userId = GetUserIdFromClaims();
+            if (userId == null)
+                return Unauthorized(new { message = "User id not found in token" });
+
+            var gameSave = await _context.GameSaves
+                .Include(gs => gs.Seasons)
+                .Include(gs => gs.Teams)
+                .Include(gs => gs.Players)
+                .Include(gs => gs.Leagues)
+                .Include(gs => gs.Messages)
+                .FirstOrDefaultAsync(gs => gs.Id == id && gs.UserId == userId.Value);
+
+            if (gameSave == null)
+                return NotFound(new { message = "Save not found or not owned by user" });
+
+            _context.GameSaves.Remove(gameSave);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Game save deleted successfully" });
+        }
+
         // POST api/games/new
+        [Authorize]
         [HttpPost("new")]
         public async Task<IActionResult> StartNewGame([FromBody] NewGameRequest req)
         {
-            // 1) Get userId from claims
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (!int.TryParse(userIdClaim, out var userId))
+            _logger.LogInformation("Claims in User: {Claims}",
+                string.Join(", ", User.Claims.Select(c => $"{c.Type}: {c.Value}")));
+
+            var userId = GetUserIdFromClaims();
+            if (userId == null) return Unauthorized(new { message = "User id not found in token" });
+
+            if (req == null)
             {
-                return Unauthorized(new { message = "User id not found in token" });
+                return BadRequest(new { message = "Invalid request body" });
+            }
+
+            var saveCount = await _context.GameSaves.CountAsync(gs => gs.UserId == userId.Value);
+            if (saveCount >= 3)
+            {
+                return BadRequest(new { message = "3 saves Max!" });
             }
 
             await using var transaction = await _context.Database.BeginTransactionAsync();
-
             try
             {
                 var gameSave = new GameSave
                 {
-                    UserId = userId,
+                    UserId = userId.Value,
                     CreatedAt = DateTime.UtcNow,
                     Name = $"Save_{userId}_{DateTime.UtcNow:yyyyMMdd_HHmmss}"
                 };
@@ -85,16 +144,17 @@ namespace TheDugout.Controllers
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
-                var resp = new NewGameResponse
+                // Връщаме полета с имена, които фронтенда лесно ще използва:
+                var resp = new
                 {
-                    GameSaveId = gameSave.Id,
-                    Name = gameSave.Name,
-                    CreatedAt = gameSave.CreatedAt,
-                    SeasonId = season.Id,
-                    SeasonStart = season.StartDate,
-                    SeasonEnd = season.EndDate,
-
+                    id = gameSave.Id,
+                    name = gameSave.Name,
+                    createdAt = gameSave.CreatedAt,
+                    seasonId = season.Id,
+                    seasonStart = season.StartDate,
+                    seasonEnd = season.EndDate
                 };
+
                 return Ok(resp);
             }
             catch (Exception ex)
@@ -103,15 +163,18 @@ namespace TheDugout.Controllers
                 _logger.LogError(ex, "Failed to create minimal new game for user {UserId}", userId);
                 return StatusCode(500, new { message = "Failed to create new game" });
             }
-
         }
 
-        // Logout
-        [HttpPost("logout")]
-        public IActionResult Logout()
+
+        private int? GetUserIdFromClaims()
         {
-            Response.Cookies.Delete("jwt");
-            return Ok(new { message = "Logged out successfully" });
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                              ?? User.FindFirst("sub")?.Value   // fallback for JWT sub
+                              ?? User.FindFirst("id")?.Value;   // extra fallback
+
+            if (int.TryParse(userIdClaim, out var parsed)) return parsed;
+            return null;
         }
+
     }
 }

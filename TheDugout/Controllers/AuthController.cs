@@ -62,7 +62,7 @@ namespace TheDugout.Controllers
             Response.Cookies.Append("jwt", token, new CookieOptions
             {
                 HttpOnly = true,
-                Secure = false,
+                Secure = true, // Промени на true за HTTPS
                 SameSite = SameSiteMode.Lax,
                 Expires = DateTime.UtcNow.AddDays(7)
             });
@@ -86,6 +86,14 @@ namespace TheDugout.Controllers
             return Ok(new { user.Id, user.Username, user.Email });
         }
 
+        // Logout
+        [HttpPost("logout")]
+        public IActionResult Logout()
+        {
+            Response.Cookies.Delete("jwt");
+            return Ok(new { message = "Logged out successfully" });
+        }
+
         private string GenerateJwtToken(User user)
         {
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
@@ -93,9 +101,9 @@ namespace TheDugout.Controllers
 
             var claims = new[]
             {
-        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()), 
-        new Claim(ClaimTypes.Name, user.Username),
-        new Claim(ClaimTypes.Email, user.Email)
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()), 
+                new Claim(ClaimTypes.Name, user.Username),
+                new Claim(ClaimTypes.Email, user.Email)
     };
 
             var token = new JwtSecurityToken(

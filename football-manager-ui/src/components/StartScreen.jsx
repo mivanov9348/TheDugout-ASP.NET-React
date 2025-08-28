@@ -1,7 +1,23 @@
 // src/components/StartScreen.jsx
 import React from "react";
+import Swal from "sweetalert2";
 
 function StartScreen({ username, onNewGame, onLoadGame, onLogout }) {
+  const confirmNewGame = () => {
+    Swal.fire({
+      title: "Започни нова игра?",
+      text: "Сигурен ли си?",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Да",
+      cancelButtonText: "Не",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        onNewGame();
+      }
+    });
+  };
+
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-gradient-to-b from-gray-800 to-black text-white">
       <h1 className="text-5xl font-bold mb-6">⚽ The Dugout</h1>
@@ -11,7 +27,7 @@ function StartScreen({ username, onNewGame, onLoadGame, onLogout }) {
 
       <div className="space-y-6 flex flex-col">
         <button
-          onClick={onNewGame}
+          onClick={confirmNewGame}
           className="px-8 py-3 bg-green-600 rounded-2xl hover:bg-green-500 transition"
         >
           New Game
