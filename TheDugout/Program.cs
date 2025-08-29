@@ -3,6 +3,10 @@ using TheDugout.Data;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using MySqlConnector;
+using TheDugout.Services.User;
+using TheDugout.Services.Template;
+using TheDugout.Services.Game;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +18,10 @@ options.UseSqlServer(connectionString));
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddScoped<IUserContextService, UserContextService>();
+builder.Services.AddScoped<ITemplateService, TemplateService>();
+builder.Services.AddScoped<IGameSaveService, GameSaveService>();
 
 builder.Services.AddCors(options =>
 {
