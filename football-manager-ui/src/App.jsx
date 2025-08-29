@@ -1,24 +1,35 @@
 // src/App.jsx
 import { useState, useEffect } from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Header from "./components/Header";
 import Sidebar from "./components/Sidebar";
-import MainContent from "./components/MainContent";
 import AuthForm from "./components/AuthForm";
 import StartScreen from "./components/StartScreen";
 import LoadGameModal from "./components/LoadGameModal";
 import Swal from "sweetalert2";
 
+// Pages
+import Home from "./pages/Home";
+import Inbox from "./pages/Inbox";
+import Calendar from "./pages/Calendar";
+import Squad from "./pages/Squad";
+import Tactics from "./pages/Tactics";
+import Training from "./pages/Training";
+import Schedule from "./pages/Schedule";
+import League from "./pages/League";
+import Transfers from "./pages/Transfers";
+import Club from "./pages/Club";
+import Finances from "./pages/Finances";
+
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [username, setUsername] = useState("");
-  const [inMenu, setInMenu] = useState(true);
-  const [activePage, setActivePage] = useState("Home");
   const [loading, setLoading] = useState(true);
   const [currentGameSave, setCurrentGameSave] = useState(null);
   const [userSaves, setUserSaves] = useState([]);
   const [showLoadModal, setShowLoadModal] = useState(false);
 
-  // 🔹 Зареждане на auth + state от localStorage
+  // 🔹 Auth check при refresh
   useEffect(() => {
     const checkAuth = async () => {
       try {
@@ -29,15 +40,20 @@ function App() {
             setIsAuthenticated(true);
             setUsername(data.username);
 
-            // ако имаме сейф в localStorage → възстановяваме
-            const savedGame = localStorage.getItem("currentGameSave");
-            const savedPage = localStorage.getItem("activePage");
-            if (savedGame) {
-              setCurrentGameSave(JSON.parse(savedGame));
-              setInMenu(false);
-            }
-            if (savedPage) {
-              setActivePage(savedPage);
+            // 🔹 Load game from saved id
+            const savedGameId = localStorage.getItem("currentGameSave");
+            if (savedGameId) {
+              try {
+                const resSave = await fetch(`/api/games/${savedGameId}`, { credentials: "include" });
+                if (resSave.ok) {
+                  const fullSave = await resSave.json();
+                  setCurrentGameSave(fullSave);
+                } else {
+                  localStorage.removeItem("currentGameSave"); // сейфът е изтрит
+                }
+              } catch (err) {
+                console.error("Грешка при зареждане на сейф от бекенда:", err);
+              }
             }
           }
         }
@@ -50,21 +66,14 @@ function App() {
     checkAuth();
   }, []);
 
-  // 🔹 Записваме currentGameSave в localStorage
+  // 🔹 Persist only save id
   useEffect(() => {
-    if (currentGameSave) {
-      localStorage.setItem("currentGameSave", JSON.stringify(currentGameSave));
+    if (currentGameSave?.id) {
+      localStorage.setItem("currentGameSave", currentGameSave.id);
     } else {
       localStorage.removeItem("currentGameSave");
     }
   }, [currentGameSave]);
-
-  // 🔹 Записваме активната страница
-  useEffect(() => {
-    if (activePage) {
-      localStorage.setItem("activePage", activePage);
-    }
-  }, [activePage]);
 
   const fetchUserSaves = async () => {
     try {
@@ -75,19 +84,26 @@ function App() {
       setShowLoadModal(true);
     } catch (err) {
       console.error(err);
-      Swal.fire({
-        title: "Грешка!",
-        text: err.message,
-        icon: "error",
-        confirmButtonText: "OK",
-      });
+      Swal.fire("Грешка!", err.message, "error");
     }
   };
 
-  const handleLoadGame = (save) => {
-    setCurrentGameSave(save);
-    setInMenu(false);
-    setShowLoadModal(false);
+  const handleLoadGame = async (save) => {
+    try {
+      const res = await fetch(`/api/games/${save.id}`, { credentials: "include" });
+      if (!res.ok) throw new Error("Грешка при зареждане на сейф");
+
+      const fullSave = await res.json();
+      setCurrentGameSave(fullSave);
+
+      // ✅ Save only id
+      localStorage.setItem("currentGameSave", save.id);
+
+      setShowLoadModal(false);
+    } catch (err) {
+      console.error(err);
+      Swal.fire("Грешка!", err.message, "error");
+    }
   };
 
   const handleNewGame = async () => {
@@ -100,20 +116,18 @@ function App() {
       });
 
       const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || "Грешка при създаване на сейф");
-      }
+      if (!res.ok) throw new Error(data.message || "Грешка при създаване на сейф");
 
       setCurrentGameSave(data);
-      setInMenu(false);
 
-      Swal.fire({
-        title: "Нов сейф създаден! 🎉",
-        text: `Сезон ${new Date(data.seasonStart).getFullYear()} започна успешно.`,
-        icon: "success",
-        confirmButtonText: "OK",
-      });
+      // ✅ Save only id
+      localStorage.setItem("currentGameSave", data.id);
+
+      Swal.fire(
+        "Нов сейф 🎉",
+        `Сезон ${new Date(data.seasonStart).getFullYear()} започна.`,
+        "success"
+      );
     } catch (err) {
       console.error(err);
       Swal.fire("Грешка!", err.message, "error");
@@ -133,7 +147,6 @@ function App() {
       }
 
       setUserSaves((prev) => prev.filter((s) => s.id !== saveId));
-
       Swal.fire("Изтрито!", "Сейфът беше успешно изтрит.", "success");
     } catch (err) {
       console.error(err);
@@ -144,25 +157,21 @@ function App() {
   const handleLogout = () => {
     setIsAuthenticated(false);
     setUsername("");
-    setInMenu(true);
     setCurrentGameSave(null);
-    localStorage.clear(); // 🔹 чистим state при logout
+    localStorage.clear();
     fetch("/api/auth/logout", { method: "POST", credentials: "include" });
   };
 
+  // ---- Render logic ----
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-screen text-white">
-        Loading...
-      </div>
-    );
+    return <div className="flex items-center justify-center h-screen text-white">Loading...</div>;
   }
 
   if (!isAuthenticated) {
     return <AuthForm onAuthSuccess={() => setIsAuthenticated(true)} />;
   }
 
-  if (inMenu) {
+  if (!currentGameSave) {
     return (
       <>
         <StartScreen
@@ -183,14 +192,31 @@ function App() {
     );
   }
 
+  // Ако има сейф → директно в играта
   return (
-    <div className="flex h-screen bg-slate-100">
-      <Sidebar activePage={activePage} setActivePage={setActivePage} />
-      <div className="flex flex-col flex-1">
-        <Header />
-        <MainContent activePage={activePage} currentGameSave={currentGameSave} />
+    <Router>
+      <div className="flex h-screen bg-slate-100">
+        <Sidebar />
+        <div className="flex flex-col flex-1">
+          <Header currentGameSave={currentGameSave} username={username} />
+          <main className="flex-1 overflow-y-auto p-4">
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/league" element={<League gameSaveId={currentGameSave?.id} />} />
+              <Route path="/inbox" element={<Inbox />} />
+              <Route path="/calendar" element={<Calendar />} />
+              <Route path="/squad" element={<Squad />} />
+              <Route path="/tactics" element={<Tactics />} />
+              <Route path="/training" element={<Training />} />
+              <Route path="/schedule" element={<Schedule />} />
+              <Route path="/transfers" element={<Transfers />} />
+              <Route path="/club" element={<Club />} />
+              <Route path="/finances" element={<Finances />} />
+            </Routes>
+          </main>
+        </div>
       </div>
-    </div>
+    </Router>
   );
 }
 

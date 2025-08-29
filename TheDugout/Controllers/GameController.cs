@@ -122,6 +122,7 @@ namespace TheDugout.Controllers
             await using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
+                // 1. Създаваме Save + Season
                 var gameSave = new GameSave
                 {
                     UserId = userId.Value,
@@ -140,29 +141,97 @@ namespace TheDugout.Controllers
                 };
                 gameSave.Seasons.Add(season);
 
+                // 2. Взимаме всички шаблони лиги с отборите
+                var leagueTemplates = await _context.LeagueTemplates
+                    .Include(lt => lt.TeamTemplates)
+                    .ToListAsync();
+
+                // 3. Копираме League + Team към сейва
+                foreach (var lt in leagueTemplates)
+                {
+                    var league = new League
+                    {
+                        TemplateId = lt.Id,
+                        GameSave = gameSave,
+                        CountryId = lt.CountryId,
+                        Tier = lt.Tier,
+                        TeamsCount = lt.TeamsCount,
+                        RelegationSpots = lt.RelegationSpots,
+                        PromotionSpots = lt.PromotionSpots
+                    };
+
+                    foreach (var tt in lt.TeamTemplates)
+                    {
+                        var team = new Team
+                        {
+                            TemplateId = tt.Id,
+                            GameSave = gameSave,
+                            League = league,
+                            Name = tt.Name,
+                            Abbreviation = tt.Abbreviation,
+                            CountryId = tt.CountryId
+                        };
+
+                        league.Teams.Add(team);
+                        gameSave.Teams.Add(team);
+                    }
+
+                    gameSave.Leagues.Add(league);
+                }
+
                 _context.GameSaves.Add(gameSave);
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
-                // Връщаме полета с имена, които фронтенда лесно ще използва:
-                var resp = new
-                {
-                    id = gameSave.Id,
-                    name = gameSave.Name,
-                    createdAt = gameSave.CreatedAt,
-                    seasonId = season.Id,
-                    seasonStart = season.StartDate,
-                    seasonEnd = season.EndDate
-                };
+                var fullSave = await _context.GameSaves
+    .Include(gs => gs.Leagues).ThenInclude(l => l.Teams)
+    .Include(gs => gs.Seasons)
+    .FirstAsync(gs => gs.Id == gameSave.Id);
 
-                return Ok(resp);
+
+                //var resp = new
+                //{
+                //    id = gameSave.Id,
+                //    name = gameSave.Name,
+                //    createdAt = gameSave.CreatedAt,
+                //    seasonId = season.Id,
+                //    seasonStart = season.StartDate,
+                //    seasonEnd = season.EndDate,
+                //    leagues = gameSave.Leagues.Count,
+                //    teams = gameSave.Teams.Count
+                //};
+
+                return Ok(fullSave.ToDto());
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                _logger.LogError(ex, "Failed to create minimal new game for user {UserId}", userId);
+                _logger.LogError(ex, "Failed to create new game for user {UserId}", userId);
                 return StatusCode(500, new { message = "Failed to create new game" });
             }
+        }
+
+        // GET api/games/{id}
+        [Authorize]
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetGameSave(int id)
+        {
+            var userId = GetUserIdFromClaims();
+            if (userId == null)
+                return Unauthorized(new { message = "User id not found in token" });
+
+            var gameSave = await _context.GameSaves
+    .Include(gs => gs.Leagues).ThenInclude(l => l.Teams)
+    .Include(gs => gs.Seasons)
+    .FirstOrDefaultAsync(gs => gs.Id == id && gs.UserId == userId.Value);
+
+            if (gameSave == null)
+                return NotFound(new { message = "Save not found or not owned by user" });
+
+            return Ok(gameSave.ToDto());
+
+
+            
         }
 
 

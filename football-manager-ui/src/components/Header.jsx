@@ -1,29 +1,28 @@
-function Header() {
-  const teamName = "FC Barcelona";
-  const leagueName = "La Liga";
-  const currentDate = "1 July 2025"; // временно хардкоднато
-  const username = "Manager";        // временно хардкоднато
-  const money = "€150M";             // временно хардкоднато
+function Header({ currentGameSave, username }) {
+  if (!currentGameSave) {
+    return (
+      <header className="px-6 py-3 bg-slate-800 text-white shadow-md">
+        <h1>No Save Loaded</h1>
+      </header>
+    );
+  }
+
+  const season = currentGameSave.seasons?.[0];
+  const team = currentGameSave.userTeam; // трябва да дойде от бекенда
+  const league = team?.league;
 
   return (
     <header className="flex justify-between items-center px-6 py-3 bg-slate-800 text-white shadow-md">
-      {/* Лява част */}
       <div>
-        <h1 className="text-lg font-bold">{teamName}</h1>
-        <p className="text-sm text-slate-300">{leagueName}</p>
+        <h1 className="text-lg font-bold">{team?.name ?? "Unknown Team"}</h1>
+        <p className="text-sm text-slate-300">{league?.name ?? "Unknown League"}</p>
       </div>
-
-      {/* Средна част - инфо */}
       <div className="text-sm text-slate-300 flex gap-6">
-        <span>{currentDate}</span>
+        <span>{season ? new Date(season.currentDate).toLocaleDateString() : ""}</span>
         <span>{username}</span>
-        <span>{money}</span>
+        <span>{team?.budget ? `€${team.budget}` : "€0"}</span>
       </div>
-
-      {/* Дясна част - бутон */}
-      <button className="bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 rounded-lg font-medium transition">
-        Next Day →
-      </button>
+      <button className="bg-sky-600 hover:bg-sky-700 px-4 py-2 rounded-lg">Next Day →</button>
     </header>
   );
 }
