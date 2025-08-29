@@ -1,0 +1,18 @@
+[
+  {
+    "code": "GK",
+    "name": "Goalkeeper"
+  },
+  {
+    "code": "DF",
+    "name": "Defender"
+  },
+  {
+    "code": "MID",
+    "name": "Midfielder"
+  },
+  {
+    "code": "ATT",
+    "name": "Attacker"
+  }
+]

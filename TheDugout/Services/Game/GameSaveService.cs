@@ -97,7 +97,7 @@ namespace TheDugout.Services.Game
 
                     foreach (var tt in lt.TeamTemplates)
                     {
-                        var team = new Team
+                        var team = new Models.Team
                         {
                             TemplateId = tt.Id,
                             GameSave = gameSave,
