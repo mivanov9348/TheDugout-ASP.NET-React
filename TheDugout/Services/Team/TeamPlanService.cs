@@ -7,7 +7,7 @@
             return new Dictionary<string, int>
             {
                 { "GK", 1 },
-                { "DEF", 4 },
+                { "DF", 4 },
                 { "MID", 4 },
                 { "ATT", 2 },
                 { "ANY", 5 } 

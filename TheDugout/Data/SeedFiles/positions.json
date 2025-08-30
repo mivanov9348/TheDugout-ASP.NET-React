@@ -1,18 +1,6 @@
 [
-  {
-    "code": "GK",
-    "name": "Goalkeeper"
-  },
-  {
-    "code": "DF",
-    "name": "Defender"
-  },
-  {
-    "code": "MID",
-    "name": "Midfielder"
-  },
-  {
-    "code": "ATT",
-    "name": "Attacker"
-  }
+  { "id": 1, "code": "GK", "name": "Goalkeeper" },
+  { "id": 2, "code": "DF", "name": "Defender" },
+  { "id": 3, "code": "MID", "name": "Midfielder" },
+  { "id": 4, "code": "ATT", "name": "Attacker" }
 ]

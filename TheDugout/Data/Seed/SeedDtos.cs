@@ -1,10 +1,10 @@
 ﻿namespace TheDugout.Data.Seed
 {
-    public class SeedDtos
+    public static class SeedDtos
     {
-        public record CountrySeedDto(string Code, string Name);
+        public record CountryDto(string Code, string Name);
 
-        public record LeagueTemplateSeedDto(
+        public record LeagueTemplateDto(
             string Code,
             string Name,
             string CountryCode,
@@ -12,14 +12,18 @@
             int Teams,
             int RelegationSpots,
             int PromotionSpots
-            );
+        );
 
-        public record TeamTemplateSeedDto(
+        public record TeamTemplateDto(
             string Name,
-    string ShortName,
-    string CompetitionCode
-            );
+            string ShortName,
+            string CompetitionCode
+        );
 
-
+        public record PositionWeightDto(
+            string PositionCode,
+            string AttributeCode,
+            double Weight
+        );
     }
 }

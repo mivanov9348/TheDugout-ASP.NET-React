@@ -12,8 +12,8 @@ using TheDugout.Data;
 namespace TheDugout.Migrations
 {
     [DbContext(typeof(DugoutDbContext))]
-    [Migration("20250828161726_addconfigurations")]
-    partial class addconfigurations
+    [Migration("20250830135054_initial")]
+    partial class initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,32 @@ namespace TheDugout.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("TheDugout.Models.Attribute", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("Attributes", (string)null);
+                });
 
             modelBuilder.Entity("TheDugout.Models.Country", b =>
                 {
@@ -217,8 +243,7 @@ namespace TheDugout.Migrations
 
                     b.Property<string>("FirstName")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("GameSaveId")
                         .HasColumnType("int");
@@ -234,8 +259,7 @@ namespace TheDugout.Migrations
 
                     b.Property<string>("LastName")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("PositionId")
                         .HasColumnType("int");
@@ -259,7 +283,7 @@ namespace TheDugout.Migrations
                     b.ToTable("Players");
                 });
 
-            modelBuilder.Entity("TheDugout.Models.PlayerAttributes", b =>
+            modelBuilder.Entity("TheDugout.Models.PlayerAttribute", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -267,39 +291,23 @@ namespace TheDugout.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("Finishing")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Handling")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Pace")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Passing")
+                    b.Property<int>("AttributeId")
                         .HasColumnType("int");
 
                     b.Property<int>("PlayerId")
                         .HasColumnType("int");
 
-                    b.Property<int>("Positioning")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Reflexes")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Tackling")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Vision")
+                    b.Property<int>("Value")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("PlayerId")
+                    b.HasIndex("AttributeId");
+
+                    b.HasIndex("PlayerId", "AttributeId")
                         .IsUnique();
 
-                    b.ToTable("PlayerAttributes");
+                    b.ToTable("PlayerAttributes", (string)null);
                 });
 
             modelBuilder.Entity("TheDugout.Models.PlayerMatchStats", b =>
@@ -383,8 +391,8 @@ namespace TheDugout.Migrations
 
                     b.Property<string>("Code")
                         .IsRequired()
-                        .HasMaxLength(5)
-                        .HasColumnType("nvarchar(5)");
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -393,7 +401,38 @@ namespace TheDugout.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Positions");
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("Positions", (string)null);
+                });
+
+            modelBuilder.Entity("TheDugout.Models.PositionWeight", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AttributeId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PositionId")
+                        .HasColumnType("int");
+
+                    b.Property<double>("Weight")
+                        .HasPrecision(4, 2)
+                        .HasColumnType("float(4)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AttributeId");
+
+                    b.HasIndex("PositionId", "AttributeId")
+                        .IsUnique();
+
+                    b.ToTable("PositionWeights", (string)null);
                 });
 
             modelBuilder.Entity("TheDugout.Models.Season", b =>
@@ -662,7 +701,7 @@ namespace TheDugout.Migrations
                     b.HasOne("TheDugout.Models.Position", "Position")
                         .WithMany("Players")
                         .HasForeignKey("PositionId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("TheDugout.Models.Team", "Team")
@@ -680,13 +719,21 @@ namespace TheDugout.Migrations
                     b.Navigation("Team");
                 });
 
-            modelBuilder.Entity("TheDugout.Models.PlayerAttributes", b =>
+            modelBuilder.Entity("TheDugout.Models.PlayerAttribute", b =>
                 {
-                    b.HasOne("TheDugout.Models.Player", "Player")
-                        .WithOne("Attributes")
-                        .HasForeignKey("TheDugout.Models.PlayerAttributes", "PlayerId")
+                    b.HasOne("TheDugout.Models.Attribute", "Attribute")
+                        .WithMany("PlayerAttributes")
+                        .HasForeignKey("AttributeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("TheDugout.Models.Player", "Player")
+                        .WithMany("Attributes")
+                        .HasForeignKey("PlayerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Attribute");
 
                     b.Navigation("Player");
                 });
@@ -719,6 +766,25 @@ namespace TheDugout.Migrations
                     b.Navigation("Player");
 
                     b.Navigation("Season");
+                });
+
+            modelBuilder.Entity("TheDugout.Models.PositionWeight", b =>
+                {
+                    b.HasOne("TheDugout.Models.Attribute", "Attribute")
+                        .WithMany("PositionWeights")
+                        .HasForeignKey("AttributeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TheDugout.Models.Position", "Position")
+                        .WithMany("Weights")
+                        .HasForeignKey("PositionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Attribute");
+
+                    b.Navigation("Position");
                 });
 
             modelBuilder.Entity("TheDugout.Models.Season", b =>
@@ -796,6 +862,13 @@ namespace TheDugout.Migrations
                     b.Navigation("League");
                 });
 
+            modelBuilder.Entity("TheDugout.Models.Attribute", b =>
+                {
+                    b.Navigation("PlayerAttributes");
+
+                    b.Navigation("PositionWeights");
+                });
+
             modelBuilder.Entity("TheDugout.Models.Country", b =>
                 {
                     b.Navigation("LeagueTemplates");
@@ -830,8 +903,7 @@ namespace TheDugout.Migrations
 
             modelBuilder.Entity("TheDugout.Models.Player", b =>
                 {
-                    b.Navigation("Attributes")
-                        .IsRequired();
+                    b.Navigation("Attributes");
 
                     b.Navigation("MatchStats");
 
@@ -841,6 +913,8 @@ namespace TheDugout.Migrations
             modelBuilder.Entity("TheDugout.Models.Position", b =>
                 {
                     b.Navigation("Players");
+
+                    b.Navigation("Weights");
                 });
 
             modelBuilder.Entity("TheDugout.Models.Season", b =>

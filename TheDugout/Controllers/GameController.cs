@@ -57,14 +57,14 @@ namespace TheDugout.Controllers
 
         [Authorize]
         [HttpPost("new")]
-        public async Task<IActionResult> StartNewGame([FromBody] NewGameRequest req)
+        public async Task<IActionResult> StartNewGame()
         {
             var userId = _userContext.GetUserId(User);
             if (userId == null) return Unauthorized();
 
             try
             {
-                var save = await _gameSaveService.StartNewGameAsync(userId.Value, req);
+                var save = await _gameSaveService.StartNewGameAsync(userId.Value);
                 return Ok(save.ToDto());
             }
             catch (InvalidOperationException ex)

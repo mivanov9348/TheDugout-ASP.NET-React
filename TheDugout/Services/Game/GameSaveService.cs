@@ -2,6 +2,7 @@
 using TheDugout.Data;
 using TheDugout.Data.DtoNewGame;
 using TheDugout.Models;
+using TheDugout.Services.Players;
 
 namespace TheDugout.Services.Game
 {
@@ -9,11 +10,13 @@ namespace TheDugout.Services.Game
     {
         private readonly DugoutDbContext _context;
         private readonly ILogger<GameSaveService> _logger;
+        private readonly IPlayerGenerationService _playerGenerator;
 
-        public GameSaveService(DugoutDbContext context, ILogger<GameSaveService> logger)
+        public GameSaveService(DugoutDbContext context, ILogger<GameSaveService> logger, IPlayerGenerationService playerGenerator)
         {
             _context = context;
             _logger = logger;
+            _playerGenerator = playerGenerator;
         }
 
         public async Task<List<object>> GetUserSavesAsync(int userId)
@@ -51,8 +54,11 @@ namespace TheDugout.Services.Game
             return true;
         }
 
-        public async Task<GameSave> StartNewGameAsync(int userId, NewGameRequest req)
+        public async Task<GameSave> StartNewGameAsync(int userId)
         {
+            if (userId <= 0)
+                throw new ArgumentException("Invalid userId.");
+
             var saveCount = await _context.GameSaves.CountAsync(gs => gs.UserId == userId);
             if (saveCount >= 3)
                 throw new InvalidOperationException("3 saves Max!");
@@ -104,11 +110,21 @@ namespace TheDugout.Services.Game
                             League = league,
                             Name = tt.Name,
                             Abbreviation = tt.Abbreviation,
-                            CountryId = tt.CountryId
+                            CountryId = tt.CountryId,
+                            Country=tt.Country
+               
                         };
 
                         league.Teams.Add(team);
                         gameSave.Teams.Add(team);
+
+                        var players = _playerGenerator.GenerateTeamPlayers(gameSave, team);
+                        foreach (var player in players)
+                        {
+                            gameSave.Players.Add(player);
+                            team.Players.Add(player);
+                            _context.Players.Add(player);
+                        }
                     }
 
                     gameSave.Leagues.Add(league);
@@ -119,7 +135,7 @@ namespace TheDugout.Services.Game
                 await transaction.CommitAsync();
 
                 return await _context.GameSaves
-                    .Include(gs => gs.Leagues).ThenInclude(l => l.Teams)
+                    .Include(gs => gs.Leagues).ThenInclude(l => l.Teams).ThenInclude(t => t.Players)
                     .Include(gs => gs.Seasons)
                     .FirstAsync(gs => gs.Id == gameSave.Id);
             }

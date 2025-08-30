@@ -1,54 +1,165 @@
 [
   {
-    "PositionCode": "GK",
-    "Weights": {
-      "Reflexes": 0.30,
-      "Handling": 0.30,
-      "Tackling": 0.05,
-      "Positioning": 0.20,
-      "Passing": 0.05,
-      "Vision": 0.05,
-      "Finishing": 0.02,
-      "Pace": 0.03
-    }
+    "positionCode": "GK",
+    "attributeCode": "REF",
+    "weight": 0.30
   },
   {
-    "PositionCode": "DF",
-    "Weights": {
-      "Reflexes": 0.05,
-      "Handling": 0.05,
-      "Tackling": 0.35,
-      "Positioning": 0.30,
-      "Passing": 0.10,
-      "Vision": 0.05,
-      "Finishing": 0.02,
-      "Pace": 0.08
-    }
+    "positionCode": "GK",
+    "attributeCode": "HAN",
+    "weight": 0.30
   },
   {
-    "PositionCode": "MID",
-    "Weights": {
-      "Reflexes": 0.02,
-      "Handling": 0.03,
-      "Tackling": 0.15,
-      "Positioning": 0.15,
-      "Passing": 0.25,
-      "Vision": 0.25,
-      "Finishing": 0.05,
-      "Pace": 0.10
-    }
+    "positionCode": "GK",
+    "attributeCode": "TAC",
+    "weight": 0.05
   },
   {
-    "PositionCode": "ATT",
-    "Weights": {
-      "Reflexes": 0.02,
-      "Handling": 0.02,
-      "Tackling": 0.05,
-      "Positioning": 0.10,
-      "Passing": 0.10,
-      "Vision": 0.10,
-      "Finishing": 0.40,
-      "Pace": 0.21
-    }
+    "positionCode": "GK",
+    "attributeCode": "POS",
+    "weight": 0.20
+  },
+  {
+    "positionCode": "GK",
+    "attributeCode": "PAS",
+    "weight": 0.05
+  },
+  {
+    "positionCode": "GK",
+    "attributeCode": "VIS",
+    "weight": 0.05
+  },
+  {
+    "positionCode": "GK",
+    "attributeCode": "FIN",
+    "weight": 0.02
+  },
+  {
+    "positionCode": "GK",
+    "attributeCode": "PAC",
+    "weight": 0.03
+  },
+
+  {
+    "positionCode": "DF",
+    "attributeCode": "REF",
+    "weight": 0.05
+  },
+  {
+    "positionCode": "DF",
+    "attributeCode": "HAN",
+    "weight": 0.05
+  },
+  {
+    "positionCode": "DF",
+    "attributeCode": "TAC",
+    "weight": 0.35
+  },
+  {
+    "positionCode": "DF",
+    "attributeCode": "POS",
+    "weight": 0.30
+  },
+  {
+    "positionCode": "DF",
+    "attributeCode": "PAS",
+    "weight": 0.10
+  },
+  {
+    "positionCode": "DF",
+    "attributeCode": "VIS",
+    "weight": 0.05
+  },
+  {
+    "positionCode": "DF",
+    "attributeCode": "FIN",
+    "weight": 0.02
+  },
+  {
+    "positionCode": "DF",
+    "attributeCode": "PAC",
+    "weight": 0.08
+  },
+
+  {
+    "positionCode": "MID",
+    "attributeCode": "REF",
+    "weight": 0.02
+  },
+  {
+    "positionCode": "MID",
+    "attributeCode": "HAN",
+    "weight": 0.03
+  },
+  {
+    "positionCode": "MID",
+    "attributeCode": "TAC",
+    "weight": 0.15
+  },
+  {
+    "positionCode": "MID",
+    "attributeCode": "POS",
+    "weight": 0.15
+  },
+  {
+    "positionCode": "MID",
+    "attributeCode": "PAS",
+    "weight": 0.25
+  },
+  {
+    "positionCode": "MID",
+    "attributeCode": "VIS",
+    "weight": 0.25
+  },
+  {
+    "positionCode": "MID",
+    "attributeCode": "FIN",
+    "weight": 0.05
+  },
+  {
+    "positionCode": "MID",
+    "attributeCode": "PAC",
+    "weight": 0.10
+  },
+
+  {
+    "positionCode": "ATT",
+    "attributeCode": "REF",
+    "weight": 0.02
+  },
+  {
+    "positionCode": "ATT",
+    "attributeCode": "HAN",
+    "weight": 0.02
+  },
+  {
+    "positionCode": "ATT",
+    "attributeCode": "TAC",
+    "weight": 0.05
+  },
+  {
+    "positionCode": "ATT",
+    "attributeCode": "POS",
+    "weight": 0.10
+  },
+  {
+    "positionCode": "ATT",
+    "attributeCode": "PAS",
+    "weight": 0.10
+  },
+  {
+    "positionCode": "ATT",
+    "attributeCode": "VIS",
+    "weight": 0.10
+  },
+  {
+    "positionCode": "ATT",
+    "attributeCode": "FIN",
+    "weight": 0.40
+  },
+  {
+    "positionCode": "ATT",
+    "attributeCode": "PAC",
+    "weight": 0.21
   }
 ]

@@ -43,9 +43,69 @@ public static class SeedData
 
         var positionsByCode = await db.Positions.ToDictionaryAsync(x => x.Code, x => x);
 
-        // 1) Countries
+        // 1) Attributes
+        var attributesPath = Path.Combine(seedDir, "attributes.json");
+        var attributes = await ReadJsonAsync<List<Models.Attribute>>(attributesPath);
+
+        foreach (var a in attributes)
+        {
+            var existing = await db.Attributes.FirstOrDefaultAsync(x => x.Code == a.Code);
+            if (existing == null)
+            {
+                db.Attributes.Add(new Models.Attribute
+                {
+                    Code = a.Code,
+                    Name = a.Name
+                });
+            }
+            else if (existing.Name != a.Name)
+            {
+                existing.Name = a.Name;
+            }
+        }
+        await db.SaveChangesAsync();
+
+        var attributesByCode = await db.Attributes.ToDictionaryAsync(x => x.Code, x => x);
+
+        // 2) Position Weights
+        var weightsPath = Path.Combine(seedDir, "positionWeights.json");
+        var weights = await ReadJsonAsync<List<PositionWeightDto>>(weightsPath);
+
+        foreach (var w in weights)
+        {
+            if (!positionsByCode.TryGetValue(w.PositionCode, out var position))
+            {
+                logger.LogWarning("Weight references missing position {PositionCode}", w.PositionCode);
+                continue;
+            }
+            if (!attributesByCode.TryGetValue(w.AttributeCode, out var attribute))
+            {
+                logger.LogWarning("Weight references missing attribute {AttributeCode}", w.AttributeCode);
+                continue;
+            }
+
+            var existing = await db.PositionWeights
+                .FirstOrDefaultAsync(x => x.PositionId == position.Id && x.AttributeId == attribute.Id);
+
+            if (existing == null)
+            {
+                db.PositionWeights.Add(new PositionWeight
+                {
+                    PositionId = position.Id,
+                    AttributeId = attribute.Id,
+                    Weight = w.Weight
+                });
+            }
+            else
+            {
+                existing.Weight = w.Weight;
+            }
+        }
+        await db.SaveChangesAsync();
+
+        // 3) Countries
         var countriesPath = Path.Combine(seedDir, "countries.json");
-        var countries = await ReadJsonAsync<List<CountrySeedDto>>(countriesPath);
+        var countries = await ReadJsonAsync<List<CountryDto>>(countriesPath);
 
         foreach (var c in countries)
         {
@@ -63,9 +123,9 @@ public static class SeedData
 
         var countriesByCode = await db.Countries.ToDictionaryAsync(x => x.Code, x => x);
 
-        // 2) Leagues
+        // 4) Leagues
         var leaguesPath = Path.Combine(seedDir, "leagues.json");
-        var leagues = await ReadJsonAsync<List<LeagueTemplateSeedDto>>(leaguesPath);
+        var leagues = await ReadJsonAsync<List<LeagueTemplateDto>>(leaguesPath);
 
         foreach (var l in leagues)
         {
@@ -105,15 +165,15 @@ public static class SeedData
             .Include(x => x.Country)
             .ToDictionaryAsync(x => x.LeagueCode, x => x);
 
-        // 3) Teams
+        // 5) Teams
         var teamsDir = Path.Combine(seedDir, "teams");
 
         // ще пазим всички тимове за валидирането после
-        var allTeams = new List<TeamTemplateSeedDto>();
+        var allTeams = new List<TeamTemplateDto>();
 
         foreach (var file in Directory.GetFiles(teamsDir, "*.json"))
         {
-            var teams = await ReadJsonAsync<List<TeamTemplateSeedDto>>(file);
+            var teams = await ReadJsonAsync<List<TeamTemplateDto>>(file);
             allTeams.AddRange(teams);
 
             foreach (var t in teams)
