@@ -4,54 +4,29 @@ using TheDugout.Models;
 
 namespace TheDugout.Data.Configurations
 {
-    public class PlayerConfiguration : IEntityTypeConfiguration<Player>
+    public class PlayerAttributeConfiguration : IEntityTypeConfiguration<PlayerAttribute>
     {
-        public void Configure(EntityTypeBuilder<Player> builder)
+        public void Configure(EntityTypeBuilder<PlayerAttribute> builder)
         {
-            builder.HasKey(e => e.Id);
+            builder.ToTable("PlayerAttributes");
 
-            builder.Property(e => e.FirstName)
-                   .IsRequired()
-                   .HasMaxLength(100);
+            builder.HasKey(pa => pa.Id);
 
-            builder.Property(e => e.LastName)
-                   .IsRequired()
-                   .HasMaxLength(100);
+            builder.Property(pa => pa.Value)
+                   .IsRequired();
 
-            builder.HasOne(e => e.Team)
-                   .WithMany(t => t.Players)
-                   .HasForeignKey(e => e.TeamId)
-                   .OnDelete(DeleteBehavior.Restrict);
-
-            builder.HasOne(e => e.Country)
-                   .WithMany(c => c.Players)
-                   .HasForeignKey(e => e.CountryId)
-                   .OnDelete(DeleteBehavior.SetNull);
-
-            builder.HasOne(e => e.GameSave)
-                   .WithMany(gs => gs.Players)
-                   .HasForeignKey(e => e.GameSaveId)
+            builder.HasOne(pa => pa.Player)
+                   .WithMany(p => p.Attributes)
+                   .HasForeignKey(pa => pa.PlayerId)
                    .OnDelete(DeleteBehavior.Cascade);
 
-            builder.HasOne(e => e.Attributes)
-                   .WithOne(a => a.Player)
-                   .HasForeignKey<PlayerAttributes>(a => a.PlayerId)
+            builder.HasOne(pa => pa.Attribute)
+                   .WithMany(a => a.PlayerAttributes)
+                   .HasForeignKey(pa => pa.AttributeId)
                    .OnDelete(DeleteBehavior.Cascade);
 
-            builder.HasMany(e => e.MatchStats)
-                   .WithOne(ms => ms.Player)
-                   .HasForeignKey(ms => ms.PlayerId)
-                   .OnDelete(DeleteBehavior.Cascade);
-
-            builder.HasMany(e => e.SeasonStats)
-                   .WithOne(ss => ss.Player)
-                   .HasForeignKey(ss => ss.PlayerId)
-                   .OnDelete(DeleteBehavior.Cascade);
-
-            builder.HasOne(e => e.Position)
-                   .WithMany(p => p.Players)
-                   .HasForeignKey(e => e.PositionId)
-                   .OnDelete(DeleteBehavior.Restrict);
+            builder.HasIndex(pa => new { pa.PlayerId, pa.AttributeId })
+                   .IsUnique();
         }
     }
 }

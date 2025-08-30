@@ -22,8 +22,10 @@ namespace TheDugout.Data
         public DbSet<SeasonEvent> SeasonEvents { get; set; }
         public DbSet<PlayerMatchStats> PlayerMatchStats { get; set; }
         public DbSet<PlayerSeasonStats> PlayerSeasonStats { get; set; }
-        public DbSet<PlayerAttributes> PlayerAttributes { get; set; }
+        public DbSet<PlayerAttribute> PlayerAttributes { get; set; }
+        public DbSet<Models.Attribute> Attributes { get; set; }
         public DbSet<Position> Positions { get; set; }
+        public DbSet<PositionWeight> PositionWeights { get; set; }  
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

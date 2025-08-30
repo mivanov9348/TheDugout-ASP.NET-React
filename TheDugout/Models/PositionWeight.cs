@@ -7,7 +7,9 @@
         public int PositionId { get; set; }
         public Position Position { get; set; } = null!;
 
-        public string AttributeName { get; set; } = null!;
-        public double Weight { get; set; } // примерно 0.0 – 1.0
+        public int AttributeId { get; set; }
+        public Attribute Attribute { get; set; } = null!;
+
+        public double Weight { get; set; }
     }
 }

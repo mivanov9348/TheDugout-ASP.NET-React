@@ -106,7 +106,6 @@ public static class SeedData
             .ToDictionaryAsync(x => x.LeagueCode, x => x);
 
         // 3) Teams
-        // 3) Teams
         var teamsDir = Path.Combine(seedDir, "teams");
 
         // ще пазим всички тимове за валидирането после

@@ -3,8 +3,10 @@
     public class Player
     {
         public int Id { get; set; }
+
         public string FirstName { get; set; } = null!;
         public string LastName { get; set; } = null!;
+
         public DateTime BirthDate { get; set; }
         public int Age
         {
@@ -18,13 +20,13 @@
         }
 
         public int TeamId { get; set; }
-        public Team Team { get; set; }
+        public Team Team { get; set; } = null!;
 
         public int? CountryId { get; set; }
         public Country? Country { get; set; }
 
         public int PositionId { get; set; }
-        public Position Position { get; set; }
+        public Position Position { get; set; } = null!;
 
         public int KitNumber { get; set; }
         public double HeightCm { get; set; }
@@ -33,9 +35,10 @@
         public bool IsActive { get; set; }
 
         public int GameSaveId { get; set; }
-        public GameSave GameSave { get; set; }
+        public GameSave GameSave { get; set; } = null!;
 
-        public PlayerAttributes Attributes { get; set; }
+        public ICollection<PlayerAttribute> Attributes { get; set; } = new List<PlayerAttribute>();
+
         public ICollection<PlayerMatchStats> MatchStats { get; set; } = new List<PlayerMatchStats>();
         public ICollection<PlayerSeasonStats> SeasonStats { get; set; } = new List<PlayerSeasonStats>();
     }

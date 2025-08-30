@@ -1,0 +1,54 @@
+[
+  {
+    "PositionCode": "GK",
+    "Weights": {
+      "Reflexes": 0.30,
+      "Handling": 0.30,
+      "Tackling": 0.05,
+      "Positioning": 0.20,
+      "Passing": 0.05,
+      "Vision": 0.05,
+      "Finishing": 0.02,
+      "Pace": 0.03
+    }
+  },
+  {
+    "PositionCode": "DF",
+    "Weights": {
+      "Reflexes": 0.05,
+      "Handling": 0.05,
+      "Tackling": 0.35,
+      "Positioning": 0.30,
+      "Passing": 0.10,
+      "Vision": 0.05,
+      "Finishing": 0.02,
+      "Pace": 0.08
+    }
+  },
+  {
+    "PositionCode": "MID",
+    "Weights": {
+      "Reflexes": 0.02,
+      "Handling": 0.03,
+      "Tackling": 0.15,
+      "Positioning": 0.15,
+      "Passing": 0.25,
+      "Vision": 0.25,
+      "Finishing": 0.05,
+      "Pace": 0.10
+    }
+  },
+  {
+    "PositionCode": "ATT",
+    "Weights": {
+      "Reflexes": 0.02,
+      "Handling": 0.02,
+      "Tackling": 0.05,
+      "Positioning": 0.10,
+      "Passing": 0.10,
+      "Vision": 0.10,
+      "Finishing": 0.40,
+      "Pace": 0.21
+    }
+  }
+]

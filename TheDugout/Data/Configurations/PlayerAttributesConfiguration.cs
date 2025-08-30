@@ -4,16 +4,29 @@ using TheDugout.Models;
 
 namespace TheDugout.Data.Configurations
 {
-    public class PlayerAttributesConfiguration : IEntityTypeConfiguration<PlayerAttributes>
+    public class PlayerAttributesConfiguration : IEntityTypeConfiguration<PlayerAttribute>
     {
-        public void Configure(EntityTypeBuilder<PlayerAttributes> builder)
+        public void Configure(EntityTypeBuilder<PlayerAttribute> builder)
         {
-            builder.HasKey(e => e.Id);
+            builder.ToTable("PlayerAttributes");
 
-            builder.HasOne(e => e.Player)
-                   .WithOne(p => p.Attributes)
-                   .HasForeignKey<PlayerAttributes>(e => e.PlayerId)
+            builder.HasKey(pa => pa.Id);
+
+            builder.Property(pa => pa.Value)
+                   .IsRequired();
+
+            builder.HasOne(pa => pa.Player)
+                   .WithMany(p => p.Attributes)
+                   .HasForeignKey(pa => pa.PlayerId)
                    .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasOne(pa => pa.Attribute)
+                   .WithMany(a => a.PlayerAttributes)
+                   .HasForeignKey(pa => pa.AttributeId)
+                   .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasIndex(pa => new { pa.PlayerId, pa.AttributeId })
+                   .IsUnique();
         }
     }
 }

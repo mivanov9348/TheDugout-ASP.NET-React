@@ -4,23 +4,23 @@ using TheDugout.Models;
 
 namespace TheDugout.Data.Configurations
 {
-    public class PositionConfiguration : IEntityTypeConfiguration<Position>
+    public class AttributeConfiguration : IEntityTypeConfiguration<Models.Attribute>
     {
-        public void Configure(EntityTypeBuilder<Position> builder)
+        public void Configure(EntityTypeBuilder<Models.Attribute> builder)
         {
-            builder.ToTable("Positions");
+            builder.ToTable("Attributes");
 
-            builder.HasKey(p => p.Id);
+            builder.HasKey(a => a.Id);
 
-            builder.Property(p => p.Code)
+            builder.Property(a => a.Code)
                    .IsRequired()
                    .HasMaxLength(10);
 
-            builder.Property(p => p.Name)
+            builder.Property(a => a.Name)
                    .IsRequired()
                    .HasMaxLength(50);
 
-            builder.HasIndex(p => p.Code)
+            builder.HasIndex(a => a.Code)
                    .IsUnique(); 
         }
     }
