@@ -599,6 +599,9 @@ namespace TheDugout.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int?>("CurrentSaveId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -615,6 +618,8 @@ namespace TheDugout.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CurrentSaveId");
+
                     b.ToTable("Users");
                 });
 
@@ -623,7 +628,7 @@ namespace TheDugout.Migrations
                     b.HasOne("TheDugout.Models.User", "User")
                         .WithMany("GameSaves")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("TheDugout.Models.Team", "UserTeam")
@@ -859,6 +864,16 @@ namespace TheDugout.Migrations
                     b.Navigation("Country");
 
                     b.Navigation("League");
+                });
+
+            modelBuilder.Entity("TheDugout.Models.User", b =>
+                {
+                    b.HasOne("TheDugout.Models.GameSave", "CurrentSave")
+                        .WithMany()
+                        .HasForeignKey("CurrentSaveId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("CurrentSave");
                 });
 
             modelBuilder.Entity("TheDugout.Models.Attribute", b =>

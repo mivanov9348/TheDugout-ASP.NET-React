@@ -10,10 +10,10 @@ namespace TheDugout.Data.Configurations
         {
             builder.HasKey(e => e.Id);
 
-            builder.HasOne(e => e.User)
-                   .WithMany(u => u.GameSaves)
-                   .HasForeignKey(e => e.UserId)
-                   .OnDelete(DeleteBehavior.Cascade);
+            builder.HasOne(gs => gs.User)
+                  .WithMany(u => u.GameSaves)
+                  .HasForeignKey(gs => gs.UserId)
+                  .OnDelete(DeleteBehavior.Restrict); // ❌ без каскада
 
             builder.HasOne(e => e.UserTeam)
                    .WithMany()

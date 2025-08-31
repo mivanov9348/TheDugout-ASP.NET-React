@@ -18,101 +18,65 @@ namespace TheDugout.Controllers
             _context = context;
         }
 
-        [Authorize]
+        // GET: api/players?gameSaveId=1
         [HttpGet]
-        public async Task<IActionResult> GetPlayers(
-    [FromQuery] int gameSaveId,
-    int? teamId,
-    int? countryId,
-    int? minAge,
-    int? maxAge,
-    int? positionId,
-    string? sortBy = "Name",
-    string? sortOrder = "asc")
+        public async Task<IActionResult> GetPlayers(int gameSaveId)
         {
-            var userId = GetUserIdFromClaims();
-            if (userId == null) return Unauthorized();
-
-            // ✅ проверка за сейфа да е на този потребител
-            var gameSave = await _context.GameSaves
-                .FirstOrDefaultAsync(gs => gs.Id == gameSaveId && gs.UserId == userId);
-
-            if (gameSave == null) return Forbid(); // сейфът не е негов
-
-            var players = _context.Players
-                .Where(p => p.GameSaveId == gameSaveId)
+            var players = await _context.Players
                 .Include(p => p.Team)
                 .Include(p => p.Country)
                 .Include(p => p.Position)
-                .Include(p => p.Attributes).ThenInclude(pa => pa.Attribute)
-                .AsQueryable();
-
-            if (teamId.HasValue)
-                players = players.Where(p => p.TeamId == teamId.Value);
-
-            if (countryId.HasValue)
-                players = players.Where(p => p.CountryId == countryId.Value);
-
-            if (positionId.HasValue)
-                players = players.Where(p => p.PositionId == positionId.Value);
-
-            if (minAge.HasValue)
-                players = players.Where(p => p.Age >= minAge.Value);
-
-            if (maxAge.HasValue)
-                players = players.Where(p => p.Age <= maxAge.Value);
-
-            // ✅ сортиране
-            players = (sortBy?.ToLower(), sortOrder?.ToLower()) switch
-            {
-                ("age", "desc") => players.OrderByDescending(p => p.Age),
-                ("age", _) => players.OrderBy(p => p.Age),
-
-                ("team", "desc") => players.OrderByDescending(p => p.Team.Name),
-                ("team", _) => players.OrderBy(p => p.Team.Name),
-
-                ("country", "desc") => players.OrderByDescending(p => p.Country!.Name),
-                ("country", _) => players.OrderBy(p => p.Country!.Name),
-
-                ("position", "desc") => players.OrderByDescending(p => p.Position.Name),
-                ("position", _) => players.OrderBy(p => p.Position.Name),
-
-                ("name", "desc") => players.OrderByDescending(p => p.LastName).ThenBy(p => p.FirstName),
-                _ => players.OrderBy(p => p.LastName).ThenBy(p => p.FirstName)
-            };
-
-            var result = await players.Select(p => new
-            {
-                p.Id,
-                Name = p.FirstName + " " + p.LastName,
-                Team = p.Team != null ? p.Team.Name : "-",
-                Country = p.Country != null ? p.Country.Name : "-",
-                p.Age,
-                Position = p.Position != null ? p.Position.Name : "-",
-                p.KitNumber,
-                p.HeightCm,
-                p.WeightKg,
-                Attributes = p.Attributes.Select(a => new
+                .Include(p => p.Attributes)
+                    .ThenInclude(pa => pa.Attribute)
+                .Where(p => p.GameSaveId == gameSaveId)
+                .Select(p => new
                 {
-                    a.Attribute.Name,
-                    a.Value
+                    p.Id,
+                    Name = p.FirstName + " " + p.LastName,
+                    Team = p.Team != null ? p.Team.Name : string.Empty,
+                    Country = p.Country != null ? p.Country.Name : string.Empty,
+                    Position = p.Position != null ? p.Position.Name : string.Empty,
+                    p.Age,
+                    Attributes = p.Attributes.Select(pa => new
+                    {
+                        pa.AttributeId,
+                        pa.Attribute.Name,
+                        pa.Value
+                    }).ToList()
                 })
-            }).ToListAsync();
+                .ToListAsync();
 
-            return Ok(result);
+            return Ok(players);
         }
 
+        // GET: api/players/attributes?gameSaveId=1
+        [HttpGet("attributes")]
+        public async Task<IActionResult> GetAttributes(int gameSaveId)
+        {
+            var attributes = await _context.PlayerAttributes
+                .Where(pa => pa.Player.GameSaveId == gameSaveId)
+                .Select(pa => pa.Attribute)
+                .Distinct()
+                .ToListAsync();
+
+            return Ok(attributes.Select(a => new
+            {
+                a.Id,
+                a.Name,
+                a.Code
+            }));
+        }
 
         private int? GetUserIdFromClaims()
         {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
-                              ?? User.FindFirst("sub")?.Value
-                              ?? User.FindFirst("id")?.Value;
+            var userIdClaim =
+                User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                ?? User.FindFirst("sub")?.Value
+                ?? User.FindFirst("id")?.Value;
 
-            if (int.TryParse(userIdClaim, out var parsed)) return parsed;
-            return null;
+            return int.TryParse(userIdClaim, out var parsed)
+                ? parsed
+                : null;
         }
-
-
     }
 }

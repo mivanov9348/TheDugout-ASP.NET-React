@@ -12,7 +12,7 @@ using TheDugout.Data;
 namespace TheDugout.Migrations
 {
     [DbContext(typeof(DugoutDbContext))]
-    [Migration("20250831065803_initial")]
+    [Migration("20250831172658_initial")]
     partial class initial
     {
         /// <inheritdoc />
@@ -249,9 +249,6 @@ namespace TheDugout.Migrations
                     b.Property<int>("GameSaveId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("GameSaveId1")
-                        .HasColumnType("int");
-
                     b.Property<double>("HeightCm")
                         .HasColumnType("float");
 
@@ -280,8 +277,6 @@ namespace TheDugout.Migrations
                     b.HasIndex("CountryId");
 
                     b.HasIndex("GameSaveId");
-
-                    b.HasIndex("GameSaveId1");
 
                     b.HasIndex("PositionId");
 
@@ -607,6 +602,9 @@ namespace TheDugout.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int?>("CurrentSaveId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -623,6 +621,8 @@ namespace TheDugout.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CurrentSaveId");
+
                     b.ToTable("Users");
                 });
 
@@ -631,7 +631,7 @@ namespace TheDugout.Migrations
                     b.HasOne("TheDugout.Models.User", "User")
                         .WithMany("GameSaves")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("TheDugout.Models.Team", "UserTeam")
@@ -700,14 +700,10 @@ namespace TheDugout.Migrations
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("TheDugout.Models.GameSave", "GameSave")
-                        .WithMany()
+                        .WithMany("Players")
                         .HasForeignKey("GameSaveId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.HasOne("TheDugout.Models.GameSave", null)
-                        .WithMany("Players")
-                        .HasForeignKey("GameSaveId1");
 
                     b.HasOne("TheDugout.Models.Position", "Position")
                         .WithMany("Players")
@@ -871,6 +867,16 @@ namespace TheDugout.Migrations
                     b.Navigation("Country");
 
                     b.Navigation("League");
+                });
+
+            modelBuilder.Entity("TheDugout.Models.User", b =>
+                {
+                    b.HasOne("TheDugout.Models.GameSave", "CurrentSave")
+                        .WithMany()
+                        .HasForeignKey("CurrentSaveId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("CurrentSave");
                 });
 
             modelBuilder.Entity("TheDugout.Models.Attribute", b =>

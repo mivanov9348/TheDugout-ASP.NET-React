@@ -1,194 +1,153 @@
-// src/pages/Players.jsx
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
-function Players({ gameSaveId }) {
+export default function Players({ gameSaveId }) {
   const [players, setPlayers] = useState([]);
-  const [filters, setFilters] = useState({
-    minAge: "",
-    maxAge: "",
-    search: "",
-    sortBy: "name",
-    sortOrder: "asc",
-  });
+  const [attributes, setAttributes] = useState([]);
+  const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState("name");
+  const [sortOrder, setSortOrder] = useState("asc");
+  const [currentPage, setCurrentPage] = useState(1);
+  const playersPerPage = 15;
 
-  const [page, setPage] = useState(1);
-  const pageSize = 20;
-
-  // 1. Зареждаме всички играчи веднъж
   useEffect(() => {
     if (gameSaveId) {
       fetch(`/api/players?gameSaveId=${gameSaveId}`)
-        .then((res) => res.json())
-        .then((data) => setPlayers(data));
+        .then(res => res.json())
+        .then(data => setPlayers(data));
+
+      fetch(`/api/players/attributes?gameSaveId=${gameSaveId}`)
+        .then(res => res.json())
+        .then(data => setAttributes(data));
     }
   }, [gameSaveId]);
 
-  // 2. Прилагаме филтри и сортиране локално
   const filteredPlayers = useMemo(() => {
-    let result = [...players];
+    let filtered = players.filter(p =>
+      p.name.toLowerCase().includes(search.toLowerCase())
+    );
 
-    // Филтър по възраст
-    if (filters.minAge) result = result.filter((p) => p.age >= Number(filters.minAge));
-    if (filters.maxAge) result = result.filter((p) => p.age <= Number(filters.maxAge));
-
-    // Филтър по търсене (име/отбор/държава/позиция)
-    if (filters.search) {
-      const s = filters.search.toLowerCase();
-      result = result.filter(
-        (p) =>
-          p.name.toLowerCase().includes(s) ||
-          p.team.toLowerCase().includes(s) ||
-          p.country.toLowerCase().includes(s) ||
-          p.position.toLowerCase().includes(s)
-      );
-    }
-
-    // Сортиране
-    result.sort((a, b) => {
+    filtered.sort((a, b) => {
       let valA, valB;
-      switch (filters.sortBy) {
-        case "team":
-          valA = a.team;
-          valB = b.team;
-          break;
-        case "country":
-          valA = a.country;
-          valB = b.country;
-          break;
-        case "age":
-          valA = a.age;
-          valB = b.age;
-          break;
-        case "position":
-          valA = a.position;
-          valB = b.position;
-          break;
-        default:
-          valA = a.name;
-          valB = b.name;
+
+      if (sortBy.startsWith("attribute:")) {
+        const attrId = parseInt(sortBy.split(":")[1]);
+        valA = a.attributes.find(x => x.attributeId === attrId)?.value ?? 0;
+        valB = b.attributes.find(x => x.attributeId === attrId)?.value ?? 0;
+      } else {
+        switch (sortBy) {
+          case "name": valA = a.name; valB = b.name; break;
+          case "team": valA = a.team; valB = b.team; break;
+          case "country": valA = a.country; valB = b.country; break;
+          case "position": valA = a.position; valB = b.position; break;
+          case "age": valA = a.age; valB = b.age; break;
+          default: valA = ""; valB = ""; break;
+        }
       }
-      if (typeof valA === "string") {
-        valA = valA.toLowerCase();
-        valB = valB.toLowerCase();
-      }
-      if (valA < valB) return filters.sortOrder === "asc" ? -1 : 1;
-      if (valA > valB) return filters.sortOrder === "asc" ? 1 : -1;
+
+      if (valA < valB) return sortOrder === "asc" ? -1 : 1;
+      if (valA > valB) return sortOrder === "asc" ? 1 : -1;
       return 0;
     });
 
-    return result;
-  }, [players, filters]);
+    return filtered;
+  }, [players, search, sortBy, sortOrder]);
 
-  // 3. Педжиране
-  const totalPages = Math.ceil(filteredPlayers.length / pageSize);
-  const pagedPlayers = filteredPlayers.slice((page - 1) * pageSize, page * pageSize);
-
-  const handleChange = (e) => {
-    setFilters({ ...filters, [e.target.name]: e.target.value });
-    setPage(1); // връща се на първа страница при нов филтър
-  };
+  const pagedPlayers = filteredPlayers.slice(
+    (currentPage - 1) * playersPerPage,
+    currentPage * playersPerPage
+  );
 
   return (
-    <div className="p-4 bg-white rounded-xl shadow">
-      <h1 className="text-xl font-bold mb-4">Играчите в лигата</h1>
+    <div className="mt-6 p-4 border rounded bg-white shadow">
+      <h2 className="text-xl font-bold mb-4">Играчите</h2>
 
-      {/* Филтри */}
-      <div className="grid grid-cols-6 gap-2 mb-4">
-        <input
-          type="number"
-          name="minAge"
-          placeholder="Мин. възраст"
-          value={filters.minAge}
-          onChange={handleChange}
-          className="border p-2 rounded"
-        />
-        <input
-          type="number"
-          name="maxAge"
-          placeholder="Макс. възраст"
-          value={filters.maxAge}
-          onChange={handleChange}
-          className="border p-2 rounded"
-        />
+      <div className="flex gap-2 mb-4">
         <input
           type="text"
-          name="search"
-          placeholder="Търсене..."
-          value={filters.search}
-          onChange={handleChange}
-          className="border p-2 rounded col-span-2"
+          className="border p-2 rounded w-full"
+          placeholder="Search by name..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
         />
         <select
-          name="sortBy"
-          value={filters.sortBy}
-          onChange={handleChange}
           className="border p-2 rounded"
+          value={sortBy}
+          onChange={e => setSortBy(e.target.value)}
         >
-          <option value="name">Име</option>
-          <option value="team">Отбор</option>
-          <option value="country">Държава</option>
-          <option value="age">Възраст</option>
-          <option value="position">Позиция</option>
+          <option value="name">Name</option>
+          <option value="team">Team</option>
+          <option value="country">Country</option>
+          <option value="position">Position</option>
+          <option value="age">Age</option>
+          {attributes.map(attr => (
+            <option key={attr.id} value={`attribute:${attr.id}`}>
+              {attr.name}
+            </option>
+          ))}
         </select>
         <select
-          name="sortOrder"
-          value={filters.sortOrder}
-          onChange={handleChange}
           className="border p-2 rounded"
+          value={sortOrder}
+          onChange={e => setSortOrder(e.target.value)}
         >
-          <option value="asc">Възходящо</option>
-          <option value="desc">Низходящо</option>
+          <option value="asc">⬆</option>
+          <option value="desc">⬇</option>
         </select>
       </div>
 
-      {/* Таблица */}
-      <table className="w-full border-collapse">
-        <thead>
-          <tr className="bg-slate-200">
-            <th className="p-2 border">Име</th>
-            <th className="p-2 border">Отбор</th>
-            <th className="p-2 border">Държава</th>
-            <th className="p-2 border">Позиция</th>
-            <th className="p-2 border">Възраст</th>
-            <th className="p-2 border">Атрибути</th>
-          </tr>
-        </thead>
-        <tbody>
-          {pagedPlayers.map((p) => (
-            <tr key={p.id} className="hover:bg-slate-100">
-              <td className="p-2 border">{p.name}</td>
-              <td className="p-2 border">{p.team}</td>
-              <td className="p-2 border">{p.country}</td>
-              <td className="p-2 border">{p.position}</td>
-              <td className="p-2 border">{p.age}</td>
-              <td className="p-2 border">
-                {p.attributes.map((a) => (
-                  <span key={a.name} className="mr-2">
-                    {a.name}: {a.value}
-                  </span>
-                ))}
-              </td>
+      <div className="overflow-x-auto">
+        <table className="w-full border-collapse border">
+          <thead>
+            <tr className="bg-gray-100">
+              <th className="p-2 border">Name</th>
+              <th className="p-2 border">Team</th>
+              <th className="p-2 border">Country</th>
+              <th className="p-2 border">Position</th>
+              <th className="p-2 border">Age</th>
+              {attributes.map(attr => (
+                <th key={attr.id} className="p-2 border">{attr.name}</th>
+              ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {pagedPlayers.map(p => (
+              <tr key={p.id} className="text-center">
+                <td className="p-2 border">{p.name}</td>
+                <td className="p-2 border">{p.team}</td>
+                <td className="p-2 border">{p.country}</td>
+                <td className="p-2 border">{p.position}</td>
+                <td className="p-2 border">{p.age}</td>
+                {attributes.map(attr => {
+                  const found = p.attributes.find(a => a.attributeId === attr.id);
+                  return (
+                    <td key={attr.id} className="p-2 border">
+                      {found ? found.value : "-"}
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
-      {/* Педжинация */}
-      <div className="flex justify-center mt-4 gap-2">
+      {/* Pagination */}
+      <div className="flex justify-between items-center mt-4">
         <button
-          onClick={() => setPage((p) => Math.max(1, p - 1))}
-          disabled={page === 1}
-          className="px-3 py-1 border rounded disabled:opacity-50"
+          className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
+          disabled={currentPage === 1}
+          onClick={() => setCurrentPage(p => p - 1)}
         >
           Назад
         </button>
-        <span className="px-3 py-1">
-          Стр. {page} от {totalPages}
+        <span>
+          Страница {currentPage} от{" "}
+          {Math.ceil(filteredPlayers.length / playersPerPage)}
         </span>
         <button
-          onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-          disabled={page === totalPages}
-          className="px-3 py-1 border rounded disabled:opacity-50"
+          className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
+          disabled={currentPage >= Math.ceil(filteredPlayers.length / playersPerPage)}
+          onClick={() => setCurrentPage(p => p + 1)}
         >
           Напред
         </button>
@@ -196,5 +155,3 @@ function Players({ gameSaveId }) {
     </div>
   );
 }
-
-export default Players;

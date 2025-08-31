@@ -17,6 +17,11 @@ namespace TheDugout.Data.Configurations
             builder.Property(e => e.Email)
                    .IsRequired()
                    .HasMaxLength(100);
+
+            builder.HasOne(u => u.CurrentSave)
+                   .WithMany()
+                   .HasForeignKey(u => u.CurrentSaveId)
+                   .OnDelete(DeleteBehavior.Restrict); // ❌ вместо SetNull
         }
     }
 }

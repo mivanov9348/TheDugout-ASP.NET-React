@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using TheDugout.Data;
 using TheDugout.Data.DtoNewGame;
 using TheDugout.Services.Game;
 using TheDugout.Services.Template;
@@ -14,15 +16,18 @@ namespace TheDugout.Controllers
         private readonly ITemplateService _templateService;
         private readonly IGameSaveService _gameSaveService;
         private readonly IUserContextService _userContext;
+        private readonly DugoutDbContext _context;
 
         public GameController(
             ITemplateService templateService,
             IGameSaveService gameSaveService,
-            IUserContextService userContext)
+            IUserContextService userContext,
+            DugoutDbContext _context)
         {
             _templateService = templateService;
             _gameSaveService = gameSaveService;
             _userContext = userContext;
+            this._context = _context;
         }
 
         [HttpGet("teamtemplates")]
@@ -87,6 +92,43 @@ namespace TheDugout.Controllers
             var gameSave = await _gameSaveService.GetGameSaveAsync(userId.Value, id);
             return gameSave == null ? NotFound(new { message = "Save not found" })
                                     : Ok(gameSave.ToDto());
+        }
+
+        [Authorize]
+        [HttpGet("current")]
+        public async Task<IActionResult> GetCurrentSave()
+        {
+            var userId = _userContext.GetUserId(User);
+            if (userId == null) return Unauthorized();
+
+            var user = await _context.Users
+                .Include(u => u.CurrentSave)
+                .ThenInclude(gs => gs.Seasons)
+                .FirstOrDefaultAsync(u => u.Id == userId.Value);
+
+            if (user?.CurrentSave == null)
+                return Ok(null);
+
+            return Ok(user.CurrentSave.ToDto());
+        }
+
+        [Authorize]
+        [HttpPost("current/{id}")]
+        public async Task<IActionResult> SetCurrentSave(int id)
+        {
+            var userId = _userContext.GetUserId(User);
+            if (userId == null) return Unauthorized();
+
+            var save = await _context.GameSaves.FirstOrDefaultAsync(gs => gs.Id == id && gs.UserId == userId.Value);
+            if (save == null)
+                return NotFound(new { message = "Save not found" });
+
+            var user = await _context.Users.FirstAsync(u => u.Id == userId.Value);
+            user.CurrentSaveId = save.Id;
+
+            await _context.SaveChangesAsync();
+
+            return Ok(save.ToDto());
         }
     }
 }

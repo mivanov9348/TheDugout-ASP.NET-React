@@ -54,21 +54,6 @@ namespace TheDugout.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Users",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Username = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    Email = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Users", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "LeagueTemplates",
                 columns: table => new
                 {
@@ -162,12 +147,6 @@ namespace TheDugout.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_GameSaves", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_GameSaves_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -250,6 +229,28 @@ namespace TheDugout.Migrations
                         principalTable: "GameSaves",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Users",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Username = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CurrentSaveId = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Users", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Users_GameSaves_CurrentSaveId",
+                        column: x => x.CurrentSaveId,
+                        principalTable: "GameSaves",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -340,8 +341,7 @@ namespace TheDugout.Migrations
                     HeightCm = table.Column<double>(type: "float", nullable: false),
                     WeightKg = table.Column<double>(type: "float", nullable: false),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
-                    GameSaveId = table.Column<int>(type: "int", nullable: false),
-                    GameSaveId1 = table.Column<int>(type: "int", nullable: true)
+                    GameSaveId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -358,11 +358,6 @@ namespace TheDugout.Migrations
                         principalTable: "GameSaves",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Players_GameSaves_GameSaveId1",
-                        column: x => x.GameSaveId1,
-                        principalTable: "GameSaves",
-                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Players_Positions_PositionId",
                         column: x => x.PositionId,
@@ -539,11 +534,6 @@ namespace TheDugout.Migrations
                 column: "GameSaveId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Players_GameSaveId1",
-                table: "Players",
-                column: "GameSaveId1");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Players_PositionId",
                 table: "Players",
                 column: "PositionId");
@@ -620,11 +610,24 @@ namespace TheDugout.Migrations
                 table: "TeamTemplates",
                 column: "LeagueId");
 
+            migrationBuilder.CreateIndex(
+                name: "IX_Users_CurrentSaveId",
+                table: "Users",
+                column: "CurrentSaveId");
+
             migrationBuilder.AddForeignKey(
                 name: "FK_GameSaves_Teams_UserTeamId",
                 table: "GameSaves",
                 column: "UserTeamId",
                 principalTable: "Teams",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Restrict);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_GameSaves_Users_UserId",
+                table: "GameSaves",
+                column: "UserId",
+                principalTable: "Users",
                 principalColumn: "Id",
                 onDelete: ReferentialAction.Restrict);
         }
@@ -634,6 +637,10 @@ namespace TheDugout.Migrations
         {
             migrationBuilder.DropForeignKey(
                 name: "FK_GameSaves_Teams_UserTeamId",
+                table: "GameSaves");
+
+            migrationBuilder.DropForeignKey(
+                name: "FK_GameSaves_Users_UserId",
                 table: "GameSaves");
 
             migrationBuilder.DropTable(
@@ -676,16 +683,16 @@ namespace TheDugout.Migrations
                 name: "TeamTemplates");
 
             migrationBuilder.DropTable(
-                name: "GameSaves");
+                name: "LeagueTemplates");
 
             migrationBuilder.DropTable(
-                name: "LeagueTemplates");
+                name: "Countries");
 
             migrationBuilder.DropTable(
                 name: "Users");
 
             migrationBuilder.DropTable(
-                name: "Countries");
+                name: "GameSaves");
         }
     }
 }

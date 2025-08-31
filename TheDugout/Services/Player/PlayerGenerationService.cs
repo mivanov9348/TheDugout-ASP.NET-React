@@ -148,15 +148,15 @@ namespace TheDugout.Services.Players
 
             int baseValue;
             if (roll < 0.10)
-                baseValue = _rng.Next(1, 6);       // 10% шанс за слаби
+                baseValue = _rng.Next(1, 6);       
             else if (roll < 0.50)
-                baseValue = _rng.Next(6, 12);      // 40% шанс за средни
+                baseValue = _rng.Next(6, 12);     
             else if (roll < 0.85)
-                baseValue = _rng.Next(12, 17);     // 35% шанс за добри
+                baseValue = _rng.Next(12, 17);     
             else
-                baseValue = _rng.Next(17, 21);     // 15% шанс за елитни
+                baseValue = _rng.Next(17, 21);     
 
-            double weighted = baseValue * (0.5 + weight); // weight = 0..1 → леко накланяне
+            double weighted = baseValue * (0.5 + weight); 
             double ageFactor = AgeFactor(age);
 
             int final = (int)Math.Round(weighted * ageFactor);
@@ -185,12 +185,10 @@ namespace TheDugout.Services.Players
         {
             return countryCode switch
             {
-                "ALG" => "ar",
                 "FRA" => "fr",
                 "ESP" => "es",
                 "GER" => "de",
                 "ITA" => "it",
-                "JPN" => "ja",
                 "BUL" => "ru",
                 "NED" => "nl",
                 "POL" => "pl",
