@@ -33,13 +33,18 @@ namespace TheDugout.Controllers
             var userId = GetUserIdFromClaims();
             if (userId == null) return Unauthorized();
 
+            // ✅ проверка за сейфа да е на този потребител
+            var gameSave = await _context.GameSaves
+                .FirstOrDefaultAsync(gs => gs.Id == gameSaveId && gs.UserId == userId);
+
+            if (gameSave == null) return Forbid(); // сейфът не е негов
+
             var players = _context.Players
-                .Where(p => p.GameSaveId == gameSaveId) 
+                .Where(p => p.GameSaveId == gameSaveId)
                 .Include(p => p.Team)
                 .Include(p => p.Country)
                 .Include(p => p.Position)
-                .Include(p => p.Attributes)
-                    .ThenInclude(pa => pa.Attribute)
+                .Include(p => p.Attributes).ThenInclude(pa => pa.Attribute)
                 .AsQueryable();
 
             if (teamId.HasValue)
@@ -57,7 +62,7 @@ namespace TheDugout.Controllers
             if (maxAge.HasValue)
                 players = players.Where(p => p.Age <= maxAge.Value);
 
-            // Сортиране
+            // ✅ сортиране
             players = (sortBy?.ToLower(), sortOrder?.ToLower()) switch
             {
                 ("age", "desc") => players.OrderByDescending(p => p.Age),
@@ -96,6 +101,7 @@ namespace TheDugout.Controllers
 
             return Ok(result);
         }
+
 
         private int? GetUserIdFromClaims()
         {

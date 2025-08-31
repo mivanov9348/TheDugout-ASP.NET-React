@@ -40,11 +40,6 @@ namespace TheDugout.Services.Game
         public async Task<bool> DeleteGameSaveAsync(int userId, int saveId)
         {
             var gameSave = await _context.GameSaves
-                .Include(gs => gs.Seasons)
-                .Include(gs => gs.Players)
-                .Include(gs => gs.Teams)                
-                .Include(gs => gs.Leagues)
-                .Include(gs => gs.Messages)
                 .FirstOrDefaultAsync(gs => gs.Id == saveId && gs.UserId == userId);
 
             if (gameSave == null) return false;
