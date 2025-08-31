@@ -24,6 +24,7 @@ function MainContent({ activePage }) {
       {activePage === "Transfers" && <Transfers />}
       {activePage === "Club" && <Club />}
       {activePage === "Finances" && <Finances />}
+      {activePage === "Players" && <div><h1 className="text-2xl font-bold mb-4">Players</h1><p>Manage your players here.</p></div>}
     </main>
   );
 }

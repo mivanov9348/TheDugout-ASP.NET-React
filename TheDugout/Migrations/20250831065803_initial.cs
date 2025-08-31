@@ -330,8 +330,8 @@ namespace TheDugout.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    FirstName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    LastName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    FirstName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    LastName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     BirthDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     TeamId = table.Column<int>(type: "int", nullable: false),
                     CountryId = table.Column<int>(type: "int", nullable: true),
@@ -340,7 +340,8 @@ namespace TheDugout.Migrations
                     HeightCm = table.Column<double>(type: "float", nullable: false),
                     WeightKg = table.Column<double>(type: "float", nullable: false),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
-                    GameSaveId = table.Column<int>(type: "int", nullable: false)
+                    GameSaveId = table.Column<int>(type: "int", nullable: false),
+                    GameSaveId1 = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -356,7 +357,12 @@ namespace TheDugout.Migrations
                         column: x => x.GameSaveId,
                         principalTable: "GameSaves",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Players_GameSaves_GameSaveId1",
+                        column: x => x.GameSaveId1,
+                        principalTable: "GameSaves",
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Players_Positions_PositionId",
                         column: x => x.PositionId,
@@ -368,7 +374,7 @@ namespace TheDugout.Migrations
                         column: x => x.TeamId,
                         principalTable: "Teams",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -531,6 +537,11 @@ namespace TheDugout.Migrations
                 name: "IX_Players_GameSaveId",
                 table: "Players",
                 column: "GameSaveId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Players_GameSaveId1",
+                table: "Players",
+                column: "GameSaveId1");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Players_PositionId",

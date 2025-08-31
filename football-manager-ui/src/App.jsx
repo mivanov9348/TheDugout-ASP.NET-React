@@ -20,6 +20,7 @@ import League from "./pages/League";
 import Transfers from "./pages/Transfers";
 import Club from "./pages/Club";
 import Finances from "./pages/Finances";
+import Players from "./pages/Players";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -212,6 +213,7 @@ function App() {
               <Route path="/transfers" element={<Transfers />} />
               <Route path="/club" element={<Club />} />
               <Route path="/finances" element={<Finances />} />
+<Route path="/players" element={<Players gameSaveId={currentGameSave?.id} />} />
             </Routes>
           </main>
         </div>

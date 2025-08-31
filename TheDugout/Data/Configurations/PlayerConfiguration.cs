@@ -4,29 +4,29 @@ using TheDugout.Models;
 
 namespace TheDugout.Data.Configurations
 {
-    public class PlayerAttributeConfiguration : IEntityTypeConfiguration<PlayerAttribute>
+    public class PlayerConfiguration : IEntityTypeConfiguration<Player>
     {
-        public void Configure(EntityTypeBuilder<PlayerAttribute> builder)
+        public void Configure(EntityTypeBuilder<Player> builder)
         {
-            builder.ToTable("PlayerAttributes");
+            builder.HasKey(p => p.Id);
 
-            builder.HasKey(pa => pa.Id);
+            builder.Property(p => p.FirstName)
+                   .IsRequired()
+                   .HasMaxLength(50);
 
-            builder.Property(pa => pa.Value)
-                   .IsRequired();
+            builder.Property(p => p.LastName)
+                   .IsRequired()
+                   .HasMaxLength(50);
 
-            builder.HasOne(pa => pa.Player)
-                   .WithMany(p => p.Attributes)
-                   .HasForeignKey(pa => pa.PlayerId)
+            builder.HasOne(p => p.Team)
+                   .WithMany(t => t.Players)
+                   .HasForeignKey(p => p.TeamId)
                    .OnDelete(DeleteBehavior.Cascade);
 
-            builder.HasOne(pa => pa.Attribute)
-                   .WithMany(a => a.PlayerAttributes)
-                   .HasForeignKey(pa => pa.AttributeId)
-                   .OnDelete(DeleteBehavior.Cascade);
-
-            builder.HasIndex(pa => new { pa.PlayerId, pa.AttributeId })
-                   .IsUnique();
+            builder.HasOne(p => p.GameSave)
+                   .WithMany() 
+                   .HasForeignKey(p => p.GameSaveId)
+                   .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

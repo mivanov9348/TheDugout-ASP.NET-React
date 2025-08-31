@@ -94,7 +94,7 @@ namespace TheDugout.Services.Players
             {
                 Console.WriteLine($"[ERROR in GenerateTeamPlayers] {ex.GetType().Name}: {ex.Message}");
                 Console.WriteLine(ex.StackTrace);
-                throw; // хвърляме пак, за да не скрием грешката
+                throw; 
             }
         }
 
@@ -125,17 +125,12 @@ namespace TheDugout.Services.Players
                     if (w.Weight < 0)
                         throw new InvalidOperationException("Weight in PositionWeight cannot be negative.");
 
-                    double expected = 20 * w.Weight;
-                    double ageFactor = AgeFactor(age);
-                    double noise = _rng.NextDouble() * 4 - 2;
-                    double rawValue = expected * ageFactor + noise;
-
-                    int finalValue = Math.Clamp((int)Math.Round(rawValue), 1, 20);
+                    int value = GenerateRealisticAttribute(w.Weight, age);
 
                     player.Attributes.Add(new PlayerAttribute
                     {
                         AttributeId = w.AttributeId,
-                        Value = finalValue
+                        Value = value
                     });
                 }
             }
@@ -146,6 +141,29 @@ namespace TheDugout.Services.Players
                 throw;
             }
         }
+
+        private int GenerateRealisticAttribute(double weight, int age)
+        {
+            double roll = _rng.NextDouble();
+
+            int baseValue;
+            if (roll < 0.10)
+                baseValue = _rng.Next(1, 6);       // 10% шанс за слаби
+            else if (roll < 0.50)
+                baseValue = _rng.Next(6, 12);      // 40% шанс за средни
+            else if (roll < 0.85)
+                baseValue = _rng.Next(12, 17);     // 35% шанс за добри
+            else
+                baseValue = _rng.Next(17, 21);     // 15% шанс за елитни
+
+            double weighted = baseValue * (0.5 + weight); // weight = 0..1 → леко накланяне
+            double ageFactor = AgeFactor(age);
+
+            int final = (int)Math.Round(weighted * ageFactor);
+
+            return Math.Clamp(final, 1, 20);
+        }
+
 
         private double AgeFactor(int age)
         {
