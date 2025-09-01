@@ -24,6 +24,7 @@ namespace TheDugout.Data.Configurations
                    .WithMany()
                    .HasForeignKey(e => e.CountryId)
                    .OnDelete(DeleteBehavior.Restrict);
+
         }
     }
 }

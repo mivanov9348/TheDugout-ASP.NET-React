@@ -42,6 +42,17 @@ namespace TheDugout.Data.Configurations
                    .WithOne(p => p.Team)
                    .HasForeignKey(p => p.TeamId)
                    .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasMany(t => t.HomeFixtures)
+       .WithOne(f => f.HomeTeam)
+       .HasForeignKey(f => f.HomeTeamId)
+       .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasMany(t => t.AwayFixtures)
+                   .WithOne(f => f.AwayTeam)
+                   .HasForeignKey(f => f.AwayTeamId)
+                   .OnDelete(DeleteBehavior.Restrict);
+
         }
     }
 }

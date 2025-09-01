@@ -28,6 +28,14 @@ namespace TheDugout.Data.Configurations
                    .WithOne(ps => ps.Season)
                    .HasForeignKey(ps => ps.SeasonId)
                    .OnDelete(DeleteBehavior.Restrict);
+
+
+            builder.HasMany(s => s.Fixtures)
+    .WithOne(f => f.Season)
+    .HasForeignKey(f => f.SeasonId)
+    .OnDelete(DeleteBehavior.Restrict);
+
+
         }
     }
 }

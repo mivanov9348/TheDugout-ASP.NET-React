@@ -9,6 +9,7 @@ using TheDugout.Services.Template;
 using TheDugout.Services.Game;
 using TheDugout.Services.Players;
 using TheDugout.Services.Team;
+using TheDugout.Services.Fixture;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,6 +27,7 @@ builder.Services.AddScoped<ITemplateService, TemplateService>();
 builder.Services.AddScoped<IGameSaveService, GameSaveService>();
 builder.Services.AddScoped<IPlayerGenerationService,PlayerGenerationService>();
 builder.Services.AddScoped<ITeamPlanService, TeamPlanService>();
+builder.Services.AddScoped<IFixturesService, FixturesService>();
 
 builder.Services.AddCors(options =>
 {

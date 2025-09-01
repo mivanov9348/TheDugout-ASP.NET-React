@@ -13,7 +13,7 @@ namespace TheDugout.Data.Configurations
             builder.HasOne(gs => gs.User)
                   .WithMany(u => u.GameSaves)
                   .HasForeignKey(gs => gs.UserId)
-                  .OnDelete(DeleteBehavior.Restrict); // ❌ без каскада
+                  .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(e => e.UserTeam)
                    .WithMany()
@@ -29,6 +29,12 @@ namespace TheDugout.Data.Configurations
                    .WithOne(s => s.GameSave)
                    .HasForeignKey(s => s.GameSaveId)
                    .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasMany(gs => gs.Fixtures)
+       .WithOne(f => f.GameSave)
+       .HasForeignKey(f => f.GameSaveId)
+       .OnDelete(DeleteBehavior.Cascade);
+
         }
     }
 }

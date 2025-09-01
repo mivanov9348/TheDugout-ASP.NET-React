@@ -30,6 +30,9 @@
         public int GoalDifference { get; set; } = 0;
         public virtual ICollection<Player> Players { get; set; } = new List<Player>();
 
+        public ICollection<Fixture> HomeFixtures { get; set; } = new List<Fixture>();
+        public ICollection<Fixture> AwayFixtures { get; set; } = new List<Fixture>();
+
 
     }
 }

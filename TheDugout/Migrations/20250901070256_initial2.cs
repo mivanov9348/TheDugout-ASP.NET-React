@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace TheDugout.Migrations
 {
     /// <inheritdoc />
-    public partial class initial : Migration
+    public partial class initial2 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -131,6 +131,27 @@ namespace TheDugout.Migrations
                         principalTable: "LeagueTemplates",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Fixtures",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    GameSaveId = table.Column<int>(type: "int", nullable: false),
+                    LeagueId = table.Column<int>(type: "int", nullable: false),
+                    SeasonId = table.Column<int>(type: "int", nullable: false),
+                    HomeTeamId = table.Column<int>(type: "int", nullable: false),
+                    AwayTeamId = table.Column<int>(type: "int", nullable: false),
+                    HomeTeamGoals = table.Column<int>(type: "int", nullable: false),
+                    AwayTeamGoals = table.Column<int>(type: "int", nullable: false),
+                    Date = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Round = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Fixtures", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -473,6 +494,31 @@ namespace TheDugout.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_Fixtures_AwayTeamId",
+                table: "Fixtures",
+                column: "AwayTeamId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Fixtures_GameSaveId",
+                table: "Fixtures",
+                column: "GameSaveId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Fixtures_HomeTeamId",
+                table: "Fixtures",
+                column: "HomeTeamId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Fixtures_LeagueId",
+                table: "Fixtures",
+                column: "LeagueId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Fixtures_SeasonId",
+                table: "Fixtures",
+                column: "SeasonId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_GameSaves_UserId",
                 table: "GameSaves",
                 column: "UserId");
@@ -616,6 +662,46 @@ namespace TheDugout.Migrations
                 column: "CurrentSaveId");
 
             migrationBuilder.AddForeignKey(
+                name: "FK_Fixtures_GameSaves_GameSaveId",
+                table: "Fixtures",
+                column: "GameSaveId",
+                principalTable: "GameSaves",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Cascade);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Fixtures_Leagues_LeagueId",
+                table: "Fixtures",
+                column: "LeagueId",
+                principalTable: "Leagues",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Restrict);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Fixtures_Seasons_SeasonId",
+                table: "Fixtures",
+                column: "SeasonId",
+                principalTable: "Seasons",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Restrict);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Fixtures_Teams_AwayTeamId",
+                table: "Fixtures",
+                column: "AwayTeamId",
+                principalTable: "Teams",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Restrict);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Fixtures_Teams_HomeTeamId",
+                table: "Fixtures",
+                column: "HomeTeamId",
+                principalTable: "Teams",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Restrict);
+
+            migrationBuilder.AddForeignKey(
                 name: "FK_GameSaves_Teams_UserTeamId",
                 table: "GameSaves",
                 column: "UserTeamId",
@@ -636,12 +722,19 @@ namespace TheDugout.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropForeignKey(
-                name: "FK_GameSaves_Teams_UserTeamId",
-                table: "GameSaves");
+                name: "FK_Leagues_GameSaves_GameSaveId",
+                table: "Leagues");
 
             migrationBuilder.DropForeignKey(
-                name: "FK_GameSaves_Users_UserId",
-                table: "GameSaves");
+                name: "FK_Teams_GameSaves_GameSaveId",
+                table: "Teams");
+
+            migrationBuilder.DropForeignKey(
+                name: "FK_Users_GameSaves_CurrentSaveId",
+                table: "Users");
+
+            migrationBuilder.DropTable(
+                name: "Fixtures");
 
             migrationBuilder.DropTable(
                 name: "Messages");
@@ -674,7 +767,13 @@ namespace TheDugout.Migrations
                 name: "Positions");
 
             migrationBuilder.DropTable(
+                name: "GameSaves");
+
+            migrationBuilder.DropTable(
                 name: "Teams");
+
+            migrationBuilder.DropTable(
+                name: "Users");
 
             migrationBuilder.DropTable(
                 name: "Leagues");
@@ -687,12 +786,6 @@ namespace TheDugout.Migrations
 
             migrationBuilder.DropTable(
                 name: "Countries");
-
-            migrationBuilder.DropTable(
-                name: "Users");
-
-            migrationBuilder.DropTable(
-                name: "GameSaves");
         }
     }
 }

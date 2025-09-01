@@ -19,5 +19,7 @@
         public int PromotionSpots { get; set; }
 
         public ICollection<Team> Teams { get; set; } = new List<Team>();
+        public ICollection<Fixture> Fixtures { get; set; } = new List<Fixture>();
+
     }
 }

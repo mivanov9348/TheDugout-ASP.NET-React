@@ -18,6 +18,7 @@
         public ICollection<Message> Messages { get; set; } = new List<Message>();
         public ICollection<Player> Players { get; set; } = new List<Player>();
         public ICollection<Season> Seasons { get; set; } = new List<Season>();
+        public ICollection<Fixture> Fixtures { get; set; } = new List<Fixture>();
 
     }
 }

@@ -26,6 +26,7 @@ namespace TheDugout.Data
         public DbSet<Models.Attribute> Attributes { get; set; }
         public DbSet<Position> Positions { get; set; }
         public DbSet<PositionWeight> PositionWeights { get; set; }  
+        public DbSet<Fixture> Fixtures { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
