@@ -1,8 +1,11 @@
 // src/components/StartScreen.jsx
-import React from "react";
+import React, { useState } from "react";
 import Swal from "sweetalert2";
 
 function StartScreen({ username, onNewGame, onLoadGame, onLogout }) {
+  const [loading, setLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState("");
+
   const confirmNewGame = () => {
     Swal.fire({
       title: "Започни нова игра?",
@@ -13,7 +16,13 @@ function StartScreen({ username, onNewGame, onLoadGame, onLogout }) {
       cancelButtonText: "Не",
     }).then((result) => {
       if (result.isConfirmed) {
-        onNewGame();
+        setLoading(true);
+        setLoadingMessage("Стартиране на нова игра...");
+
+        // извикваме onNewGame и му подаваме setLoadingMessage
+        onNewGame((msg) => setLoadingMessage(msg)).finally(() => {
+          setLoading(false);
+        });
       }
     });
   };
@@ -29,22 +38,35 @@ function StartScreen({ username, onNewGame, onLoadGame, onLogout }) {
         <button
           onClick={confirmNewGame}
           className="px-8 py-3 bg-green-600 rounded-2xl hover:bg-green-500 transition"
+          disabled={loading}
         >
           New Game
         </button>
         <button
           onClick={onLoadGame}
           className="px-8 py-3 bg-blue-600 rounded-2xl hover:bg-blue-500 transition"
+          disabled={loading}
         >
           Load Game
         </button>
         <button
           onClick={onLogout}
           className="px-8 py-3 bg-red-600 rounded-2xl hover:bg-red-500 transition"
+          disabled={loading}
         >
           Logout
         </button>
       </div>
+
+      {/* 🔹 Loading анимация под бутоните */}
+      {loading && (
+        <div className="mt-8 flex flex-col items-center space-y-3">
+          <div className="w-64 bg-gray-700 rounded-full h-4">
+            <div className="bg-green-500 h-4 rounded-full animate-pulse" style={{ width: "70%" }} />
+          </div>
+          <p className="text-sm text-gray-300">{loadingMessage}</p>
+        </div>
+      )}
     </div>
   );
 }

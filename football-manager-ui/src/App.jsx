@@ -1,6 +1,5 @@
-// src/App.jsx
 import { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import Header from "./components/Header";
 import Sidebar from "./components/Sidebar";
 import AuthForm from "./components/AuthForm";
@@ -22,7 +21,7 @@ import Club from "./pages/Club";
 import Finances from "./pages/Finances";
 import Players from "./pages/Players";
 
-// 🔹 ProtectedRoute: пази достъп само ако има сейф
+// 🔹 ProtectedRoute
 function ProtectedRoute({ isAuthenticated, currentGameSave, children }) {
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
@@ -34,6 +33,7 @@ function ProtectedRoute({ isAuthenticated, currentGameSave, children }) {
 }
 
 function App() {
+  const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(true);
@@ -100,8 +100,9 @@ function App() {
     }
   };
 
-  const handleNewGame = async () => {
+  const handleNewGame = async (setStepMessage) => {
     try {
+      setStepMessage("Генериране на сейф...");
       const res = await fetch("/api/games/new", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -110,7 +111,7 @@ function App() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Грешка при създаване на сейф");
 
-      // 🔹 сетваме новия сейф като current
+      setStepMessage("Запазване като текущ...");
       const resSet = await fetch(`/api/games/current/${data.id}`, {
         method: "POST",
         credentials: "include",
@@ -147,87 +148,101 @@ function App() {
     fetch("/api/auth/logout", { method: "POST", credentials: "include" });
   };
 
+  const handleExitGame = async () => {
+    try {
+      const res = await fetch("/api/games/exit", {
+        method: "POST",
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Неуспешно излизане от играта");
+
+      setCurrentGameSave(null);   
+      navigate("/start");         
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   // ---- Render ----
   if (loading) {
     return <div className="flex items-center justify-center h-screen text-white">Loading...</div>;
   }
 
   return (
-    <Router>
-      <Routes>
-        {/* Login */}
-        <Route
-          path="/login"
-          element={
-            isAuthenticated ? (
-              <Navigate to={currentGameSave ? "/" : "/start"} replace />
-            ) : (
-              <AuthForm onAuthSuccess={() => setIsAuthenticated(true)} />
-            )
-          }
-        />
+    <Routes>
+      {/* Login */}
+      <Route
+        path="/login"
+        element={
+          isAuthenticated ? (
+            <Navigate to={currentGameSave ? "/" : "/start"} replace />
+          ) : (
+            <AuthForm onAuthSuccess={() => setIsAuthenticated(true)} />
+          )
+        }
+      />
 
-        {/* Start screen */}
-        <Route
-          path="/start"
-          element={
-            !isAuthenticated ? (
-              <Navigate to="/login" replace />
-            ) : currentGameSave ? (
-              <Navigate to="/" replace />
-            ) : (
-              <>
-                <StartScreen
-                  username={username}
-                  onNewGame={handleNewGame}
-                  onLoadGame={fetchUserSaves}
-                  onLogout={handleLogout}
+      {/* Start screen */}
+      <Route
+        path="/start"
+        element={
+          !isAuthenticated ? (
+            <Navigate to="/login" replace />
+          ) : currentGameSave ? (
+            <Navigate to="/" replace />
+          ) : (
+            <>
+              <StartScreen
+                username={username}
+                onNewGame={handleNewGame}
+                onLoadGame={fetchUserSaves}
+                onLogout={handleLogout}
+              />
+              {showLoadModal && (
+                <LoadGameModal
+                  saves={userSaves}
+                  onClose={() => setShowLoadModal(false)}
+                  onSelectSave={handleLoadGame}
+                  onDeleteSave={handleDeleteSave}
                 />
-                {showLoadModal && (
-                  <LoadGameModal
-                    saves={userSaves}
-                    onClose={() => setShowLoadModal(false)}
-                    onSelectSave={handleLoadGame}
-                    onDeleteSave={handleDeleteSave}
-                  />
-                )}
-              </>
-            )
-          }
-        />
+              )}
+            </>
+          )
+        }
+      />
 
-        {/* Protected routes */}
-        <Route
-          path="/*"
-          element={
-            <ProtectedRoute isAuthenticated={isAuthenticated} currentGameSave={currentGameSave}>
-              <div className="flex h-screen bg-slate-100">
-                <Sidebar />
-                <div className="flex flex-col flex-1">
-                  <Header currentGameSave={currentGameSave} username={username} />
-                  <main className="flex-1 overflow-y-auto p-4">
-                    <Routes>
-                      <Route path="/" element={<Home />} />
-                      <Route path="/league" element={<League gameSaveId={currentGameSave?.id} />} />
-                      <Route path="/inbox" element={<Inbox />} />
-                      <Route path="/calendar" element={<Calendar />} />
-                      <Route path="/squad" element={<Squad />} />
-                      <Route path="/tactics" element={<Tactics />} />
-                      <Route path="/training" element={<Training />} />
-                      <Route path="/schedule" element={<Schedule />} />
-                      <Route path="/transfers" element={<Transfers />} />
-                      <Route path="/club" element={<Club />} />
-                      <Route path="/finances" element={<Finances />} />
-                      <Route path="/players" element={<Players gameSaveId={currentGameSave?.id} />} />
-                    </Routes>
-                  </main>
-                </div>
+      {/* Protected routes */}
+      <Route
+        path="/*"
+        element={
+          <ProtectedRoute isAuthenticated={isAuthenticated} currentGameSave={currentGameSave}>
+            <div className="flex h-screen bg-slate-100">
+              <Sidebar onExitGame={handleExitGame} />
+
+              <div className="flex flex-col flex-1">
+                <Header currentGameSave={currentGameSave} username={username} />
+                <main className="flex-1 overflow-y-auto p-4">
+                  <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/league" element={<League gameSaveId={currentGameSave?.id} />} />
+                    <Route path="/inbox" element={<Inbox />} />
+                    <Route path="/calendar" element={<Calendar gameSaveId={currentGameSave?.id} />} />
+                    <Route path="/squad" element={<Squad />} />
+                    <Route path="/tactics" element={<Tactics />} />
+                    <Route path="/training" element={<Training />} />
+                    <Route path="/schedule" element={<Schedule />} />
+                    <Route path="/transfers" element={<Transfers />} />
+                    <Route path="/club" element={<Club />} />
+                    <Route path="/finances" element={<Finances />} />
+                    <Route path="/players" element={<Players gameSaveId={currentGameSave?.id} />} />
+                  </Routes>
+                </main>
               </div>
-            </ProtectedRoute>
-          }
-        />
-      </Routes>
-    </Router>
+            </div>
+          </ProtectedRoute>
+        }
+      />
+    </Routes>
   );
 }
 

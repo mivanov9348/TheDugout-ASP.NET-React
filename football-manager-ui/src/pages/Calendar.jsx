@@ -1,69 +1,32 @@
 import React, { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-const eventTypes = [
-  "ChampionshipMatch",
-  "CupMatch",
-  "EuropeanMatch",
-  "FriendlyMatch",
-  "TransferWindow",
-  "Other",
-];
-
-const Calendar = () => {
+const Calendar = ({ gameSaveId }) => {
   const daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-  const [currentDate, setCurrentDate] = useState(new Date(2025, 8, 1)); 
-  const [selectedDate, setSelectedDate] = useState(null);
-  const [eventType, setEventType] = useState("");
-  const [description, setDescription] = useState("");
+  const [currentDate, setCurrentDate] = useState(new Date(2025, 8, 1));
   const [events, setEvents] = useState([]);
 
-  const seasonId = 1; 
-
-  // зареждане на евенти от бекенда
+  // 🟢 Зареждаме евентите от бекенда
   useEffect(() => {
     const fetchEvents = async () => {
-      const res = await fetch(`/api/SeasonEvents/${seasonId}`);
-      if (res.ok) {
-        const data = await res.json();
-        setEvents(data);
+      if (!gameSaveId) return;
+      try {
+        const res = await fetch(`/api/calendar?gameSaveId=${gameSaveId}`, {
+          credentials: "include",
+        });
+        if (!res.ok) throw new Error("Грешка при зареждане на календара");
+        const seasons = await res.json();
+
+        if (seasons.length > 0) {
+          setEvents(seasons[0].events || []);
+        }
+      } catch (err) {
+        console.error(err);
       }
     };
+
     fetchEvents();
-  }, [seasonId]);
-
-  const handleDayClick = (day) => {
-    if (!day) return;
-    setSelectedDate(new Date(currentDate.getFullYear(), currentDate.getMonth(), day));
-  };
-
-  const handleSubmit = async () => {
-    if (!eventType) return alert("Избери тип събитие!");
-
-    const newEvent = {
-      seasonId,
-      date: selectedDate.toISOString(),
-      type: eventType,
-      description,
-    };
-
-    const res = await fetch("/api/SeasonEvents", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newEvent),
-    });
-
-    if (res.ok) {
-      const data = await res.json();
-      setEvents([...events, data]); // добавяме новия евент
-      setSelectedDate(null);
-      setEventType("");
-      setDescription("");
-    } else {
-      const err = await res.text();
-      alert("Error: " + err);
-    }
-  };
+  }, [gameSaveId]);
 
   const daysInMonth = new Date(
     currentDate.getFullYear(),
@@ -72,11 +35,11 @@ const Calendar = () => {
   ).getDate();
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
+    <div className="p-6 max-w-5xl mx-auto">
       {/* Header */}
       <div className="flex items-center justify-between mb-6 text-gray-700">
         <button
-          className="p-2 rounded-full hover:bg-gray-600"
+          className="p-2 rounded-full hover:bg-gray-300"
           onClick={() =>
             setCurrentDate(
               new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1)
@@ -90,7 +53,7 @@ const Calendar = () => {
           {currentDate.getFullYear()}
         </h2>
         <button
-          className="p-2 rounded-full hover:bg-gray-600"
+          className="p-2 rounded-full hover:bg-gray-300"
           onClick={() =>
             setCurrentDate(
               new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1)
@@ -121,78 +84,43 @@ const Calendar = () => {
 
           return (
             <div
-  key={idx}
-  className="h-32 bg-gray-800 rounded-xl shadow-md flex flex-col items-start p-2 text-gray-200 hover:bg-gray-700 hover:scale-105 transition-transform duration-200 cursor-pointer"
-  onClick={() => handleDayClick(day)}
->
-  {/* Денят горе вдясно */}
-  <div className="w-full flex justify-between items-center mb-1">
-    <span className="font-bold">{day}</span>
-  </div>
+              key={idx}
+              className="h-32 bg-gray-800 rounded-xl shadow-md flex flex-col items-start p-2 text-gray-200"
+            >
+              {/* Денят */}
+              <div className="w-full flex justify-between items-center mb-1">
+                <span className="font-bold">{day}</span>
+              </div>
 
-  {/* Събития за деня */}
-  <div className="flex flex-col gap-1 overflow-hidden text-xs">
-    {dayEvents.map((ev, i) => (
-      <span
-        key={i}
-        className="truncate text-green-400"
-        title={`${ev.type} - ${ev.description}`}
-      >
-        {ev.description || ev.type}
-      </span>
-    ))}
-  </div>
-</div>
+              {/* Събитията за деня */}
+              <div className="flex-1 w-full overflow-y-auto space-y-1 text-xs">
+                {dayEvents.map((ev, i) => (
+                  <div
+                    key={i}
+                    className="px-1 py-0.5 rounded bg-gray-700 text-gray-100 truncate"
+                  >
+                    {ev.description}
+                  </div>
+                ))}
+              </div>
 
+              {/* Бутон само за TransferWindow */}
+              {dayEvents.some((ev) => ev.type === "TransferWindow") && (
+                <button
+                  className="mt-1 px-2 py-1 bg-yellow-500 text-black text-[10px] font-bold rounded hover:bg-yellow-400 transition w-full"
+                  onClick={() =>
+                    alert(
+                      `Assign Friendly for ${day}/${currentDate.getMonth() + 1}`
+                    )
+                  }
+                >
+                  Assign Friendly
+                </button>
+              )}
+            </div>
           );
         })}
       </div>
-
-      {/* Modal */}
-      {selectedDate && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white p-6 rounded-xl shadow-lg w-96">
-            <h3 className="text-lg font-bold mb-4">
-              Add Event for {selectedDate.toDateString()}
-            </h3>
-
-            <select
-              className="w-full p-2 border rounded mb-3"
-              value={eventType}
-              onChange={(e) => setEventType(e.target.value)}
-            >
-              <option value="">Select event type</option>
-              {eventTypes.map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
-              ))}
-            </select>
-
-            <textarea
-              className="w-full p-2 border rounded mb-3"
-              placeholder="Description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-
-            <div className="flex justify-end gap-2">
-              <button
-                onClick={() => setSelectedDate(null)}
-                className="px-4 py-2 bg-gray-300 rounded"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSubmit}
-                className="px-4 py-2 bg-blue-600 text-white rounded"
-              >
-                Save
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

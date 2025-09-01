@@ -130,5 +130,22 @@ namespace TheDugout.Controllers
 
             return Ok(save.ToDto());
         }
+
+        [Authorize]
+        [HttpPost("exit")]
+        public async Task<IActionResult> ExitGame()
+        {
+            var userId = _userContext.GetUserId(User);
+            if (userId == null) return Unauthorized();
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId.Value);
+            if (user == null) return NotFound();
+
+            user.CurrentSaveId = null;
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Exited game successfully" });
+        }
+
     }
 }
