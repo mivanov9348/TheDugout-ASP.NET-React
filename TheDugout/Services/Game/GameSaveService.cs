@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TheDugout.Data;
-using TheDugout.Data.DtoNewGame;
 using TheDugout.Models;
-using TheDugout.Services.Players;
+using TheDugout.Services.League;
+using TheDugout.Services.Season;
 
 namespace TheDugout.Services.Game
 {
@@ -10,13 +10,20 @@ namespace TheDugout.Services.Game
     {
         private readonly DugoutDbContext _context;
         private readonly ILogger<GameSaveService> _logger;
-        private readonly IPlayerGenerationService _playerGenerator;
+        private readonly ILeagueService _leagueGenerator;
+        private readonly ISeasonGenerationService _seasonGenerator;
 
-        public GameSaveService(DugoutDbContext context, ILogger<GameSaveService> logger, IPlayerGenerationService playerGenerator)
+        public GameSaveService(
+            DugoutDbContext context,
+            ILogger<GameSaveService> logger,
+            ILeagueService leagueGenerator,
+            ISeasonGenerationService seasonGenerator
+        )
         {
             _context = context;
             _logger = logger;
-            _playerGenerator = playerGenerator;
+            _leagueGenerator = leagueGenerator;
+            _seasonGenerator = seasonGenerator;
         }
 
         public async Task<List<object>> GetUserSavesAsync(int userId)
@@ -32,8 +39,8 @@ namespace TheDugout.Services.Game
         public async Task<GameSave?> GetGameSaveAsync(int userId, int saveId)
         {
             return await _context.GameSaves
-                .Include(gs => gs.Leagues).ThenInclude(l => l.Teams)
-                .Include(gs => gs.Seasons)
+                .Include(gs => gs.Leagues).ThenInclude(l => l.Teams).ThenInclude(t => t.Players)
+                .Include(gs => gs.Seasons).ThenInclude(s => s.Events)
                 .FirstOrDefaultAsync(gs => gs.Id == saveId && gs.UserId == userId);
         }
 
@@ -56,7 +63,7 @@ namespace TheDugout.Services.Game
 
             var saveCount = await _context.GameSaves.CountAsync(gs => gs.UserId == userId);
             if (saveCount >= 3)
-                throw new InvalidOperationException("3 saves Max!");
+                throw new InvalidOperationException("3 saves max!");
 
             await using var transaction = await _context.Database.BeginTransactionAsync();
 
@@ -69,61 +76,15 @@ namespace TheDugout.Services.Game
                     Name = $"Save_{userId}_{DateTime.UtcNow:yyyyMMdd_HHmmss}"
                 };
 
+                // Start new season
                 var startDate = new DateTime(DateTime.UtcNow.Year, 7, 1);
-                var season = new Season
-                {
-                    GameSave = gameSave,
-                    StartDate = startDate,
-                    EndDate = startDate.AddYears(1).AddDays(-1),
-                    CurrentDate = startDate
-                };
+                var season = _seasonGenerator.GenerateSeason(gameSave, startDate);
                 gameSave.Seasons.Add(season);
 
-                var leagueTemplates = await _context.LeagueTemplates
-                    .Include(lt => lt.TeamTemplates)
-                    .ToListAsync();
-
-                foreach (var lt in leagueTemplates)
-                {
-                    var league = new League
-                    {
-                        TemplateId = lt.Id,
-                        GameSave = gameSave,
-                        CountryId = lt.CountryId,
-                        Tier = lt.Tier,
-                        TeamsCount = lt.TeamsCount,
-                        RelegationSpots = lt.RelegationSpots,
-                        PromotionSpots = lt.PromotionSpots
-                    };
-
-                    foreach (var tt in lt.TeamTemplates)
-                    {
-                        var team = new Models.Team
-                        {
-                            TemplateId = tt.Id,
-                            GameSave = gameSave,
-                            League = league,
-                            Name = tt.Name,
-                            Abbreviation = tt.Abbreviation,
-                            CountryId = tt.CountryId,
-                            Country=tt.Country
-               
-                        };
-
-                        league.Teams.Add(team);
-                        gameSave.Teams.Add(team);
-
-                        var players = _playerGenerator.GenerateTeamPlayers(gameSave, team);
-                        foreach (var player in players)
-                        {
-                            gameSave.Players.Add(player);
-                            team.Players.Add(player);
-                            _context.Players.Add(player);
-                        }
-                    }
-
+                // League and teams 
+                var leagues = await _leagueGenerator.GenerateLeaguesAsync(gameSave);
+                foreach (var league in leagues)
                     gameSave.Leagues.Add(league);
-                }
 
                 _context.GameSaves.Add(gameSave);
                 await _context.SaveChangesAsync();
@@ -131,7 +92,7 @@ namespace TheDugout.Services.Game
 
                 return await _context.GameSaves
                     .Include(gs => gs.Leagues).ThenInclude(l => l.Teams).ThenInclude(t => t.Players)
-                    .Include(gs => gs.Seasons)
+                    .Include(gs => gs.Seasons).ThenInclude(s => s.Events)
                     .FirstAsync(gs => gs.Id == gameSave.Id);
             }
             catch

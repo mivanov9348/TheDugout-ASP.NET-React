@@ -3,13 +3,15 @@ using TheDugout.Data;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using MySqlConnector;
 using TheDugout.Services.User;
 using TheDugout.Services.Template;
 using TheDugout.Services.Game;
 using TheDugout.Services.Players;
 using TheDugout.Services.Team;
 using TheDugout.Services.Fixture;
+using TheDugout.Services.League;
+using TheDugout.Services.Season;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,6 +30,10 @@ builder.Services.AddScoped<IGameSaveService, GameSaveService>();
 builder.Services.AddScoped<IPlayerGenerationService,PlayerGenerationService>();
 builder.Services.AddScoped<ITeamPlanService, TeamPlanService>();
 builder.Services.AddScoped<IFixturesService, FixturesService>();
+builder.Services.AddScoped<ITeamGenerationService, TeamGenerationService>();
+builder.Services.AddScoped<ILeagueService, LeagueService>();
+builder.Services.AddScoped<ISeasonGenerationService, SeasonGenerationService>();
+
 
 builder.Services.AddCors(options =>
 {
