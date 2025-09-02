@@ -19,8 +19,8 @@
             }
         }
 
-        public int TeamId { get; set; }
-        public Team Team { get; set; } = null!;
+        public int? TeamId { get; set; }      
+        public Team? Team { get; set; }
 
         public int? CountryId { get; set; }
         public Country? Country { get; set; }

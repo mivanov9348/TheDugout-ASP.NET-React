@@ -17,11 +17,14 @@ import Schedule from "./pages/Schedule";
 import Transfers from "./pages/Transfers";
 import Club from "./pages/Club";
 import Finances from "./pages/Finances";
-import Players from "./pages/Players";
 import Competitions from "./pages/Competitions";
 import Cup from "./pages/Cup";
 import EuropeanCup from "./pages/EuropeanCup";
 import League from "./pages/League";
+import SearchPlayers from "./pages/SearchPlayers";
+import Negotiations from "./pages/Negotiations";
+import TransferHistory from "./pages/TransferHistory";
+
 
 // 🔹 ProtectedRoute
 function ProtectedRoute({ isAuthenticated, currentGameSave, children }) {
@@ -239,10 +242,15 @@ function App() {
                     <Route path="/tactics" element={<Tactics />} />
                     <Route path="/training" element={<Training />} />
                     <Route path="/schedule" element={<Schedule />} />
-                    <Route path="/transfers" element={<Transfers />} />
+<Route path="/transfers" element={<Transfers />}>
+  <Route index element={<Navigate to="search" replace />} />
+<Route path="search" element={<SearchPlayers gameSaveId={currentGameSave?.id} />} />
+  <Route path="negotiations" element={<Negotiations />} />
+  <Route path="history" element={<TransferHistory />} />
+</Route>
+
                     <Route path="/club" element={<Club />} />
                     <Route path="/finances" element={<Finances />} />
-                    <Route path="/players" element={<Players gameSaveId={currentGameSave?.id} />} />
                   </Routes>
                 </main>
               </div>

@@ -17,7 +17,6 @@ function Sidebar({ onExitGame }) {
     { name: "Transfers", path: "/transfers", icon: <ShoppingCart size={18} /> },
     { name: "Club", path: "/club", icon: <Building size={18} /> },
     { name: "Finances", path: "/finances", icon: <Wallet size={18} /> },
-    { name: "Players", path: "/players", icon: <Users size={18} /> },
   ];
 
   return (

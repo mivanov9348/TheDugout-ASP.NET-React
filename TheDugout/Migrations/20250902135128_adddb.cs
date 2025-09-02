@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace TheDugout.Migrations
 {
     /// <inheritdoc />
-    public partial class initial2 : Migration
+    public partial class adddb : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -23,6 +23,19 @@ namespace TheDugout.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Attributes", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Bank",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Balance = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Bank", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -131,6 +144,30 @@ namespace TheDugout.Migrations
                         principalTable: "LeagueTemplates",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "FinancialTransaction",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    TeamId = table.Column<int>(type: "int", nullable: true),
+                    BankId = table.Column<int>(type: "int", nullable: true),
+                    Date = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Amount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    Type = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_FinancialTransaction", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_FinancialTransaction_Bank_BankId",
+                        column: x => x.BankId,
+                        principalTable: "Bank",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -293,7 +330,8 @@ namespace TheDugout.Migrations
                     Losses = table.Column<int>(type: "int", nullable: false),
                     GoalsFor = table.Column<int>(type: "int", nullable: false),
                     GoalsAgainst = table.Column<int>(type: "int", nullable: false),
-                    GoalDifference = table.Column<int>(type: "int", nullable: false)
+                    GoalDifference = table.Column<int>(type: "int", nullable: false),
+                    Balance = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -355,14 +393,15 @@ namespace TheDugout.Migrations
                     FirstName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     LastName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     BirthDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    TeamId = table.Column<int>(type: "int", nullable: false),
+                    TeamId = table.Column<int>(type: "int", nullable: true),
                     CountryId = table.Column<int>(type: "int", nullable: true),
                     PositionId = table.Column<int>(type: "int", nullable: false),
                     KitNumber = table.Column<int>(type: "int", nullable: false),
                     HeightCm = table.Column<double>(type: "float", nullable: false),
                     WeightKg = table.Column<double>(type: "float", nullable: false),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
-                    GameSaveId = table.Column<int>(type: "int", nullable: false)
+                    GameSaveId = table.Column<int>(type: "int", nullable: false),
+                    Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -492,6 +531,16 @@ namespace TheDugout.Migrations
                 table: "Countries",
                 column: "Name",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_FinancialTransaction_BankId",
+                table: "FinancialTransaction",
+                column: "BankId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_FinancialTransaction_TeamId",
+                table: "FinancialTransaction",
+                column: "TeamId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Fixtures_AwayTeamId",
@@ -662,6 +711,14 @@ namespace TheDugout.Migrations
                 column: "CurrentSaveId");
 
             migrationBuilder.AddForeignKey(
+                name: "FK_FinancialTransaction_Teams_TeamId",
+                table: "FinancialTransaction",
+                column: "TeamId",
+                principalTable: "Teams",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Cascade);
+
+            migrationBuilder.AddForeignKey(
                 name: "FK_Fixtures_GameSaves_GameSaveId",
                 table: "Fixtures",
                 column: "GameSaveId",
@@ -722,16 +779,15 @@ namespace TheDugout.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropForeignKey(
-                name: "FK_Leagues_GameSaves_GameSaveId",
-                table: "Leagues");
-
-            migrationBuilder.DropForeignKey(
-                name: "FK_Teams_GameSaves_GameSaveId",
-                table: "Teams");
+                name: "FK_GameSaves_Teams_UserTeamId",
+                table: "GameSaves");
 
             migrationBuilder.DropForeignKey(
                 name: "FK_Users_GameSaves_CurrentSaveId",
                 table: "Users");
+
+            migrationBuilder.DropTable(
+                name: "FinancialTransaction");
 
             migrationBuilder.DropTable(
                 name: "Fixtures");
@@ -755,6 +811,9 @@ namespace TheDugout.Migrations
                 name: "SeasonEvents");
 
             migrationBuilder.DropTable(
+                name: "Bank");
+
+            migrationBuilder.DropTable(
                 name: "Players");
 
             migrationBuilder.DropTable(
@@ -767,13 +826,7 @@ namespace TheDugout.Migrations
                 name: "Positions");
 
             migrationBuilder.DropTable(
-                name: "GameSaves");
-
-            migrationBuilder.DropTable(
                 name: "Teams");
-
-            migrationBuilder.DropTable(
-                name: "Users");
 
             migrationBuilder.DropTable(
                 name: "Leagues");
@@ -786,6 +839,12 @@ namespace TheDugout.Migrations
 
             migrationBuilder.DropTable(
                 name: "Countries");
+
+            migrationBuilder.DropTable(
+                name: "GameSaves");
+
+            migrationBuilder.DropTable(
+                name: "Users");
         }
     }
 }
