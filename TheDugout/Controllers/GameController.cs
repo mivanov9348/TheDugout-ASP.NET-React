@@ -102,9 +102,14 @@ namespace TheDugout.Controllers
             if (userId == null) return Unauthorized();
 
             var user = await _context.Users
-                .Include(u => u.CurrentSave)
-                .ThenInclude(gs => gs.Seasons)
-                .FirstOrDefaultAsync(u => u.Id == userId.Value);
+    .Include(u => u.CurrentSave)
+        .ThenInclude(gs => gs.Seasons)
+            .ThenInclude(s => s.Events)
+    .Include(u => u.CurrentSave)
+        .ThenInclude(gs => gs.Seasons)
+            .ThenInclude(s => s.Fixtures) 
+    .FirstOrDefaultAsync(u => u.Id == userId.Value);
+
 
             if (user?.CurrentSave == null)
                 return Ok(null);

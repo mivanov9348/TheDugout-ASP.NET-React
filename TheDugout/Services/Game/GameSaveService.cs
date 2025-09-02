@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TheDugout.Data;
 using TheDugout.Models;
+using TheDugout.Services.Fixture;
 using TheDugout.Services.League;
 using TheDugout.Services.Season;
 
@@ -12,18 +13,21 @@ namespace TheDugout.Services.Game
         private readonly ILogger<GameSaveService> _logger;
         private readonly ILeagueService _leagueGenerator;
         private readonly ISeasonGenerationService _seasonGenerator;
+        private readonly IFixturesService _fixturesService;
 
         public GameSaveService(
             DugoutDbContext context,
             ILogger<GameSaveService> logger,
             ILeagueService leagueGenerator,
-            ISeasonGenerationService seasonGenerator
+            ISeasonGenerationService seasonGenerator,
+            IFixturesService fixturesService
         )
         {
             _context = context;
             _logger = logger;
             _leagueGenerator = leagueGenerator;
             _seasonGenerator = seasonGenerator;
+            _fixturesService = fixturesService;
         }
 
         public async Task<List<object>> GetUserSavesAsync(int userId)
@@ -41,6 +45,7 @@ namespace TheDugout.Services.Game
             return await _context.GameSaves
                 .Include(gs => gs.Leagues).ThenInclude(l => l.Teams).ThenInclude(t => t.Players)
                 .Include(gs => gs.Seasons).ThenInclude(s => s.Events)
+                .Include(gs => gs.Seasons).ThenInclude(s=>s.Fixtures)
                 .FirstOrDefaultAsync(gs => gs.Id == saveId && gs.UserId == userId);
         }
 
@@ -88,6 +93,9 @@ namespace TheDugout.Services.Game
 
                 _context.GameSaves.Add(gameSave);
                 await _context.SaveChangesAsync();
+
+                await _fixturesService.GenerateFixturesAsync(gameSave.Id, season.Id, startDate);
+
                 await transaction.CommitAsync();
 
                 return await _context.GameSaves

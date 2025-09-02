@@ -2,12 +2,12 @@ import Club from "../pages/Club";
 import Finances from "../pages/Finances";
 import Home from "../pages/Home";
 import Inbox from "../pages/Inbox";
-import Schedule from "../pages/Schedule";
 import Squad from "../pages/Squad";
 import Tactics from "../pages/Tactics";
 import Training from "../pages/Training";
 import Transfers from "../pages/Transfers";
 import Calendar from "../pages/Calendar";
+import Fixtures from "../pages/Fixtures";
 
 function MainContent({ activePage }) {
   return (
@@ -18,7 +18,7 @@ function MainContent({ activePage }) {
       {activePage === "Squad" && <Squad />}
       {activePage === "Tactics" && <Tactics />}
       {activePage === "Training" && <Training />}
-      {activePage === "Schedule" && <Schedule />}
+      {activePage === "Fixtures" && <Fixtures />}
       {activePage === "Competitions" && <div><h1 className="text-2xl font-bold mb-4">Competitions</h1><p>Manage your competitions here.</p></div>}
       {activePage === "Transfers" && <Transfers />}
       {activePage === "Club" && <Club />}

@@ -1,265 +1,265 @@
-import { useState, useEffect } from "react";
-import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
-import Header from "./components/Header";
-import Sidebar from "./components/Sidebar";
-import AuthForm from "./components/AuthForm";
-import StartScreen from "./components/StartScreen";
-import LoadGameModal from "./components/LoadGameModal";
-import Swal from "sweetalert2";
+  import { useState, useEffect } from "react";
+  import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
+  import Header from "./components/Header";
+  import Sidebar from "./components/Sidebar";
+  import AuthForm from "./components/AuthForm";
+  import StartScreen from "./components/StartScreen";
+  import LoadGameModal from "./components/LoadGameModal";
+  import Swal from "sweetalert2";
 
-import Home from "./pages/Home";
-import Inbox from "./pages/Inbox";
-import Calendar from "./pages/Calendar";
-import Squad from "./pages/Squad";
-import Tactics from "./pages/Tactics";
-import Training from "./pages/Training";
-import Schedule from "./pages/Schedule";
-import Transfers from "./pages/Transfers";
-import Club from "./pages/Club";
-import Finances from "./pages/Finances";
-import Competitions from "./pages/Competitions";
-import Cup from "./pages/Cup";
-import EuropeanCup from "./pages/EuropeanCup";
-import League from "./pages/League";
-import SearchPlayers from "./pages/SearchPlayers";
-import Negotiations from "./pages/Negotiations";
-import TransferHistory from "./pages/TransferHistory";
+  import Home from "./pages/Home";
+  import Inbox from "./pages/Inbox";
+  import Calendar from "./pages/Calendar";
+  import Squad from "./pages/Squad";
+  import Tactics from "./pages/Tactics";
+  import Training from "./pages/Training";
+  import Transfers from "./pages/Transfers";
+  import Club from "./pages/Club";
+  import Finances from "./pages/Finances";
+  import Competitions from "./pages/Competitions";
+  import Cup from "./pages/Cup";
+  import EuropeanCup from "./pages/EuropeanCup";
+  import League from "./pages/League";
+  import SearchPlayers from "./pages/SearchPlayers";
+  import Negotiations from "./pages/Negotiations";
+  import TransferHistory from "./pages/TransferHistory";
+  import Fixtures from "./pages/Fixtures";
 
 
-// 🔹 ProtectedRoute
-function ProtectedRoute({ isAuthenticated, currentGameSave, children }) {
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+  // 🔹 ProtectedRoute
+  function ProtectedRoute({ isAuthenticated, currentGameSave, children }) {
+    if (!isAuthenticated) {
+      return <Navigate to="/login" replace />;
+    }
+    if (!currentGameSave) {
+      return <Navigate to="/start" replace />;
+    }
+    return children;
   }
-  if (!currentGameSave) {
-    return <Navigate to="/start" replace />;
-  }
-  return children;
-}
 
-function App() {
-  const navigate = useNavigate();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [username, setUsername] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [currentGameSave, setCurrentGameSave] = useState(null);
-  const [userSaves, setUserSaves] = useState([]);
-  const [showLoadModal, setShowLoadModal] = useState(false);
+  function App() {
+    const navigate = useNavigate();
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [username, setUsername] = useState("");
+    const [loading, setLoading] = useState(true);
+    const [currentGameSave, setCurrentGameSave] = useState(null);
+    const [userSaves, setUserSaves] = useState([]);
+    const [showLoadModal, setShowLoadModal] = useState(false);
 
-  // ---- Auth + сейф check при refresh ----
-  useEffect(() => {
-    const checkAuthAndSave = async () => {
-      try {
-        const res = await fetch("/api/auth/me", { credentials: "include" });
-        if (!res.ok) {
-          setLoading(false);
-          return;
-        }
-
-        const user = await res.json();
-        if (user?.username) {
-          setIsAuthenticated(true);
-          setUsername(user.username);
-
-          const resSave = await fetch("/api/games/current", { credentials: "include" });
-          if (resSave.ok) {
-            const fullSave = await resSave.json();
-            if (fullSave) setCurrentGameSave(fullSave);
+    // ---- Auth + сейф check при refresh ----
+    useEffect(() => {
+      const checkAuthAndSave = async () => {
+        try {
+          const res = await fetch("/api/auth/me", { credentials: "include" });
+          if (!res.ok) {
+            setLoading(false);
+            return;
           }
+
+          const user = await res.json();
+          if (user?.username) {
+            setIsAuthenticated(true);
+            setUsername(user.username);
+
+            const resSave = await fetch("/api/games/current", { credentials: "include" });
+            if (resSave.ok) {
+              const fullSave = await resSave.json();
+              if (fullSave) setCurrentGameSave(fullSave);
+            }
+          }
+        } catch (err) {
+          console.error("Auth/Save check error:", err);
+        } finally {
+          setLoading(false);
         }
+      };
+
+      checkAuthAndSave();
+    }, []);
+
+    // ---- функции ----
+    const fetchUserSaves = async () => {
+      try {
+        const res = await fetch("/api/games/saves", { credentials: "include" });
+        if (!res.ok) throw new Error("Грешка при зареждане на сейфове");
+        const data = await res.json();
+        setUserSaves(data);
+        setShowLoadModal(true);
       } catch (err) {
-        console.error("Auth/Save check error:", err);
-      } finally {
-        setLoading(false);
+        Swal.fire("Грешка!", err.message, "error");
       }
     };
 
-    checkAuthAndSave();
-  }, []);
-
-  // ---- функции ----
-  const fetchUserSaves = async () => {
-    try {
-      const res = await fetch("/api/games/saves", { credentials: "include" });
-      if (!res.ok) throw new Error("Грешка при зареждане на сейфове");
-      const data = await res.json();
-      setUserSaves(data);
-      setShowLoadModal(true);
-    } catch (err) {
-      Swal.fire("Грешка!", err.message, "error");
-    }
-  };
-
-  const handleLoadGame = async (save) => {
-    try {
-      const res = await fetch(`/api/games/current/${save.id}`, {
-        method: "POST",
-        credentials: "include",
-      });
-      if (!res.ok) throw new Error("Грешка при зареждане на сейф");
-      const fullSave = await res.json();
-      setCurrentGameSave(fullSave);
-      setShowLoadModal(false);
-    } catch (err) {
-      Swal.fire("Грешка!", err.message, "error");
-    }
-  };
-
-  const handleNewGame = async (setStepMessage) => {
-    try {
-      setStepMessage("Генериране на сейф...");
-      const res = await fetch("/api/games/new", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Грешка при създаване на сейф");
-
-      setStepMessage("Запазване като текущ...");
-      const resSet = await fetch(`/api/games/current/${data.id}`, {
-        method: "POST",
-        credentials: "include",
-      });
-      if (resSet.ok) {
-        const fullSave = await resSet.json();
+    const handleLoadGame = async (save) => {
+      try {
+        const res = await fetch(`/api/games/current/${save.id}`, {
+          method: "POST",
+          credentials: "include",
+        });
+        if (!res.ok) throw new Error("Грешка при зареждане на сейф");
+        const fullSave = await res.json();
         setCurrentGameSave(fullSave);
+        setShowLoadModal(false);
+      } catch (err) {
+        Swal.fire("Грешка!", err.message, "error");
       }
+    };
 
-      Swal.fire("Нов сейф 🎉", `Сезон ${new Date(data.seasonStart).getFullYear()} започна.`, "success");
-    } catch (err) {
-      Swal.fire("Грешка!", err.message, "error");
-    }
-  };
-
-  const handleDeleteSave = async (saveId) => {
-    try {
-      const res = await fetch(`/api/games/${saveId}`, { method: "DELETE", credentials: "include" });
-      if (!res.ok) {
+    const handleNewGame = async (setStepMessage) => {
+      try {
+        setStepMessage("Генериране на сейф...");
+        const res = await fetch("/api/games/new", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+        });
         const data = await res.json();
-        throw new Error(data.message || "Грешка при изтриване на сейф");
+        if (!res.ok) throw new Error(data.message || "Грешка при създаване на сейф");
+
+        setStepMessage("Запазване като текущ...");
+        const resSet = await fetch(`/api/games/current/${data.id}`, {
+          method: "POST",
+          credentials: "include",
+        });
+        if (resSet.ok) {
+          const fullSave = await resSet.json();
+          setCurrentGameSave(fullSave);
+        }
+
+        Swal.fire("Нов сейф 🎉", `Сезон ${new Date(data.seasonStart).getFullYear()} започна.`, "success");
+      } catch (err) {
+        Swal.fire("Грешка!", err.message, "error");
       }
-      setUserSaves((prev) => prev.filter((s) => s.id !== saveId));
-      Swal.fire("Изтрито!", "Сейфът беше успешно изтрит.", "success");
-    } catch (err) {
-      Swal.fire("Грешка!", err.message, "error");
+    };
+
+    const handleDeleteSave = async (saveId) => {
+      try {
+        const res = await fetch(`/api/games/${saveId}`, { method: "DELETE", credentials: "include" });
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.message || "Грешка при изтриване на сейф");
+        }
+        setUserSaves((prev) => prev.filter((s) => s.id !== saveId));
+        Swal.fire("Изтрито!", "Сейфът беше успешно изтрит.", "success");
+      } catch (err) {
+        Swal.fire("Грешка!", err.message, "error");
+      }
+    };
+
+    const handleLogout = () => {
+      setIsAuthenticated(false);
+      setUsername("");
+      setCurrentGameSave(null);
+      fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+    };
+
+    const handleExitGame = async () => {
+      try {
+        const res = await fetch("/api/games/exit", {
+          method: "POST",
+          credentials: "include",
+        });
+        if (!res.ok) throw new Error("Неуспешно излизане от играта");
+
+        setCurrentGameSave(null);   
+        navigate("/start");         
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    // ---- Render ----
+    if (loading) {
+      return <div className="flex items-center justify-center h-screen text-white">Loading...</div>;
     }
-  };
 
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    setUsername("");
-    setCurrentGameSave(null);
-    fetch("/api/auth/logout", { method: "POST", credentials: "include" });
-  };
+    return (
+      <Routes>
+        {/* Login */}
+        <Route
+          path="/login"
+          element={
+            isAuthenticated ? (
+              <Navigate to={currentGameSave ? "/" : "/start"} replace />
+            ) : (
+              <AuthForm onAuthSuccess={() => setIsAuthenticated(true)} />
+            )
+          }
+        />
 
-  const handleExitGame = async () => {
-    try {
-      const res = await fetch("/api/games/exit", {
-        method: "POST",
-        credentials: "include",
-      });
-      if (!res.ok) throw new Error("Неуспешно излизане от играта");
+        {/* Start screen */}
+        <Route
+          path="/start"
+          element={
+            !isAuthenticated ? (
+              <Navigate to="/login" replace />
+            ) : currentGameSave ? (
+              <Navigate to="/" replace />
+            ) : (
+              <>
+                <StartScreen
+                  username={username}
+                  onNewGame={handleNewGame}
+                  onLoadGame={fetchUserSaves}
+                  onLogout={handleLogout}
+                />
+                {showLoadModal && (
+                  <LoadGameModal
+                    saves={userSaves}
+                    onClose={() => setShowLoadModal(false)}
+                    onSelectSave={handleLoadGame}
+                    onDeleteSave={handleDeleteSave}
+                  />
+                )}
+              </>
+            )
+          }
+        />
 
-      setCurrentGameSave(null);   
-      navigate("/start");         
-    } catch (err) {
-      console.error(err);
-    }
-  };
+        {/* Protected routes */}
+        <Route
+          path="/*"
+          element={
+            <ProtectedRoute isAuthenticated={isAuthenticated} currentGameSave={currentGameSave}>
+              <div className="flex h-screen bg-slate-100">
+                <Sidebar onExitGame={handleExitGame} />
 
-  // ---- Render ----
-  if (loading) {
-    return <div className="flex items-center justify-center h-screen text-white">Loading...</div>;
+                <div className="flex flex-col flex-1">
+                  <Header currentGameSave={currentGameSave} username={username} />
+                  <main className="flex-1 overflow-y-auto p-4">
+                    <Routes>
+                      <Route path="/" element={<Home />} />
+                      <Route path="/competitions/*" element={<Competitions />}>
+    <Route index element={<Navigate to="league" replace />} />
+    <Route path="league" element={<League gameSaveId={currentGameSave?.id} />} />
+    <Route path="cup" element={<Cup />} />
+    <Route path="europe" element={<EuropeanCup />} />
+  </Route>
+
+                      <Route path="/inbox" element={<Inbox />} />
+                      <Route path="/calendar" element={<Calendar gameSaveId={currentGameSave?.id} />} />
+                      <Route path="/squad" element={<Squad />} />
+                      <Route path="/tactics" element={<Tactics />} />
+                      <Route path="/training" element={<Training />} />
+<Route path="/fixtures" element={<Fixtures gameSaveId={currentGameSave?.id} seasonId={currentGameSave?.seasons?.[0]?.id} />} />
+  <Route path="/transfers" element={<Transfers />}>
+    <Route index element={<Navigate to="search" replace />} />
+  <Route path="search" element={<SearchPlayers gameSaveId={currentGameSave?.id} />} />
+    <Route path="negotiations" element={<Negotiations />} />
+    <Route path="history" element={<TransferHistory />} />
+  </Route>
+
+                      <Route path="/club" element={<Club />} />
+                      <Route path="/finances" element={<Finances />} />
+                    </Routes>
+                  </main>
+                </div>
+              </div>
+            </ProtectedRoute>
+          }
+        />
+      </Routes>
+    );
   }
 
-  return (
-    <Routes>
-      {/* Login */}
-      <Route
-        path="/login"
-        element={
-          isAuthenticated ? (
-            <Navigate to={currentGameSave ? "/" : "/start"} replace />
-          ) : (
-            <AuthForm onAuthSuccess={() => setIsAuthenticated(true)} />
-          )
-        }
-      />
-
-      {/* Start screen */}
-      <Route
-        path="/start"
-        element={
-          !isAuthenticated ? (
-            <Navigate to="/login" replace />
-          ) : currentGameSave ? (
-            <Navigate to="/" replace />
-          ) : (
-            <>
-              <StartScreen
-                username={username}
-                onNewGame={handleNewGame}
-                onLoadGame={fetchUserSaves}
-                onLogout={handleLogout}
-              />
-              {showLoadModal && (
-                <LoadGameModal
-                  saves={userSaves}
-                  onClose={() => setShowLoadModal(false)}
-                  onSelectSave={handleLoadGame}
-                  onDeleteSave={handleDeleteSave}
-                />
-              )}
-            </>
-          )
-        }
-      />
-
-      {/* Protected routes */}
-      <Route
-        path="/*"
-        element={
-          <ProtectedRoute isAuthenticated={isAuthenticated} currentGameSave={currentGameSave}>
-            <div className="flex h-screen bg-slate-100">
-              <Sidebar onExitGame={handleExitGame} />
-
-              <div className="flex flex-col flex-1">
-                <Header currentGameSave={currentGameSave} username={username} />
-                <main className="flex-1 overflow-y-auto p-4">
-                  <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/competitions/*" element={<Competitions />}>
-  <Route index element={<Navigate to="league" replace />} />
-  <Route path="league" element={<League gameSaveId={currentGameSave?.id} />} />
-  <Route path="cup" element={<Cup />} />
-  <Route path="europe" element={<EuropeanCup />} />
-</Route>
-
-                    <Route path="/inbox" element={<Inbox />} />
-                    <Route path="/calendar" element={<Calendar gameSaveId={currentGameSave?.id} />} />
-                    <Route path="/squad" element={<Squad />} />
-                    <Route path="/tactics" element={<Tactics />} />
-                    <Route path="/training" element={<Training />} />
-                    <Route path="/schedule" element={<Schedule />} />
-<Route path="/transfers" element={<Transfers />}>
-  <Route index element={<Navigate to="search" replace />} />
-<Route path="search" element={<SearchPlayers gameSaveId={currentGameSave?.id} />} />
-  <Route path="negotiations" element={<Negotiations />} />
-  <Route path="history" element={<TransferHistory />} />
-</Route>
-
-                    <Route path="/club" element={<Club />} />
-                    <Route path="/finances" element={<Finances />} />
-                  </Routes>
-                </main>
-              </div>
-            </div>
-          </ProtectedRoute>
-        }
-      />
-    </Routes>
-  );
-}
-
-export default App;
+  export default App;
