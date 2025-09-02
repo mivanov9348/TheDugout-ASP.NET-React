@@ -53,6 +53,12 @@ namespace TheDugout.Data.Configurations
                    .HasForeignKey(f => f.AwayTeamId)
                    .OnDelete(DeleteBehavior.Restrict);
 
+            builder.HasMany(t => t.Transactions)
+    .WithOne(tr => tr.Team)
+    .HasForeignKey(tr => tr.TeamId)
+    .OnDelete(DeleteBehavior.Cascade);
+
+
         }
     }
 }

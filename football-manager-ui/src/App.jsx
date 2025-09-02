@@ -7,7 +7,6 @@ import StartScreen from "./components/StartScreen";
 import LoadGameModal from "./components/LoadGameModal";
 import Swal from "sweetalert2";
 
-// Pages
 import Home from "./pages/Home";
 import Inbox from "./pages/Inbox";
 import Calendar from "./pages/Calendar";
@@ -15,11 +14,14 @@ import Squad from "./pages/Squad";
 import Tactics from "./pages/Tactics";
 import Training from "./pages/Training";
 import Schedule from "./pages/Schedule";
-import League from "./pages/League";
 import Transfers from "./pages/Transfers";
 import Club from "./pages/Club";
 import Finances from "./pages/Finances";
 import Players from "./pages/Players";
+import Competitions from "./pages/Competitions";
+import Cup from "./pages/Cup";
+import EuropeanCup from "./pages/EuropeanCup";
+import League from "./pages/League";
 
 // 🔹 ProtectedRoute
 function ProtectedRoute({ isAuthenticated, currentGameSave, children }) {
@@ -224,7 +226,13 @@ function App() {
                 <main className="flex-1 overflow-y-auto p-4">
                   <Routes>
                     <Route path="/" element={<Home />} />
-                    <Route path="/league" element={<League gameSaveId={currentGameSave?.id} />} />
+                    <Route path="/competitions/*" element={<Competitions />}>
+  <Route index element={<Navigate to="league" replace />} />
+  <Route path="league" element={<League gameSaveId={currentGameSave?.id} />} />
+  <Route path="cup" element={<Cup />} />
+  <Route path="europe" element={<EuropeanCup />} />
+</Route>
+
                     <Route path="/inbox" element={<Inbox />} />
                     <Route path="/calendar" element={<Calendar gameSaveId={currentGameSave?.id} />} />
                     <Route path="/squad" element={<Squad />} />

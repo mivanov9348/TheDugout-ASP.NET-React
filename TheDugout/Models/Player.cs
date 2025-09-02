@@ -37,6 +37,9 @@
         public int GameSaveId { get; set; }
         public GameSave GameSave { get; set; } = null!;
 
+        public decimal Price { get; set; }
+
+
         public ICollection<PlayerAttribute> Attributes { get; set; } = new List<PlayerAttribute>();
 
         public ICollection<PlayerMatchStats> MatchStats { get; set; } = new List<PlayerMatchStats>();

@@ -2,7 +2,6 @@ import Club from "../pages/Club";
 import Finances from "../pages/Finances";
 import Home from "../pages/Home";
 import Inbox from "../pages/Inbox";
-import League from "../pages/League";
 import Schedule from "../pages/Schedule";
 import Squad from "../pages/Squad";
 import Tactics from "../pages/Tactics";
@@ -20,7 +19,7 @@ function MainContent({ activePage }) {
       {activePage === "Tactics" && <Tactics />}
       {activePage === "Training" && <Training />}
       {activePage === "Schedule" && <Schedule />}
-      {activePage === "League" && <League />}
+      {activePage === "Competitions" && <div><h1 className="text-2xl font-bold mb-4">Competitions</h1><p>Manage your competitions here.</p></div>}
       {activePage === "Transfers" && <Transfers />}
       {activePage === "Club" && <Club />}
       {activePage === "Finances" && <Finances />}

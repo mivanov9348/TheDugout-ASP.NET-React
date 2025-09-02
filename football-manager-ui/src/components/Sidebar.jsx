@@ -13,7 +13,7 @@ function Sidebar({ onExitGame }) {
     { name: "Tactics", path: "/tactics", icon: <Activity size={18} /> },
     { name: "Training", path: "/training", icon: <Dumbbell size={18} /> },
     { name: "Schedule", path: "/schedule", icon: <Calendar size={18} /> },
-    { name: "League", path: "/league", icon: <Trophy size={18} /> },
+{ name: "Competitions", path: "/competitions/league", icon: <Trophy size={18} /> },
     { name: "Transfers", path: "/transfers", icon: <ShoppingCart size={18} /> },
     { name: "Club", path: "/club", icon: <Building size={18} /> },
     { name: "Finances", path: "/finances", icon: <Wallet size={18} /> },
