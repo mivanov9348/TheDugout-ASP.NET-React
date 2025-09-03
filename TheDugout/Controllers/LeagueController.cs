@@ -44,6 +44,9 @@ namespace TheDugout.Controllers
                     name = l.Template.Name,
                     tier = l.Tier,
                     countryId = l.CountryId,
+                    rounds = l.Teams
+        .SelectMany(t => t.HomeFixtures)
+        .Max(f => (int?)f.Round) ?? 0,
                     teams = l.Teams
                         .OrderByDescending(t => t.Points)
                         .ThenByDescending(t => t.GoalDifference)

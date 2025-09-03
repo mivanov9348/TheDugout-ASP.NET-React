@@ -43,11 +43,17 @@ namespace TheDugout.Services.Game
         public async Task<GameSave?> GetGameSaveAsync(int userId, int saveId)
         {
             return await _context.GameSaves
-                .Include(gs => gs.Leagues).ThenInclude(l => l.Teams).ThenInclude(t => t.Players)
-                .Include(gs => gs.Seasons).ThenInclude(s => s.Events)
-                .Include(gs => gs.Seasons).ThenInclude(s=>s.Fixtures)
+                .AsSplitQuery()
+                .Include(gs => gs.Leagues)
+                    .ThenInclude(l => l.Teams)
+                    .ThenInclude(t => t.Players)
+                .Include(gs => gs.Seasons)
+                    .ThenInclude(s => s.Events)
                 .FirstOrDefaultAsync(gs => gs.Id == saveId && gs.UserId == userId);
         }
+
+
+
 
         public async Task<bool> DeleteGameSaveAsync(int userId, int saveId)
         {

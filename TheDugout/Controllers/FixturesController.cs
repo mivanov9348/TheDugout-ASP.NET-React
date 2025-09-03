@@ -21,7 +21,8 @@ namespace TheDugout.Controllers
         public async Task<IActionResult> GetFixtures(
     int gameSaveId,
     int seasonId,
-    [FromQuery] int? round = null // 🔹 опционален филтър
+    [FromQuery] int? round = 1,          // по подразбиране 1ви кръг
+    [FromQuery] int? leagueId = null     // по избор конкретна лига
 )
         {
             var query = _context.Fixtures
@@ -30,38 +31,44 @@ namespace TheDugout.Controllers
             if (round.HasValue)
                 query = query.Where(f => f.Round == round.Value);
 
-            var grouped = await query
-                .OrderBy(f => f.League.Template.Name)
-                .ThenBy(f => f.Round)
-                .ThenBy(f => f.Date)
+            if (leagueId.HasValue)
+            {
+                query = query.Where(f => f.LeagueId == leagueId.Value);
+            }
+            else
+            {
+                // взимаме първа лига по Tier
+                var firstLeagueId = await _context.Leagues
+                    .Where(l => l.GameSaveId == gameSaveId)
+                    .OrderBy(l => l.Tier)
+                    .Select(l => l.Id)
+                    .FirstOrDefaultAsync();
+
+                if (firstLeagueId != 0)
+                    query = query.Where(f => f.LeagueId == firstLeagueId);
+            }
+
+            var fixtures = await query
+                .OrderBy(f => f.Date)
                 .Select(f => new
                 {
                     f.LeagueId,
                     LeagueName = f.League.Template.Name,
                     f.Round,
-                    Match = new
-                    {
-                        f.Id,
-                        f.Date,
-                        HomeTeam = f.HomeTeam.Name,
-                        AwayTeam = f.AwayTeam.Name
-                    }
+                    f.Id,
+                    f.Date,
+                    HomeTeam = f.HomeTeam.Name,
+                    AwayTeam = f.AwayTeam.Name,
+                    f.HomeTeamGoals,
+                    f.AwayTeamGoals
+
                 })
                 .ToListAsync();
 
-            var result = grouped
-                .GroupBy(g => new { g.LeagueId, g.LeagueName, g.Round })
-                .Select(g => new
-                {
-                    LeagueId = g.Key.LeagueId,
-                    LeagueName = g.Key.LeagueName,
-                    Round = g.Key.Round,
-                    Matches = g.Select(x => x.Match).ToList()
-                })
-                .ToList();
-
-            return Ok(result);
+            // връщаме като плосък списък, а не групиран
+            return Ok(fixtures);
         }
+
 
     }
 }
