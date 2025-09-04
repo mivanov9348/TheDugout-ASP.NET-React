@@ -1,130 +1,157 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
-export default function TeamSelectionModal({ open, onClose, onSuccess }) {
-  const [teams, setTeams] = useState([]);
-  const [error, setError] = useState("");
-  const [selectedTeam, setSelectedTeam] = useState(null);
-  const [loading, setLoading] = useState(false);
-
+export default function TeamSelectionModal({ saveId, onClose, onSelected }) {
+  const [loading, setLoading] = useState(true);
   const [leagues, setLeagues] = useState([]);
-  const [selectedLeague, setSelectedLeague] = useState(null);
+  const [selectedLeagueId, setSelectedLeagueId] = useState(null);
+  const [selectedTeamId, setSelectedTeamId] = useState(null);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    if (!open) return;
-
-    const fetchTemplates = async () => {
+    const load = async () => {
       try {
-        const res = await fetch("/api/games/teamtemplates", {
-          credentials: "include",
-        });
-
-        if (!res.ok) {
-          const t = await res.text();
-          throw new Error(t || "Грешка при зареждане на отборите");
-        }
-
+        const res = await fetch(`/api/games/${saveId}`, { credentials: "include" });
+        if (!res.ok) throw new Error("Грешка при зареждане на лиги/отбори");
         const data = await res.json();
-        setTeams(data);
-
-        // извличаме уникални лиги
-        const uniqueLeagues = Array.from(
-          new Map(
-            data.map((t) => [
-              t.LeagueId,
-              { id: t.LeagueId, name: t.LeagueName, tier: t.Tier },
-            ])
-          ).values()
-        ).sort((a, b) => a.tier - b.tier || a.name.localeCompare(b.name));
-
-        setLeagues(uniqueLeagues);
-
-        // по подразбиране избираме първата лига
-        if (uniqueLeagues.length > 0) {
-          setSelectedLeague(uniqueLeagues[0].id);
+        setLeagues(data.leagues || []);
+        if (data.leagues?.length > 0) {
+          setSelectedLeagueId(data.leagues[0].id);
         }
-      } catch (err) {
-        console.error("Fetch error:", err);
-        setError(err.message);
+      } catch (e) {
+        setError(e.message);
+      } finally {
+        setLoading(false);
       }
     };
+    load();
+  }, [saveId]);
 
-    fetchTemplates();
-  }, [open]);
+  const handleConfirm = async () => {
+    if (!selectedTeamId) return;
+    try {
+      let res = await fetch(`/api/games/${saveId}/select-team/${selectedTeamId}`, {
+        method: "POST",
+        credentials: "include",
+      });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        throw new Error(d.message || "Грешка при избор на отбор");
+      }
 
-  if (!open) return null;
+      res = await fetch(`/api/games/current/${saveId}`, {
+        method: "POST",
+        credentials: "include",
+      });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        throw new Error(d.message || "Грешка при активиране на сейфа");
+      }
 
-  // филтрирани отбори според избраната лига
-  const filteredTeams = selectedLeague
-    ? teams.filter((t) => t.LeagueId === selectedLeague)
-    : [];
+      const fullSave = await res.json();
+      onSelected(fullSave);
+    } catch (e) {
+      setError(e.message);
+    }
+  };
+
+  const handleCancel = async () => {
+    try {
+      await fetch(`/api/games/${saveId}`, { method: "DELETE", credentials: "include" });
+    } catch {}
+    onClose();
+  };
+
+  if (loading) {
+    return (
+      <div className="fixed inset-0 bg-black/70 flex items-center justify-center">
+        <div className="bg-slate-800 text-white p-6 rounded-2xl w-[700px]">
+          Зареждане на отборите...
+        </div>
+      </div>
+    );
+  }
+
+  const currentLeague = leagues.find(l => l.id === selectedLeagueId);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
-      <div className="w-11/12 max-w-4xl bg-white rounded-lg overflow-hidden">
-        <div className="p-4 border-b flex justify-between items-center">
+    <div className="fixed inset-0 bg-black/70 flex items-center justify-center">
+      <div className="bg-white rounded-2xl w-[900px] max-h-[90vh] overflow-hidden shadow-2xl flex flex-col">
+        {/* header */}
+        <div className="px-6 py-4 border-b">
           <h2 className="text-xl font-semibold">Избери отбор</h2>
-          <button onClick={onClose} className="px-3 py-1 rounded bg-gray-200">
-            Отказ
-          </button>
+          <p className="text-sm text-gray-500">Разгледай лигите и потвърди избора си.</p>
         </div>
 
-        <div className="p-4">
-          {error && <p className="text-red-500 mb-4">{error}</p>}
-
-          {/* Tabs за лигите */}
-          <div className="flex gap-2 border-b mb-4 overflow-x-auto">
-            {leagues.map((l) => (
-              <button
-                key={l.id}
-                onClick={() => {
-                  setSelectedLeague(l.id);
-                  setSelectedTeam(null);
-                }}
-                className={`px-4 py-2 whitespace-nowrap rounded-t ${
-                  selectedLeague === l.id
-                    ? "bg-green-600 text-white"
-                    : "bg-gray-200 hover:bg-gray-300"
+        {/* league slider */}
+        <div className="px-6 py-3 border-b bg-slate-50 overflow-x-auto flex gap-3 scrollbar-thin scrollbar-thumb-gray-300">
+          {leagues.map(l => (
+            <button
+              key={l.id}
+              onClick={() => {
+                setSelectedLeagueId(l.id);
+                setSelectedTeamId(null);
+              }}
+              className={`px-5 py-3 rounded-xl whitespace-nowrap border text-sm font-medium
+                transition-colors
+                ${
+                  selectedLeagueId === l.id
+                    ? "bg-blue-600 text-white border-blue-600"
+                    : "bg-white hover:bg-gray-100"
                 }`}
-              >
-                {l.name} (Tier {l.tier})
-              </button>
-            ))}
-          </div>
-
-          {/* Отбори */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-            {filteredTeams.map((t) => (
-              <div
-                key={t.id}
-                onClick={() => setSelectedTeam(t.id)}
-                className={`p-3 rounded cursor-pointer border ${
-                  selectedTeam === t.id
-                    ? "border-green-500 shadow bg-green-50"
-                    : "border-gray-200 hover:border-gray-400"
-                }`}
-              >
-                <div className="text-lg font-medium">{t.name}</div>
-                <div className="text-sm text-gray-500">{t.abbreviation}</div>
-              </div>
-            ))}
-            {filteredTeams.length === 0 && (
-              <p className="col-span-full text-gray-500">
-                Няма отбори в тази лига.
-              </p>
-            )}
-          </div>
+            >
+              {l.leagueName} • {l.countryName}
+            </button>
+          ))}
         </div>
 
-        <div className="p-4 border-t flex justify-end gap-2">
-          <button onClick={onClose} className="px-4 py-2 rounded bg-gray-200">
-            Отказ
+        {/* body */}
+        <div className="flex-1 overflow-y-auto p-6">
+          {error && <div className="bg-red-50 text-red-700 p-3 rounded-lg mb-4">{error}</div>}
+
+          {currentLeague ? (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+              {currentLeague.teams.map(t => (
+                <button
+                  key={t.id}
+                  onClick={() => setSelectedTeamId(t.id)}
+                  className={`p-4 rounded-xl border text-left hover:shadow transition
+                    ${
+                      selectedTeamId === t.id
+                        ? "ring-2 ring-blue-500 border-blue-500"
+                        : "hover:border-gray-400"
+                    }`}
+                >
+                  <div className="text-base font-semibold truncate">{t.name}</div>
+                  <div className="text-xs text-gray-500">
+                    {t.abbreviation} • {t.countryName}
+                  </div>
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="text-gray-500">Няма избрана лига</div>
+          )}
+        </div>
+
+        {/* footer */}
+        <div className="px-6 py-4 border-t bg-slate-50 flex justify-end gap-3">
+          <button
+            onClick={handleCancel}
+            className="px-4 py-2 rounded-xl border hover:bg-white transition"
+          >
+            Cancel (изтрий сейфа)
           </button>
           <button
-            onClick={() => onSuccess(selectedTeam)}
-            disabled={!selectedTeam || loading}
-            className="px-4 py-2 rounded bg-green-600 text-white disabled:opacity-50"
+            onClick={handleConfirm}
+            disabled={!selectedTeamId}
+            className={`px-4 py-2 rounded-xl text-white transition
+              ${
+                selectedTeamId
+                  ? "bg-blue-600 hover:bg-blue-500"
+                  : "bg-gray-400 cursor-not-allowed"
+              }`}
           >
-            {loading ? "Създавам..." : "Потвърди и започни"}
+            Потвърди избора
           </button>
         </div>
       </div>

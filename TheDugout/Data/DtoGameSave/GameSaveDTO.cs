@@ -6,6 +6,9 @@
         public string Name { get; set; } = null!;
         public DateTime CreatedAt { get; set; }
 
+        public int? UserTeamId { get; set; }
+        public string? UserTeamName { get; set; }
+
         public IEnumerable<LeagueDto> Leagues { get; set; } = new List<LeagueDto>();
         public IEnumerable<SeasonDto> Seasons { get; set; } = new List<SeasonDto>();
     }
@@ -15,10 +18,13 @@
         public int Id { get; set; }
         public int Tier { get; set; }
         public int CountryId { get; set; }
+        public string CountryName { get; set; } = null!;
+        public string LeagueName { get; set; } = null!;
         public int TeamsCount { get; set; }
 
         public IEnumerable<TeamDto> Teams { get; set; } = new List<TeamDto>();
     }
+
 
     public class TeamDto
     {
@@ -26,6 +32,7 @@
         public string Name { get; set; } = null!;
         public string Abbreviation { get; set; } = null!;
         public int CountryId { get; set; }
+        public string CountryName { get; set; } = null!;
     }
 
     public class SeasonDto
@@ -34,6 +41,4 @@
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
     }
-
-
 }
