@@ -252,7 +252,10 @@ function App() {
 
                     <Route path="/inbox" element={<Inbox />} />
                     <Route path="/calendar" element={<Calendar gameSaveId={currentGameSave?.id} />} />
-                    <Route path="/squad" element={<Squad />} />
+<Route
+  path="/squad"
+  element={<Squad gameSaveId={currentGameSave?.id} />}
+/>
                     <Route path="/tactics" element={<Tactics />} />
                     <Route path="/training" element={<Training />} />
                     <Route
