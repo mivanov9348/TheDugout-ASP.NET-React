@@ -1,16 +1,18 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using TheDugout.Data;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using TheDugout.Services.User;
-using TheDugout.Services.Template;
-using TheDugout.Services.Game;
-using TheDugout.Services.Players;
-using TheDugout.Services.Team;
+using TheDugout.Data;
+using TheDugout.Services;
 using TheDugout.Services.Fixture;
+using TheDugout.Services.Game;
+using TheDugout.Services.Interfaces;
 using TheDugout.Services.League;
+using TheDugout.Services.Players;
 using TheDugout.Services.Season;
+using TheDugout.Services.Team;
+using TheDugout.Services.Template;
+using TheDugout.Services.User;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -33,6 +35,10 @@ builder.Services.AddScoped<IFixturesService, FixturesService>();
 builder.Services.AddScoped<ITeamGenerationService, TeamGenerationService>();
 builder.Services.AddScoped<ILeagueService, LeagueService>();
 builder.Services.AddScoped<ISeasonGenerationService, SeasonGenerationService>();
+builder.Services.AddScoped<IPlayerInfoService, PlayerInfoService>();
+builder.Services.AddScoped<ITeamService, TeamService>();
+
+builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 
 builder.Services.AddCors(options =>
