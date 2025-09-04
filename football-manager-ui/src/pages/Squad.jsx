@@ -9,7 +9,11 @@ const Squad = ({ gameSaveId }) => {
   const [positionFilter, setPositionFilter] = useState("");
   const [countryFilter, setCountryFilter] = useState("");
 
-  // събираме всички уникални атрибути
+  // Контрол кои секции да се показват
+  const [showInfo, setShowInfo] = useState(true);
+  const [showAttributes, setShowAttributes] = useState(true);
+  const [showStats, setShowStats] = useState(true);
+
   const allAttributeNames = useMemo(() => {
     const names = new Set();
     players.forEach((p) => {
@@ -34,7 +38,6 @@ const Squad = ({ gameSaveId }) => {
     fetchSquad();
   }, [gameSaveId]);
 
-  // филтриране + сортиране
   const filteredPlayers = useMemo(() => {
     let result = [...players];
 
@@ -56,7 +59,6 @@ const Squad = ({ gameSaveId }) => {
       let aValue = a[key];
       let bValue = b[key];
 
-      // ако сортираме по атрибут
       if (aValue === undefined && bValue === undefined) {
         aValue = a.attributes?.find((x) => x.name === key)?.value ?? 0;
         bValue = b.attributes?.find((x) => x.name === key)?.value ?? 0;
@@ -81,7 +83,6 @@ const Squad = ({ gameSaveId }) => {
   const getSortIndicator = (key) =>
     sortConfig.key === key ? (sortConfig.direction === "asc" ? " ↑" : " ↓") : "";
 
-  // уникални филтри
   const uniquePositions = [...new Set(players.map((p) => p.position))];
   const uniqueCountries = [...new Set(players.map((p) => p.country).filter(Boolean))];
 
@@ -129,21 +130,29 @@ const Squad = ({ gameSaveId }) => {
           </select>
         </div>
 
+        {/* Чекбокси за показване/скриване на колони */}
+        <div className="flex gap-6 mb-4">
+          <label className="flex items-center gap-2">
+            <input type="checkbox" checked={showInfo} onChange={() => setShowInfo(!showInfo)} />
+            Player Info
+          </label>
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={showAttributes}
+              onChange={() => setShowAttributes(!showAttributes)}
+            />
+            Attributes
+          </label>
+          <label className="flex items-center gap-2">
+            <input type="checkbox" checked={showStats} onChange={() => setShowStats(!showStats)} />
+            Stats
+          </label>
+        </div>
+
         <div className="bg-white shadow-md rounded-lg overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 text-sm">
             <thead>
-              {/* групи */}
-              <tr className="bg-gray-200 text-gray-700 font-semibold">
-                <th colSpan="9" className="px-4 py-2 text-center sticky left-0 bg-gray-200 z-20">
-                  Information
-                </th>
-                <th colSpan={allAttributeNames.length} className="px-4 py-2 text-center">
-                  Attributes
-                </th>
-                <th className="px-4 py-2 text-center">Season Stats</th>
-              </tr>
-
-              {/* заглавия */}
               <tr className="bg-gray-50">
                 <th
                   onClick={() => sortPlayers("fullName")}
@@ -157,26 +166,31 @@ const Squad = ({ gameSaveId }) => {
                 >
                   Position {getSortIndicator("position")}
                 </th>
-             
-                <th onClick={() => sortPlayers("age")} className="px-4 py-2 cursor-pointer">
-                  Age {getSortIndicator("age")}
-                </th>
-                <th className="px-4 py-2">Country</th>
-                <th className="px-4 py-2">Height (cm)</th>
-                <th className="px-4 py-2">Weight (kg)</th>
-                <th className="px-4 py-2">Price</th>
 
-                {allAttributeNames.map((attr) => (
-                  <th
-                    key={attr}
-                    onClick={() => sortPlayers(attr)}
-                    className="px-4 py-2 cursor-pointer"
-                  >
-                    {attr} {getSortIndicator(attr)}
-                  </th>
-                ))}
+                {showInfo && (
+                  <>
+                    <th onClick={() => sortPlayers("age")} className="px-4 py-2 cursor-pointer">
+                      Age {getSortIndicator("age")}
+                    </th>
+                    <th className="px-4 py-2">Country</th>
+                    <th className="px-4 py-2">Height (cm)</th>
+                    <th className="px-4 py-2">Weight (kg)</th>
+                    <th className="px-4 py-2">Price</th>
+                  </>
+                )}
 
-                <th className="px-4 py-2">Season Stats</th>
+                {showAttributes &&
+                  allAttributeNames.map((attr) => (
+                    <th
+                      key={attr}
+                      onClick={() => sortPlayers(attr)}
+                      className="px-4 py-2 cursor-pointer"
+                    >
+                      {attr} {getSortIndicator(attr)}
+                    </th>
+                  ))}
+
+                {showStats && <th className="px-4 py-2">Season Stats</th>}
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -184,34 +198,42 @@ const Squad = ({ gameSaveId }) => {
                 <tr key={p.id} className="hover:bg-gray-50">
                   <td className="px-4 py-2 sticky left-0 bg-white z-10">{p.fullName}</td>
                   <td className="px-4 py-2 sticky left-[120px] bg-white z-10">{p.position}</td>
-                  <td className="px-4 py-2">{p.age}</td>
-                  <td className="px-4 py-2">{p.country}</td>
-                  <td className="px-4 py-2">{p.heightCm}</td>
-                  <td className="px-4 py-2">{p.weightKg}</td>
-                  <td className="px-4 py-2">{p.price}</td>
 
-                  {allAttributeNames.map((attr) => {
-                    const attribute = p.attributes?.find((a) => a.name === attr);
-                    return (
-                      <td key={attr} className="px-4 py-2 text-center">
-                        {attribute ? attribute.value : "-"}
-                      </td>
-                    );
-                  })}
+                  {showInfo && (
+                    <>
+                      <td className="px-4 py-2">{p.age}</td>
+                      <td className="px-4 py-2">{p.country}</td>
+                      <td className="px-4 py-2">{p.heightCm}</td>
+                      <td className="px-4 py-2">{p.weightKg}</td>
+                      <td className="px-4 py-2">{p.price}</td>
+                    </>
+                  )}
 
-                  <td className="px-4 py-2">
-                    {p.seasonStats && p.seasonStats.length > 0 ? (
-                      <ul className="list-disc list-inside">
-                        {p.seasonStats.map((s, i) => (
-                          <li key={i}>
-                            Season {s.seasonId}: {s.goals}G / {s.assists}A / {s.matchesPlayed}M
-                          </li>
-                        ))}
-                      </ul>
-                    ) : (
-                      "-"
-                    )}
-                  </td>
+                  {showAttributes &&
+                    allAttributeNames.map((attr) => {
+                      const attribute = p.attributes?.find((a) => a.name === attr);
+                      return (
+                        <td key={attr} className="px-4 py-2 text-center">
+                          {attribute ? attribute.value : "-"}
+                        </td>
+                      );
+                    })}
+
+                  {showStats && (
+                    <td className="px-4 py-2">
+                      {p.seasonStats && p.seasonStats.length > 0 ? (
+                        <ul className="list-disc list-inside">
+                          {p.seasonStats.map((s, i) => (
+                            <li key={i}>
+                              Season {s.seasonId}: {s.goals}G / {s.assists}A / {s.matchesPlayed}M
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        "-"
+                      )}
+                    </td>
+                  )}
                 </tr>
               ))}
               {filteredPlayers.length === 0 && (

@@ -1,12 +1,12 @@
-﻿using Bogus;
-using Microsoft.EntityFrameworkCore;
-using System;
-using TheDugout.Data;
-using TheDugout.Models;
-using TheDugout.Services.Team;
-
-namespace TheDugout.Services.Players
+﻿namespace TheDugout.Services.Players
 {
+    using Bogus;
+    using Microsoft.EntityFrameworkCore;
+    using System;
+    using TheDugout.Data;
+    using TheDugout.Models;
+    using TheDugout.Services.Team;
+
     public class PlayerGenerationService : IPlayerGenerationService
     {
         private readonly ITeamPlanService _teamPlan;
@@ -48,27 +48,28 @@ namespace TheDugout.Services.Players
 
                 for (int i = 0; i < count; i++)
                 {
+                    string selectedPositionCode = positionCode;
                     if (positionCode == "ANY")
                     {
                         string[] options = { "GK", "DF", "MID", "ATT" };
-                        positionCode = options[_rng.Next(options.Length)];
+                        selectedPositionCode = options[_rng.Next(options.Length)];
                     }
 
-                    var position = _context.Positions.FirstOrDefault(p => p.Code == positionCode);
+                    var position = _context.Positions.FirstOrDefault(p => p.Code == selectedPositionCode);
                     if (position == null)
-                        throw new InvalidOperationException($"Position with code '{positionCode}' not found in database.");
+                        throw new InvalidOperationException($"Position with code '{selectedPositionCode}' not found in database.");
 
                     var randomCountry = countries[_rng.Next(countries.Count)];
                     if (randomCountry == null)
                         throw new InvalidOperationException("Selected random country is null.");
 
-                    // Faker винаги на английски за латиница и само мъжки имена
-                    var faker = new Faker("en");
+                    var locale = GetLocaleForCountry(randomCountry.Code);
+                    var faker = new Faker(locale);
 
                     var player = new Player
                     {
                         FirstName = faker.Name.FirstName(Bogus.DataSets.Name.Gender.Male),
-                        LastName = faker.Name.LastName(),
+                        LastName = faker.Name.LastName(Bogus.DataSets.Name.Gender.Male),
                         BirthDate = RandomBirthDate(),
                         Team = team,
                         GameSave = save,
@@ -80,16 +81,15 @@ namespace TheDugout.Services.Players
                         Attributes = new List<PlayerAttribute>()
                     };
 
+                    AssignAttributes(player, position);
                     player.Price = CalculatePlayerPrice(player);
 
-                    AssignAttributes(player, position);
                     players.Add(player);
                 }
             }
 
             return players;
         }
-
 
         private void AssignAttributes(Player player, Position position)
         {
@@ -140,23 +140,24 @@ namespace TheDugout.Services.Players
             double roll = _rng.NextDouble();
 
             int baseValue;
-            if (roll < 0.10)
-                baseValue = _rng.Next(1, 6);       
-            else if (roll < 0.50)
-                baseValue = _rng.Next(6, 12);     
-            else if (roll < 0.85)
-                baseValue = _rng.Next(12, 17);     
+            if (roll < 0.01)
+                baseValue = _rng.Next(1, 4);       // Много рядко ниски
+            else if (roll < 0.05)
+                baseValue = _rng.Next(4, 8);       // Рядко ниски
+            else if (roll < 0.30)
+                baseValue = _rng.Next(8, 13);      // Средни
+            else if (roll < 0.70)
+                baseValue = _rng.Next(13, 17);     // Добри
             else
-                baseValue = _rng.Next(17, 21);     
+                baseValue = _rng.Next(17, 21);     // Отлични
 
-            double weighted = baseValue * (0.5 + weight); 
+            double weighted = baseValue * (0.5 + weight);
             double ageFactor = AgeFactor(age);
 
             int final = (int)Math.Round(weighted * ageFactor);
 
             return Math.Clamp(final, 1, 20);
         }
-
 
         private double AgeFactor(int age)
         {
@@ -187,19 +188,18 @@ namespace TheDugout.Services.Players
                 attributeCount++;
             }
 
-            if (attributeCount == 0) attributeCount = 1; 
+            if (attributeCount == 0) attributeCount = 1;
             double avgAttribute = attributeScore / attributeCount;
 
             double ageFactor = player.Age switch
             {
                 int age when age < 20 => 0.6,
-                int age when age <= 23 => 0.8,  
-                int age when age <= 28 => 1.2,  
-                int age when age <= 32 => 1.0,  
+                int age when age <= 23 => 0.8,
+                int age when age <= 28 => 1.2,
+                int age when age <= 32 => 1.0,
                 int age when age >= 33 => 0.7,
                 _ => 1.0
             };
-
 
             double positionFactor = player.Position.Code switch
             {
@@ -210,7 +210,7 @@ namespace TheDugout.Services.Players
                 _ => 1.0
             };
 
-            double basePrice = avgAttribute * 100_000; 
+            double basePrice = avgAttribute * 100_000;
 
             double price = basePrice * ageFactor * positionFactor;
 
@@ -220,23 +220,55 @@ namespace TheDugout.Services.Players
             return Math.Round((decimal)price, 0);
         }
 
-
         private string GetLocaleForCountry(string countryCode)
         {
             return countryCode switch
             {
-                "FRA" => "fr",
-                "ESP" => "es",
-                "GER" => "de",
-                "ITA" => "it",
-                "BUL" => "ru",
-                "NED" => "nl",
-                "POL" => "pl",
-                "POR" => "pt_PT",
-                "ROU" => "ro",
-                "RUS" => "ru",
-                "TUR" => "tr",
-                _ => "en"
+                "RSA" => "af_ZA", // Afrikaans (South Africa)
+                "ALG" => "ar", // Arabic (Algeria)
+                "AZE" => "az", // Azerbaijani (Azerbaijan)
+                "CZE" => "cz", // Czech (Czech Republic)
+                "GER" => "de", // German (Germany)
+                "AUT" => "de_AT", // German (Austria)
+                "SUI" => "de_CH", // German (Switzerland)
+                "GRE" => "el", // Greek (Greece)
+                "AUS" => "en_AU", // English (Australia)
+                "CAN" => "en_CA", // English (Canada)
+                "ENG" => "en_GB", // English (Great Britain)
+                "IRL" => "en_IE", // English (Ireland)
+                "IND" => "en_IND", // English (India)
+                "NGA" => "en_NG", // Nigeria (English)
+                "USA" => "en_US", // English (United States)
+                "ESP" => "es", // Spanish (Spain)
+                "MEX" => "es_MX", // Spanish (Mexico)
+                "IRN" => "fa", // Farsi (Iran)
+                "FIN" => "fi", // Finnish (Finland)
+                "FRA" => "fr", // French (France)                
+                "GEO" => "ge", // Georgian (Georgia)
+                "CRO" => "hr", // Hrvatski (Croatia)
+                "IDN" => "id_ID", // Indonesia
+                "ITA" => "it", // Italian (Italy)
+                "JPN" => "ja", // Japanese (Japan)
+                "KOR" => "ko", // Korean (Korea Republic)
+                "LVA" => "lv", // Latvian (Latvia)
+                "NOR" => "nb_NO", // Norwegian (Norway)
+                "NEP" => "ne", // Nepalese (Nepal)
+                "NED" => "nl", // Dutch (Netherlands)
+                "BEL" => "nl_BE", // Dutch (Belgium)
+                "POL" => "pl", // Polish (Poland)
+                "BRA" => "pt_BR", // Portuguese (Brazil)
+                "POR" => "pt_PT", // Portuguese (Portugal)
+                "ROU" => "ro", // Romanian (Romania)
+                "RUS" => "ru", // Russian (Russia)
+                "SVK" => "sk", // Slovakian (Slovakia)
+                "SWE" => "sv", // Swedish (Sweden)
+                "TUR" => "tr", // Turkish (Turkey)
+                "UKR" => "uk", // Ukrainian (Ukraine)
+                "VIE" => "vi", // Vietnamese (Vietnam)
+                "CHN" => "zh_CN", // Chinese (China PR)
+                "TPE" => "zh_TW", // Chinese (Chinese Taipei)
+                "BUL" => "ru", // Bulgarian (Bulgaria) - using Russian as fallback
+                _ => "en" // Default to English
             };
         }
     }
