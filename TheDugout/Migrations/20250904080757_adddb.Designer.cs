@@ -12,7 +12,7 @@ using TheDugout.Data;
 namespace TheDugout.Migrations
 {
     [DbContext(typeof(DugoutDbContext))]
-    [Migration("20250902135128_adddb")]
+    [Migration("20250904080757_adddb")]
     partial class adddb
     {
         /// <inheritdoc />
