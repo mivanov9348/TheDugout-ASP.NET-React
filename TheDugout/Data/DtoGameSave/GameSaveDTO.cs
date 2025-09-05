@@ -9,8 +9,24 @@
         public int? UserTeamId { get; set; }
         public string? UserTeamName { get; set; }
 
+        public TeamHeaderDto? UserTeam { get; set; }   // 🔹 ново свойство
+
         public IEnumerable<LeagueDto> Leagues { get; set; } = new List<LeagueDto>();
         public IEnumerable<SeasonDto> Seasons { get; set; } = new List<SeasonDto>();
+    }
+
+    public class TeamHeaderDto
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = null!;
+        public string Abbreviation { get; set; } = null!;
+        public decimal Balance { get; set; }
+
+        public int? LeagueId { get; set; }
+        public string? LeagueName { get; set; }
+
+        public int CountryId { get; set; }
+        public string CountryName { get; set; } = null!;
     }
 
     public class LeagueDto
@@ -40,5 +56,6 @@
         public int Id { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
+        public DateTime CurrentDate { get; set; }
     }
 }
