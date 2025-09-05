@@ -3,6 +3,7 @@ using TheDugout.Data;
 using TheDugout.Models;
 using TheDugout.Services.Fixture;
 using TheDugout.Services.League;
+using TheDugout.Services.Players;
 using TheDugout.Services.Season;
 
 namespace TheDugout.Services.Game
@@ -14,13 +15,15 @@ namespace TheDugout.Services.Game
         private readonly ILeagueService _leagueGenerator;
         private readonly ISeasonGenerationService _seasonGenerator;
         private readonly IFixturesService _fixturesService;
+        private readonly IPlayerGenerationService _playerGenerator;
 
         public GameSaveService(
             DugoutDbContext context,
             ILogger<GameSaveService> logger,
             ILeagueService leagueGenerator,
             ISeasonGenerationService seasonGenerator,
-            IFixturesService fixturesService
+            IFixturesService fixturesService,
+            IPlayerGenerationService playerGenerator
         )
         {
             _context = context;
@@ -28,6 +31,7 @@ namespace TheDugout.Services.Game
             _leagueGenerator = leagueGenerator;
             _seasonGenerator = seasonGenerator;
             _fixturesService = fixturesService;
+            _playerGenerator = playerGenerator;
         }
 
         public async Task<List<object>> GetUserSavesAsync(int userId)
@@ -96,6 +100,11 @@ namespace TheDugout.Services.Game
                 var leagues = await _leagueGenerator.GenerateLeaguesAsync(gameSave);
                 foreach (var league in leagues)
                     gameSave.Leagues.Add(league);
+
+                // FreeAgents
+                var freeAgents = _playerGenerator.GenerateFreeAgents(gameSave, 100); 
+                foreach (var agent in freeAgents)
+                    _context.Players.Add(agent);
 
                 _context.GameSaves.Add(gameSave);
                 await _context.SaveChangesAsync();

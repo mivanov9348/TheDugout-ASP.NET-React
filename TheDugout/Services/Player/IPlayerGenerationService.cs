@@ -6,5 +6,7 @@ namespace TheDugout.Services.Players
     {
         
         List<Models.Player> GenerateTeamPlayers(GameSave save, Models.Team team);
+        List<Player> GenerateFreeAgents(GameSave save, int count = 100);
+
     }
 }

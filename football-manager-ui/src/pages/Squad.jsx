@@ -9,7 +9,7 @@ const Squad = ({ gameSaveId }) => {
   const [positionFilter, setPositionFilter] = useState("");
   const [countryFilter, setCountryFilter] = useState("");
 
-  // Контрол кои секции да се показват
+  // Section visibility
   const [showInfo, setShowInfo] = useState(true);
   const [showAttributes, setShowAttributes] = useState(true);
   const [showStats, setShowStats] = useState(true);
@@ -27,7 +27,7 @@ const Squad = ({ gameSaveId }) => {
     const fetchSquad = async () => {
       try {
         const res = await fetch(`/api/team/by-save/${gameSaveId}`, { credentials: "include" });
-        if (!res.ok) throw new Error("Грешка при зареждане на отбора");
+        if (!res.ok) throw new Error("Error while loading the team");
         const data = await res.json();
         setPlayers(data.players);
         setTeamName(data.teamName);
@@ -86,18 +86,24 @@ const Squad = ({ gameSaveId }) => {
   const uniquePositions = [...new Set(players.map((p) => p.position))];
   const uniqueCountries = [...new Set(players.map((p) => p.country).filter(Boolean))];
 
+  // Helper for formatting prices
+  const formatPrice = (value) => {
+    if (value == null) return "-";
+    return value.toLocaleString("en-US");
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="max-w-7xl mx-auto">
         <h1 className="text-3xl font-bold text-center mb-8 text-gray-800">
-          {teamName ? `${teamName}` : "Зареждане..."}
+          {teamName ? `${teamName}` : "Loading..."}
         </h1>
 
-        {/* Филтри */}
+        {/* Filters */}
         <div className="flex flex-wrap gap-4 mb-6">
           <input
             type="text"
-            placeholder="Търси по име..."
+            placeholder="Search by name..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="border rounded px-3 py-2"
@@ -108,7 +114,7 @@ const Squad = ({ gameSaveId }) => {
             onChange={(e) => setPositionFilter(e.target.value)}
             className="border rounded px-3 py-2"
           >
-            <option value="">Всички позиции</option>
+            <option value="">All positions</option>
             {uniquePositions.map((pos) => (
               <option key={pos} value={pos}>
                 {pos}
@@ -121,7 +127,7 @@ const Squad = ({ gameSaveId }) => {
             onChange={(e) => setCountryFilter(e.target.value)}
             className="border rounded px-3 py-2"
           >
-            <option value="">Всички държави</option>
+            <option value="">All countries</option>
             {uniqueCountries.map((c) => (
               <option key={c} value={c}>
                 {c}
@@ -130,7 +136,7 @@ const Squad = ({ gameSaveId }) => {
           </select>
         </div>
 
-        {/* Чекбокси за показване/скриване на колони */}
+        {/* Section toggles */}
         <div className="flex gap-6 mb-4">
           <label className="flex items-center gap-2">
             <input type="checkbox" checked={showInfo} onChange={() => setShowInfo(!showInfo)} />
@@ -184,13 +190,15 @@ const Squad = ({ gameSaveId }) => {
                     <th
                       key={attr}
                       onClick={() => sortPlayers(attr)}
-                      className="px-4 py-2 cursor-pointer"
+                      className="px-4 py-2 cursor-pointer bg-gray-200"
                     >
                       {attr} {getSortIndicator(attr)}
                     </th>
                   ))}
 
-                {showStats && <th className="px-4 py-2">Season Stats</th>}
+                {showStats && (
+                  <th className="px-4 py-2 bg-gray-100">Season Stats</th>
+                )}
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -205,7 +213,7 @@ const Squad = ({ gameSaveId }) => {
                       <td className="px-4 py-2">{p.country}</td>
                       <td className="px-4 py-2">{p.heightCm}</td>
                       <td className="px-4 py-2">{p.weightKg}</td>
-                      <td className="px-4 py-2">{p.price}</td>
+                      <td className="px-4 py-2">{formatPrice(p.price)}</td>
                     </>
                   )}
 
@@ -213,14 +221,14 @@ const Squad = ({ gameSaveId }) => {
                     allAttributeNames.map((attr) => {
                       const attribute = p.attributes?.find((a) => a.name === attr);
                       return (
-                        <td key={attr} className="px-4 py-2 text-center">
+                        <td key={attr} className="px-4 py-2 text-center bg-gray-200">
                           {attribute ? attribute.value : "-"}
                         </td>
                       );
                     })}
 
                   {showStats && (
-                    <td className="px-4 py-2">
+                    <td className="px-4 py-2 bg-gray-100">
                       {p.seasonStats && p.seasonStats.length > 0 ? (
                         <ul className="list-disc list-inside">
                           {p.seasonStats.map((s, i) => (
@@ -242,7 +250,7 @@ const Squad = ({ gameSaveId }) => {
                     colSpan={10 + allAttributeNames.length}
                     className="text-center py-6 text-gray-500"
                   >
-                    Няма играчи, които да отговарят на филтъра.
+                    No players match the filter.
                   </td>
                 </tr>
               )}

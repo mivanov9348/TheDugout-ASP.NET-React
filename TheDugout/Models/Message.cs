@@ -1,5 +1,13 @@
 ﻿namespace TheDugout.Models
 {
+
+    public enum MessageCategory
+    {
+        Welcome,
+        Transfer,
+        MatchResult,
+
+    }
     public class Message
     {
         public int Id { get; set; }

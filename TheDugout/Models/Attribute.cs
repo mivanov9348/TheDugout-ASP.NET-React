@@ -1,13 +1,13 @@
-﻿namespace TheDugout.Models
-{
-    public class Attribute
+﻿    namespace TheDugout.Models
     {
-        public int Id { get; set; }
+        public class Attribute
+        {
+            public int Id { get; set; }
 
-        public string Code { get; set; } = null!;   
-        public string Name { get; set; } = null!;  
+            public string Code { get; set; } = null!;   
+            public string Name { get; set; } = null!;  
 
-        public ICollection<PlayerAttribute> PlayerAttributes { get; set; } = new List<PlayerAttribute>();
-        public ICollection<PositionWeight> PositionWeights { get; set; } = new List<PositionWeight>();
+            public ICollection<PlayerAttribute> PlayerAttributes { get; set; } = new List<PlayerAttribute>();
+            public ICollection<PositionWeight> PositionWeights { get; set; } = new List<PositionWeight>();
+        }
     }
-}
