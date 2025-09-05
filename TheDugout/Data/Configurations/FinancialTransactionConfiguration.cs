@@ -8,30 +8,27 @@ namespace TheDugout.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<FinancialTransaction> builder)
         {
-            builder.HasKey(t => t.Id);
+            builder.HasKey(ft => ft.Id);
 
-            builder.Property(t => t.Amount)
-                .HasColumnType("decimal(18,2)")
-                .IsRequired();
+            builder.Property(ft => ft.Amount)
+                .HasColumnType("decimal(18,2)");
 
-            builder.Property(t => t.Description)
-                .HasMaxLength(255);
+            builder.Property(ft => ft.Fee)
+                .HasColumnType("decimal(18,2)");
 
-            builder.Property(t => t.Date)
-                .IsRequired();
+            builder.HasOne(ft => ft.FromTeam)
+                .WithMany()
+                .HasForeignKey(ft => ft.FromTeamId)
+                .OnDelete(DeleteBehavior.Restrict);
 
-            builder.Property(t => t.Type)
-                .HasConversion<int>() 
-                .IsRequired();
+            builder.HasOne(ft => ft.ToTeam)
+                .WithMany()
+                .HasForeignKey(ft => ft.ToTeamId)
+                .OnDelete(DeleteBehavior.Restrict);
 
-            builder.HasOne(t => t.Team)
-                .WithMany(team => team.Transactions)
-                .HasForeignKey(t => t.TeamId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            builder.HasOne(t => t.Bank)
-                .WithMany(bank => bank.Transactions)
-                .HasForeignKey(t => t.BankId)
+            builder.HasOne(ft => ft.Bank)
+                .WithMany(b => b.Transactions)
+                .HasForeignKey(ft => ft.BankId)
                 .OnDelete(DeleteBehavior.Cascade);
         }
     }

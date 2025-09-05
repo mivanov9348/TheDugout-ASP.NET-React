@@ -1,0 +1,20 @@
+[
+  {
+    "Category": "Welcome",
+    "SubjectTemplate": "Welcome, {UserName}!",
+    "BodyTemplate": "{UserName} has taken charge of {TeamName}. Best of luck in the new challenge!",
+    "Placeholders": [ "UserName", "TeamName" ],
+    "Weight": 1,
+    "IsActive": true,
+    "Language": "en"
+  },
+  {
+    "Category": "Welcome",
+    "SubjectTemplate": "{UserName} starts a new adventure!",
+    "BodyTemplate": "{UserName} is now the manager of {TeamName}. Fans are looking forward to their first match.",
+    "Placeholders": [ "UserName", "TeamName" ],
+    "Weight": 1,
+    "IsActive": true,
+    "Language": "en"
+  }
+]

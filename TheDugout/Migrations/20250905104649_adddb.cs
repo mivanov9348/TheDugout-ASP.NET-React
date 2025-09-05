@@ -53,6 +53,25 @@ namespace TheDugout.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "MessageTemplates",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Category = table.Column<int>(type: "int", nullable: false),
+                    SubjectTemplate = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    BodyTemplate = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    PlaceholdersJson = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Weight = table.Column<int>(type: "int", nullable: false, defaultValue: 1),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false, defaultValue: true),
+                    Language = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false, defaultValue: "en")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MessageTemplates", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Positions",
                 columns: table => new
                 {
@@ -87,6 +106,26 @@ namespace TheDugout.Migrations
                         name: "FK_LeagueTemplates_Countries_CountryId",
                         column: x => x.CountryId,
                         principalTable: "Countries",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "MessageTemplatePlaceholders",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    MessageTemplateId = table.Column<int>(type: "int", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MessageTemplatePlaceholders", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_MessageTemplatePlaceholders_MessageTemplates_MessageTemplateId",
+                        column: x => x.MessageTemplateId,
+                        principalTable: "MessageTemplates",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -254,7 +293,8 @@ namespace TheDugout.Migrations
                     Body = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     IsRead = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     Date = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
-                    GameSaveId = table.Column<int>(type: "int", nullable: true)
+                    GameSaveId = table.Column<int>(type: "int", nullable: true),
+                    MessageTemplateId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -265,6 +305,12 @@ namespace TheDugout.Migrations
                         principalTable: "GameSaves",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Messages_MessageTemplates_MessageTemplateId",
+                        column: x => x.MessageTemplateId,
+                        principalTable: "MessageTemplates",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
                 });
 
             migrationBuilder.CreateTable(
@@ -598,9 +644,30 @@ namespace TheDugout.Migrations
                 column: "CountryId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Messages_GameSaveId",
+                name: "IX_Messages_GameSaveId_Date",
                 table: "Messages",
-                column: "GameSaveId");
+                columns: new[] { "GameSaveId", "Date" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Messages_IsRead",
+                table: "Messages",
+                column: "IsRead");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Messages_MessageTemplateId",
+                table: "Messages",
+                column: "MessageTemplateId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MessageTemplatePlaceholders_MessageTemplateId_Name",
+                table: "MessageTemplatePlaceholders",
+                columns: new[] { "MessageTemplateId", "Name" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MessageTemplates_Category_IsActive",
+                table: "MessageTemplates",
+                columns: new[] { "Category", "IsActive" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_PlayerAttributes_AttributeId",
@@ -796,6 +863,9 @@ namespace TheDugout.Migrations
                 name: "Messages");
 
             migrationBuilder.DropTable(
+                name: "MessageTemplatePlaceholders");
+
+            migrationBuilder.DropTable(
                 name: "PlayerAttributes");
 
             migrationBuilder.DropTable(
@@ -812,6 +882,9 @@ namespace TheDugout.Migrations
 
             migrationBuilder.DropTable(
                 name: "Bank");
+
+            migrationBuilder.DropTable(
+                name: "MessageTemplates");
 
             migrationBuilder.DropTable(
                 name: "Players");

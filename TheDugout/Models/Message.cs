@@ -6,6 +6,7 @@
         Welcome,
         Transfer,
         MatchResult,
+        General
 
     }
     public class Message
@@ -18,5 +19,9 @@
 
         public int? GameSaveId { get; set; }
         public GameSave? GameSave { get; set; } = null!;
+
+        public int? MessageTemplateId { get; set; }
+        public MessageTemplate? MessageTemplate { get; set; }
     }
+
 }

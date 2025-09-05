@@ -4,6 +4,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using TheDugout.Data;
 using TheDugout.Services;
+using TheDugout.Services.Finance;
 using TheDugout.Services.Fixture;
 using TheDugout.Services.Game;
 using TheDugout.Services.Interfaces;
@@ -37,6 +38,7 @@ builder.Services.AddScoped<ILeagueService, LeagueService>();
 builder.Services.AddScoped<ISeasonGenerationService, SeasonGenerationService>();
 builder.Services.AddScoped<IPlayerInfoService, PlayerInfoService>();
 builder.Services.AddScoped<ITeamService, TeamService>();
+builder.Services.AddScoped<IFinanceService, FinanceService>();
 
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 

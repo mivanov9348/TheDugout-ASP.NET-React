@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TheDugout.Data;
 
@@ -11,9 +12,11 @@ using TheDugout.Data;
 namespace TheDugout.Migrations
 {
     [DbContext(typeof(DugoutDbContext))]
-    partial class DugoutDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250905104649_adddb")]
+    partial class adddb
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -59,15 +62,9 @@ namespace TheDugout.Migrations
                     b.Property<decimal>("Balance")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int>("GameSaveId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("GameSaveId")
-                        .IsUnique();
-
-                    b.ToTable("Banks");
+                    b.ToTable("Bank");
                 });
 
             modelBuilder.Entity("TheDugout.Models.Country", b =>
@@ -118,18 +115,10 @@ namespace TheDugout.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
 
-                    b.Property<decimal>("Fee")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int?>("FromTeamId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("ToTeamId")
+                    b.Property<int?>("TeamId")
                         .HasColumnType("int");
 
                     b.Property<int>("Type")
@@ -139,11 +128,9 @@ namespace TheDugout.Migrations
 
                     b.HasIndex("BankId");
 
-                    b.HasIndex("FromTeamId");
+                    b.HasIndex("TeamId");
 
-                    b.HasIndex("ToTeamId");
-
-                    b.ToTable("FinancialTransactions");
+                    b.ToTable("FinancialTransaction");
                 });
 
             modelBuilder.Entity("TheDugout.Models.Fixture", b =>
@@ -203,9 +190,6 @@ namespace TheDugout.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("BankId")
-                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -745,9 +729,6 @@ namespace TheDugout.Migrations
                     b.Property<int>("Points")
                         .HasColumnType("int");
 
-                    b.Property<int>("Popularity")
-                        .HasColumnType("int");
-
                     b.Property<int>("TemplateId")
                         .HasColumnType("int");
 
@@ -832,17 +813,6 @@ namespace TheDugout.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("TheDugout.Models.Bank", b =>
-                {
-                    b.HasOne("TheDugout.Models.GameSave", "GameSave")
-                        .WithOne("Bank")
-                        .HasForeignKey("TheDugout.Models.Bank", "GameSaveId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("GameSave");
-                });
-
             modelBuilder.Entity("TheDugout.Models.FinancialTransaction", b =>
                 {
                     b.HasOne("TheDugout.Models.Bank", "Bank")
@@ -850,21 +820,14 @@ namespace TheDugout.Migrations
                         .HasForeignKey("BankId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("TheDugout.Models.Team", "FromTeam")
-                        .WithMany("TransactionsFrom")
-                        .HasForeignKey("FromTeamId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("TheDugout.Models.Team", "ToTeam")
-                        .WithMany("TransactionsTo")
-                        .HasForeignKey("ToTeamId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                    b.HasOne("TheDugout.Models.Team", "Team")
+                        .WithMany("Transactions")
+                        .HasForeignKey("TeamId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("Bank");
 
-                    b.Navigation("FromTeam");
-
-                    b.Navigation("ToTeam");
+                    b.Navigation("Team");
                 });
 
             modelBuilder.Entity("TheDugout.Models.Fixture", b =>
@@ -1203,9 +1166,6 @@ namespace TheDugout.Migrations
 
             modelBuilder.Entity("TheDugout.Models.GameSave", b =>
                 {
-                    b.Navigation("Bank")
-                        .IsRequired();
-
                     b.Navigation("Fixtures");
 
                     b.Navigation("Leagues");
@@ -1271,9 +1231,7 @@ namespace TheDugout.Migrations
 
                     b.Navigation("Players");
 
-                    b.Navigation("TransactionsFrom");
-
-                    b.Navigation("TransactionsTo");
+                    b.Navigation("Transactions");
                 });
 
             modelBuilder.Entity("TheDugout.Models.User", b =>

@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TheDugout.Data;
 using TheDugout.Models;
+using TheDugout.Services.Finance;
 using TheDugout.Services.Fixture;
 using TheDugout.Services.League;
 using TheDugout.Services.Players;
@@ -16,6 +17,7 @@ namespace TheDugout.Services.Game
         private readonly ISeasonGenerationService _seasonGenerator;
         private readonly IFixturesService _fixturesService;
         private readonly IPlayerGenerationService _playerGenerator;
+        private readonly IFinanceService _financeService;
 
         public GameSaveService(
             DugoutDbContext context,
@@ -23,7 +25,8 @@ namespace TheDugout.Services.Game
             ILeagueService leagueGenerator,
             ISeasonGenerationService seasonGenerator,
             IFixturesService fixturesService,
-            IPlayerGenerationService playerGenerator
+            IPlayerGenerationService playerGenerator,
+            IFinanceService financeService
         )
         {
             _context = context;
@@ -32,6 +35,7 @@ namespace TheDugout.Services.Game
             _seasonGenerator = seasonGenerator;
             _fixturesService = fixturesService;
             _playerGenerator = playerGenerator;
+            _financeService = financeService;
         }
 
         public async Task<List<object>> GetUserSavesAsync(int userId)
@@ -55,10 +59,6 @@ namespace TheDugout.Services.Game
                     .ThenInclude(s => s.Events)
                 .FirstOrDefaultAsync(gs => gs.Id == saveId && gs.UserId == userId);
         }
-
-
-
-
         public async Task<bool> DeleteGameSaveAsync(int userId, int saveId)
         {
             var gameSave = await _context.GameSaves
@@ -70,7 +70,6 @@ namespace TheDugout.Services.Game
             await _context.SaveChangesAsync();
             return true;
         }
-
         public async Task<GameSave> StartNewGameAsync(int userId)
         {
             if (userId <= 0)
@@ -110,6 +109,8 @@ namespace TheDugout.Services.Game
                 await _context.SaveChangesAsync();
 
                 await _fixturesService.GenerateFixturesAsync(gameSave.Id, season.Id, startDate);
+
+                await _financeService.CreateBankAsync(gameSave);
 
                 await transaction.CommitAsync();
 

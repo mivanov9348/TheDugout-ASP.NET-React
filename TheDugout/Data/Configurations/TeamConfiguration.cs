@@ -18,6 +18,9 @@ namespace TheDugout.Data.Configurations
                    .IsRequired()
                    .HasMaxLength(10);
 
+            builder.Property(t => t.Balance)
+                .HasColumnType("decimal(18,2)");
+
             builder.HasOne(e => e.Template)
                    .WithMany()
                    .HasForeignKey(e => e.TemplateId)
@@ -53,10 +56,16 @@ namespace TheDugout.Data.Configurations
                    .HasForeignKey(f => f.AwayTeamId)
                    .OnDelete(DeleteBehavior.Restrict);
 
-            builder.HasMany(t => t.Transactions)
-    .WithOne(tr => tr.Team)
-    .HasForeignKey(tr => tr.TeamId)
-    .OnDelete(DeleteBehavior.Cascade);
+            builder.HasMany(t => t.TransactionsFrom)
+    .WithOne(ft => ft.FromTeam)
+    .HasForeignKey(ft => ft.FromTeamId)
+    .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasMany(t => t.TransactionsTo)
+                .WithOne(ft => ft.ToTeam)
+                .HasForeignKey(ft => ft.ToTeamId)
+                .OnDelete(DeleteBehavior.Restrict);
+
 
 
         }

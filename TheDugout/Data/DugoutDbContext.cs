@@ -9,6 +9,8 @@ namespace TheDugout.Data
         {
         }
 
+        public DbSet<Bank> Banks { get; set; }
+        public DbSet<FinancialTransaction> FinancialTransactions { get; set; }
         public DbSet<Country> Countries { get; set; }
         public DbSet<LeagueTemplate> LeagueTemplates { get; set; }
         public DbSet<League> Leagues { get; set; }
@@ -18,6 +20,8 @@ namespace TheDugout.Data
         public DbSet<User> Users { get; set; }
         public DbSet<Player> Players { get; set; }
         public DbSet<Message> Messages { get; set; }
+        public DbSet<MessageTemplate> MessageTemplates { get; set; }
+        public DbSet<MessageTemplatePlaceholder> MessageTemplatePlaceholders { get; set; }
         public DbSet<Season> Seasons { get; set; }
         public DbSet<SeasonEvent> SeasonEvents { get; set; }
         public DbSet<PlayerMatchStats> PlayerMatchStats { get; set; }

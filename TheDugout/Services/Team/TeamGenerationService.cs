@@ -36,6 +36,7 @@ namespace TheDugout.Services.Team
                     gameSave.Players.Add(player);
                     team.Players.Add(player);
                 }
+                team.Popularity = CalculateTeamPopularity(team);
 
                 gameSave.Teams.Add(team);
                 teams.Add(team);
@@ -43,5 +44,22 @@ namespace TheDugout.Services.Team
 
             return teams;
         }
+
+        private int CalculateTeamPopularity(Models.Team team)
+        {
+            if (team.Players == null || !team.Players.Any())
+                return 10;
+
+            var allValues = team.Players
+                .SelectMany(p => p.Attributes)
+                .Select(pa => pa.Value);
+
+            double avgSkill = allValues.Any() ? allValues.Average() : 10;
+
+            int popularity = 10 + (int)(avgSkill * 2);
+
+            return Math.Clamp(popularity, 1, 100);
+        }
+
     }
 }

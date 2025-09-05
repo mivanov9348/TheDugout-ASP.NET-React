@@ -25,5 +25,16 @@
             string AttributeCode,
             double Weight
         );
+
+        public record MessageTemplateDto(
+    string Category,
+    string SubjectTemplate,
+    string BodyTemplate,
+    string[] Placeholders,
+    int Weight,
+    bool IsActive,
+    string Language
+);
+
     }
 }

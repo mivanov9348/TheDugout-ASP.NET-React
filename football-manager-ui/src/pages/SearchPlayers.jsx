@@ -1,5 +1,5 @@
 // src/pages/SearchPlayers.jsx
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 
 function useDebounce(value, delay) {
   const [debouncedValue, setDebouncedValue] = useState(value);
@@ -22,10 +22,24 @@ export default function SearchPlayers({ gameSaveId }) {
   const [filterPosition, setFilterPosition] = useState("");
   const [filterFreeAgents, setFilterFreeAgents] = useState(false);
 
+  // 🔹 squad-style toggles
+  const [showInfo, setShowInfo] = useState(true);
+  const [showAttributes, setShowAttributes] = useState(true);
+  const [showStats, setShowStats] = useState(true);
+
   const playersPerPage = 15;
   const debouncedSearch = useDebounce(search, 400);
 
-  // Fetch players
+  // Collect attribute names dynamically (like Squad)
+  const allAttributeNames = useMemo(() => {
+    const names = new Set();
+    players.forEach((p) => {
+      p.attributes?.forEach((a) => names.add(a.name));
+    });
+    return Array.from(names);
+  }, [players]);
+
+  // Fetch players from transfers API
   useEffect(() => {
     if (!gameSaveId) return;
 
@@ -53,6 +67,12 @@ export default function SearchPlayers({ gameSaveId }) {
 
   const totalPages = Math.ceil(totalCount / playersPerPage);
 
+  // Helper for formatting prices
+  const formatPrice = (value) => {
+    if (value == null) return "-";
+    return value.toLocaleString("en-US");
+  };
+
   return (
     <div className="mt-6 p-6 border rounded-xl bg-white shadow-lg">
       <h2 className="text-2xl font-bold mb-6 text-sky-700">Search Players</h2>
@@ -69,8 +89,6 @@ export default function SearchPlayers({ gameSaveId }) {
             setCurrentPage(1);
           }}
         />
-
-        {/* Team Filter */}
         <input
           type="text"
           placeholder="Filter by team..."
@@ -78,8 +96,6 @@ export default function SearchPlayers({ gameSaveId }) {
           value={filterTeam}
           onChange={e => setFilterTeam(e.target.value)}
         />
-
-        {/* Country Filter */}
         <input
           type="text"
           placeholder="Filter by country..."
@@ -87,8 +103,6 @@ export default function SearchPlayers({ gameSaveId }) {
           value={filterCountry}
           onChange={e => setFilterCountry(e.target.value)}
         />
-
-        {/* Position Filter */}
         <input
           type="text"
           placeholder="Filter by position..."
@@ -96,8 +110,6 @@ export default function SearchPlayers({ gameSaveId }) {
           value={filterPosition}
           onChange={e => setFilterPosition(e.target.value)}
         />
-
-        {/* Sort */}
         <select
           className="border p-2 rounded-lg shadow-sm"
           value={sortBy}
@@ -110,7 +122,6 @@ export default function SearchPlayers({ gameSaveId }) {
           <option value="age">Age</option>
           <option value="price">Price</option>
         </select>
-
         <select
           className="border p-2 rounded-lg shadow-sm"
           value={sortOrder}
@@ -119,8 +130,6 @@ export default function SearchPlayers({ gameSaveId }) {
           <option value="asc">⬆ Asc</option>
           <option value="desc">⬇ Desc</option>
         </select>
-
-        {/* Free agent checkbox */}
         <label className="flex items-center gap-2 ml-3">
           <input
             type="checkbox"
@@ -131,17 +140,53 @@ export default function SearchPlayers({ gameSaveId }) {
         </label>
       </div>
 
-      {/* Table */}
+      {/* Section toggles (Squad-style) */}
+      <div className="flex gap-6 mb-4">
+        <label className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={showInfo}
+            onChange={() => setShowInfo(!showInfo)}
+          />
+          Player Info
+        </label>
+        <label className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={showAttributes}
+            onChange={() => setShowAttributes(!showAttributes)}
+          />
+          Attributes
+        </label>
+        <label className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={showStats}
+            onChange={() => setShowStats(!showStats)}
+          />
+          Stats
+        </label>
+      </div>
+
+      {/* Table (Squad-like, but with transfer filters/paging) */}
       <div className="overflow-x-auto rounded-lg border">
-        <table className="w-full border-collapse">
+        <table className="w-full border-collapse text-sm">
           <thead>
             <tr className="bg-sky-50 text-sky-700">
               <th className="p-3 border">Name</th>
               <th className="p-3 border">Team</th>
               <th className="p-3 border">Country</th>
               <th className="p-3 border">Position</th>
-              <th className="p-3 border">Age</th>
-              <th className="p-3 border">Price</th>
+              {showInfo && (
+                <>
+                  <th className="p-3 border">Age</th>
+                  <th className="p-3 border">Price</th>
+                </>
+              )}
+              {showAttributes && allAttributeNames.map((attr) => (
+                <th key={attr} className="p-3 border">{attr}</th>
+              ))}
+              {showStats && <th className="p-3 border">Season Stats</th>}
             </tr>
           </thead>
           <tbody>
@@ -151,10 +196,42 @@ export default function SearchPlayers({ gameSaveId }) {
                 <td className="p-2 border">{p.team}</td>
                 <td className="p-2 border">{p.country}</td>
                 <td className="p-2 border">{p.position}</td>
-                <td className="p-2 border">{p.age}</td>
-                <td className="p-2 border">{p.price}</td>
+                {showInfo && (
+                  <>
+                    <td className="p-2 border">{p.age}</td>
+                    <td className="p-2 border">{formatPrice(p.price)}</td>
+                  </>
+                )}
+                {showAttributes && allAttributeNames.map((attr) => {
+                  const attribute = p.attributes?.find((a) => a.name === attr);
+                  return (
+                    <td key={attr} className="p-2 border">
+                      {attribute ? attribute.value : "-"}
+                    </td>
+                  );
+                })}
+                {showStats && (
+                  <td className="p-2 border">
+                    {p.seasonStats && p.seasonStats.length > 0 ? (
+                      <ul className="list-disc list-inside text-left">
+                        {p.seasonStats.map((s, i) => (
+                          <li key={i}>
+                            Season {s.seasonId}: {s.goals}G / {s.assists}A / {s.matchesPlayed}M
+                          </li>
+                        ))}
+                      </ul>
+                    ) : "-"}
+                  </td>
+                )}
               </tr>
             ))}
+            {players.length === 0 && (
+              <tr>
+                <td colSpan={8 + allAttributeNames.length} className="text-center py-6 text-gray-500">
+                  No players found.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>

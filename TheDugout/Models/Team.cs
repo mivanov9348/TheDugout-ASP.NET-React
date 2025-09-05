@@ -29,8 +29,10 @@
         public int GoalsAgainst { get; set; } = 0;
         public int GoalDifference { get; set; } = 0;
         public decimal Balance { get; set; }
+        public int Popularity { get; set; } = 10;
 
-        public ICollection<FinancialTransaction> Transactions { get; set; } = new List<FinancialTransaction>();
+        public ICollection<FinancialTransaction> TransactionsFrom { get; set; } = new List<FinancialTransaction>();
+        public ICollection<FinancialTransaction> TransactionsTo { get; set; } = new List<FinancialTransaction>();
 
         public virtual ICollection<Player> Players { get; set; } = new List<Player>();
         public ICollection<Fixture> HomeFixtures { get; set; } = new List<Fixture>();

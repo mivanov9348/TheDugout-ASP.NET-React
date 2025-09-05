@@ -28,6 +28,15 @@ namespace TheDugout.Data.Configurations
                    .HasForeignKey(m => m.GameSaveId)
                    .OnDelete(DeleteBehavior.Cascade)
                    .IsRequired(false);
+
+            builder.HasOne(m => m.MessageTemplate)
+                   .WithMany(mt => mt.Messages)
+                   .HasForeignKey(m => m.MessageTemplateId)
+                   .OnDelete(DeleteBehavior.SetNull)
+                   .IsRequired(false);
+
+            builder.HasIndex(m => new { m.GameSaveId, m.Date });
+            builder.HasIndex(m => m.IsRead);
         }
     }
 }

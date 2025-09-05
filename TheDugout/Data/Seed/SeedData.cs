@@ -209,6 +209,47 @@ public static class SeedData
 
         await db.SaveChangesAsync();
 
+
+        // 6) MessageTemplates
+        var msgTemplatesPath = Path.Combine(seedDir, "messageTemplates.json");
+        var msgTemplates = await ReadJsonAsync<List<MessageTemplateDto>>(msgTemplatesPath);
+
+        foreach (var t in msgTemplates)
+        {
+            var categoryParsed = Enum.TryParse<MessageCategory>(t.Category, out var category)
+                ? category
+                : MessageCategory.General;
+
+            var existing = await db.MessageTemplates.FirstOrDefaultAsync(x =>
+                x.Category == category &&
+                x.SubjectTemplate == t.SubjectTemplate &&
+                x.BodyTemplate == t.BodyTemplate);
+
+            if (existing == null)
+            {
+                db.MessageTemplates.Add(new MessageTemplate
+                {
+                    Category = categoryParsed,
+                    SubjectTemplate = t.SubjectTemplate,
+                    BodyTemplate = t.BodyTemplate,
+                    PlaceholdersJson = JsonSerializer.Serialize(t.Placeholders),
+                    Weight = t.Weight,
+                    IsActive = t.IsActive,
+                    Language = t.Language
+                });
+            }
+            else
+            {
+                existing.Weight = t.Weight;
+                existing.IsActive = t.IsActive;
+                existing.Language = t.Language;
+                existing.PlaceholdersJson = JsonSerializer.Serialize(t.Placeholders);
+            }
+        }
+
+        await db.SaveChangesAsync();
+
+
         // 4) Валидирай брой отбори спрямо лигите (информативно)
         var teamsByLeague = allTeams
             .GroupBy(x => x.CompetitionCode)

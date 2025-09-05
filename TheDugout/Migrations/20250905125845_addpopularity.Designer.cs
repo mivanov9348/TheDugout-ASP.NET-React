@@ -12,8 +12,8 @@ using TheDugout.Data;
 namespace TheDugout.Migrations
 {
     [DbContext(typeof(DugoutDbContext))]
-    [Migration("20250904080757_adddb")]
-    partial class adddb
+    [Migration("20250905125845_addpopularity")]
+    partial class addpopularity
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -62,9 +62,15 @@ namespace TheDugout.Migrations
                     b.Property<decimal>("Balance")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<int>("GameSaveId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
-                    b.ToTable("Bank");
+                    b.HasIndex("GameSaveId")
+                        .IsUnique();
+
+                    b.ToTable("Banks");
                 });
 
             modelBuilder.Entity("TheDugout.Models.Country", b =>
@@ -115,10 +121,18 @@ namespace TheDugout.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("TeamId")
+                    b.Property<decimal>("Fee")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("FromTeamId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ToTeamId")
                         .HasColumnType("int");
 
                     b.Property<int>("Type")
@@ -128,9 +142,11 @@ namespace TheDugout.Migrations
 
                     b.HasIndex("BankId");
 
-                    b.HasIndex("TeamId");
+                    b.HasIndex("FromTeamId");
 
-                    b.ToTable("FinancialTransaction");
+                    b.HasIndex("ToTeamId");
+
+                    b.ToTable("FinancialTransactions");
                 });
 
             modelBuilder.Entity("TheDugout.Models.Fixture", b =>
@@ -190,6 +206,9 @@ namespace TheDugout.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BankId")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -318,6 +337,9 @@ namespace TheDugout.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
 
+                    b.Property<int?>("MessageTemplateId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Subject")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -325,9 +347,84 @@ namespace TheDugout.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("GameSaveId");
+                    b.HasIndex("IsRead");
+
+                    b.HasIndex("MessageTemplateId");
+
+                    b.HasIndex("GameSaveId", "Date");
 
                     b.ToTable("Messages");
+                });
+
+            modelBuilder.Entity("TheDugout.Models.MessageTemplate", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("BodyTemplate")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Category")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<string>("Language")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)")
+                        .HasDefaultValue("en");
+
+                    b.Property<string>("PlaceholdersJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SubjectTemplate")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("Weight")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(1);
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Category", "IsActive");
+
+                    b.ToTable("MessageTemplates");
+                });
+
+            modelBuilder.Entity("TheDugout.Models.MessageTemplatePlaceholder", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("MessageTemplateId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MessageTemplateId", "Name")
+                        .IsUnique();
+
+                    b.ToTable("MessageTemplatePlaceholders");
                 });
 
             modelBuilder.Entity("TheDugout.Models.Player", b =>
@@ -651,6 +748,9 @@ namespace TheDugout.Migrations
                     b.Property<int>("Points")
                         .HasColumnType("int");
 
+                    b.Property<int>("Popularity")
+                        .HasColumnType("int");
+
                     b.Property<int>("TemplateId")
                         .HasColumnType("int");
 
@@ -735,6 +835,17 @@ namespace TheDugout.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("TheDugout.Models.Bank", b =>
+                {
+                    b.HasOne("TheDugout.Models.GameSave", "GameSave")
+                        .WithOne("Bank")
+                        .HasForeignKey("TheDugout.Models.Bank", "GameSaveId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("GameSave");
+                });
+
             modelBuilder.Entity("TheDugout.Models.FinancialTransaction", b =>
                 {
                     b.HasOne("TheDugout.Models.Bank", "Bank")
@@ -742,14 +853,21 @@ namespace TheDugout.Migrations
                         .HasForeignKey("BankId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("TheDugout.Models.Team", "Team")
-                        .WithMany("Transactions")
-                        .HasForeignKey("TeamId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                    b.HasOne("TheDugout.Models.Team", "FromTeam")
+                        .WithMany("TransactionsFrom")
+                        .HasForeignKey("FromTeamId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("TheDugout.Models.Team", "ToTeam")
+                        .WithMany("TransactionsTo")
+                        .HasForeignKey("ToTeamId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Bank");
 
-                    b.Navigation("Team");
+                    b.Navigation("FromTeam");
+
+                    b.Navigation("ToTeam");
                 });
 
             modelBuilder.Entity("TheDugout.Models.Fixture", b =>
@@ -858,7 +976,25 @@ namespace TheDugout.Migrations
                         .HasForeignKey("GameSaveId")
                         .OnDelete(DeleteBehavior.Cascade);
 
+                    b.HasOne("TheDugout.Models.MessageTemplate", "MessageTemplate")
+                        .WithMany("Messages")
+                        .HasForeignKey("MessageTemplateId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.Navigation("GameSave");
+
+                    b.Navigation("MessageTemplate");
+                });
+
+            modelBuilder.Entity("TheDugout.Models.MessageTemplatePlaceholder", b =>
+                {
+                    b.HasOne("TheDugout.Models.MessageTemplate", "MessageTemplate")
+                        .WithMany("Placeholders")
+                        .HasForeignKey("MessageTemplateId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("MessageTemplate");
                 });
 
             modelBuilder.Entity("TheDugout.Models.Player", b =>
@@ -1070,6 +1206,9 @@ namespace TheDugout.Migrations
 
             modelBuilder.Entity("TheDugout.Models.GameSave", b =>
                 {
+                    b.Navigation("Bank")
+                        .IsRequired();
+
                     b.Navigation("Fixtures");
 
                     b.Navigation("Leagues");
@@ -1093,6 +1232,13 @@ namespace TheDugout.Migrations
             modelBuilder.Entity("TheDugout.Models.LeagueTemplate", b =>
                 {
                     b.Navigation("TeamTemplates");
+                });
+
+            modelBuilder.Entity("TheDugout.Models.MessageTemplate", b =>
+                {
+                    b.Navigation("Messages");
+
+                    b.Navigation("Placeholders");
                 });
 
             modelBuilder.Entity("TheDugout.Models.Player", b =>
@@ -1128,7 +1274,9 @@ namespace TheDugout.Migrations
 
                     b.Navigation("Players");
 
-                    b.Navigation("Transactions");
+                    b.Navigation("TransactionsFrom");
+
+                    b.Navigation("TransactionsTo");
                 });
 
             modelBuilder.Entity("TheDugout.Models.User", b =>

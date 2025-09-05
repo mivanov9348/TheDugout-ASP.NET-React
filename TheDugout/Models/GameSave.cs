@@ -13,6 +13,9 @@
         public int? UserTeamId { get; set; }
         public Team? UserTeam { get; set; }
 
+        public int BankId { get; set; }
+        public Bank Bank { get; set; } = null!;
+
         public ICollection<League> Leagues { get; set; } = new List<League>();
         public ICollection<Team> Teams { get; set; } = new List<Team>();
         public ICollection<Message> Messages { get; set; } = new List<Message>();
