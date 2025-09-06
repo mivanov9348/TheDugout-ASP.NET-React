@@ -275,7 +275,10 @@ function App() {
                     </Route>
 
                     <Route path="/club" element={<Club />} />
-                    <Route path="/finances" element={<Finances />} />
+<Route
+  path="/finances"
+  element={<Finances gameSaveId={currentGameSave?.id} />}
+/>
                   </Routes>
                 </main>
               </div>

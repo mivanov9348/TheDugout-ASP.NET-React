@@ -1,18 +1,37 @@
-import React, { useState } from "react";
+import { useState, useEffect } from "react";
 
-const Finances = () => {
-  const [balance, setBalance] = useState(1250000); // примерен баланс
+const Finances = ({ gameSaveId }) => {
+  const [balance, setBalance] = useState(0);
+  const [transactions, setTransactions] = useState([]);
   const [filter, setFilter] = useState("all");
 
-  const transactions = [
-    { id: 1, type: "income", description: "Ticket Sales", amount: 50000, date: "2025-09-01" },
-    { id: 2, type: "expense", description: "Player Wages", amount: -120000, date: "2025-09-02" },
-    { id: 3, type: "income", description: "Sponsorship", amount: 200000, date: "2025-09-03" },
-    { id: 4, type: "expense", description: "Stadium Maintenance", amount: -50000, date: "2025-09-03" },
-  ];
+  useEffect(() => {
+    if (!gameSaveId) return;
+
+    const fetchFinance = async () => {
+      try {
+        const res = await fetch(`/api/finance/${gameSaveId}`, {
+          credentials: "include",
+        });
+        if (!res.ok) throw new Error("Failed to load finances");
+
+        const data = await res.json();
+        setBalance(data.balance);
+        setTransactions(data.transactions);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchFinance();
+  }, [gameSaveId]);
 
   const filteredTransactions =
-    filter === "all" ? transactions : transactions.filter((t) => t.type === filter);
+    filter === "all"
+      ? transactions
+      : transactions.filter((t) =>
+          filter === "income" ? t.amount > 0 : t.amount < 0
+        );
 
   return (
     <div className="p-6 space-y-6">
@@ -78,15 +97,15 @@ const Finances = () => {
                 key={t.id}
                 className="border-b last:border-none hover:bg-gray-50 transition"
               >
-                <td className="px-6 py-3">{t.date}</td>
+                <td className="px-6 py-3">{new Date(t.date).toLocaleDateString()}</td>
                 <td className="px-6 py-3">{t.description}</td>
                 <td
                   className={`px-6 py-3 text-right font-medium ${
                     t.amount >= 0 ? "text-green-600" : "text-red-600"
                   }`}
                 >
-                  {t.amount >= 0 ? "+" : ""}
-                  ${Math.abs(t.amount).toLocaleString()}
+                  {t.amount >= 0 ? "+" : "-"}$
+                  {Math.abs(t.amount).toLocaleString()}
                 </td>
               </tr>
             ))}

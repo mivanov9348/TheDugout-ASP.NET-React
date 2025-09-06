@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using TheDugout.Data;
 using TheDugout.Models;
 using TheDugout.Services.Finance;
 using TheDugout.Services.Players;
@@ -10,11 +11,13 @@ namespace TheDugout.Services.Team
     {
         private readonly IPlayerGenerationService _playerGenerator;
         private readonly IFinanceService _financeService;
+        private readonly DugoutDbContext _context;
 
-        public TeamGenerationService(IPlayerGenerationService playerGenerator, IFinanceService financeService)
+        public TeamGenerationService(IPlayerGenerationService playerGenerator, IFinanceService financeService, DugoutDbContext context)
         {
             _playerGenerator = playerGenerator;
             _financeService = financeService;
+            _context = context;
         }
 
         public List<Models.Team> GenerateTeams(GameSave gameSave, Models.League league, IEnumerable<TeamTemplate> templates)
@@ -35,15 +38,24 @@ namespace TheDugout.Services.Team
                     Popularity = 10,
                 };
 
+                // Генерираме играчи
                 var players = _playerGenerator.GenerateTeamPlayers(gameSave, team);
                 foreach (var player in players)
                 {
                     gameSave.Players.Add(player);
                     team.Players.Add(player);
                 }
+
+                // Популярност
                 team.Popularity = CalculateTeamPopularity(team);
 
+                // Добавяме отбора към save-то
+                gameSave.Teams.Add(team);
 
+                // Първо запазваме, за да получи Id
+                _context.SaveChangesAsync().GetAwaiter().GetResult();
+
+                // Стартов баланс (чрез транзакция от банката)
                 var initialFunds = CalculateInitialFunds(team.Popularity);
 
                 if (gameSave.Bank != null)
@@ -54,15 +66,15 @@ namespace TheDugout.Services.Team
                         initialFunds,
                         $"Bank added {initialFunds} to {team.Name}!",
                         TransactionType.StartingFunds
-                    ).GetAwaiter().GetResult(); 
+                    ).GetAwaiter().GetResult();
                 }
 
-                gameSave.Teams.Add(team);
                 teams.Add(team);
             }
 
             return teams;
         }
+
 
         private int CalculateTeamPopularity(Models.Team team)
         {
