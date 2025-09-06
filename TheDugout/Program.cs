@@ -21,7 +21,7 @@ var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("Default");
 
 builder.Services.AddDbContext<DugoutDbContext>(options =>
-options.UseSqlServer(connectionString));
+options.UseSqlServer(connectionString, opt => opt.CommandTimeout(60)));
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -30,7 +30,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IUserContextService, UserContextService>();
 builder.Services.AddScoped<ITemplateService, TemplateService>();
 builder.Services.AddScoped<IGameSaveService, GameSaveService>();
-builder.Services.AddScoped<IPlayerGenerationService,PlayerGenerationService>();
+builder.Services.AddScoped<IPlayerGenerationService, PlayerGenerationService>();
 builder.Services.AddScoped<ITeamPlanService, TeamPlanService>();
 builder.Services.AddScoped<IFixturesService, FixturesService>();
 builder.Services.AddScoped<ITeamGenerationService, TeamGenerationService>();

@@ -11,9 +11,9 @@ namespace TheDugout.Data.Configurations
             builder.HasKey(e => e.Id);
 
             builder.HasOne(gs => gs.User)
-                  .WithMany(u => u.GameSaves)
-                  .HasForeignKey(gs => gs.UserId)
-                  .OnDelete(DeleteBehavior.Restrict);
+                   .WithMany(u => u.GameSaves)
+                   .HasForeignKey(gs => gs.UserId)
+                   .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(e => e.UserTeam)
                    .WithMany()
@@ -31,10 +31,29 @@ namespace TheDugout.Data.Configurations
                    .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasMany(gs => gs.Fixtures)
-       .WithOne(f => f.GameSave)
-       .HasForeignKey(f => f.GameSaveId)
-       .OnDelete(DeleteBehavior.Cascade);
+                   .WithOne(f => f.GameSave)
+                   .HasForeignKey(f => f.GameSaveId)
+                   .OnDelete(DeleteBehavior.Cascade);
 
+            builder.HasMany(gs => gs.Leagues)
+                   .WithOne(l => l.GameSave)
+                   .HasForeignKey(l => l.GameSaveId)
+                   .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasMany(gs => gs.Players)
+                   .WithOne(p => p.GameSave)
+                   .HasForeignKey(p => p.GameSaveId)
+                   .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasMany(gs => gs.Teams)
+                   .WithOne(t => t.GameSave)
+                   .HasForeignKey(t => t.GameSaveId)
+                   .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasOne(gs => gs.Bank)
+                   .WithOne(b => b.GameSave)
+                   .HasForeignKey<Bank>(b => b.GameSaveId)
+    .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

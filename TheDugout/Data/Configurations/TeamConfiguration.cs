@@ -19,7 +19,7 @@ namespace TheDugout.Data.Configurations
                    .HasMaxLength(10);
 
             builder.Property(t => t.Balance)
-                .HasColumnType("decimal(18,2)");
+                   .HasColumnType("decimal(18,2)");
 
             builder.HasOne(e => e.Template)
                    .WithMany()
@@ -34,22 +34,22 @@ namespace TheDugout.Data.Configurations
             builder.HasOne(e => e.GameSave)
                    .WithMany(gs => gs.Teams)
                    .HasForeignKey(e => e.GameSaveId)
-                   .OnDelete(DeleteBehavior.Cascade);
+                   .OnDelete(DeleteBehavior.Cascade); // GameSave триe
 
             builder.HasOne(e => e.League)
                    .WithMany(l => l.Teams)
                    .HasForeignKey(e => e.LeagueId)
-                   .OnDelete(DeleteBehavior.Restrict);
+                   .OnDelete(DeleteBehavior.Restrict); // League НЕ cascade
 
             builder.HasMany(e => e.Players)
                    .WithOne(p => p.Team)
                    .HasForeignKey(p => p.TeamId)
-                   .OnDelete(DeleteBehavior.Cascade);
+                   .OnDelete(DeleteBehavior.Restrict); // Player триe само от GameSave
 
             builder.HasMany(t => t.HomeFixtures)
-       .WithOne(f => f.HomeTeam)
-       .HasForeignKey(f => f.HomeTeamId)
-       .OnDelete(DeleteBehavior.Restrict);
+                   .WithOne(f => f.HomeTeam)
+                   .HasForeignKey(f => f.HomeTeamId)
+                   .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasMany(t => t.AwayFixtures)
                    .WithOne(f => f.AwayTeam)
@@ -57,17 +57,14 @@ namespace TheDugout.Data.Configurations
                    .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasMany(t => t.TransactionsFrom)
-    .WithOne(ft => ft.FromTeam)
-    .HasForeignKey(ft => ft.FromTeamId)
-    .OnDelete(DeleteBehavior.Restrict);
+                   .WithOne(ft => ft.FromTeam)
+                   .HasForeignKey(ft => ft.FromTeamId)
+                   .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasMany(t => t.TransactionsTo)
-                .WithOne(ft => ft.ToTeam)
-                .HasForeignKey(ft => ft.ToTeamId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-
-
+                   .WithOne(ft => ft.ToTeam)
+                   .HasForeignKey(ft => ft.ToTeamId)
+                   .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

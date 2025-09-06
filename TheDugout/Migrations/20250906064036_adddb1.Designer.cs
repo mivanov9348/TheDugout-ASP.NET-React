@@ -12,8 +12,8 @@ using TheDugout.Data;
 namespace TheDugout.Migrations
 {
     [DbContext(typeof(DugoutDbContext))]
-    [Migration("20250905125845_addpopularity")]
-    partial class addpopularity
+    [Migration("20250906064036_adddb1")]
+    partial class adddb1
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -1007,7 +1007,7 @@ namespace TheDugout.Migrations
                     b.HasOne("TheDugout.Models.GameSave", "GameSave")
                         .WithMany("Players")
                         .HasForeignKey("GameSaveId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("TheDugout.Models.Position", "Position")
@@ -1019,7 +1019,7 @@ namespace TheDugout.Migrations
                     b.HasOne("TheDugout.Models.Team", "Team")
                         .WithMany("Players")
                         .HasForeignKey("TeamId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Country");
 

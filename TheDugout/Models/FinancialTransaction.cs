@@ -2,6 +2,7 @@
 {
     public enum TransactionType
     {
+        StartingFunds,
         TransferIn,
         TransferOut,
         TransferFee,

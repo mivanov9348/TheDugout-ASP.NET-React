@@ -1004,7 +1004,7 @@ namespace TheDugout.Migrations
                     b.HasOne("TheDugout.Models.GameSave", "GameSave")
                         .WithMany("Players")
                         .HasForeignKey("GameSaveId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("TheDugout.Models.Position", "Position")
@@ -1016,7 +1016,7 @@ namespace TheDugout.Migrations
                     b.HasOne("TheDugout.Models.Team", "Team")
                         .WithMany("Players")
                         .HasForeignKey("TeamId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Country");
 

@@ -1,4 +1,6 @@
-﻿using TheDugout.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using TheDugout.Models;
+using TheDugout.Services.Finance;
 using TheDugout.Services.Players;
 using TheDugout.Services.Team;
 
@@ -7,10 +9,12 @@ namespace TheDugout.Services.Team
     public class TeamGenerationService : ITeamGenerationService
     {
         private readonly IPlayerGenerationService _playerGenerator;
+        private readonly IFinanceService _financeService;
 
-        public TeamGenerationService(IPlayerGenerationService playerGenerator)
+        public TeamGenerationService(IPlayerGenerationService playerGenerator, IFinanceService financeService)
         {
             _playerGenerator = playerGenerator;
+            _financeService = financeService;
         }
 
         public List<Models.Team> GenerateTeams(GameSave gameSave, Models.League league, IEnumerable<TeamTemplate> templates)
@@ -27,7 +31,8 @@ namespace TheDugout.Services.Team
                     Name = tt.Name,
                     Abbreviation = tt.Abbreviation,
                     CountryId = tt.CountryId,
-                    Country = tt.Country
+                    Country = tt.Country,
+                    Popularity = 10,
                 };
 
                 var players = _playerGenerator.GenerateTeamPlayers(gameSave, team);
@@ -37,6 +42,20 @@ namespace TheDugout.Services.Team
                     team.Players.Add(player);
                 }
                 team.Popularity = CalculateTeamPopularity(team);
+
+
+                var initialFunds = CalculateInitialFunds(team.Popularity);
+
+                if (gameSave.Bank != null)
+                {
+                    _financeService.BankToClubAsync(
+                        gameSave.Bank,
+                        team,
+                        initialFunds,
+                        $"Bank added {initialFunds} to {team.Name}!",
+                        TransactionType.StartingFunds
+                    ).GetAwaiter().GetResult(); 
+                }
 
                 gameSave.Teams.Add(team);
                 teams.Add(team);
@@ -59,6 +78,13 @@ namespace TheDugout.Services.Team
             int popularity = 10 + (int)(avgSkill * 2);
 
             return Math.Clamp(popularity, 1, 100);
+        }
+
+        private decimal CalculateInitialFunds(int popularity)
+        {
+            const decimal baseAmount = 50_000m;
+            decimal bonus = popularity * 1_000m;
+            return baseAmount + bonus;
         }
 
     }

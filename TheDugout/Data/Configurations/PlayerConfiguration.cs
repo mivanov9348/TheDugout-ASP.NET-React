@@ -19,15 +19,14 @@ namespace TheDugout.Data.Configurations
                    .HasMaxLength(50);
 
             builder.HasOne(p => p.Team)
-       .WithMany(t => t.Players)
-       .HasForeignKey(p => p.TeamId)
-       .OnDelete(DeleteBehavior.SetNull); 
-
+                   .WithMany(t => t.Players)
+                   .HasForeignKey(p => p.TeamId)
+                   .OnDelete(DeleteBehavior.Restrict); 
 
             builder.HasOne(p => p.GameSave)
-       .WithMany(g => g.Players)   
-       .HasForeignKey(p => p.GameSaveId)
-       .OnDelete(DeleteBehavior.Restrict);
+                   .WithMany(g => g.Players)
+                   .HasForeignKey(p => p.GameSaveId)
+                   .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

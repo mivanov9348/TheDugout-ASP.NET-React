@@ -70,6 +70,7 @@ namespace TheDugout.Services.Game
             await _context.SaveChangesAsync();
             return true;
         }
+
         public async Task<GameSave> StartNewGameAsync(int userId)
         {
             if (userId <= 0)
@@ -90,27 +91,31 @@ namespace TheDugout.Services.Game
                     Name = $"Save_{userId}_{DateTime.UtcNow:yyyyMMdd_HHmmss}"
                 };
 
-                // Start new season
+                _context.GameSaves.Add(gameSave);
+                await _context.SaveChangesAsync();
+
+                await _financeService.CreateBankAsync(gameSave);
+                await _context.SaveChangesAsync();
+
+                // Season
                 var startDate = new DateTime(DateTime.UtcNow.Year, 7, 1);
                 var season = _seasonGenerator.GenerateSeason(gameSave, startDate);
                 gameSave.Seasons.Add(season);
 
-                // League and teams 
+                // Leagues & teams
                 var leagues = await _leagueGenerator.GenerateLeaguesAsync(gameSave);
                 foreach (var league in leagues)
                     gameSave.Leagues.Add(league);
 
-                // FreeAgents
-                var freeAgents = _playerGenerator.GenerateFreeAgents(gameSave, 100); 
+                // Free agents
+                var freeAgents = _playerGenerator.GenerateFreeAgents(gameSave, 100);
                 foreach (var agent in freeAgents)
                     _context.Players.Add(agent);
 
-                _context.GameSaves.Add(gameSave);
                 await _context.SaveChangesAsync();
 
+                // Fixtures
                 await _fixturesService.GenerateFixturesAsync(gameSave.Id, season.Id, startDate);
-
-                await _financeService.CreateBankAsync(gameSave);
 
                 await transaction.CommitAsync();
 
@@ -125,5 +130,6 @@ namespace TheDugout.Services.Game
                 throw;
             }
         }
+
     }
 }
