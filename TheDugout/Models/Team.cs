@@ -14,6 +14,8 @@
         public string Name { get; set; } = null!;
         public string Abbreviation { get; set; } = null!;
 
+        public string LogoFileName { get; set; } = "default_logo.png";
+
         public int? LeagueId { get; set; }
         public League? League { get; set; }
 

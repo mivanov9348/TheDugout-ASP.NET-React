@@ -731,6 +731,10 @@ namespace TheDugout.Migrations
                     b.Property<int?>("LeagueId")
                         .HasColumnType("int");
 
+                    b.Property<string>("LogoFileName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("Losses")
                         .HasColumnType("int");
 

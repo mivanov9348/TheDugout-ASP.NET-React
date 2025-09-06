@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-
+import TeamLogo from "../components/TeamLogo";
 const League = ({ gameSaveId }) => {
   const [leagues, setLeagues] = useState([]);
   const [selectedLeague, setSelectedLeague] = useState(null);
@@ -8,7 +8,7 @@ const League = ({ gameSaveId }) => {
     if (!gameSaveId) return;
     const fetchLeagues = async () => {
       try {
-        const token = localStorage.getItem("token"); // JWT token
+        const token = localStorage.getItem("token");
         const res = await fetch(`/api/leagues?gameSaveId=${gameSaveId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -17,7 +17,7 @@ const League = ({ gameSaveId }) => {
         const data = await res.json();
         setLeagues(data);
         if (data.length > 0) {
-          setSelectedLeague(data[0]); // по подразбиране първата лига
+          setSelectedLeague(data[0]);
         }
       } catch (err) {
         console.error("Error fetching leagues:", err);
@@ -71,7 +71,17 @@ const League = ({ gameSaveId }) => {
                   {selectedLeague.teams.map((team, index) => (
                     <tr key={team.id} className="text-center">
                       <td className="border px-2">{index + 1}</td>
-                      <td className="border px-2 text-left">{team.name}</td>
+                      <td className="border px-2 text-left">
+                        <div className="flex items-center gap-2">
+                          {/* Добавяме логото тук */}
+                          <TeamLogo 
+                            teamName={team.name} 
+                            logoFileName={team.logoFileName} 
+                            className="w-6 h-6"
+                          />
+                          <span>{team.name}</span>
+                        </div>
+                      </td>
                       <td className="border px-2">{team.points}</td>
                       <td className="border px-2">{team.wins}</td>
                       <td className="border px-2">{team.draws}</td>

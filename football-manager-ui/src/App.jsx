@@ -25,6 +25,7 @@ import SearchPlayers from "./pages/SearchPlayers";
 import Negotiations from "./pages/Negotiations";
 import TransferHistory from "./pages/TransferHistory";
 import Fixtures from "./pages/Fixtures";
+import PlayerProfile from "./pages/PlayerProfile"; 
 
 // 🔹 ProtectedRoute
 function ProtectedRoute({ isAuthenticated, currentGameSave, children }) {
@@ -274,11 +275,15 @@ function App() {
                       <Route path="history" element={<TransferHistory />} />
                     </Route>
 
-                    <Route path="/club" element={<Club />} />
+                    <Route path="/club" element={<Club />} /> 
 <Route
   path="/finances"
   element={<Finances gameSaveId={currentGameSave?.id} />}
 />
+<Route
+                      path="/player/:playerId"
+                      element={<PlayerProfile gameSaveId={currentGameSave?.id} />}
+                    />
                   </Routes>
                 </main>
               </div>

@@ -36,6 +36,7 @@ namespace TheDugout.Services.Team
                     CountryId = tt.CountryId,
                     Country = tt.Country,
                     Popularity = 10,
+                    LogoFileName = GenerateLogoFileName(tt.Name)
                 };
 
                 // Генерираме играчи
@@ -97,6 +98,18 @@ namespace TheDugout.Services.Team
             const decimal baseAmount = 50_000m;
             decimal bonus = popularity * 1_000m;
             return baseAmount + bonus;
+        }
+
+        private string GenerateLogoFileName(string teamName)
+        {
+            
+            var cleanName = System.Text.RegularExpressions.Regex.Replace(
+                teamName,
+                @"[<>:""/\\|?*]",
+                ""
+            );
+
+            return $"{cleanName}.png";
         }
 
     }
