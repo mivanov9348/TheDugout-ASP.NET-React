@@ -372,6 +372,7 @@ namespace TheDugout.Migrations
                     GameSaveId = table.Column<int>(type: "int", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Abbreviation = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
+                    LogoFileName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     LeagueId = table.Column<int>(type: "int", nullable: true),
                     CountryId = table.Column<int>(type: "int", nullable: false),
                     Points = table.Column<int>(type: "int", nullable: false),

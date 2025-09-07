@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Squad = ({ gameSaveId }) => {
   const [players, setPlayers] = useState([]);
@@ -13,6 +14,8 @@ const Squad = ({ gameSaveId }) => {
   const [showInfo, setShowInfo] = useState(true);
   const [showAttributes, setShowAttributes] = useState(true);
   const [showStats, setShowStats] = useState(true);
+
+  const navigate = useNavigate();
 
   const allAttributeNames = useMemo(() => {
     const names = new Set();
@@ -203,7 +206,9 @@ const Squad = ({ gameSaveId }) => {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredPlayers.map((p) => (
-                <tr key={p.id} className="hover:bg-gray-50">
+                <tr key={p.id} 
+                    className="hover:bg-gray-50"
+                    onClick={() => navigate(`/player/${p.id}`)}>
                   <td className="px-4 py-2 sticky left-0 bg-white z-10">{p.fullName}</td>
                   <td className="px-4 py-2 sticky left-[120px] bg-white z-10">{p.position}</td>
 

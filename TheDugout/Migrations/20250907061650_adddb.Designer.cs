@@ -12,7 +12,7 @@ using TheDugout.Data;
 namespace TheDugout.Migrations
 {
     [DbContext(typeof(DugoutDbContext))]
-    [Migration("20250906065200_adddb")]
+    [Migration("20250907061650_adddb")]
     partial class adddb
     {
         /// <inheritdoc />
@@ -733,6 +733,10 @@ namespace TheDugout.Migrations
 
                     b.Property<int?>("LeagueId")
                         .HasColumnType("int");
+
+                    b.Property<string>("LogoFileName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Losses")
                         .HasColumnType("int");

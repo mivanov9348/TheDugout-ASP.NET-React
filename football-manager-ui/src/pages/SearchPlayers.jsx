@@ -1,5 +1,7 @@
 // src/pages/SearchPlayers.jsx
 import { useEffect, useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 
 function useDebounce(value, delay) {
   const [debouncedValue, setDebouncedValue] = useState(value);
@@ -29,6 +31,8 @@ export default function SearchPlayers({ gameSaveId }) {
 
   const playersPerPage = 15;
   const debouncedSearch = useDebounce(search, 400);
+
+  const navigate = useNavigate();
 
   // Collect attribute names dynamically (like Squad)
   const allAttributeNames = useMemo(() => {
@@ -65,6 +69,7 @@ export default function SearchPlayers({ gameSaveId }) {
       .catch(err => console.error("Failed to load players:", err));
   }, [gameSaveId, debouncedSearch, sortBy, sortOrder, currentPage, filterTeam, filterCountry, filterPosition, filterFreeAgents]);
 
+
   const totalPages = Math.ceil(totalCount / playersPerPage);
 
   // Helper for formatting prices
@@ -74,8 +79,17 @@ export default function SearchPlayers({ gameSaveId }) {
   };
 
   return (
-    <div className="mt-6 p-6 border rounded-xl bg-white shadow-lg">
-      <h2 className="text-2xl font-bold mb-6 text-sky-700">Search Players</h2>
+    <div className="mt-6 p-6 border rounded-xl bg-white shadow-lg max-w-[1400px] mx-auto">
+      {/* Header with back button */}
+      <div className="flex items-center gap-3 mb-6">
+        <button
+          onClick={() => navigate(-1)}
+          className="p-2 rounded-full hover:bg-sky-100 text-sky-600 transition"
+        >
+          <ArrowLeft size={22} />
+        </button>
+        <h2 className="text-2xl font-bold text-sky-700">Search Players</h2>
+      </div>
 
       {/* Filters */}
       <div className="flex flex-wrap gap-3 mb-6 items-center">
@@ -191,7 +205,7 @@ export default function SearchPlayers({ gameSaveId }) {
           </thead>
           <tbody>
             {players.map(p => (
-              <tr key={p.id} className="text-center hover:bg-sky-50 transition-colors">
+              <tr key={p.id} className="text-center hover:bg-sky-50 cursor-pointer transition-colors" onClick={() => navigate(`/player/${p.id}`)}>
                 <td className="p-2 border font-medium">{p.name}</td>
                 <td className="p-2 border">{p.team}</td>
                 <td className="p-2 border">{p.country}</td>

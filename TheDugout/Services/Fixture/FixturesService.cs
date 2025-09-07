@@ -22,55 +22,62 @@ namespace TheDugout.Services.Fixture
 
             foreach (var league in leagues)
             {
-                if (!league.Teams.Any() || league.Teams.Count < 2)
-                    continue;
-
                 var teams = league.Teams.ToList();
-                if (teams.Count % 2 != 0)
-                    teams.Add(null!); 
+                if (teams.Count < 2) continue;
 
-                int rounds = teams.Count - 1;
-                int matchesPerRound = teams.Count / 2;
+                // If odd number of teams, add a dummy "BYE" team
+                bool hasBye = teams.Count % 2 != 0;
+                if (hasBye)
+                {
+                    teams.Add(new Models.Team { Id = -1, Name = "BYE" });
+                }
+
+                int teamCount = teams.Count;
+                int rounds = teamCount - 1;          // each team plays (n-1) rounds
+                int matchesPerRound = teamCount / 2; // number of matches per round
 
                 var fixtures = new List<Models.Fixture>();
                 DateTime currentDate = startDate;
-                int roundNumber = 1;
 
-                // first half of the season
+                // --- FIRST LEG (standard round-robin rotation) ---
                 for (int round = 0; round < rounds; round++)
                 {
                     for (int match = 0; match < matchesPerRound; match++)
                     {
                         var home = teams[match];
-                        var away = teams[teams.Count - 1 - match];
+                        var away = teams[teamCount - 1 - match];
 
-                        if (home != null && away != null)
+                        // Skip if this is a BYE match
+                        if (home.Id == -1 || away.Id == -1)
+                            continue;
+
+                        // Small tweak: sometimes swap home/away to balance
+                        bool swap = (round % 2 == 1 && match == 0);
+
+                        fixtures.Add(new Models.Fixture
                         {
-                            fixtures.Add(new Models.Fixture
-                            {
-                                GameSaveId = gameSaveId,
-                                LeagueId = league.Id,
-                                SeasonId = seasonId,
-                                HomeTeamId = home.Id,
-                                AwayTeamId = away.Id,
-                                Date = currentDate,
-                                Round = roundNumber
-                            });
-                        }
+                            GameSaveId = gameSaveId,
+                            LeagueId = league.Id,
+                            SeasonId = seasonId,
+                            HomeTeamId = swap ? away.Id : home.Id,
+                            AwayTeamId = swap ? home.Id : away.Id,
+                            Date = currentDate,
+                            Round = round + 1
+                        });
                     }
 
-                    // rotate teams 
-                    var last = teams[teams.Count - 1];
-                    teams.RemoveAt(teams.Count - 1);
+                    // Rotate teams using "circle method"
+                    var last = teams[teamCount - 1];
+                    teams.RemoveAt(teamCount - 1);
                     teams.Insert(1, last);
 
-                    currentDate = currentDate.AddDays(7); 
-                    roundNumber++;
+                    // Increment week (7 days later)
+                    currentDate = currentDate.AddDays(7);
                 }
 
-                // second half of the season
-                int firstLegRounds = roundNumber - 1;
-                foreach (var f in fixtures.ToList()) 
+                // --- SECOND LEG (reverse fixtures) ---
+                int firstLegRounds = rounds;
+                foreach (var f in fixtures.ToList()) // copy list before adding to it
                 {
                     fixtures.Add(new Models.Fixture
                     {
@@ -82,7 +89,9 @@ namespace TheDugout.Services.Fixture
                         Date = currentDate,
                         Round = f.Round + firstLegRounds
                     });
-                    currentDate = currentDate.AddDays(7);
+
+                    if (fixtures.Count % matchesPerRound == 0)
+                        currentDate = currentDate.AddDays(7);
                 }
 
                 await _context.Fixtures.AddRangeAsync(fixtures);
@@ -90,5 +99,7 @@ namespace TheDugout.Services.Fixture
 
             await _context.SaveChangesAsync();
         }
+
+
     }
 }

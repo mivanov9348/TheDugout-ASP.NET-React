@@ -37,9 +37,7 @@ namespace TheDugout.Services.League
                     PromotionSpots = lt.PromotionSpots
                 };
 
-                var teams = _teamGenerator.GenerateTeams(gameSave, league, lt.TeamTemplates);
-                foreach (var team in teams)
-                    league.Teams.Add(team);
+                var teams = _teamGenerator.GenerateTeams(gameSave, league, lt.TeamTemplates);          
 
                 leagues.Add(league);
             }

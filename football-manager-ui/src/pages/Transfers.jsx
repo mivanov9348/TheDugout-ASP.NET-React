@@ -1,9 +1,13 @@
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
+
 
 const Transfers = () => {
+
+    const navigate = useNavigate();
+
   return (
     <div className="space-y-6">
-      {/* Заглавие */}
+
       <div className="bg-white shadow rounded-2xl p-4 border border-slate-200">
         <h1 className="text-3xl font-bold text-slate-800">Transfers</h1>
         <p className="text-slate-500 text-sm mt-1">
@@ -11,7 +15,6 @@ const Transfers = () => {
         </p>
       </div>
 
-      {/* Навигация между подтабовете */}
       <div className="bg-white shadow rounded-2xl border border-slate-200">
         <nav className="flex gap-3 px-4 pt-3 border-b">
           {[

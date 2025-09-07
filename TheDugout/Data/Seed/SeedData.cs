@@ -167,47 +167,66 @@ public static class SeedData
 
         // 5) Teams
         var teamsDir = Path.Combine(seedDir, "teams");
-
-        // ще пазим всички тимове за валидирането после
         var allTeams = new List<TeamTemplateDto>();
 
         foreach (var file in Directory.GetFiles(teamsDir, "*.json"))
         {
             var teams = await ReadJsonAsync<List<TeamTemplateDto>>(file);
             allTeams.AddRange(teams);
+        }
 
-            foreach (var t in teams)
+        // всички отбори от базата
+        var dbTeams = await db.TeamTemplates.ToListAsync();
+
+        foreach (var t in allTeams)
+        {
+            if (!leaguesByCode.TryGetValue(t.CompetitionCode, out var league))
             {
-                if (!leaguesByCode.TryGetValue(t.CompetitionCode, out var league))
-                {
-                    logger.LogWarning("Team {Team} references missing league {LeagueCode}", t.Name, t.CompetitionCode);
-                    continue;
-                }
+                logger.LogWarning("Team {Team} references missing league {LeagueCode}", t.Name, t.CompetitionCode);
+                continue;
+            }
 
-                // Ключ: (Abbreviation, CountryId) – предполагаме уникални в рамките на държава
-                var existing = await db.TeamTemplates
-                    .FirstOrDefaultAsync(x => x.Abbreviation == t.ShortName && x.CountryId == league.CountryId);
+            var existing = dbTeams
+                .FirstOrDefault(x => x.Abbreviation == t.ShortName && x.League.LeagueCode == t.CompetitionCode);
 
-                if (existing == null)
+            if (existing == null)
+            {
+                db.TeamTemplates.Add(new TeamTemplate
                 {
-                    db.TeamTemplates.Add(new TeamTemplate
-                    {
-                        Name = t.Name,
-                        Abbreviation = t.ShortName,
-                        CountryId = league.CountryId,
-                        LeagueId = league.Id
-                    });
-                }
-                else
+                    Name = t.Name,
+                    Abbreviation = t.ShortName,
+                    CountryId = league.CountryId,
+                    LeagueId = league.Id
+                });
+            }
+            else
+            {
+                // update only if different
+                if (existing.Name != t.Name || existing.LeagueId != league.Id || existing.CountryId != league.CountryId)
                 {
                     existing.Name = t.Name;
-                    existing.CountryId = league.CountryId;
                     existing.LeagueId = league.Id;
+                    existing.CountryId = league.CountryId;
                 }
             }
         }
 
+        // изтриване на тези, които ги няма в JSON
+        var jsonKeys = allTeams
+            .Select(t => (t.ShortName, t.CompetitionCode))
+            .ToHashSet();
+
+        var toRemove = dbTeams
+            .Where(x => !jsonKeys.Contains((x.Abbreviation, x.League.LeagueCode)))
+            .ToList();
+
+        if (toRemove.Any())
+        {
+            db.TeamTemplates.RemoveRange(toRemove);
+        }
+
         await db.SaveChangesAsync();
+
 
 
         // 6) MessageTemplates

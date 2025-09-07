@@ -1,22 +1,92 @@
 [
-  { "name": "Amiens", "shortName": "AMI", "competitionCode": "FRA_L2" },
-  { "name": "Annecy", "shortName": "ANN", "competitionCode": "FRA_L2" },
-  { "name": "Bastia", "shortName": "BAS", "competitionCode": "FRA_L2" },
-  { "name": "Boulogne", "shortName": "BOU", "competitionCode": "FRA_L2" },
-  { "name": "Clermont", "shortName": "CLE", "competitionCode": "FRA_L2" },
-  { "name": "Dunkerque", "shortName": "DUN", "competitionCode": "FRA_L2" },
-  { "name": "Grenoble", "shortName": "GRE", "competitionCode": "FRA_L2" },
-  { "name": "Guingamp", "shortName": "GUI", "competitionCode": "FRA_L2" },
-  { "name": "Laval", "shortName": "LAV", "competitionCode": "FRA_L2" },
-  { "name": "Le Mans", "shortName": "LEM", "competitionCode": "FRA_L2" },
-  { "name": "Montpellier", "shortName": "MON", "competitionCode": "FRA_L2" },
-  { "name": "Nancy", "shortName": "NAN", "competitionCode": "FRA_L2" },
-  { "name": "Pau", "shortName": "PAU", "competitionCode": "FRA_L2" },
-  { "name": "Red Star", "shortName": "RED", "competitionCode": "FRA_L2" },
-  { "name": "Reims", "shortName": "REI", "competitionCode": "FRA_L2" },
-  { "name": "Rodez", "shortName": "ROD", "competitionCode": "FRA_L2" },
-  { "name": "Saint-Étienne", "shortName": "STE", "competitionCode": "FRA_L2" },
-  { "name": "Troyes", "shortName": "TRO", "competitionCode": "FRA_L2" },
-  { "name": "Ajaccio", "shortName": "ACA", "competitionCode": "FRA_L2" },
-  { "name": "Sochaux", "shortName": "SOC", "competitionCode": "FRA_L2" }
+  {
+    "name": "Amiens",
+    "shortName": "AMI",
+    "competitionCode": "FRA_L2"
+  },
+  {
+    "name": "Annecy",
+    "shortName": "ANN",
+    "competitionCode": "FRA_L2"
+  },
+  {
+    "name": "Bastia",
+    "shortName": "BAS",
+    "competitionCode": "FRA_L2"
+  },
+  {
+    "name": "Clermont",
+    "shortName": "CLE",
+    "competitionCode": "FRA_L2"
+  },
+  {
+    "name": "Dunkerque",
+    "shortName": "DUN",
+    "competitionCode": "FRA_L2"
+  },
+  {
+    "name": "Grenoble",
+    "shortName": "GRE",
+    "competitionCode": "FRA_L2"
+  },
+  {
+    "name": "Guingamp",
+    "shortName": "GUI",
+    "competitionCode": "FRA_L2"
+  },
+  {
+    "name": "Laval",
+    "shortName": "LAV",
+    "competitionCode": "FRA_L2"
+  },
+  {
+    "name": "Le Mans",
+    "shortName": "LEM",
+    "competitionCode": "FRA_L2"
+  },
+  {
+    "name": "Montpellier",
+    "shortName": "MON",
+    "competitionCode": "FRA_L2"
+  },
+  {
+    "name": "Nancy",
+    "shortName": "NAN",
+    "competitionCode": "FRA_L2"
+  },
+  {
+    "name": "Pau",
+    "shortName": "PAU",
+    "competitionCode": "FRA_L2"
+  },
+  {
+    "name": "Red Star",
+    "shortName": "RED",
+    "competitionCode": "FRA_L2"
+  },
+  {
+    "name": "Rodez",
+    "shortName": "ROD",
+    "competitionCode": "FRA_L2"
+  },
+  {
+    "name": "Saint-Étienne",
+    "shortName": "STE",
+    "competitionCode": "FRA_L2"
+  },
+  {
+    "name": "Troyes",
+    "shortName": "TRO",
+    "competitionCode": "FRA_L2"
+  },
+  {
+    "name": "Ajaccio",
+    "shortName": "ACA",
+    "competitionCode": "FRA_L2"
+  },
+  {
+    "name": "Sochaux",
+    "shortName": "SOC",
+    "competitionCode": "FRA_L2"
+  }
 ]

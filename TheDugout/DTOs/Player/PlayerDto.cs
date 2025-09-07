@@ -12,6 +12,7 @@
         public double HeightCm { get; set; }
         public double WeightKg { get; set; }
         public decimal Price { get; set; }
+        public string? TeamName { get; set; }  
 
         public ICollection<PlayerAttributeDto> Attributes { get; set; } = new List<PlayerAttributeDto>();
         public ICollection<PlayerSeasonStatsDto> SeasonStats { get; set; } = new List<PlayerSeasonStatsDto>();

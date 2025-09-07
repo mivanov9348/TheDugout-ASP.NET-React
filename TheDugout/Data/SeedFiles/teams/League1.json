@@ -1,21 +1,92 @@
 [
-  { "name": "Angers", "shortName": "ANG", "competitionCode": "FRA_L1" },
-  { "name": "Auxerre", "shortName": "AUX", "competitionCode": "FRA_L1" },
-  { "name": "Brest", "shortName": "BRE", "competitionCode": "FRA_L1" },
-  { "name": "Le Havre", "shortName": "HAV", "competitionCode": "FRA_L1" },
-  { "name": "Lens", "shortName": "LEN", "competitionCode": "FRA_L1" },
-  { "name": "Lille", "shortName": "LIL", "competitionCode": "FRA_L1" },
-  { "name": "Lorient", "shortName": "LOR", "competitionCode": "FRA_L1" },
-  { "name": "Lyon", "shortName": "LYO", "competitionCode": "FRA_L1" },
-  { "name": "Marseille", "shortName": "MAR", "competitionCode": "FRA_L1" },
-  { "name": "Metz", "shortName": "MET", "competitionCode": "FRA_L1" },
-  { "name": "Monaco", "shortName": "MON", "competitionCode": "FRA_L1" },
-  { "name": "Nantes", "shortName": "NAN", "competitionCode": "FRA_L1" },
-  { "name": "Nice", "shortName": "NIC", "competitionCode": "FRA_L1" },
-  { "name": "Paris FC", "shortName": "PFC", "competitionCode": "FRA_L1" },
-  { "name": "Paris Saint-Germain", "shortName": "PSG", "competitionCode": "FRA_L1" },
-  { "name": "Reims", "shortName": "REI", "competitionCode": "FRA_L1" },
-  { "name": "Rennes", "shortName": "REN", "competitionCode": "FRA_L1" },
-  { "name": "Strasbourg", "shortName": "STR", "competitionCode": "FRA_L1" },
-  { "name": "Toulouse", "shortName": "TOU", "competitionCode": "FRA_L1" }
+  {
+    "name": "Angers",
+    "shortName": "ANG",
+    "competitionCode": "FRA_L1"
+  },
+  {
+    "name": "Auxerre",
+    "shortName": "AUX",
+    "competitionCode": "FRA_L1"
+  },
+  {
+    "name": "Brest",
+    "shortName": "BRE",
+    "competitionCode": "FRA_L1"
+  },
+  {
+    "name": "Le Havre",
+    "shortName": "HAV",
+    "competitionCode": "FRA_L1"
+  },
+  {
+    "name": "Lens",
+    "shortName": "LEN",
+    "competitionCode": "FRA_L1"
+  },
+  {
+    "name": "Lille",
+    "shortName": "LIL",
+    "competitionCode": "FRA_L1"
+  },
+  {
+    "name": "Lorient",
+    "shortName": "LOR",
+    "competitionCode": "FRA_L1"
+  },
+  {
+    "name": "Lyon",
+    "shortName": "LYO",
+    "competitionCode": "FRA_L1"
+  },
+  {
+    "name": "Marseille",
+    "shortName": "MAR",
+    "competitionCode": "FRA_L1"
+  },
+  {
+    "name": "Metz",
+    "shortName": "MET",
+    "competitionCode": "FRA_L1"
+  },
+  {
+    "name": "Monaco",
+    "shortName": "MON",
+    "competitionCode": "FRA_L1"
+  },
+  {
+    "name": "Nantes",
+    "shortName": "NAN",
+    "competitionCode": "FRA_L1"
+  },
+  {
+    "name": "Nice",
+    "shortName": "NIC",
+    "competitionCode": "FRA_L1"
+  },
+  {
+    "name": "Paris Saint-Germain",
+    "shortName": "PSG",
+    "competitionCode": "FRA_L1"
+  },
+  {
+    "name": "Reims",
+    "shortName": "REI",
+    "competitionCode": "FRA_L1"
+  },
+  {
+    "name": "Rennes",
+    "shortName": "REN",
+    "competitionCode": "FRA_L1"
+  },
+  {
+    "name": "Strasbourg",
+    "shortName": "STR",
+    "competitionCode": "FRA_L1"
+  },
+  {
+    "name": "Toulouse",
+    "shortName": "TOU",
+    "competitionCode": "FRA_L1"
+  }
 ]

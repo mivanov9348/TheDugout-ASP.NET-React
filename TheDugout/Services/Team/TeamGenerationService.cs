@@ -29,8 +29,8 @@ namespace TheDugout.Services.Team
                 var team = new Models.Team
                 {
                     TemplateId = tt.Id,
-                    GameSave = gameSave,
-                    League = league,
+                    GameSave = gameSave,   // EF ще върже отбора с GameSave
+                    League = league,       // EF ще върже отбора и с League
                     Name = tt.Name,
                     Abbreviation = tt.Abbreviation,
                     CountryId = tt.CountryId,
@@ -50,10 +50,7 @@ namespace TheDugout.Services.Team
                 // Популярност
                 team.Popularity = CalculateTeamPopularity(team);
 
-                // Добавяме отбора към save-то
-                gameSave.Teams.Add(team);
-
-                // Първо запазваме, за да получи Id
+                // Първо запазваме, за да получи Id (синхронното извикване не е ок, но за сега ще го оставим)
                 _context.SaveChangesAsync().GetAwaiter().GetResult();
 
                 // Стартов баланс (чрез транзакция от банката)
@@ -75,7 +72,6 @@ namespace TheDugout.Services.Team
 
             return teams;
         }
-
 
         private int CalculateTeamPopularity(Models.Team team)
         {
@@ -102,7 +98,7 @@ namespace TheDugout.Services.Team
 
         private string GenerateLogoFileName(string teamName)
         {
-            
+
             var cleanName = System.Text.RegularExpressions.Regex.Replace(
                 teamName,
                 @"[<>:""/\\|?*]",
