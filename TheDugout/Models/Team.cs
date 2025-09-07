@@ -10,7 +10,6 @@
         public int GameSaveId { get; set; }
         public GameSave GameSave { get; set; } = null!;
 
-
         public string Name { get; set; } = null!;
         public string Abbreviation { get; set; } = null!;
 
@@ -40,6 +39,8 @@
         public ICollection<Fixture> HomeFixtures { get; set; } = new List<Fixture>();
         public ICollection<Fixture> AwayFixtures { get; set; } = new List<Fixture>();
 
-
+        // 🆕 връзката 1:1 с тактика
+        public TeamTactic? TeamTactic { get; set; }
     }
+
 }

@@ -9,4 +9,10 @@ namespace TheDugout.DTOs.Team
         public ICollection<PlayerDto> Players { get; set; } = new List<PlayerDto>();
     }
 
+    public class SetTacticRequest
+    {
+        public int TacticId { get; set; }
+        public string? CustomName { get; set; }
+    }
+
 }

@@ -19,6 +19,33 @@ public static class SeedData
         var env = scope.ServiceProvider.GetRequiredService<IHostEnvironment>();
         var seedDir = Path.Combine(env.ContentRootPath, "Data", "SeedFiles");
 
+        // 0) Tactics
+        var tacticsPath = Path.Combine(seedDir, "tactics.json");
+        var tactics = await ReadJsonAsync<List<TacticDto>>(tacticsPath);
+
+        foreach (var t in tactics)
+        {
+            var existing = await db.Tactics.FirstOrDefaultAsync(x => x.Name == t.Name);
+            if (existing == null)
+            {
+                db.Tactics.Add(new Tactic
+                {
+                    Name = t.Name,
+                    Defenders = t.Defenders,
+                    Midfielders = t.Midfielders,
+                    Forwards = t.Forwards,
+                    TeamTactics = new List<TeamTactic>()
+                });
+            }
+            else
+            {
+                existing.Defenders = t.Defenders;
+                existing.Midfielders = t.Midfielders;
+                existing.Forwards = t.Forwards;
+            }
+        }
+        await db.SaveChangesAsync();
+
         // 0) Positions
         var positionsPath = Path.Combine(seedDir, "positions.json");
         var positions = await ReadJsonAsync<List<Position>>(positionsPath);

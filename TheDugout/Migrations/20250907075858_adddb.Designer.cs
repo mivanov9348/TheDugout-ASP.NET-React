@@ -12,7 +12,7 @@ using TheDugout.Data;
 namespace TheDugout.Migrations
 {
     [DbContext(typeof(DugoutDbContext))]
-    [Migration("20250907061650_adddb")]
+    [Migration("20250907075858_adddb")]
     partial class adddb
     {
         /// <inheritdoc />
@@ -229,7 +229,7 @@ namespace TheDugout.Migrations
 
                     b.HasIndex("UserTeamId");
 
-                    b.ToTable("GameSaves");
+                    b.ToTable("GameSaves", (string)null);
                 });
 
             modelBuilder.Entity("TheDugout.Models.League", b =>
@@ -697,6 +697,33 @@ namespace TheDugout.Migrations
                     b.ToTable("SeasonEvents");
                 });
 
+            modelBuilder.Entity("TheDugout.Models.Tactic", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Defenders")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Forwards")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Midfielders")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Tactics", (string)null);
+                });
+
             modelBuilder.Entity("TheDugout.Models.Team", b =>
                 {
                     b.Property<int>("Id")
@@ -771,7 +798,36 @@ namespace TheDugout.Migrations
 
                     b.HasIndex("TemplateId");
 
-                    b.ToTable("Teams");
+                    b.ToTable("Teams", (string)null);
+                });
+
+            modelBuilder.Entity("TheDugout.Models.TeamTactic", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CustomName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("TacticId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TeamId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TacticId");
+
+                    b.HasIndex("TeamId")
+                        .IsUnique();
+
+                    b.ToTable("TeamTactics", (string)null);
                 });
 
             modelBuilder.Entity("TheDugout.Models.TeamTemplate", b =>
@@ -1158,6 +1214,25 @@ namespace TheDugout.Migrations
                     b.Navigation("Template");
                 });
 
+            modelBuilder.Entity("TheDugout.Models.TeamTactic", b =>
+                {
+                    b.HasOne("TheDugout.Models.Tactic", "Tactic")
+                        .WithMany("TeamTactics")
+                        .HasForeignKey("TacticId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TheDugout.Models.Team", "Team")
+                        .WithOne("TeamTactic")
+                        .HasForeignKey("TheDugout.Models.TeamTactic", "TeamId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Tactic");
+
+                    b.Navigation("Team");
+                });
+
             modelBuilder.Entity("TheDugout.Models.TeamTemplate", b =>
                 {
                     b.HasOne("TheDugout.Models.Country", "Country")
@@ -1270,6 +1345,11 @@ namespace TheDugout.Migrations
                     b.Navigation("PlayerStats");
                 });
 
+            modelBuilder.Entity("TheDugout.Models.Tactic", b =>
+                {
+                    b.Navigation("TeamTactics");
+                });
+
             modelBuilder.Entity("TheDugout.Models.Team", b =>
                 {
                     b.Navigation("AwayFixtures");
@@ -1277,6 +1357,8 @@ namespace TheDugout.Migrations
                     b.Navigation("HomeFixtures");
 
                     b.Navigation("Players");
+
+                    b.Navigation("TeamTactic");
 
                     b.Navigation("TransactionsFrom");
 

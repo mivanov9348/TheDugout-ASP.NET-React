@@ -1,4 +1,6 @@
-﻿namespace TheDugout.Data.Seed
+﻿using TheDugout.Models;
+
+namespace TheDugout.Data.Seed
 {
     public static class SeedDtos
     {
@@ -35,6 +37,15 @@
     bool IsActive,
     string Language
 );
+
+        public record TacticDto(
+           int Id,
+           string Name,
+           int Defenders,
+           int Midfielders,
+           int Forwards,
+           List<TeamTactic> TeamTactics
+       );
 
     }
 }

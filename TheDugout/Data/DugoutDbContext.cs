@@ -31,6 +31,8 @@ namespace TheDugout.Data
         public DbSet<Position> Positions { get; set; }
         public DbSet<PositionWeight> PositionWeights { get; set; }  
         public DbSet<Fixture> Fixtures { get; set; }
+        public DbSet<Tactic> Tactics { get; set; }
+        public DbSet<TeamTactic> TeamTactics { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

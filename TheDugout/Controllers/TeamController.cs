@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using TheDugout.Models;
+using TheDugout.Services.Team;
 
 [ApiController]
 [Route("api/team")]

@@ -8,6 +8,8 @@ namespace TheDugout.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<Team> builder)
         {
+            builder.ToTable("Teams");
+
             builder.HasKey(e => e.Id);
 
             builder.Property(e => e.Name)
@@ -34,17 +36,17 @@ namespace TheDugout.Data.Configurations
             builder.HasOne(e => e.GameSave)
                    .WithMany(gs => gs.Teams)
                    .HasForeignKey(e => e.GameSaveId)
-                   .OnDelete(DeleteBehavior.Cascade); // GameSave триe
+                   .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasOne(e => e.League)
                    .WithMany(l => l.Teams)
                    .HasForeignKey(e => e.LeagueId)
-                   .OnDelete(DeleteBehavior.Restrict); // League НЕ cascade
+                   .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasMany(e => e.Players)
                    .WithOne(p => p.Team)
                    .HasForeignKey(p => p.TeamId)
-                   .OnDelete(DeleteBehavior.Restrict); // Player триe само от GameSave
+                   .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasMany(t => t.HomeFixtures)
                    .WithOne(f => f.HomeTeam)
@@ -65,6 +67,12 @@ namespace TheDugout.Data.Configurations
                    .WithOne(ft => ft.ToTeam)
                    .HasForeignKey(ft => ft.ToTeamId)
                    .OnDelete(DeleteBehavior.Restrict);
+
+            // 🆕 връзка 1:1 между Team и TeamTactic
+            builder.HasOne(t => t.TeamTactic)
+                   .WithOne(tt => tt.Team)
+                   .HasForeignKey<TeamTactic>(tt => tt.TeamId)
+                   .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

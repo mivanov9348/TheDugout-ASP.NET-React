@@ -8,6 +8,8 @@ namespace TheDugout.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<GameSave> builder)
         {
+            builder.ToTable("GameSaves");
+
             builder.HasKey(e => e.Id);
 
             builder.HasOne(gs => gs.User)
@@ -53,7 +55,8 @@ namespace TheDugout.Data.Configurations
             builder.HasOne(gs => gs.Bank)
                    .WithOne(b => b.GameSave)
                    .HasForeignKey<Bank>(b => b.GameSaveId)
-    .OnDelete(DeleteBehavior.Cascade);
+                   .OnDelete(DeleteBehavior.Cascade);
+
         }
     }
 }
