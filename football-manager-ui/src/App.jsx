@@ -261,7 +261,15 @@ function App() {
   path="/tactics"
   element={<Tactics gameSaveId={currentGameSave?.id} teamId={currentGameSave?.userTeamId} />}
 />
-                   <Route path="/training" element={<Training />} />
+<Route
+  path="/training"
+  element={
+    <Training
+      gameSaveId={currentGameSave?.id}
+      teamId={currentGameSave?.userTeamId}
+    />
+  }
+/>
                     <Route
                       path="/fixtures"
                       element={
