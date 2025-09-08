@@ -40,8 +40,15 @@ public class TacticsController : ControllerBase
     public async Task<IActionResult> GetTeamTactic(int teamId, [FromQuery] int saveId)
     {
         var tactic = await _teamPlanService.GetTeamTacticAsync(teamId, saveId);
-        if (tactic == null) return NotFound("Този отбор няма зададена тактика.");
-        return Ok(tactic);
+        if (tactic == null)
+            return NotFound("Този отбор няма зададена тактика.");
+
+        return Ok(new
+        {
+            tacticId = tactic.TacticId,
+            customName = tactic.CustomName,
+            lineupJson = tactic.LineupJson
+        });
     }
 
     [HttpPost("{teamId:int}")]
@@ -57,6 +64,11 @@ public class TacticsController : ControllerBase
             request.Lineup
         );
 
-        return Ok(tactic);
+        return Ok(new
+        {
+            tactic.TacticId,
+            tactic.CustomName,
+            tactic.LineupJson
+        });
     }
 }

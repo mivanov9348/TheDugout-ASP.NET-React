@@ -6,6 +6,7 @@ using TheDugout.Services.Fixture;
 using TheDugout.Services.League;
 using TheDugout.Services.Players;
 using TheDugout.Services.Season;
+using TheDugout.Services.Team;
 
 namespace TheDugout.Services.Game
 {
@@ -18,6 +19,7 @@ namespace TheDugout.Services.Game
         private readonly IFixturesService _fixturesService;
         private readonly IPlayerGenerationService _playerGenerator;
         private readonly IFinanceService _financeService;
+        private readonly ITeamPlanService _teamPlanService;
 
         public GameSaveService(
             DugoutDbContext context,
@@ -26,7 +28,8 @@ namespace TheDugout.Services.Game
             ISeasonGenerationService seasonGenerator,
             IFixturesService fixturesService,
             IPlayerGenerationService playerGenerator,
-            IFinanceService financeService
+            IFinanceService financeService,
+            ITeamPlanService teamPlanService
         )
         {
             _context = context;
@@ -36,6 +39,7 @@ namespace TheDugout.Services.Game
             _fixturesService = fixturesService;
             _playerGenerator = playerGenerator;
             _financeService = financeService;
+            _teamPlanService = teamPlanService;
         }
 
         public async Task<List<object>> GetUserSavesAsync(int userId)
@@ -116,6 +120,9 @@ namespace TheDugout.Services.Game
 
                 // Fixtures
                 await _fixturesService.GenerateFixturesAsync(gameSave.Id, season.Id, startDate);
+
+                await _teamPlanService.InitializeDefaultTacticsAsync(gameSave);
+
 
                 await transaction.CommitAsync();
 

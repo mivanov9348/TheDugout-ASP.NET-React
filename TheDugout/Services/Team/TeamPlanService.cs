@@ -86,5 +86,56 @@ namespace TheDugout.Services.Team
             await _context.SaveChangesAsync();
             return team.TeamTactic!;
         }
+
+        public async Task InitializeDefaultTacticsAsync(GameSave gameSave)
+        {
+            var teams = await _context.Teams
+                .Include(t => t.Players)
+                    .ThenInclude(p => p.Position)
+                .Where(t => t.GameSaveId == gameSave.Id)
+                .ToListAsync();
+
+            var defaultTactic = await _context.Tactics.FirstOrDefaultAsync(t =>
+                t.Defenders == 4 && t.Midfielders == 4 && t.Forwards == 2);
+
+            if (defaultTactic == null)
+                throw new Exception("Тактиката 4-4-2 липсва в базата.");
+
+            foreach (var team in teams)
+            {
+                if (await _context.TeamTactics.AnyAsync(tt => tt.TeamId == team.Id))
+                    continue;
+
+                var lineup = new Dictionary<string, string?>();
+                var players = team.Players.ToList();
+
+                var gk = players.Where(p => p.Position.Code == "GK").Take(1).ToList();
+                var df = players.Where(p => p.Position.Code == "DF").Take(4).ToList();
+                var mid = players.Where(p => p.Position.Code == "MID").Take(4).ToList();
+                var att = players.Where(p => p.Position.Code == "ATT").Take(2).ToList();
+
+                int index = 1;
+                foreach (var p in gk) lineup.Add($"GK{index++}", p.Id.ToString());
+                index = 1;
+                foreach (var p in df) lineup.Add($"DF{index++}", p.Id.ToString());
+                index = 1;
+                foreach (var p in mid) lineup.Add($"MID{index++}", p.Id.ToString());
+                index = 1;
+                foreach (var p in att) lineup.Add($"ATT{index++}", p.Id.ToString());
+
+                var tactic = new TeamTactic
+                {
+                    TeamId = team.Id,
+                    TacticId = defaultTactic.Id,
+                    CustomName = "Default 4-4-2",
+                    LineupJson = System.Text.Json.JsonSerializer.Serialize(lineup)
+                };
+
+                _context.TeamTactics.Add(tactic);
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
     }
 }

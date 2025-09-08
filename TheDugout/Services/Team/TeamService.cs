@@ -45,7 +45,6 @@ public class TeamService : ITeamService
             Players = _mapper.Map<List<PlayerDto>>(user.CurrentSave.UserTeam.Players)
         };
     }
-
     public async Task<TeamDto?> GetTeamBySaveAsync(int saveId)
     {
         var save = await _context.GameSaves

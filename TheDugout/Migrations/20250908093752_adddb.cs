@@ -509,6 +509,7 @@ namespace TheDugout.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     TeamId = table.Column<int>(type: "int", nullable: false),
                     TacticId = table.Column<int>(type: "int", nullable: false),
+                    LineupJson = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CustomName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false)
                 },
                 constraints: table =>

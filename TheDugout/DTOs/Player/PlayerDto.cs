@@ -6,6 +6,7 @@
         public int Id { get; set; }
         public string FullName { get; set; } = null!;
         public string Position { get; set; } = null!;
+        public int PositionId { get; set; }
         public int KitNumber { get; set; }
         public int Age { get; set; }
         public string Country { get; set; } = "";
