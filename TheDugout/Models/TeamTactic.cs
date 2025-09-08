@@ -9,6 +9,7 @@
 
         public int TacticId { get; set; }
         public Tactic Tactic { get; set; } = null!;
+        public string LineupJson { get; set; } = "{}";
 
         public string CustomName { get; set; } = "Default Tactic";
     }

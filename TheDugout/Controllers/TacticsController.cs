@@ -19,7 +19,6 @@ public class TacticsController : ControllerBase
         _teamPlanService = teamPlanService;
     }
 
-    // Връща всички тактики от базата
     [HttpGet]
     public async Task<IActionResult> GetAllTactics()
     {
@@ -37,7 +36,6 @@ public class TacticsController : ControllerBase
         return Ok(tactics);
     }
 
-    // Връща текущата тактика за отбор (по teamId и saveId)
     [HttpGet("{teamId:int}")]
     public async Task<IActionResult> GetTeamTactic(int teamId, [FromQuery] int saveId)
     {
@@ -46,14 +44,19 @@ public class TacticsController : ControllerBase
         return Ok(tactic);
     }
 
-    // Задава/променя тактика за отбор
     [HttpPost("{teamId:int}")]
     public async Task<IActionResult> SetTeamTactic(int teamId, [FromBody] SetTacticRequest request)
     {
         if (request == null || request.TacticId <= 0)
             return BadRequest("Невалидни данни за тактика.");
 
-        var tactic = await _teamPlanService.SetTeamTacticAsync(teamId, request.TacticId, request.CustomName);
+        var tactic = await _teamPlanService.SetTeamTacticAsync(
+            teamId,
+            request.TacticId,
+            request.CustomName,
+            request.Lineup
+        );
+
         return Ok(tactic);
     }
 }

@@ -6,8 +6,8 @@ namespace TheDugout.Services.Team
     {
         Dictionary<string, int> GetDefaultRosterPlan();
         Task<TeamTactic?> GetTeamTacticAsync(int teamId, int gameSaveId);
-        Task<TeamTactic> SetTeamTacticAsync(int teamId, int tacticId, string? customName = null);
+        Task<TeamTactic> SetTeamTacticAsync(int teamId, int tacticId, string? customName, Dictionary<string, string?> lineup);
     }
 
-   
+
 }
