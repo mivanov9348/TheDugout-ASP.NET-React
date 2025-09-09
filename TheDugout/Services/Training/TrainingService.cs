@@ -20,7 +20,7 @@ public class TrainingService : ITrainingService
         _logger = logger;
     }
 
-    public async Task<List<PlayerTrainingAssignmentDto>> AutoAssignAttributesAsync(int teamId, int gameSaveId)
+    public async Task<List<AutoAssignResultDto>> AutoAssignAttributesAsync(int teamId, int gameSaveId)
     {
         var players = await _context.Players
             .Include(p => p.Attributes)
@@ -29,7 +29,7 @@ public class TrainingService : ITrainingService
             .Where(p => p.TeamId == teamId && p.GameSaveId == gameSaveId)
             .ToListAsync();
 
-        var assignments = new List<PlayerTrainingAssignmentDto>();
+        var assignments = new List<AutoAssignResultDto>();
 
         foreach (var player in players)
         {
@@ -39,7 +39,6 @@ public class TrainingService : ITrainingService
                     var weight = pa.Attribute.PositionWeights
                         .FirstOrDefault(w => w.PositionId == player.PositionId)?.Weight ?? 0;
 
-                    // Може да се добави бонус за ниска текуща стойност:
                     var bonusForLowValue = 1.0 / (pa.Value + 1);
                     return weight + bonusForLowValue;
                 })
@@ -47,10 +46,12 @@ public class TrainingService : ITrainingService
 
             if (bestAttr != null)
             {
-                assignments.Add(new PlayerTrainingAssignmentDto
+                assignments.Add(new AutoAssignResultDto
                 {
                     PlayerId = player.Id,
-                    AttributeId = bestAttr.AttributeId
+                    AttributeId = bestAttr.AttributeId,
+                    AttributeName = bestAttr.Attribute.Name,
+                    CurrentValue = bestAttr.Value
                 });
             }
         }
@@ -58,28 +59,27 @@ public class TrainingService : ITrainingService
         return assignments;
     }
 
+
     public async Task<List<TrainingResultDto>> RunTrainingSessionAsync(
-        int gameSaveId,
-        int teamId,
-        int seasonId,
-        DateTime date,
-        List<PlayerTrainingAssignmentDto> assignments)
+    int gameSaveId,
+    int teamId,
+    int seasonId,
+    DateTime date,
+    List<PlayerTrainingAssignmentDto> assignments)
     {
         if (assignments == null || !assignments.Any())
             throw new InvalidOperationException("No assignments provided.");
 
-        // проверка за вече провеждана тренировка (по gameSave + team + date)
+        date = date.ToUniversalTime().Date;
+
         bool alreadyTrained = await _context.TrainingSessions
             .AnyAsync(ts => ts.GameSaveId == gameSaveId
                             && ts.TeamId == teamId
-                            && ts.Date.Date == date.Date);
-        if (alreadyTrained)
-            throw new InvalidOperationException("Вече е проведена тренировка за този ден.");
+                            && ts.Date == date);
+        //if (alreadyTrained)
+        //    throw new InvalidOperationException("Вече е проведена тренировка за този ден.");
 
-        // distinct playerIds
         var playerIds = assignments.Select(a => a.PlayerId).Distinct().ToList();
-
-        // Опитваме строгото търсене (играчите трябва да са от този отбор и save)
         var players = await _context.Players
             .Include(p => p.Attributes)
                 .ThenInclude(pa => pa.Attribute)
@@ -88,39 +88,11 @@ public class TrainingService : ITrainingService
 
         if (players.Count != playerIds.Count)
         {
-            // fallback: зареди по ID без филтър team/save
-            _logger?.LogDebug("Strict load found {Found}/{Expected}. Falling back to load by ID.", players.Count, playerIds.Count);
-
-            var playersById = await _context.Players
-                .Include(p => p.Attributes)
-                    .ThenInclude(pa => pa.Attribute)
-                .Where(p => playerIds.Contains(p.Id))
-                .ToListAsync();
-
-            var missing = playerIds.Except(playersById.Select(p => p.Id)).ToList();
+            var missing = playerIds.Except(players.Select(p => p.Id)).ToList();
             if (missing.Any())
-            {
-                // ако има липсващи id-та в базата — грешка и списък
                 throw new InvalidOperationException($"Играч(и) с id [{string.Join(", ", missing)}] не бяха намерени в базата.");
-            }
-
-            // ако всички id-та съществуват, но някои са в друг отбор/сейв — логваме warning, но продължаваме
-            var mismatched = playersById
-                .Where(p => p.TeamId != teamId || p.GameSaveId != gameSaveId)
-                .Select(p => new { p.Id, p.TeamId, p.GameSaveId })
-                .ToList();
-
-            if (mismatched.Any())
-            {
-                _logger?.LogWarning("Намерени играчи, но с различен TeamId/GameSaveId: {Mismatches}",
-                    string.Join(", ", mismatched.Select(m => $"(id:{m.Id},team:{m.TeamId},save:{m.GameSaveId})")));
-            }
-
-            // използваме playersById (вече всички съществуват)
-            players = playersById;
         }
 
-        // Създаваме сесия
         var trainingSession = new TrainingSession
         {
             GameSaveId = gameSaveId,
@@ -132,38 +104,38 @@ public class TrainingService : ITrainingService
 
         var results = new List<TrainingResultDto>();
 
-        // Обработваме всяка задача (assignment)
         foreach (var assignment in assignments)
         {
             var player = players.FirstOrDefault(p => p.Id == assignment.PlayerId);
             if (player == null)
             {
-                // Това не би трябвало да се случи след горната проверка, но guard-ване
-                throw new InvalidOperationException($"Играч с id {assignment.PlayerId} липсва след зареждане.");
+                _logger?.LogError("❌ Играч {Id} липсва след зареждане", assignment.PlayerId);
+                continue; 
             }
 
             var pa = player.Attributes.FirstOrDefault(a => a.AttributeId == assignment.AttributeId);
             if (pa == null)
             {
-                // няма такъв атрибут у играча
-                throw new InvalidOperationException($"Играч {player.Id} няма атрибут {assignment.AttributeId}.");
+                _logger?.LogError("❌ Играч {Id} няма атрибут {AttrId}", player.Id, assignment.AttributeId);
+                continue; 
             }
+
+            if (double.IsNaN(pa.Progress))
+                pa.Progress = 0;
 
             var oldValue = pa.Value;
 
-            // --- ФОРМУЛА (бавно, положително развитие)
-            double baseGain = 0.03; // базов прогрес на сесия
+            double baseGain = 0.03;
             double ageFactor = player.Age < 21 ? 1.3 : player.Age > 28 ? 0.7 : 1.0;
-            double randomFactor = _random.NextDouble() * 0.3 + 0.85; // 0.85 - 1.15
+            double randomFactor = _random.NextDouble() * 0.3 + 0.85;
             double gain = baseGain * ageFactor * randomFactor;
 
-            // Нотираме прогреса (progress трябва да е поле double в PlayerAttribute)
             pa.Progress += gain;
 
             int changeValue = 0;
             if (pa.Progress >= 1.0)
             {
-                pa.Progress -= 1.0; // запазваме остатъка, вместо да чистим на 0
+                pa.Progress -= 1.0;
                 pa.Value += 1;
                 changeValue = 1;
             }
@@ -182,7 +154,8 @@ public class TrainingService : ITrainingService
                 AttributeName = pa.Attribute.Name,
                 OldValue = oldValue,
                 NewValue = pa.Value,
-                ProgressGain = Math.Round(gain, 3)
+                ProgressGain = Math.Round(gain, 3),
+                TotalProgress = Math.Round(pa.Progress, 3)
             });
         }
 
@@ -191,4 +164,5 @@ public class TrainingService : ITrainingService
 
         return results;
     }
+
 }

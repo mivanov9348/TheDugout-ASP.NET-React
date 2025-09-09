@@ -1,12 +1,25 @@
 import React, { useEffect, useState } from "react";
+import Swal from "sweetalert2";
 
 const Training = ({ gameSaveId }) => {
+  const [team, setTeam] = useState(null);
   const [players, setPlayers] = useState([]);
   const [selectedSkills, setSelectedSkills] = useState({});
   const [trainingProgress, setTrainingProgress] = useState([]);
   const [loadingAuto, setLoadingAuto] = useState(false);
+  const [autoProposals, setAutoProposals] = useState({});
 
-  // Зареждане на отбора
+  // helper за грешки
+  const showError = (message) => {
+    Swal.fire({
+      icon: "error",
+      title: "Грешка",
+      text: message || "Възникна проблем",
+      confirmButtonColor: "#d33",
+    });
+  };
+
+  // Зареждане на отбора + играчи
   useEffect(() => {
     if (!gameSaveId) return;
 
@@ -17,10 +30,15 @@ const Training = ({ gameSaveId }) => {
         });
         if (!res.ok) throw new Error("Грешка при зареждане на отбора");
         const data = await res.json();
-        setPlayers(data.players ?? []);
+        setTeam(data);
+        // сортиране по positionId ако го има
+        const sortedPlayers = (data.players ?? []).sort(
+          (a, b) => (a.positionId ?? 0) - (b.positionId ?? 0)
+        );
+        setPlayers(sortedPlayers);
       } catch (err) {
         console.error(err);
-        alert(err.message);
+        showError(err.message);
       }
     };
 
@@ -33,36 +51,41 @@ const Training = ({ gameSaveId }) => {
 
   // Auto Assign Attributes
   const handleAutoComplete = async () => {
-    if (!players.length || !players[0].teamId) {
-      alert("Играчите или отборът не са заредени още.");
+    if (!team || !players.length) {
+      showError("Играчите или отборът не са заредени още.");
       return;
     }
 
     try {
       setLoadingAuto(true);
 
-      const res = await fetch(
-        `/api/training/auto-assign/${players[0].teamId}/${gameSaveId}`,
-        { credentials: "include" }
-      );
+      const url = `/api/training/auto-assign/${team.teamId}/${gameSaveId}`;
+      const res = await fetch(url, { credentials: "include" });
 
       if (!res.ok) {
-        const errData = await res.json().catch(() => null);
-        throw new Error(errData?.message || "Грешка при авто-назначаване на уменията");
+        let errText = await res.text();
+        let errData = null;
+        try {
+          errData = JSON.parse(errText);
+        } catch {}
+        throw new Error(
+          errData?.message || "Грешка при авто-назначаване на уменията"
+        );
       }
 
       const data = await res.json();
-
       const autoSelected = {};
+      const proposals = {};
       data.forEach((a) => {
         autoSelected[a.playerId] = a.attributeId;
+        proposals[a.playerId] = { name: a.attributeName, value: a.currentValue };
       });
 
-      // Попълваме избраните умения
       setSelectedSkills(autoSelected);
+      setAutoProposals(proposals);
     } catch (err) {
-      console.error(err);
-      alert(err.message);
+      console.error("❌ handleAutoComplete failed:", err);
+      showError(err.message);
     } finally {
       setLoadingAuto(false);
     }
@@ -70,6 +93,11 @@ const Training = ({ gameSaveId }) => {
 
   // Стартиране на тренировката
   const handleStartTraining = async () => {
+    if (!team || !players.length) {
+      showError("Играчите или отборът не са заредени още.");
+      return;
+    }
+
     try {
       const assignments = players
         .filter((p) => selectedSkills[p.id])
@@ -79,14 +107,14 @@ const Training = ({ gameSaveId }) => {
         }));
 
       if (assignments.length === 0) {
-        alert("Моля, избери поне един играч и умение за трениране.");
+        showError("Моля, избери поне един играч и умение за трениране.");
         return;
       }
 
       const payload = {
         gameSaveId,
-        teamId: players[0]?.teamId ?? 0,
-        seasonId: 1, // TODO: реален сезон
+        teamId: team.teamId,
+        seasonId: 1,
         date: new Date().toISOString(),
         assignments,
       };
@@ -100,23 +128,36 @@ const Training = ({ gameSaveId }) => {
 
       if (!res.ok) {
         const errData = await res.json();
-        throw new Error(errData.message || "Грешка при стартиране на тренировката");
+        throw new Error(
+          errData.message || "Грешка при стартиране на тренировката"
+        );
       }
 
       const data = await res.json();
 
       setTrainingProgress(
-        data.map((result) => ({
-          playerId: result.playerId,
-          name: result.playerName,
-          skill: result.attributeName,
-          efficiency: result.newValue - result.oldValue,
-          sessions: 1,
-        }))
-      );
+  data.map((result) => ({
+    playerId: result.playerId,
+    name: result.playerName,
+    skill: result.attributeName,
+    efficiency: result.newValue - result.oldValue,
+    progressGain: result.progressGain,
+    totalProgress: result.totalProgress,
+    currentValue: result.newValue, 
+    sessions: 1,
+  }))
+);
+
+
+      Swal.fire({
+        icon: "success",
+        title: "Тренировката е успешна!",
+        showConfirmButton: false,
+        timer: 1500,
+      });
     } catch (err) {
       console.error(err);
-      alert(err.message || "Неуспешно стартиране на тренировката");
+      showError(err.message || "Неуспешно стартиране на тренировката");
     }
   };
 
@@ -157,11 +198,21 @@ const Training = ({ gameSaveId }) => {
                         >
                           <option value="">Select Skill</option>
                           {player.attributes?.map((attr) => (
-                            <option key={attr.attributeId} value={attr.attributeId}>
+                            <option
+                              key={attr.attributeId}
+                              value={attr.attributeId}
+                            >
                               {attr.name} ({attr.value})
                             </option>
                           ))}
                         </select>
+
+                        {autoProposals[player.id] && (
+                          <p className="text-xs text-gray-500 mt-1">
+                            Suggested: {autoProposals[player.id].name} (
+                            {autoProposals[player.id].value})
+                          </p>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -208,9 +259,29 @@ const Training = ({ gameSaveId }) => {
                   {trainingProgress.map((progress) => (
                     <tr key={progress.playerId}>
                       <td className="px-6 py-4">{progress.name}</td>
-                      <td className="px-6 py-4">{progress.skill}</td>
+                      <td className="px-6 py-4">{progress.skill} ({progress.currentValue})</td>
                       <td className="px-6 py-4 text-green-600 font-semibold">
                         +{progress.efficiency}
+                        {progress.progressGain > 0 && (
+                          <span className="text-sm text-gray-500">
+                            {" "}({progress.progressGain.toFixed(3)})
+                          </span>
+                        )}
+                        <div className="text-xs text-blue-500">
+                          Total: {progress.totalProgress.toFixed(3)}
+                        </div>
+                        {/* progress bar */}
+                        <div className="w-full bg-gray-200 rounded h-2 mt-1">
+                          <div
+                            className="bg-blue-500 h-2 rounded"
+                            style={{
+                              width: `${Math.min(
+                                (progress.totalProgress % 1) * 100,
+                                100
+                              )}%`,
+                            }}
+                          ></div>
+                        </div>
                       </td>
                       <td className="px-6 py-4">{progress.sessions}</td>
                     </tr>

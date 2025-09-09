@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace TheDugout.Migrations
 {
     /// <inheritdoc />
-    public partial class AddDb : Migration
+    public partial class adddb : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -571,7 +571,8 @@ namespace TheDugout.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     PlayerId = table.Column<int>(type: "int", nullable: false),
                     AttributeId = table.Column<int>(type: "int", nullable: false),
-                    Value = table.Column<int>(type: "int", nullable: false)
+                    Value = table.Column<int>(type: "int", nullable: false),
+                    Progress = table.Column<double>(type: "float", nullable: false)
                 },
                 constraints: table =>
                 {

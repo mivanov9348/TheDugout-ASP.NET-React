@@ -11,8 +11,7 @@ namespace TheDugout.Services.Training
             DateTime date,
             List<PlayerTrainingAssignmentDto> assignments
         );
-        Task<List<PlayerTrainingAssignmentDto>> AutoAssignAttributesAsync(int teamId, int gameSaveId);
 
+        Task<List<AutoAssignResultDto>> AutoAssignAttributesAsync(int teamId, int gameSaveId);
     }
-
 }

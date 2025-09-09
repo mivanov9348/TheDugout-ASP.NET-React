@@ -12,8 +12,8 @@ using TheDugout.Data;
 namespace TheDugout.Migrations
 {
     [DbContext(typeof(DugoutDbContext))]
-    [Migration("20250909053527_AddDb1")]
-    partial class AddDb1
+    [Migration("20250909101905_adddb")]
+    partial class adddb
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

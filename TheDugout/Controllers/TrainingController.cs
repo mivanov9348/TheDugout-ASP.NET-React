@@ -17,17 +17,32 @@ namespace TheDugout.Controllers
             _trainingService = trainingService;
         }
 
-        [HttpGet("auto-assign/{teamId}/{gameSaveId}")]
+        [HttpGet("auto-assign/{teamId:int}/{gameSaveId:int}")]
         public async Task<IActionResult> AutoAssignAttributes(int teamId, int gameSaveId)
         {
             try
             {
+                if (teamId <= 0 || gameSaveId <= 0)
+                {
+                    return BadRequest(new { message = "Невалидни параметри", teamId, gameSaveId });
+                }
+
+                Console.WriteLine($"➡ AutoAssign called with teamId={teamId}, gameSaveId={gameSaveId}");
+
                 var assignments = await _trainingService.AutoAssignAttributesAsync(teamId, gameSaveId);
+
+                if (assignments == null || !assignments.Any())
+                {
+                    return BadRequest(new { message = "Няма предложения за трениране", teamId, gameSaveId });
+                }
+
+                Console.WriteLine($"✅ AutoAssign returned {assignments.Count()} assignments");
                 return Ok(assignments);
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                Console.WriteLine("❌ AutoAssign error: " + ex);
+                return BadRequest(new { message = ex.Message, stack = ex.StackTrace });
             }
         }
 
