@@ -4,7 +4,9 @@ const Training = ({ gameSaveId }) => {
   const [players, setPlayers] = useState([]);
   const [selectedSkills, setSelectedSkills] = useState({});
   const [trainingProgress, setTrainingProgress] = useState([]);
+  const [loadingAuto, setLoadingAuto] = useState(false);
 
+  // Зареждане на отбора
   useEffect(() => {
     if (!gameSaveId) return;
 
@@ -18,49 +20,104 @@ const Training = ({ gameSaveId }) => {
         setPlayers(data.players ?? []);
       } catch (err) {
         console.error(err);
+        alert(err.message);
       }
     };
 
     loadTeam();
   }, [gameSaveId]);
 
-  const handleSkillChange = (playerId, skill) => {
-    setSelectedSkills((prev) => ({ ...prev, [playerId]: skill }));
+  const handleSkillChange = (playerId, attrId) => {
+    setSelectedSkills((prev) => ({ ...prev, [playerId]: Number(attrId) }));
   };
 
-  const estimateEfficiencyGain = (skill, position, player) => {
-    const attr = player.attributes?.find((a) => a.name === skill);
-    const baseValue = attr ? 100 - attr.value : 50;
-    const randomness = Math.floor(Math.random() * 5);
+  // Auto Assign Attributes
+  const handleAutoComplete = async () => {
+    if (!players.length || !players[0].teamId) {
+      alert("Играчите или отборът не са заредени още.");
+      return;
+    }
 
-    const positionBoost =
-      position === "Forward" && skill === "Shooting"
-        ? 5
-        : position === "Midfielder" && skill === "Passing"
-        ? 4
-        : position === "Defender" && skill === "Defending"
-        ? 4
-        : 0;
+    try {
+      setLoadingAuto(true);
 
-    return Math.max(1, Math.round(baseValue / 20 + positionBoost + randomness));
-  };
+      const res = await fetch(
+        `/api/training/auto-assign/${players[0].teamId}/${gameSaveId}`,
+        { credentials: "include" }
+      );
 
-  const handleSaveAssignments = () => {
-    const results = players
-      .filter((p) => selectedSkills[p.id])
-      .map((player) => {
-        const skill = selectedSkills[player.id];
-        const gain = estimateEfficiencyGain(skill, player.position, player);
-        return {
-          id: player.id,
-          name: player.fullName, 
-          skill,
-          efficiency: gain,
-          sessions: Math.floor(Math.random() * 5) + 1,
-        };
+      if (!res.ok) {
+        const errData = await res.json().catch(() => null);
+        throw new Error(errData?.message || "Грешка при авто-назначаване на уменията");
+      }
+
+      const data = await res.json();
+
+      const autoSelected = {};
+      data.forEach((a) => {
+        autoSelected[a.playerId] = a.attributeId;
       });
 
-    setTrainingProgress(results);
+      // Попълваме избраните умения
+      setSelectedSkills(autoSelected);
+    } catch (err) {
+      console.error(err);
+      alert(err.message);
+    } finally {
+      setLoadingAuto(false);
+    }
+  };
+
+  // Стартиране на тренировката
+  const handleStartTraining = async () => {
+    try {
+      const assignments = players
+        .filter((p) => selectedSkills[p.id])
+        .map((player) => ({
+          playerId: player.id,
+          attributeId: selectedSkills[player.id],
+        }));
+
+      if (assignments.length === 0) {
+        alert("Моля, избери поне един играч и умение за трениране.");
+        return;
+      }
+
+      const payload = {
+        gameSaveId,
+        teamId: players[0]?.teamId ?? 0,
+        seasonId: 1, // TODO: реален сезон
+        date: new Date().toISOString(),
+        assignments,
+      };
+
+      const res = await fetch(`/api/training/start`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.message || "Грешка при стартиране на тренировката");
+      }
+
+      const data = await res.json();
+
+      setTrainingProgress(
+        data.map((result) => ({
+          playerId: result.playerId,
+          name: result.playerName,
+          skill: result.attributeName,
+          efficiency: result.newValue - result.oldValue,
+          sessions: 1,
+        }))
+      );
+    } catch (err) {
+      console.error(err);
+      alert(err.message || "Неуспешно стартиране на тренировката");
+    }
   };
 
   return (
@@ -71,7 +128,7 @@ const Training = ({ gameSaveId }) => {
         </h1>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Left: Assign Training */}
+          {/* Лява част - Assign Training */}
           <div>
             <h2 className="text-2xl font-semibold mb-4 text-gray-800">
               Assign Training
@@ -80,29 +137,19 @@ const Training = ({ gameSaveId }) => {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Name
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Position
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Skill to Train
-                    </th>
+                    <th className="px-6 py-3">Name</th>
+                    <th className="px-6 py-3">Position</th>
+                    <th className="px-6 py-3">Skill to Train</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {players.map((player) => (
                     <tr key={player.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {player.fullName} {/* <-- поправено */}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {player.position}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-6 py-4">{player.fullName}</td>
+                      <td className="px-6 py-4">{player.position}</td>
+                      <td className="px-6 py-4">
                         <select
-                          className="block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                          className="block w-full border rounded-md"
                           value={selectedSkills[player.id] || ""}
                           onChange={(e) =>
                             handleSkillChange(player.id, e.target.value)
@@ -110,7 +157,7 @@ const Training = ({ gameSaveId }) => {
                         >
                           <option value="">Select Skill</option>
                           {player.attributes?.map((attr) => (
-                            <option key={attr.attributeId} value={attr.name}>
+                            <option key={attr.attributeId} value={attr.attributeId}>
                               {attr.name} ({attr.value})
                             </option>
                           ))}
@@ -121,15 +168,28 @@ const Training = ({ gameSaveId }) => {
                 </tbody>
               </table>
             </div>
-            <button
-              onClick={handleSaveAssignments}
-              className="mt-4 px-4 py-2 bg-indigo-600 text-white font-medium rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-            >
-              Save Assignments
-            </button>
+
+            <div className="mt-4 flex gap-2">
+              <button
+                onClick={handleAutoComplete}
+                disabled={!players.length || loadingAuto}
+                className={`px-4 py-2 rounded-md text-white ${
+                  !players.length || loadingAuto ? "bg-gray-400" : "bg-green-600"
+                }`}
+              >
+                {loadingAuto ? "Assigning..." : "Auto Complete Attributes"}
+              </button>
+
+              <button
+                onClick={handleStartTraining}
+                className="px-4 py-2 bg-indigo-600 text-white rounded-md"
+              >
+                Start Training
+              </button>
+            </div>
           </div>
 
-          {/* Right: Training Progress */}
+          {/* Дясна част - Training Progress */}
           <div>
             <h2 className="text-2xl font-semibold mb-4 text-gray-800">
               Training Progress
@@ -138,35 +198,21 @@ const Training = ({ gameSaveId }) => {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Name
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Skill
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Efficiency Gain
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Sessions
-                    </th>
+                    <th className="px-6 py-3">Name</th>
+                    <th className="px-6 py-3">Skill</th>
+                    <th className="px-6 py-3">Efficiency Gain</th>
+                    <th className="px-6 py-3">Sessions</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {trainingProgress.map((progress) => (
-                    <tr key={progress.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {progress.name}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {progress.skill}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-semibold">
+                    <tr key={progress.playerId}>
+                      <td className="px-6 py-4">{progress.name}</td>
+                      <td className="px-6 py-4">{progress.skill}</td>
+                      <td className="px-6 py-4 text-green-600 font-semibold">
                         +{progress.efficiency}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {progress.sessions}
-                      </td>
+                      <td className="px-6 py-4">{progress.sessions}</td>
                     </tr>
                   ))}
                 </tbody>

@@ -39,7 +39,8 @@
         public ICollection<Fixture> HomeFixtures { get; set; } = new List<Fixture>();
         public ICollection<Fixture> AwayFixtures { get; set; } = new List<Fixture>();
 
-        // 🆕 връзката 1:1 с тактика
+        public ICollection<TrainingSession> TrainingSessions { get; set; } = new List<TrainingSession>();
+
         public TeamTactic? TeamTactic { get; set; }
     }
 

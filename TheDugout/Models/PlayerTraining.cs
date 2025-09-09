@@ -1,8 +1,11 @@
 ﻿namespace TheDugout.Models
 {
-    public class PlayerAttribute
+    public class PlayerTraining
     {
         public int Id { get; set; }
+
+        public int TrainingSessionId { get; set; }
+        public TrainingSession TrainingSession { get; set; } = null!;
 
         public int PlayerId { get; set; }
         public Player Player { get; set; } = null!;
@@ -10,7 +13,6 @@
         public int AttributeId { get; set; }
         public Attribute Attribute { get; set; } = null!;
 
-        public int Value { get; set; }
-        public double Progress { get; set; } = 0.0;
+        public int ChangeValue { get; set; }   
     }
 }

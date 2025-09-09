@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace TheDugout.Migrations
 {
     /// <inheritdoc />
-    public partial class adddb : Migration
+    public partial class AddDb : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -530,6 +530,40 @@ namespace TheDugout.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "TrainingSessions",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    GameSaveId = table.Column<int>(type: "int", nullable: false),
+                    TeamId = table.Column<int>(type: "int", nullable: false),
+                    SeasonId = table.Column<int>(type: "int", nullable: false),
+                    Date = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TrainingSessions", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_TrainingSessions_GameSaves_GameSaveId",
+                        column: x => x.GameSaveId,
+                        principalTable: "GameSaves",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_TrainingSessions_Seasons_SeasonId",
+                        column: x => x.SeasonId,
+                        principalTable: "Seasons",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_TrainingSessions_Teams_TeamId",
+                        column: x => x.TeamId,
+                        principalTable: "Teams",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "PlayerAttributes",
                 columns: table => new
                 {
@@ -609,6 +643,40 @@ namespace TheDugout.Migrations
                         principalTable: "Seasons",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PlayerTrainings",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    TrainingSessionId = table.Column<int>(type: "int", nullable: false),
+                    PlayerId = table.Column<int>(type: "int", nullable: false),
+                    AttributeId = table.Column<int>(type: "int", nullable: false),
+                    ChangeValue = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PlayerTrainings", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PlayerTrainings_Attributes_AttributeId",
+                        column: x => x.AttributeId,
+                        principalTable: "Attributes",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_PlayerTrainings_Players_PlayerId",
+                        column: x => x.PlayerId,
+                        principalTable: "Players",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_PlayerTrainings_TrainingSessions_TrainingSessionId",
+                        column: x => x.TrainingSessionId,
+                        principalTable: "TrainingSessions",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
@@ -778,6 +846,21 @@ namespace TheDugout.Migrations
                 column: "SeasonId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_PlayerTrainings_AttributeId",
+                table: "PlayerTrainings",
+                column: "AttributeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PlayerTrainings_PlayerId",
+                table: "PlayerTrainings",
+                column: "PlayerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PlayerTrainings_TrainingSessionId",
+                table: "PlayerTrainings",
+                column: "TrainingSessionId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Positions_Code",
                 table: "Positions",
                 column: "Code",
@@ -844,6 +927,21 @@ namespace TheDugout.Migrations
                 name: "IX_TeamTemplates_LeagueId",
                 table: "TeamTemplates",
                 column: "LeagueId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TrainingSessions_GameSaveId",
+                table: "TrainingSessions",
+                column: "GameSaveId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TrainingSessions_SeasonId",
+                table: "TrainingSessions",
+                column: "SeasonId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TrainingSessions_TeamId",
+                table: "TrainingSessions",
+                column: "TeamId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Users_CurrentSaveId",
@@ -968,6 +1066,9 @@ namespace TheDugout.Migrations
                 name: "PlayerSeasonStats");
 
             migrationBuilder.DropTable(
+                name: "PlayerTrainings");
+
+            migrationBuilder.DropTable(
                 name: "PositionWeights");
 
             migrationBuilder.DropTable(
@@ -986,16 +1087,19 @@ namespace TheDugout.Migrations
                 name: "Players");
 
             migrationBuilder.DropTable(
-                name: "Attributes");
+                name: "TrainingSessions");
 
             migrationBuilder.DropTable(
-                name: "Seasons");
+                name: "Attributes");
 
             migrationBuilder.DropTable(
                 name: "Tactics");
 
             migrationBuilder.DropTable(
                 name: "Positions");
+
+            migrationBuilder.DropTable(
+                name: "Seasons");
 
             migrationBuilder.DropTable(
                 name: "GameSaves");

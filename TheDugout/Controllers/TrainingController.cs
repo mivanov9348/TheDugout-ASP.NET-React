@@ -1,0 +1,59 @@
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using TheDugout.Services.Training;
+
+namespace TheDugout.Controllers
+{
+    [ApiController]
+    [Route("api/[controller]")]
+    [Authorize]
+    public class TrainingController : ControllerBase
+    {
+        private readonly ITrainingService _trainingService;
+
+        public TrainingController(ITrainingService trainingService)
+        {
+            _trainingService = trainingService;
+        }
+
+        [HttpGet("auto-assign/{teamId}/{gameSaveId}")]
+        public async Task<IActionResult> AutoAssignAttributes(int teamId, int gameSaveId)
+        {
+            try
+            {
+                var assignments = await _trainingService.AutoAssignAttributesAsync(teamId, gameSaveId);
+                return Ok(assignments);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+
+        [HttpPost("start")]
+        public async Task<IActionResult> StartTraining([FromBody] TrainingRequestDto request)
+        {
+            if (request.Assignments == null || !request.Assignments.Any())
+                return BadRequest("No training assignments provided.");
+
+            try
+            {
+                var results = await _trainingService.RunTrainingSessionAsync(
+                    request.GameSaveId,
+                    request.TeamId,
+                    request.SeasonId,
+                    request.Date,
+                    request.Assignments
+                );
+
+                return Ok(results);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+    }
+}

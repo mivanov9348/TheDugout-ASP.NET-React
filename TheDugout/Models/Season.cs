@@ -10,8 +10,9 @@
         public DateTime CurrentDate { get; set; }
         public ICollection<SeasonEvent> Events { get; set; } = new List<SeasonEvent>();
         public ICollection<PlayerSeasonStats> PlayerStats { get; set; } = new List<PlayerSeasonStats>();
+                public ICollection<Fixture> Fixtures { get; set; } = new List<Fixture>();
+        public ICollection<TrainingSession> TrainingSessions { get; set; } = new List<TrainingSession>();
 
-        public ICollection<Fixture> Fixtures { get; set; } = new List<Fixture>();
 
     }
 }
