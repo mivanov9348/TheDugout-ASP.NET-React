@@ -35,6 +35,7 @@ namespace TheDugout.Data
         public DbSet<TeamTactic> TeamTactics { get; set; }
         public DbSet<TrainingSession> TrainingSessions { get; set; }
         public DbSet<PlayerTraining> PlayerTrainings { get; set; }
+        public DbSet<Transfer> Transfers { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

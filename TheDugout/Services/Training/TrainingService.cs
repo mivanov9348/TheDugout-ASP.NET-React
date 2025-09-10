@@ -76,8 +76,8 @@ public class TrainingService : ITrainingService
             .AnyAsync(ts => ts.GameSaveId == gameSaveId
                             && ts.TeamId == teamId
                             && ts.Date == date);
-        //if (alreadyTrained)
-        //    throw new InvalidOperationException("Вече е проведена тренировка за този ден.");
+        if (alreadyTrained)
+            throw new InvalidOperationException("Вече е проведена тренировка за този ден.");
 
         var playerIds = assignments.Select(a => a.PlayerId).Distinct().ToList();
         var players = await _context.Players

@@ -14,6 +14,7 @@ using TheDugout.Services.Season;
 using TheDugout.Services.Team;
 using TheDugout.Services.Template;
 using TheDugout.Services.Training;
+using TheDugout.Services.Transfer;
 using TheDugout.Services.User;
 
 
@@ -41,6 +42,7 @@ builder.Services.AddScoped<IPlayerInfoService, PlayerInfoService>();
 builder.Services.AddScoped<ITeamService, TeamService>();
 builder.Services.AddScoped<IFinanceService, FinanceService>();
 builder.Services.AddScoped<ITrainingService, TrainingService>();
+builder.Services.AddScoped<ITransferService, TransferService>();
 
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 

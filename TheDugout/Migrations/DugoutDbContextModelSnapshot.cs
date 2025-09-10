@@ -929,6 +929,56 @@ namespace TheDugout.Migrations
                     b.ToTable("TrainingSessions");
                 });
 
+            modelBuilder.Entity("TheDugout.Models.Transfer", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("Fee")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("FromTeamId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("GameDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("GameSaveId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsFreeAgent")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("PlayerId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SeasonId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ToTeamId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FromTeamId");
+
+                    b.HasIndex("GameSaveId");
+
+                    b.HasIndex("PlayerId");
+
+                    b.HasIndex("SeasonId");
+
+                    b.HasIndex("ToTeamId");
+
+                    b.ToTable("Transfers");
+                });
+
             modelBuilder.Entity("TheDugout.Models.User", b =>
                 {
                     b.Property<int>("Id")
@@ -1370,6 +1420,48 @@ namespace TheDugout.Migrations
                     b.Navigation("Season");
 
                     b.Navigation("Team");
+                });
+
+            modelBuilder.Entity("TheDugout.Models.Transfer", b =>
+                {
+                    b.HasOne("TheDugout.Models.Team", "FromTeam")
+                        .WithMany()
+                        .HasForeignKey("FromTeamId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("TheDugout.Models.GameSave", "GameSave")
+                        .WithMany()
+                        .HasForeignKey("GameSaveId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TheDugout.Models.Player", "Player")
+                        .WithMany()
+                        .HasForeignKey("PlayerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TheDugout.Models.Season", "Season")
+                        .WithMany()
+                        .HasForeignKey("SeasonId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TheDugout.Models.Team", "ToTeam")
+                        .WithMany()
+                        .HasForeignKey("ToTeamId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("FromTeam");
+
+                    b.Navigation("GameSave");
+
+                    b.Navigation("Player");
+
+                    b.Navigation("Season");
+
+                    b.Navigation("ToTeam");
                 });
 
             modelBuilder.Entity("TheDugout.Models.User", b =>

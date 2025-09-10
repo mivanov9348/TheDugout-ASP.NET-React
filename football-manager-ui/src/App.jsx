@@ -280,11 +280,24 @@ function App() {
                       }
                     />
                     <Route path="/transfers" element={<Transfers />}>
-                      <Route index element={<Navigate to="search" replace />} />
-                      <Route path="search" element={<SearchPlayers gameSaveId={currentGameSave?.id} />} />
-                      <Route path="negotiations" element={<Negotiations />} />
-                      <Route path="history" element={<TransferHistory />} />
-                    </Route>
+  <Route index element={<Navigate to="search" replace />} />
+
+  <Route 
+    path="search" 
+    element={<SearchPlayers gameSaveId={currentGameSave?.id} />} 
+  />
+
+  <Route 
+    path="negotiations" 
+    element={<Negotiations gameSaveId={currentGameSave?.id} />} 
+  />
+
+  <Route 
+    path="history" 
+    element={<TransferHistory gameSaveId={currentGameSave?.id} />} 
+  />
+</Route>
+
 
                     <Route path="/club" element={<Club />} /> 
 <Route
