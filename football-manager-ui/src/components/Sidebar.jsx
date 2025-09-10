@@ -15,6 +15,7 @@ function Sidebar({ onExitGame }) {
     { name: "Fixtures", path: "/fixtures", icon: <Calendar size={18} /> },
 { name: "Competitions", path: "/competitions/league", icon: <Trophy size={18} /> },
     { name: "Transfers", path: "/transfers", icon: <ShoppingCart size={18} /> },
+    {name:"Facilities", path:"/facilities", icon:<Building size={18}/>},
     { name: "Club", path: "/club", icon: <Building size={18} /> },
     { name: "Finances", path: "/finances", icon: <Wallet size={18} /> },
   ];

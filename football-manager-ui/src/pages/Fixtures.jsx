@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import TeamLogo from "../components/TeamLogo";
 
 const Fixtures = ({ gameSaveId, seasonId }) => {
   const [fixtures, setFixtures] = useState([]);
@@ -45,7 +46,6 @@ const Fixtures = ({ gameSaveId, seasonId }) => {
         if (!res.ok) throw new Error("Error loading fixtures");
         const data = await res.json();
 
-        // Backend връща вече плосък списък
         setFixtures(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error(err);
@@ -59,14 +59,17 @@ const Fixtures = ({ gameSaveId, seasonId }) => {
   }, [gameSaveId, seasonId, round, league]);
 
   return (
-    <div className="bg-white shadow-lg rounded-xl p-4">
-      <h1 className="text-xl font-bold mb-4">Fixtures</h1>
+    <div className="p-6">
+      {/* Header */}
+      <h1 className="text-3xl font-extrabold mb-6 text-sky-700 tracking-wide">
+        Fixtures
+      </h1>
 
       {/* Filters */}
       <div className="flex flex-wrap gap-4 mb-6">
         {/* Rounds */}
         <select
-          className="border rounded-md px-3 py-2"
+          className="p-3 rounded-xl border-2 border-sky-500 bg-white text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-400 transition"
           value={round}
           onChange={(e) => setRound(e.target.value)}
         >
@@ -81,7 +84,7 @@ const Fixtures = ({ gameSaveId, seasonId }) => {
 
         {/* Leagues */}
         <select
-          className="border rounded-md px-3 py-2"
+          className="p-3 rounded-xl border-2 border-sky-500 bg-white text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-400 transition"
           value={league}
           onChange={(e) => {
             setLeague(e.target.value);
@@ -98,31 +101,39 @@ const Fixtures = ({ gameSaveId, seasonId }) => {
 
       {/* Fixtures Table */}
       {loading ? (
-        <div className="flex justify-center py-6">
-          <div className="animate-spin h-6 w-6 border-2 border-gray-400 border-t-transparent rounded-full"></div>
+        <div className="flex justify-center py-12">
+          <div className="animate-spin h-10 w-10 border-4 border-sky-400 border-t-transparent rounded-full"></div>
         </div>
       ) : fixtures.length === 0 ? (
-        <p className="text-gray-500">No fixtures available.</p>
+        <p className="text-gray-500 italic">No fixtures available.</p>
       ) : (
-        <div className="mb-6">
-          <h2 className="text-lg font-semibold mb-2">
-            {leagues.find((l) => l.id.toString() === league)?.name} – Round{" "}
-            {round}
-          </h2>
+        <div className="mb-6 bg-white rounded-2xl shadow-lg overflow-hidden">
+          {/* League & Round header */}
+          <div className="bg-gradient-to-r from-sky-600 to-blue-700 text-white px-6 py-4">
+            <h2 className="text-lg font-semibold">
+              {leagues.find((l) => l.id.toString() === league)?.name} – Round {round}
+            </h2>
+          </div>
+
           <div className="overflow-x-auto">
-            <table className="w-full border-collapse">
-              <thead className="bg-gray-100">
+            <table className="w-full text-sm text-gray-700">
+              <thead className="bg-sky-100 text-sky-800 uppercase">
                 <tr>
-                  <th className="w-1/4 text-left p-2 font-semibold text-gray-700">Date</th>
-                  <th className="w-1/4 text-left p-2 font-semibold text-gray-700">Home</th>
-                  <th className="w-1/4 text-center p-2 font-semibold text-gray-700">Score</th>
-                  <th className="w-1/4 text-left p-2 font-semibold text-gray-700">Away</th>
+                  <th className="px-3 py-2 text-left">Date</th>
+                  <th className="px-3 py-2 text-left">Home</th>
+                  <th className="px-3 py-2 text-center">Score</th>
+                  <th className="px-3 py-2 text-left">Away</th>
                 </tr>
               </thead>
               <tbody>
-                {fixtures.map((m) => (
-                  <tr key={m.id} className="border-b">
-                    <td className="p-2 text-gray-600">
+                {fixtures.map((m, idx) => (
+                  <tr
+                    key={m.id}
+                    className={`${
+                      idx % 2 === 0 ? "bg-white" : "bg-gray-50"
+                    } hover:bg-sky-50 transition`}
+                  >
+                    <td className="px-3 py-2 text-gray-600">
                       {m?.date
                         ? new Date(m.date).toLocaleDateString("en-GB", {
                             day: "2-digit",
@@ -131,14 +142,38 @@ const Fixtures = ({ gameSaveId, seasonId }) => {
                           })
                         : "—"}
                     </td>
-                    <td className="p-2 text-gray-600">{m?.homeTeam ?? "—"}</td>
-                    <td className="p-2 text-gray-600 text-center">
+
+                    {/* Home team */}
+                    <td className="px-3 py-2">
+                      <div className="flex items-center gap-2">
+                        <TeamLogo
+                          teamName={m?.homeTeam}
+                          logoFileName={m?.homeLogoFileName}
+                          className="w-6 h-6"
+                        />
+                        <span className="font-medium">{m?.homeTeam ?? "—"}</span>
+                      </div>
+                    </td>
+
+                    {/* Score */}
+                    <td className="px-3 py-2 text-center font-bold text-sky-700">
                       {typeof m?.homeTeamGoals === "number" &&
                       typeof m?.awayTeamGoals === "number"
                         ? `${m.homeTeamGoals} - ${m.awayTeamGoals}`
                         : "- : -"}
                     </td>
-                    <td className="p-2 text-gray-600">{m?.awayTeam ?? "—"}</td>
+
+                    {/* Away team */}
+                    <td className="px-3 py-2">
+                      <div className="flex items-center gap-2">
+                        <TeamLogo
+                          teamName={m?.awayTeam}
+                          logoFileName={m?.awayLogoFileName}
+                          className="w-6 h-6"
+                        />
+                        <span className="font-medium">{m?.awayTeam ?? "—"}</span>
+                      </div>
+                    </td>
                   </tr>
                 ))}
               </tbody>

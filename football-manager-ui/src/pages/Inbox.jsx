@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
+import { Mail, MailOpen, ChevronLeft } from "lucide-react";
 
 const Inbox = () => {
   const [messages, setMessages] = useState([]);
   const [selectedMessage, setSelectedMessage] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
-  // Load ASP NET API
   useEffect(() => {
     fetch("https://localhost:7117/api/inbox")
       .then((res) => res.json())
@@ -14,12 +15,10 @@ const Inbox = () => {
   const handleSelectMessage = (msg) => {
     setSelectedMessage(msg);
 
-    // if it read
     if (!msg.isRead) {
       fetch(`https://localhost:7117/api/inbox/${msg.id}/read`, {
         method: "POST",
       }).then(() => {
-        // local update
         setMessages((prev) =>
           prev.map((m) =>
             m.id === msg.id ? { ...m, isRead: true } : m
@@ -30,40 +29,81 @@ const Inbox = () => {
   };
 
   return (
-    <div className="flex h-full">
+    <div className="flex h-screen bg-gray-50">
       {/* Sidebar */}
-      <div className="w-1/3 bg-blue-50 border-r overflow-y-auto">
-        <h2 className="text-lg font-bold p-4">Inbox</h2>
-        <ul>
-          {messages.map((msg) => (
-            <li
-              key={msg.id}
-              onClick={() => handleSelectMessage(msg)}
-              className={`cursor-pointer px-4 py-2 border-b hover:bg-blue-100 ${
-                msg.isRead ? "text-slate-500" : "font-bold text-black"
-              }`}
+      {sidebarOpen && (
+        <div className="w-80 bg-white border-r shadow-sm flex flex-col">
+          <div className="flex items-center justify-between p-4 border-b">
+            <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+              <Mail className="w-5 h-5 text-blue-500" /> Inbox
+            </h2>
+            <button
+              className="md:hidden text-gray-500"
+              onClick={() => setSidebarOpen(false)}
             >
-              <div>{msg.subject}</div>
-              <div className="text-xs text-slate-400">
-                {new Date(msg.date).toLocaleDateString()}
-              </div>
-            </li>
-          ))}
-        </ul>
-      </div>
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+          </div>
+
+          <ul className="flex-1 overflow-y-auto">
+            {messages.map((msg) => (
+              <li
+                key={msg.id}
+                onClick={() => handleSelectMessage(msg)}
+                className={`cursor-pointer px-4 py-3 border-b hover:bg-blue-50 transition ${
+                  selectedMessage?.id === msg.id ? "bg-blue-100" : ""
+                }`}
+              >
+                <div className="flex justify-between items-center">
+                  <span
+                    className={`truncate ${
+                      msg.isRead ? "text-gray-500" : "font-semibold text-gray-900"
+                    }`}
+                  >
+                    {msg.subject}
+                  </span>
+                  {!msg.isRead && (
+                    <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                  )}
+                </div>
+                <div className="text-xs text-gray-400">
+                  {new Date(msg.date).toLocaleDateString()}
+                </div>
+              </li>
+            ))}
+            {messages.length === 0 && (
+              <li className="p-4 text-sm text-gray-400 text-center">
+                No messages
+              </li>
+            )}
+          </ul>
+        </div>
+      )}
 
       {/* Content */}
-      <div className="flex-1 p-6">
+      <div className="flex-1 p-6 overflow-y-auto">
         {selectedMessage ? (
-          <>
-            <h3 className="text-xl font-bold mb-2">{selectedMessage.subject}</h3>
-            <p className="text-sm text-slate-400 mb-4">
+          <div className="max-w-3xl mx-auto bg-white shadow-sm rounded-lg p-6">
+            <h3 className="text-2xl font-bold text-gray-900 mb-2 flex items-center gap-2">
+              {selectedMessage.isRead ? (
+                <MailOpen className="w-5 h-5 text-gray-400" />
+              ) : (
+                <Mail className="w-5 h-5 text-blue-500" />
+              )}
+              {selectedMessage.subject}
+            </h3>
+            <p className="text-sm text-gray-500 mb-4">
               {new Date(selectedMessage.date).toLocaleString()}
             </p>
-            <p>{selectedMessage.body}</p>
-          </>
+            <hr className="mb-4" />
+            <p className="text-gray-800 leading-relaxed whitespace-pre-line">
+              {selectedMessage.body}
+            </p>
+          </div>
         ) : (
-          <p className="text-slate-400">Select a message to read</p>
+          <div className="h-full flex items-center justify-center text-gray-400 text-sm">
+            Select a message to read
+          </div>
         )}
       </div>
     </div>

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import TeamLogo from "../components/TeamLogo";
+
 const League = ({ gameSaveId }) => {
   const [leagues, setLeagues] = useState([]);
   const [selectedLeague, setSelectedLeague] = useState(null);
@@ -34,70 +35,92 @@ const League = ({ gameSaveId }) => {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Leagues</h1>
+      <h1 className="text-3xl font-extrabold mb-6 text-sky-700 tracking-wide">
+        League Standings
+      </h1>
 
       {leagues.length > 0 ? (
         <>
-          <select
-            className="mb-4 p-2 border rounded"
-            onChange={handleLeagueChange}
-            value={selectedLeague?.id || ""}
-          >
-            {leagues.map((league) => (
-              <option key={league.id} value={league.id}>
-                {league.name} (Tier {league.tier})
-              </option>
-            ))}
-          </select>
+          {/* Dropdown */}
+          <div className="mb-6">
+            <select
+              className="p-3 rounded-xl border-2 border-sky-500 bg-white text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-400 transition"
+              onChange={handleLeagueChange}
+              value={selectedLeague?.id || ""}
+            >
+              {leagues.map((league) => (
+                <option key={league.id} value={league.id}>
+                  {league.name}
+                </option>
+              ))}
+            </select>
+          </div>
 
           {selectedLeague && (
-            <div>
-              <h2 className="text-xl font-semibold mb-2">{selectedLeague.name}</h2>
-              <table className="table-auto border-collapse w-full border border-gray-300">
-                <thead>
-                  <tr className="bg-gray-200">
-                    <th className="border px-2">#</th>
-                    <th className="border px-2">Team</th>
-                    <th className="border px-2">Pts</th>
-                    <th className="border px-2">W</th>
-                    <th className="border px-2">D</th>
-                    <th className="border px-2">L</th>
-                    <th className="border px-2">GF</th>
-                    <th className="border px-2">GA</th>
-                    <th className="border px-2">GD</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {selectedLeague.teams.map((team, index) => (
-                    <tr key={team.id} className="text-center">
-                      <td className="border px-2">{index + 1}</td>
-                      <td className="border px-2 text-left">
-                        <div className="flex items-center gap-2">
-                          {/* Добавяме логото тук */}
-                          <TeamLogo 
-                            teamName={team.name} 
-                            logoFileName={team.logoFileName} 
-                            className="w-6 h-6"
-                          />
-                          <span>{team.name}</span>
-                        </div>
-                      </td>
-                      <td className="border px-2">{team.points}</td>
-                      <td className="border px-2">{team.wins}</td>
-                      <td className="border px-2">{team.draws}</td>
-                      <td className="border px-2">{team.losses}</td>
-                      <td className="border px-2">{team.goalsFor}</td>
-                      <td className="border px-2">{team.goalsAgainst}</td>
-                      <td className="border px-2">{team.goalDifference}</td>
+            <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+              {/* League Header */}
+              <div className="bg-gradient-to-r from-sky-600 to-blue-700 text-white px-6 py-4">
+                <h2 className="text-xl font-bold">{selectedLeague.name}</h2>
+              </div>
+
+              {/* Table */}
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-gray-700">
+                  <thead className="bg-sky-100 text-sky-800 text-sm uppercase">
+                    <tr>
+                      <th className="px-3 py-2 text-center">#</th>
+                      <th className="px-3 py-2 text-left">Team</th>
+                      <th className="px-3 py-2 text-center">M</th>
+                      <th className="px-3 py-2 text-center">W</th>
+                      <th className="px-3 py-2 text-center">D</th>
+                      <th className="px-3 py-2 text-center">L</th>
+                      <th className="px-3 py-2 text-center">GF</th>
+                      <th className="px-3 py-2 text-center">GA</th>
+                      <th className="px-3 py-2 text-center">GD</th>
+                      <th className="px-3 py-2 text-center">Pts</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {selectedLeague.teams.map((team, index) => (
+                      <tr
+                        key={team.id}
+                        className={`${
+                          index % 2 === 0 ? "bg-white" : "bg-gray-50"
+                        } hover:bg-sky-50 transition`}
+                      >
+                        <td className="px-3 py-2 text-center font-bold text-gray-600">
+                          {index + 1}
+                        </td>
+                        <td className="px-3 py-2">
+                          <div className="flex items-center gap-2">
+                            <TeamLogo
+                              teamName={team.name}
+                              logoFileName={team.logoFileName}
+                              className="w-7 h-7"
+                            />
+                            <span className="font-medium">{team.name}</span>
+                          </div>
+                        </td>
+                        <td className="px-3 py-2 text-center">{team.matches}</td>
+                        <td className="px-3 py-2 text-center">{team.wins}</td>
+                        <td className="px-3 py-2 text-center">{team.draws}</td>
+                        <td className="px-3 py-2 text-center">{team.losses}</td>
+                        <td className="px-3 py-2 text-center">{team.goalsFor}</td>
+                        <td className="px-3 py-2 text-center">{team.goalsAgainst}</td>
+                        <td className="px-3 py-2 text-center">{team.goalDifference}</td>
+                        <td className="px-3 py-2 text-center font-semibold text-sky-700">
+                          {team.points}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
         </>
       ) : (
-        <p>No leagues found.</p>
+        <p className="text-gray-500 italic">No leagues found.</p>
       )}
     </div>
   );

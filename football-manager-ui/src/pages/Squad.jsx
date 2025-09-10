@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import { Search, Filter, Flag, User } from "lucide-react";
 
 const Squad = ({ gameSaveId }) => {
   const [players, setPlayers] = useState([]);
@@ -10,7 +11,6 @@ const Squad = ({ gameSaveId }) => {
   const [positionFilter, setPositionFilter] = useState("");
   const [countryFilter, setCountryFilter] = useState("");
 
-  // Section visibility
   const [showInfo, setShowInfo] = useState(true);
   const [showAttributes, setShowAttributes] = useState(true);
   const [showStats, setShowStats] = useState(true);
@@ -45,9 +45,7 @@ const Squad = ({ gameSaveId }) => {
     let result = [...players];
 
     if (search) {
-      result = result.filter((p) =>
-        p.fullName.toLowerCase().includes(search.toLowerCase())
-      );
+      result = result.filter((p) => p.fullName.toLowerCase().includes(search.toLowerCase()));
     }
     if (positionFilter) {
       result = result.filter((p) => p.position === positionFilter);
@@ -58,15 +56,12 @@ const Squad = ({ gameSaveId }) => {
 
     result.sort((a, b) => {
       const { key, direction } = sortConfig;
-
       let aValue = a[key];
       let bValue = b[key];
-
       if (aValue === undefined && bValue === undefined) {
         aValue = a.attributes?.find((x) => x.name === key)?.value ?? 0;
         bValue = b.attributes?.find((x) => x.name === key)?.value ?? 0;
       }
-
       if (aValue < bValue) return direction === "asc" ? -1 : 1;
       if (aValue > bValue) return direction === "asc" ? 1 : -1;
       return 0;
@@ -89,28 +84,36 @@ const Squad = ({ gameSaveId }) => {
   const uniquePositions = [...new Set(players.map((p) => p.position))];
   const uniqueCountries = [...new Set(players.map((p) => p.country).filter(Boolean))];
 
-  // Helper for formatting prices
   const formatPrice = (value) => {
     if (value == null) return "-";
     return value.toLocaleString("en-US");
   };
 
+  const getAttributeColor = (val) => {
+    if (val >= 80) return "text-green-600 font-bold";
+    if (val >= 60) return "text-yellow-600";
+    return "text-red-600";
+  };
+
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
+    <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold text-center mb-8 text-gray-800">
-          {teamName ? `${teamName}` : "Loading..."}
+        <h1 className="text-3xl font-bold text-center mb-8 text-gray-900">
+          {teamName || "Loading..."}
         </h1>
 
         {/* Filters */}
-        <div className="flex flex-wrap gap-4 mb-6">
-          <input
-            type="text"
-            placeholder="Search by name..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="border rounded px-3 py-2"
-          />
+        <div className="flex flex-wrap gap-4 mb-6 items-center bg-white shadow-sm p-4 rounded-lg">
+          <div className="flex items-center gap-2 border rounded px-3 py-2 flex-1">
+            <Search className="w-4 h-4 text-gray-500" />
+            <input
+              type="text"
+              placeholder="Search by name..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="flex-1 outline-none"
+            />
+          </div>
 
           <select
             value={positionFilter}
@@ -119,9 +122,7 @@ const Squad = ({ gameSaveId }) => {
           >
             <option value="">All positions</option>
             {uniquePositions.map((pos) => (
-              <option key={pos} value={pos}>
-                {pos}
-              </option>
+              <option key={pos} value={pos}>{pos}</option>
             ))}
           </select>
 
@@ -132,84 +133,67 @@ const Squad = ({ gameSaveId }) => {
           >
             <option value="">All countries</option>
             {uniqueCountries.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
+              <option key={c} value={c}>{c}</option>
             ))}
           </select>
         </div>
 
         {/* Section toggles */}
-        <div className="flex gap-6 mb-4">
-          <label className="flex items-center gap-2">
+        <div className="flex gap-6 mb-4 text-sm text-gray-700">
+          <label className="flex items-center gap-2 cursor-pointer">
             <input type="checkbox" checked={showInfo} onChange={() => setShowInfo(!showInfo)} />
             Player Info
           </label>
-          <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={showAttributes}
-              onChange={() => setShowAttributes(!showAttributes)}
-            />
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" checked={showAttributes} onChange={() => setShowAttributes(!showAttributes)} />
             Attributes
           </label>
-          <label className="flex items-center gap-2">
+          <label className="flex items-center gap-2 cursor-pointer">
             <input type="checkbox" checked={showStats} onChange={() => setShowStats(!showStats)} />
             Stats
           </label>
         </div>
 
+        {/* Table */}
         <div className="bg-white shadow-md rounded-lg overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 text-sm">
             <thead>
-              <tr className="bg-gray-50">
-                <th
-                  onClick={() => sortPlayers("fullName")}
-                  className="px-4 py-2 cursor-pointer sticky left-0 bg-gray-50 z-10"
-                >
+              <tr className="bg-gray-100 text-gray-700">
+                <th onClick={() => sortPlayers("fullName")} className="px-4 py-2 cursor-pointer sticky left-0 bg-gray-100 z-10">
                   Name {getSortIndicator("fullName")}
                 </th>
-                <th
-                  onClick={() => sortPlayers("position")}
-                  className="px-4 py-2 cursor-pointer sticky left-[120px] bg-gray-50 z-10"
-                >
+                <th onClick={() => sortPlayers("position")} className="px-4 py-2 cursor-pointer sticky left-[120px] bg-gray-100 z-10">
                   Position {getSortIndicator("position")}
                 </th>
 
                 {showInfo && (
                   <>
-                    <th onClick={() => sortPlayers("age")} className="px-4 py-2 cursor-pointer">
-                      Age {getSortIndicator("age")}
-                    </th>
+                    <th onClick={() => sortPlayers("age")} className="px-4 py-2 cursor-pointer">Age {getSortIndicator("age")}</th>
                     <th className="px-4 py-2">Country</th>
-                    <th className="px-4 py-2">Height (cm)</th>
-                    <th className="px-4 py-2">Weight (kg)</th>
+                    <th className="px-4 py-2">Height</th>
+                    <th className="px-4 py-2">Weight</th>
                     <th className="px-4 py-2">Price</th>
                   </>
                 )}
 
                 {showAttributes &&
                   allAttributeNames.map((attr) => (
-                    <th
-                      key={attr}
-                      onClick={() => sortPlayers(attr)}
-                      className="px-4 py-2 cursor-pointer bg-gray-200"
-                    >
+                    <th key={attr} onClick={() => sortPlayers(attr)} className="px-4 py-2 cursor-pointer">
                       {attr} {getSortIndicator(attr)}
                     </th>
                   ))}
 
-                {showStats && (
-                  <th className="px-4 py-2 bg-gray-100">Season Stats</th>
-                )}
+                {showStats && <th className="px-4 py-2">Season Stats</th>}
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="divide-y divide-gray-200">
               {filteredPlayers.map((p) => (
-                <tr key={p.id} 
-                    className="hover:bg-gray-50"
-                    onClick={() => navigate(`/player/${p.id}`)}>
-                  <td className="px-4 py-2 sticky left-0 bg-white z-10">{p.fullName}</td>
+                <tr
+                  key={p.id}
+                  className="hover:bg-gray-50 transition cursor-pointer"
+                  onClick={() => navigate(`/player/${p.id}`)}
+                >
+                  <td className="px-4 py-2 sticky left-0 bg-white z-10 font-medium">{p.fullName}</td>
                   <td className="px-4 py-2 sticky left-[120px] bg-white z-10">{p.position}</td>
 
                   {showInfo && (
@@ -226,35 +210,33 @@ const Squad = ({ gameSaveId }) => {
                     allAttributeNames.map((attr) => {
                       const attribute = p.attributes?.find((a) => a.name === attr);
                       return (
-                        <td key={attr} className="px-4 py-2 text-center bg-gray-200">
+                        <td key={attr} className={`px-4 py-2 text-center ${attribute ? getAttributeColor(attribute.value) : ""}`}>
                           {attribute ? attribute.value : "-"}
                         </td>
                       );
                     })}
 
                   {showStats && (
-                    <td className="px-4 py-2 bg-gray-100">
+                    <td className="px-4 py-2">
                       {p.seasonStats && p.seasonStats.length > 0 ? (
-                        <ul className="list-disc list-inside">
+                        <div className="flex gap-2 flex-wrap">
                           {p.seasonStats.map((s, i) => (
-                            <li key={i}>
-                              Season {s.seasonId}: {s.goals}G / {s.assists}A / {s.matchesPlayed}M
-                            </li>
+                            <span
+                              key={i}
+                              className="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs"
+                            >
+                              {s.seasonId}: {s.goals}G {s.assists}A {s.matchesPlayed}M
+                            </span>
                           ))}
-                        </ul>
-                      ) : (
-                        "-"
-                      )}
+                        </div>
+                      ) : "-"}
                     </td>
                   )}
                 </tr>
               ))}
               {filteredPlayers.length === 0 && (
                 <tr>
-                  <td
-                    colSpan={10 + allAttributeNames.length}
-                    className="text-center py-6 text-gray-500"
-                  >
+                  <td colSpan={10 + allAttributeNames.length} className="text-center py-6 text-gray-500">
                     No players match the filter.
                   </td>
                 </tr>

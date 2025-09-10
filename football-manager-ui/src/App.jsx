@@ -26,6 +26,7 @@ import Negotiations from "./pages/Negotiations";
 import TransferHistory from "./pages/TransferHistory";
 import Fixtures from "./pages/Fixtures";
 import PlayerProfile from "./pages/PlayerProfile"; 
+import Facilities from "./pages/Facilities";
 
 // 🔹 ProtectedRoute
 function ProtectedRoute({ isAuthenticated, currentGameSave, children }) {
@@ -243,7 +244,7 @@ function App() {
                 <Header currentGameSave={currentGameSave} username={username} />
                 <main className="flex-1 overflow-y-auto p-4">
                   <Routes>
-                    <Route path="/" element={<Home />} />
+<Route path="/" element={<Home gameSaveId={currentGameSave?.id} />} />
                     <Route path="/competitions/*" element={<Competitions />}>
                       <Route index element={<Navigate to="league" replace />} />
                       <Route path="league" element={<League gameSaveId={currentGameSave?.id} />} />
@@ -297,6 +298,7 @@ function App() {
     element={<TransferHistory gameSaveId={currentGameSave?.id} />} 
   />
 </Route>
+                    <Route path="/facilities" element={<Facilities />} /> 
 
 
                     <Route path="/club" element={<Club />} /> 
