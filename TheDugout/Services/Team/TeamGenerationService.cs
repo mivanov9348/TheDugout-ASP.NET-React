@@ -29,8 +29,8 @@ namespace TheDugout.Services.Team
                 var team = new Models.Team
                 {
                     TemplateId = tt.Id,
-                    GameSave = gameSave,   // EF ще върже отбора с GameSave
-                    League = league,       // EF ще върже отбора и с League
+                    GameSave = gameSave,
+                    League = league,
                     Name = tt.Name,
                     Abbreviation = tt.Abbreviation,
                     CountryId = tt.CountryId,
@@ -39,7 +39,6 @@ namespace TheDugout.Services.Team
                     LogoFileName = GenerateLogoFileName(tt.Name)
                 };
 
-                // Генерираме играчи
                 var players = _playerGenerator.GenerateTeamPlayers(gameSave, team);
                 foreach (var player in players)
                 {
@@ -47,13 +46,14 @@ namespace TheDugout.Services.Team
                     team.Players.Add(player);
                 }
 
-                // Популярност
                 team.Popularity = CalculateTeamPopularity(team);
 
-                // Първо запазваме, за да получи Id (синхронното извикване не е ок, но за сега ще го оставим)
-                _context.SaveChangesAsync().GetAwaiter().GetResult();
+                teams.Add(team);
+            }                      
 
-                // Стартов баланс (чрез транзакция от банката)
+            // След като вече имаме валидни Id-та, добавяме началните пари
+            foreach (var team in teams)
+            {
                 var initialFunds = CalculateInitialFunds(team.Popularity);
 
                 if (gameSave.Bank != null)
@@ -66,12 +66,11 @@ namespace TheDugout.Services.Team
                         TransactionType.StartingFunds
                     ).GetAwaiter().GetResult();
                 }
-
-                teams.Add(team);
             }
 
             return teams;
         }
+
 
         private int CalculateTeamPopularity(Models.Team team)
         {

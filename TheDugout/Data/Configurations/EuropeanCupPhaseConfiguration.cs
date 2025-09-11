@@ -1,0 +1,31 @@
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using TheDugout.Models;
+
+namespace TheDugout.Data.Configurations
+{
+    public class EuropeanCupPhaseConfiguration : IEntityTypeConfiguration<EuropeanCupPhase>
+    {
+        public void Configure(EntityTypeBuilder<EuropeanCupPhase> builder)
+        {
+            builder.ToTable("EuropeanCupPhases");
+
+            builder.HasKey(e => e.Id);
+
+            builder.HasOne(e => e.EuropeanCup)
+                   .WithMany(c => c.Phases)
+                   .HasForeignKey(e => e.EuropeanCupId)
+                   .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasOne(e => e.PhaseTemplate)
+                   .WithMany()
+                   .HasForeignKey(e => e.PhaseTemplateId)
+                   .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasMany(e => e.Matches)
+                   .WithOne(m => m.Phase)
+                   .HasForeignKey(m => m.PhaseId)
+                   .OnDelete(DeleteBehavior.Cascade);
+        }
+    }
+}

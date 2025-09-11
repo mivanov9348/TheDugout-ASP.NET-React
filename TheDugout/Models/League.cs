@@ -10,6 +10,9 @@
         public int GameSaveId { get; set; }
         public GameSave GameSave { get; set; } = null!;
 
+        public int SeasonId { get; set; }
+        public Season Season { get; set; } = null!;
+
         public int CountryId { get; set; }
         public Country Country { get; set; } = null!;
 
@@ -20,6 +23,6 @@
 
         public ICollection<Team> Teams { get; set; } = new List<Team>();
         public ICollection<Fixture> Fixtures { get; set; } = new List<Fixture>();
-
+        public ICollection<LeagueStanding> Standings { get; set; } = new List<LeagueStanding>();
     }
 }

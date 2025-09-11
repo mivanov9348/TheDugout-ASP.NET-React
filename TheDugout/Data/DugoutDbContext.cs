@@ -16,6 +16,7 @@ namespace TheDugout.Data
         public DbSet<League> Leagues { get; set; }
         public DbSet<TeamTemplate> TeamTemplates { get; set; }
         public DbSet<Team> Teams { get; set; }
+        public DbSet<LeagueStanding> LeagueStandings { get; set; }
         public DbSet<GameSave> GameSaves { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<Player> Players { get; set; }
@@ -36,6 +37,13 @@ namespace TheDugout.Data
         public DbSet<TrainingSession> TrainingSessions { get; set; }
         public DbSet<PlayerTraining> PlayerTrainings { get; set; }
         public DbSet<Transfer> Transfers { get; set; }
+        public DbSet<EuropeanCup> EuropeanCups { get; set; }
+        public DbSet<EuropeanCupMatch> EuropeanCupMatches { get; set; }
+        public DbSet<EuropeanCupPhase> EuropeanCupPhases { get; set; }
+        public DbSet<EuropeanCupTeam> EuropeanCupTeams { get; set; }
+        public DbSet<EuropeanCupPhaseTemplate> EuropeanCupPhaseTemplates { get; set; }
+        public DbSet<EuropeanCupStanding> EuropeanCupStandings { get; set; }
+        public DbSet<EuropeanCupTemplate> EuropeanCupTemplates { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

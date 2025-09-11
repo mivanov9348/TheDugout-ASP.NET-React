@@ -8,6 +8,8 @@ namespace TheDugout.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<League> builder)
         {
+            builder.ToTable("Leagues");
+
             builder.HasKey(e => e.Id);
 
             builder.HasOne(e => e.Template)
@@ -20,11 +22,15 @@ namespace TheDugout.Data.Configurations
                    .HasForeignKey(e => e.GameSaveId)
                    .OnDelete(DeleteBehavior.Cascade);
 
+            builder.HasOne(e => e.Season)
+                   .WithMany(s => s.Leagues)
+                   .HasForeignKey(e => e.SeasonId)
+                   .OnDelete(DeleteBehavior.Restrict);
+
             builder.HasOne(e => e.Country)
                    .WithMany()
                    .HasForeignKey(e => e.CountryId)
                    .OnDelete(DeleteBehavior.Restrict);
-
         }
     }
 }

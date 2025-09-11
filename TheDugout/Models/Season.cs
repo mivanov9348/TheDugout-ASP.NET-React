@@ -12,6 +12,8 @@
         public ICollection<PlayerSeasonStats> PlayerStats { get; set; } = new List<PlayerSeasonStats>();
                 public ICollection<Fixture> Fixtures { get; set; } = new List<Fixture>();
         public ICollection<TrainingSession> TrainingSessions { get; set; } = new List<TrainingSession>();
+        public ICollection<League> Leagues { get; set; } = new List<League>();
+        public ICollection<LeagueStanding> LeagueStandings { get; set; } = new List<LeagueStanding>();
 
 
     }

@@ -31,9 +31,9 @@ namespace TheDugout.Data.Configurations
 
 
             builder.HasMany(s => s.Fixtures)
-    .WithOne(f => f.Season)
-    .HasForeignKey(f => f.SeasonId)
-    .OnDelete(DeleteBehavior.Restrict);
+                    .WithOne(f => f.Season)
+                    .HasForeignKey(f => f.SeasonId)
+                    .OnDelete(DeleteBehavior.Restrict);
 
 
         }

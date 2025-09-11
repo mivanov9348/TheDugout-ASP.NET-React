@@ -88,6 +88,7 @@ namespace TheDugout.Services.Game
 
             try
             {
+                // 1. Създаваме нов save
                 var gameSave = new GameSave
                 {
                     UserId = userId,
@@ -98,34 +99,43 @@ namespace TheDugout.Services.Game
                 _context.GameSaves.Add(gameSave);
                 await _context.SaveChangesAsync();
 
+                // 2. Банка / финанси
                 await _financeService.CreateBankAsync(gameSave);
                 await _context.SaveChangesAsync();
 
-                // Season
+                // 3. Създаваме първи сезон
                 var startDate = new DateTime(DateTime.UtcNow.Year, 7, 1);
                 var season = _seasonGenerator.GenerateSeason(gameSave, startDate);
                 gameSave.Seasons.Add(season);
+                await _context.SaveChangesAsync();
 
-                // Leagues & teams
-                var leagues = await _leagueGenerator.GenerateLeaguesAsync(gameSave);
+                // 4. Генерираме лиги + отбори
+                var leagues = await _leagueGenerator.GenerateLeaguesAsync(gameSave, season);
                 foreach (var league in leagues)
                     gameSave.Leagues.Add(league);
 
-                // Free agents
+                await _context.SaveChangesAsync();
+
+                // 5. Свободни агенти
                 var freeAgents = _playerGenerator.GenerateFreeAgents(gameSave, 100);
                 foreach (var agent in freeAgents)
                     _context.Players.Add(agent);
 
                 await _context.SaveChangesAsync();
 
-                // Fixtures
+                // 6. Генерираме fixtures
                 await _fixturesService.GenerateFixturesAsync(gameSave.Id, season.Id, startDate);
 
+                // 7. Инициализираме standings (таблици за класиране)
+                await _leagueGenerator.InitializeStandingsAsync(gameSave, season);
+
+                // 8. Дефолтни тактики
                 await _teamPlanService.InitializeDefaultTacticsAsync(gameSave);
 
-
+                // Commit
                 await transaction.CommitAsync();
 
+                // 9. Връщаме пълния save с данни
                 return await _context.GameSaves
                     .Include(gs => gs.Leagues).ThenInclude(l => l.Teams).ThenInclude(t => t.Players)
                     .Include(gs => gs.Seasons).ThenInclude(s => s.Events)
@@ -137,6 +147,7 @@ namespace TheDugout.Services.Game
                 throw;
             }
         }
+
 
     }
 }
