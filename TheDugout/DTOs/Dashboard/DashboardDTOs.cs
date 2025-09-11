@@ -4,6 +4,8 @@
     {
         public FinanceDto Finance { get; set; } = new();
         public List<TransferHistoryDto> Transfers { get; set; } = new();
+        public NextMatchDto? NextMatch { get; set; }
+
 
     }
 
@@ -32,5 +34,13 @@
         public DateTime GameDate { get; set; }
         public bool IsFreeAgent { get; set; }
         public string Season { get; set; } = string.Empty;
+    }
+
+    public class NextMatchDto   
+    {
+        public DateTime Date { get; set; }
+        public string HomeTeam { get; set; } = string.Empty;
+        public string AwayTeam { get; set; } = string.Empty;
+        public string Competition { get; set; } = string.Empty;
     }
 }

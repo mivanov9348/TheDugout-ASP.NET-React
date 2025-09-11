@@ -1,6 +1,10 @@
+// src/components/Header.jsx
 import { Link } from "react-router-dom";
+import { useGameSave } from "../context/GameSaveContext";
 
-function Header({ currentGameSave, username }) {
+function Header({ username }) {
+  const { currentGameSave } = useGameSave();
+
   if (!currentGameSave) {
     return (
       <header className="px-6 py-3 bg-slate-800 text-white shadow-md">
@@ -12,7 +16,6 @@ function Header({ currentGameSave, username }) {
   const season = currentGameSave.seasons?.[0];
   const team = currentGameSave.userTeam;
 
-  // Форматиране на датата → "1 Jul 2025"
   const formatDate = (dateStr) => {
     if (!dateStr) return "";
     return new Date(dateStr).toLocaleDateString("en-GB", {
@@ -24,7 +27,6 @@ function Header({ currentGameSave, username }) {
 
   return (
     <header className="flex justify-between items-center px-6 py-3 bg-slate-800 text-white shadow-md">
-      {/* Лого / име на играта */}
       <div className="flex items-center gap-3">
         <Link
           to="/"
@@ -41,7 +43,6 @@ function Header({ currentGameSave, username }) {
         </div>
       </div>
 
-      {/* Дясна секция */}
       <div className="flex items-center gap-8 text-sm text-slate-300">
         <span>{season ? formatDate(season.currentDate) : ""}</span>
         <span className="font-semibold">{username}</span>

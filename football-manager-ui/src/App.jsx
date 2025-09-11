@@ -1,3 +1,4 @@
+// src/App.jsx
 import { useState, useEffect } from "react";
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import Header from "./components/Header";
@@ -5,7 +6,7 @@ import Sidebar from "./components/Sidebar";
 import AuthForm from "./components/AuthForm";
 import StartScreen from "./components/StartScreen";
 import LoadGameModal from "./components/LoadGameModal";
-import TeamSelectionModal from "./components/TeamSelectionModal"; // 🔹 нов import
+import TeamSelectionModal from "./components/TeamSelectionModal";
 import Swal from "sweetalert2";
 
 import Home from "./pages/Home";
@@ -28,27 +29,28 @@ import Fixtures from "./pages/Fixtures";
 import PlayerProfile from "./pages/PlayerProfile"; 
 import Facilities from "./pages/Facilities";
 
+// 👉 Context
+import { GameSaveProvider, useGameSave } from "./context/GameSaveContext";
+
 // 🔹 ProtectedRoute
-function ProtectedRoute({ isAuthenticated, currentGameSave, children }) {
+function ProtectedRoute({ isAuthenticated, children }) {
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
-  }
-  if (!currentGameSave) {
-    return <Navigate to="/start" replace />;
   }
   return children;
 }
 
-function App() {
+function AppInner() {
   const navigate = useNavigate();
   const [pendingSaveId, setPendingSaveId] = useState(null);
   const [showTeamSelection, setShowTeamSelection] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(true);
-  const [currentGameSave, setCurrentGameSave] = useState(null);
   const [userSaves, setUserSaves] = useState([]);
   const [showLoadModal, setShowLoadModal] = useState(false);
+
+  const { currentGameSave, setCurrentGameSave } = useGameSave();
 
   // ---- Auth + сейф check при refresh ----
   useEffect(() => {
@@ -79,7 +81,7 @@ function App() {
     };
 
     checkAuthAndSave();
-  }, []);
+  }, [setCurrentGameSave]);
 
   // ---- функции ----
   const fetchUserSaves = async () => {
@@ -120,12 +122,9 @@ function App() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Грешка при създаване на сейф");
 
-      // ❗ НЕ викаме current/{id} тук!
       setStepMessage("Избор на отбор...");
       setPendingSaveId(data.id);
       setShowTeamSelection(true);
-
-      // не показваме success тук — чак след избора на отбор
     } catch (err) {
       Swal.fire("Грешка!", err.message, "error");
     }
@@ -236,15 +235,15 @@ function App() {
       <Route
         path="/*"
         element={
-          <ProtectedRoute isAuthenticated={isAuthenticated} currentGameSave={currentGameSave}>
+          <ProtectedRoute isAuthenticated={isAuthenticated}>
             <div className="flex h-screen bg-slate-100">
               <Sidebar onExitGame={handleExitGame} />
 
               <div className="flex flex-col flex-1">
-                <Header currentGameSave={currentGameSave} username={username} />
+                <Header username={username} />
                 <main className="flex-1 overflow-y-auto p-4">
                   <Routes>
-<Route path="/" element={<Home gameSaveId={currentGameSave?.id} />} />
+                    <Route path="/" element={<Home gameSaveId={currentGameSave?.id} />} />
                     <Route path="/competitions/*" element={<Competitions />}>
                       <Route index element={<Navigate to="league" replace />} />
                       <Route path="league" element={<League gameSaveId={currentGameSave?.id} />} />
@@ -254,62 +253,31 @@ function App() {
 
                     <Route path="/inbox" element={<Inbox />} />
                     <Route path="/calendar" element={<Calendar gameSaveId={currentGameSave?.id} />} />
-<Route
-  path="/squad"
-  element={<Squad gameSaveId={currentGameSave?.id} />}
-/>
-<Route
-  path="/tactics"
-  element={<Tactics gameSaveId={currentGameSave?.id} teamId={currentGameSave?.userTeamId} />}
-/>
-<Route
-  path="/training"
-  element={
-    <Training
-      gameSaveId={currentGameSave?.id}
-      teamId={currentGameSave?.userTeamId}
-    />
-  }
-/>
+                    <Route path="/squad" element={<Squad gameSaveId={currentGameSave?.id} />} />
+                    <Route
+                      path="/tactics"
+                      element={<Tactics gameSaveId={currentGameSave?.id} teamId={currentGameSave?.userTeamId} />}
+                    />
+                    <Route
+                      path="/training"
+                      element={<Training gameSaveId={currentGameSave?.id} teamId={currentGameSave?.userTeamId} />}
+                    />
                     <Route
                       path="/fixtures"
                       element={
-                        <Fixtures
-                          gameSaveId={currentGameSave?.id}
-                          seasonId={currentGameSave?.seasons?.[0]?.id}
-                        />
+                        <Fixtures gameSaveId={currentGameSave?.id} seasonId={currentGameSave?.seasons?.[0]?.id} />
                       }
                     />
                     <Route path="/transfers" element={<Transfers />}>
-  <Route index element={<Navigate to="search" replace />} />
-
-  <Route 
-    path="search" 
-    element={<SearchPlayers gameSaveId={currentGameSave?.id} />} 
-  />
-
-  <Route 
-    path="negotiations" 
-    element={<Negotiations gameSaveId={currentGameSave?.id} />} 
-  />
-
-  <Route 
-    path="history" 
-    element={<TransferHistory gameSaveId={currentGameSave?.id} />} 
-  />
-</Route>
-                    <Route path="/facilities" element={<Facilities />} /> 
-
-
-                    <Route path="/club" element={<Club />} /> 
-<Route
-  path="/finances"
-  element={<Finances gameSaveId={currentGameSave?.id} />}
-/>
-<Route
-                      path="/player/:playerId"
-                      element={<PlayerProfile gameSaveId={currentGameSave?.id} />}
-                    />
+                      <Route index element={<Navigate to="search" replace />} />
+                      <Route path="search" element={<SearchPlayers gameSaveId={currentGameSave?.id} />} />
+                      <Route path="negotiations" element={<Negotiations gameSaveId={currentGameSave?.id} />} />
+                      <Route path="history" element={<TransferHistory gameSaveId={currentGameSave?.id} />} />
+                    </Route>
+                    <Route path="/facilities" element={<Facilities />} />
+                    <Route path="/club" element={<Club />} />
+                    <Route path="/finances" element={<Finances gameSaveId={currentGameSave?.id} />} />
+                    <Route path="/player/:playerId" element={<PlayerProfile gameSaveId={currentGameSave?.id} />} />
                   </Routes>
                 </main>
               </div>
@@ -321,4 +289,10 @@ function App() {
   );
 }
 
-export default App;
+export default function App() {
+  return (
+    <GameSaveProvider>
+      <AppInner />
+    </GameSaveProvider>
+  );
+}

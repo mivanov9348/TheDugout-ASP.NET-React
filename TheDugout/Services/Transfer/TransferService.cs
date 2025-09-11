@@ -194,20 +194,30 @@ namespace TheDugout.Services.Transfer
                 return (false, "Bank not found for this save.");
 
             var season = await _context.Seasons
-    .FirstOrDefaultAsync(s => s.GameSaveId == gameSaveId && s.StartDate <= DateTime.UtcNow && s.EndDate >= DateTime.UtcNow);
-                if (season == null)
-                    return (false, "No active season found for this save.");
+                .Include(s => s.Events)
+                .FirstOrDefaultAsync(s => s.GameSaveId == gameSaveId &&
+                                           s.StartDate <= DateTime.UtcNow &&
+                                           s.EndDate >= DateTime.UtcNow);
+            if (season == null)
+                return (false, "No active season found for this save.");
+
+            bool inTransferWindow = season.Events.Any(e =>
+                e.Type == SeasonEventType.TransferWindow &&
+                e.Date.Date == season.CurrentDate.Date);
+
+            if (!inTransferWindow)
+                return (false, "Transfers are not allowed outside of the transfer window.");
 
             var transfer = new Models.Transfer
             {
                 GameSaveId = gameSaveId,
-                SeasonId = season?.Id ?? 0,
+                SeasonId = season.Id,
                 PlayerId = player.Id,
-                FromTeamId = player.TeamId, 
+                FromTeamId = player.TeamId,
                 ToTeamId = team.Id,
                 Fee = player.Price,
                 IsFreeAgent = player.TeamId == null,
-                GameDate = season?.CurrentDate ?? DateTime.UtcNow
+                GameDate = season.CurrentDate
             };
 
             _context.Transfers.Add(transfer);
@@ -229,6 +239,7 @@ namespace TheDugout.Services.Transfer
 
             return (true, "");
         }
+
 
     }
 }

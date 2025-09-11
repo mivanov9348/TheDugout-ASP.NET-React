@@ -207,16 +207,42 @@ public static class SeedData
 
         foreach (var t in allTeams)
         {
+            // 🟢 Евро-отбор (без лига)
+            if (string.IsNullOrEmpty(t.CompetitionCode))
+            {
+                var existing = dbTeams
+                    .FirstOrDefault(x => x.Abbreviation == t.ShortName && x.LeagueId == null);
+
+                if (existing == null)
+                {
+                    db.TeamTemplates.Add(new TeamTemplate
+                    {
+                        Name = t.Name,
+                        Abbreviation = t.ShortName,
+                        CountryId = countriesByCode.Values.First().Id, // може да зададеш правилната държава
+                        LeagueId = null
+                    });
+                }
+                else
+                {
+                    if (existing.Name != t.Name)
+                        existing.Name = t.Name;
+                }
+
+                continue;
+            }
+
+            // 🟢 Нормален отбор с лига
             if (!leaguesByCode.TryGetValue(t.CompetitionCode, out var league))
             {
                 logger.LogWarning("Team {Team} references missing league {LeagueCode}", t.Name, t.CompetitionCode);
                 continue;
             }
 
-            var existing = dbTeams
-                .FirstOrDefault(x => x.Abbreviation == t.ShortName && x.League.LeagueCode == t.CompetitionCode);
+            var existingLeagueTeam = dbTeams
+                .FirstOrDefault(x => x.Abbreviation == t.ShortName && x.LeagueId == league.Id);
 
-            if (existing == null)
+            if (existingLeagueTeam == null)
             {
                 db.TeamTemplates.Add(new TeamTemplate
                 {
@@ -228,12 +254,13 @@ public static class SeedData
             }
             else
             {
-                // update only if different
-                if (existing.Name != t.Name || existing.LeagueId != league.Id || existing.CountryId != league.CountryId)
+                if (existingLeagueTeam.Name != t.Name ||
+                    existingLeagueTeam.LeagueId != league.Id ||
+                    existingLeagueTeam.CountryId != league.CountryId)
                 {
-                    existing.Name = t.Name;
-                    existing.LeagueId = league.Id;
-                    existing.CountryId = league.CountryId;
+                    existingLeagueTeam.Name = t.Name;
+                    existingLeagueTeam.LeagueId = league.Id;
+                    existingLeagueTeam.CountryId = league.CountryId;
                 }
             }
         }
@@ -244,7 +271,7 @@ public static class SeedData
             .ToHashSet();
 
         var toRemove = dbTeams
-            .Where(x => !jsonKeys.Contains((x.Abbreviation, x.League.LeagueCode)))
+            .Where(x => !jsonKeys.Contains((x.Abbreviation, x.League?.LeagueCode)))
             .ToList();
 
         if (toRemove.Any())
@@ -253,7 +280,6 @@ public static class SeedData
         }
 
         await db.SaveChangesAsync();
-
 
 
         // 6) MessageTemplates

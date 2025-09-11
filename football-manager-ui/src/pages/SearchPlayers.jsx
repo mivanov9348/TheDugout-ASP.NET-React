@@ -114,7 +114,15 @@ export default function SearchPlayers({ gameSaveId }) {
         }),
       });
 
-      if (res.ok) {
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        Swal.fire({
+          icon: "error",
+          title: "Failed",
+          text: data.error || "Could not complete the transfer.",
+        });
+      } else {
         Swal.fire({
           icon: "success",
           title: "Success",
@@ -122,13 +130,6 @@ export default function SearchPlayers({ gameSaveId }) {
         });
         // reload list
         setPlayers((prev) => prev.filter((p) => p.id !== selectedPlayer.id));
-      } else {
-        const err = await res.json();
-        Swal.fire({
-          icon: "error",
-          title: "Failed",
-          text: err.message || "Could not complete the transfer.",
-        });
       }
     } catch (e) {
       Swal.fire({
@@ -319,30 +320,29 @@ export default function SearchPlayers({ gameSaveId }) {
                   </td>
                 )}
                 <td className="p-2 border">
-  {!p.team ? (
-    <button
-      onClick={() => openBuyModal(p)}
-      className="px-3 py-1 bg-green-500 hover:bg-green-600 text-white rounded-lg text-xs"
-    >
-      Buy
-    </button>
-  ) : (
-    <button
-      onClick={() =>
-        Swal.fire({
-          icon: "info",
-          title: "Not active yet",
-          text: "Sending offers will be available in a future update.",
-        })
-      }
-      disabled
-      className="px-3 py-1 bg-gray-400 text-white rounded-lg text-xs cursor-not-allowed"
-    >
-      Send Offer
-    </button>
-  )}
-</td>
-
+                  {!p.team ? (
+                    <button
+                      onClick={() => openBuyModal(p)}
+                      className="px-3 py-1 bg-green-500 hover:bg-green-600 text-white rounded-lg text-xs"
+                    >
+                      Buy
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() =>
+                        Swal.fire({
+                          icon: "info",
+                          title: "Not active yet",
+                          text: "Sending offers will be available in a future update.",
+                        })
+                      }
+                      disabled
+                      className="px-3 py-1 bg-gray-400 text-white rounded-lg text-xs cursor-not-allowed"
+                    >
+                      Send Offer
+                    </button>
+                  )}
+                </td>
               </tr>
             ))}
             {players.length === 0 && (

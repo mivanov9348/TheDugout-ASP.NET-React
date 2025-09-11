@@ -13,7 +13,6 @@ namespace TheDugout.Controllers
         private readonly DugoutDbContext _context;
         private readonly ITransferService _transferService;
 
-
         public DashboardController(DugoutDbContext context, ITransferService _transferService)
         {
             _context = context;
@@ -24,17 +23,29 @@ namespace TheDugout.Controllers
         public async Task<ActionResult<DashboardDto>> GetDashboard(int gameSaveId)
         {
             var gameSave = await _context.GameSaves
-                .Include(gs => gs.UserTeam)
-                    .ThenInclude(t => t.TransactionsFrom)
-                .Include(gs => gs.UserTeam)
-                    .ThenInclude(t => t.TransactionsTo)
-                .FirstOrDefaultAsync(gs => gs.Id == gameSaveId);
+    .Include(gs => gs.UserTeam)
+        .ThenInclude(t => t.TransactionsFrom)
+    .Include(gs => gs.UserTeam)
+        .ThenInclude(t => t.TransactionsTo)
+    .Include(gs => gs.Seasons)
+        .ThenInclude(s => s.Fixtures)
+            .ThenInclude(f => f.HomeTeam) 
+    .Include(gs => gs.Seasons)
+        .ThenInclude(s => s.Fixtures)
+            .ThenInclude(f => f.AwayTeam) 
+    .Include(gs => gs.Seasons)
+        .ThenInclude(s => s.Fixtures)
+            .ThenInclude(f => f.League)   
+                .ThenInclude(l => l.Template) 
+    .FirstOrDefaultAsync(gs => gs.Id == gameSaveId);
+
 
             if (gameSave == null || gameSave.UserTeam == null)
                 return NotFound("GameSave или UserTeam не е намерен.");
 
             var team = gameSave.UserTeam;
 
+            // Финанси
             var transactions = team.TransactionsFrom
                 .Concat(team.TransactionsTo)
                 .OrderByDescending(t => t.Date)
@@ -49,7 +60,16 @@ namespace TheDugout.Controllers
                 })
                 .ToList();
 
+            // Трансфери
             var transfers = await _transferService.GetTransferHistoryAsync(gameSaveId, true);
+
+            // Следващ мач
+            var nextMatch = gameSave.Seasons
+                .SelectMany(s => s.Fixtures)
+                .Where(f => !f.IsFinished &&
+                            (f.HomeTeamId == team.Id || f.AwayTeamId == team.Id))
+                .OrderBy(f => f.Date)
+                .FirstOrDefault();
 
             var dto = new DashboardDto
             {
@@ -68,9 +88,15 @@ namespace TheDugout.Controllers
                     GameDate = (DateTime)t.GetType().GetProperty("GameDate")!.GetValue(t)!,
                     IsFreeAgent = (bool)t.GetType().GetProperty("IsFreeAgent")!.GetValue(t)!,
                     Season = (string)t.GetType().GetProperty("Season")!.GetValue(t)!
-                }).ToList()
+                }).ToList(),
+                NextMatch = nextMatch == null ? null : new NextMatchDto
+                {
+                    Date = nextMatch.Date,
+                    HomeTeam = nextMatch.HomeTeam?.Name ?? "Unknown",
+                    AwayTeam = nextMatch.AwayTeam?.Name ?? "Unknown",
+                    Competition = nextMatch.League?.Template.Name ?? "Unknown"
+                }
             };
-           
 
             return Ok(dto);
         }

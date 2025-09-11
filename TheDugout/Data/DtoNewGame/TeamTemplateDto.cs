@@ -7,7 +7,7 @@
         public string Abbreviation { get; set; } = null!;
         public int CountryId { get; set; }
 
-        public int LeagueId { get; set; }       
+        public int? LeagueId { get; set; }       
         public string LeagueName { get; set; } 
         public int Tier { get; set; }
     }

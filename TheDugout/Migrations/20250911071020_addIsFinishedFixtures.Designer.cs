@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TheDugout.Data;
 
@@ -11,9 +12,11 @@ using TheDugout.Data;
 namespace TheDugout.Migrations
 {
     [DbContext(typeof(DugoutDbContext))]
-    partial class DugoutDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250911071020_addIsFinishedFixtures")]
+    partial class addIsFinishedFixtures
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -884,7 +887,7 @@ namespace TheDugout.Migrations
                     b.Property<int>("CountryId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("LeagueId")
+                    b.Property<int>("LeagueId")
                         .HasColumnType("int");
 
                     b.Property<string>("Name")
@@ -1390,7 +1393,8 @@ namespace TheDugout.Migrations
                     b.HasOne("TheDugout.Models.LeagueTemplate", "League")
                         .WithMany("TeamTemplates")
                         .HasForeignKey("LeagueId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.Navigation("Country");
 

@@ -1,0 +1,372 @@
+[
+  {
+    "name": "Ajax",
+    "shortName": "AJA",
+    "competitionCode": ""
+  },
+  {
+    "name": "PSV Eindhoven",
+    "shortName": "PSV",
+    "competitionCode": ""
+  },
+  {
+    "name": "Feyenoord",
+    "shortName": "FEY",
+    "competitionCode": ""
+  },
+  {
+    "name": "AZ Alkmaar",
+    "shortName": "AZ",
+    "competitionCode": ""
+  },
+  {
+    "name": "Club Brugge",
+    "shortName": "CLU",
+    "competitionCode": ""
+  },
+  {
+    "name": "Anderlecht",
+    "shortName": "AND",
+    "competitionCode": ""
+  },
+  {
+    "name": "Genk",
+    "shortName": "GNK",
+    "competitionCode": ""
+  },
+  {
+    "name": "Gent",
+    "shortName": "GNT",
+    "competitionCode": ""
+  },
+  {
+    "name": "Standard Liège",
+    "shortName": "STL",
+    "competitionCode": ""
+  },
+  {
+    "name": "Royal Antwerp",
+    "shortName": "ANT",
+    "competitionCode": ""
+  },
+  {
+    "name": "Red Bull Salzburg",
+    "shortName": "RBS",
+    "competitionCode": ""
+  },
+  {
+    "name": "Rapid Wien",
+    "shortName": "RAP",
+    "competitionCode": ""
+  },
+  {
+    "name": "Austria Wien",
+    "shortName": "AUS",
+    "competitionCode": ""
+  },
+  {
+    "name": "Sturm Graz",
+    "shortName": "STU",
+    "competitionCode": ""
+  },
+  {
+    "name": "LASK Linz",
+    "shortName": "LAS",
+    "competitionCode": ""
+  },
+  {
+    "name": "Celtic",
+    "shortName": "CEL",
+    "competitionCode": ""
+  },
+  {
+    "name": "Rangers",
+    "shortName": "RAN",
+    "competitionCode": ""
+  },
+  {
+    "name": "Dinamo Zagreb",
+    "shortName": "DIN",
+    "competitionCode": ""
+  },
+  {
+    "name": "Hajduk Split",
+    "shortName": "HAJ",
+    "competitionCode": ""
+  },
+  {
+    "name": "Shakhtar Donetsk",
+    "shortName": "SHA",
+    "competitionCode": ""
+  },
+  {
+    "name": "Dynamo Kyiv",
+    "shortName": "DYN",
+    "competitionCode": ""
+  },
+  {
+    "name": "Zorya Luhansk",
+    "shortName": "ZOR",
+    "competitionCode": ""
+  },
+  {
+    "name": "Sparta Praha",
+    "shortName": "SPA",
+    "competitionCode": ""
+  },
+  {
+    "name": "Slavia Praha",
+    "shortName": "SLP",
+    "competitionCode": ""
+  },
+  {
+    "name": "Viktoria Plzeň",
+    "shortName": "PLZ",
+    "competitionCode": ""
+  },
+  {
+    "name": "FC Copenhagen",
+    "shortName": "COP",
+    "competitionCode": ""
+  },
+  {
+    "name": "Brøndby IF",
+    "shortName": "BRO",
+    "competitionCode": ""
+  },
+  {
+    "name": "Midtjylland",
+    "shortName": "MID",
+    "competitionCode": ""
+  },
+  {
+    "name": "Olympiacos",
+    "shortName": "OLY",
+    "competitionCode": ""
+  },
+  {
+    "name": "Panathinaikos",
+    "shortName": "PAN",
+    "competitionCode": ""
+  },
+  {
+    "name": "PAOK",
+    "shortName": "PAO",
+    "competitionCode": ""
+  },
+  {
+    "name": "AEK Athens",
+    "shortName": "AEK",
+    "competitionCode": ""
+  },
+  {
+    "name": "Aris Thessaloniki",
+    "shortName": "ARI",
+    "competitionCode": ""
+  },
+  {
+    "name": "Galatasaray",
+    "shortName": "GAL",
+    "competitionCode": ""
+  },
+  {
+    "name": "Fenerbahçe",
+    "shortName": "FEN",
+    "competitionCode": ""
+  },
+  {
+    "name": "Beşiktaş",
+    "shortName": "BES",
+    "competitionCode": ""
+  },
+  {
+    "name": "Trabzonspor",
+    "shortName": "TRA",
+    "competitionCode": ""
+  },
+  {
+    "name": "Başakşehir",
+    "shortName": "BAS",
+    "competitionCode": ""
+  },
+  {
+    "name": "Young Boys",
+    "shortName": "YB",
+    "competitionCode": ""
+  },
+  {
+    "name": "Basel",
+    "shortName": "BASL",
+    "competitionCode": ""
+  },
+  {
+    "name": "Zürich",
+    "shortName": "ZUR",
+    "competitionCode": ""
+  },
+  {
+    "name": "Legia Warszawa",
+    "shortName": "LEG",
+    "competitionCode": ""
+  },
+  {
+    "name": "Lech Poznań",
+    "shortName": "LPO",
+    "competitionCode": ""
+  },
+  {
+    "name": "Raków Częstochowa",
+    "shortName": "RAK",
+    "competitionCode": ""
+  },
+  {
+    "name": "Śląsk Wrocław",
+    "shortName": "SLA",
+    "competitionCode": ""
+  },
+  {
+    "name": "Partizan Belgrade",
+    "shortName": "PAR",
+    "competitionCode": ""
+  },
+  {
+    "name": "Crvena Zvezda",
+    "shortName": "CZV",
+    "competitionCode": ""
+  },
+  {
+    "name": "Molde FK",
+    "shortName": "MOL",
+    "competitionCode": ""
+  },
+  {
+    "name": "Rosenborg",
+    "shortName": "ROS",
+    "competitionCode": ""
+  },
+  {
+    "name": "Bodø/Glimt",
+    "shortName": "BOD",
+    "competitionCode": ""
+  },
+  {
+    "name": "Malmö FF",
+    "shortName": "MAL",
+    "competitionCode": ""
+  },
+  {
+    "name": "AIK",
+    "shortName": "AIK",
+    "competitionCode": ""
+  },
+  {
+    "name": "Hammarby",
+    "shortName": "HAM",
+    "competitionCode": ""
+  },
+  {
+    "name": "Djurgårdens IF",
+    "shortName": "DJU",
+    "competitionCode": ""
+  },
+  {
+    "name": "Steaua București (FCSB)",
+    "shortName": "FCSB",
+    "competitionCode": ""
+  },
+  {
+    "name": "CFR Cluj",
+    "shortName": "CFR",
+    "competitionCode": ""
+  },
+  {
+    "name": "Universitatea Craiova",
+    "shortName": "CRA",
+    "competitionCode": ""
+  },
+  {
+    "name": "Rapid București",
+    "shortName": "RBU",
+    "competitionCode": ""
+  },
+  {
+    "name": "APOEL Nicosia",
+    "shortName": "APO",
+    "competitionCode": ""
+  },
+  {
+    "name": "Omonia Nicosia",
+    "shortName": "OMO",
+    "competitionCode": ""
+  },
+  {
+    "name": "AEL Limassol",
+    "shortName": "AEL",
+    "competitionCode": ""
+  },
+  {
+    "name": "Ferencváros",
+    "shortName": "FER",
+    "competitionCode": ""
+  },
+  {
+    "name": "Videoton (Fehérvár)",
+    "shortName": "VID",
+    "competitionCode": ""
+  },
+  {
+    "name": "Debrecen",
+    "shortName": "DEB",
+    "competitionCode": ""
+  },
+  {
+    "name": "Slovan Bratislava",
+    "shortName": "SLO",
+    "competitionCode": ""
+  },
+  {
+    "name": "Žilina",
+    "shortName": "ZIL",
+    "competitionCode": ""
+  },
+  {
+    "name": "Olimpija Ljubljana",
+    "shortName": "OLJ",
+    "competitionCode": ""
+  },
+  {
+    "name": "Maribor",
+    "shortName": "MAR",
+    "competitionCode": ""
+  },
+  {
+    "name": "Astana",
+    "shortName": "AST",
+    "competitionCode": ""
+  },
+  {
+    "name": "Kairat Almaty",
+    "shortName": "KAI",
+    "competitionCode": ""
+  },
+  {
+    "name": "Maccabi Haifa",
+    "shortName": "MHA",
+    "competitionCode": ""
+  },
+  {
+    "name": "Maccabi Tel Aviv",
+    "shortName": "MTA",
+    "competitionCode": ""
+  },
+  {
+    "name": "Hapoel Be'er Sheva",
+    "shortName": "HBS",
+    "competitionCode": ""
+  },
+  {
+    "name": "Beitar Jerusalem",
+    "shortName": "BEI",
+    "competitionCode": ""
+  }
+]

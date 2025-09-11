@@ -26,6 +26,7 @@
 
         public int Round { get; set; }
 
+        public bool IsFinished { get; set; } = false;
 
 
     }

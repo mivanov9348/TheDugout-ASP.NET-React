@@ -38,6 +38,30 @@ function Home({ gameSaveId }) {
   }, [gameSaveId]);
 
   const renderSection = (title) => {
+    if (title === "Next Match") {
+      if (loading) return <div className="text-gray-400 italic">Зареждане...</div>;
+      if (!dashboard?.nextMatch) return <div className="text-gray-400 italic">Няма следващ мач</div>;
+
+      const m = dashboard.nextMatch;
+      return (
+        <div className="flex flex-col items-center gap-3 text-center">
+          <div className="text-sm text-gray-500">
+            {new Date(m.date).toLocaleString("bg-BG", {
+              day: "2-digit",
+              month: "short",
+              year: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </div>
+          <div className="text-lg font-semibold">
+            {m.homeTeam} <span className="text-gray-400">vs</span> {m.awayTeam}
+          </div>
+          <div className="text-sm text-blue-700 font-medium">{m.competition}</div>
+        </div>
+      );
+    }
+
     if (title === "Finances") {
       if (loading) return <div className="text-gray-400 italic">Зареждане...</div>;
       if (!dashboard?.finance) return <div className="text-gray-400 italic">Няма данни</div>;
@@ -133,7 +157,7 @@ function Home({ gameSaveId }) {
         {sections.map((title, index) => (
           <div
             key={index}
-            className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-4 flex flex-col hover:scale-105 transition-transform duration-200 max-h-64 overflow-y-auto"
+            className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-4 flex flex-col h-64 overflow-y-auto hover:scale-105 transition-transform duration-200"
           >
             <h3 className="text-lg font-semibold mb-2 text-gray-800">{title}</h3>
             {renderSection(title)}
