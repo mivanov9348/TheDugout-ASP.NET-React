@@ -1,5 +1,4 @@
-﻿// Models/EuropeanCup.cs
-namespace TheDugout.Models
+﻿namespace TheDugout.Models
 {
     public class EuropeanCup
     {
@@ -11,14 +10,13 @@ namespace TheDugout.Models
         public int GameSaveId { get; set; }
         public GameSave GameSave { get; set; } = null!;
 
+        public int SeasonId { get; set; }
+        public Season Season { get; set; } = null!;
+
         public ICollection<EuropeanCupTeam> Teams { get; set; } = new List<EuropeanCupTeam>();
         public ICollection<EuropeanCupPhase> Phases { get; set; } = new List<EuropeanCupPhase>();
         public ICollection<EuropeanCupStanding> Standings { get; set; } = new List<EuropeanCupStanding>();
     }
 
-   
-
-    
-
-    
 }
+

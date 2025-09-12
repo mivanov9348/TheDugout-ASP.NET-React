@@ -4,6 +4,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using TheDugout.Data;
 using TheDugout.Services;
+using TheDugout.Services.EuropeanCup;
 using TheDugout.Services.Finance;
 using TheDugout.Services.Fixture;
 using TheDugout.Services.Game;
@@ -43,6 +44,7 @@ builder.Services.AddScoped<ITeamService, TeamService>();
 builder.Services.AddScoped<IFinanceService, FinanceService>();
 builder.Services.AddScoped<ITrainingService, TrainingService>();
 builder.Services.AddScoped<ITransferService, TransferService>();
+builder.Services.AddScoped<IEuropeanCupService, EuropeanCupService>();
 
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 

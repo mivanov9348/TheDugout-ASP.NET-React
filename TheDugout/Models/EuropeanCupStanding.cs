@@ -18,7 +18,6 @@
         public int GoalsFor { get; set; } = 0;
         public int GoalsAgainst { get; set; } = 0;
         public int GoalDifference { get; set; } = 0;
-
-        public int Ranking { get; set; } = 0; // 1..36 after league phase
+        public int Ranking { get; set; } = 0; 
     }
 }

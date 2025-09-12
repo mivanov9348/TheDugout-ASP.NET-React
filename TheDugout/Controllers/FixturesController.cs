@@ -21,8 +21,8 @@ namespace TheDugout.Controllers
         public async Task<IActionResult> GetFixtures(
     int gameSaveId,
     int seasonId,
-    [FromQuery] int? round = 1,          // по подразбиране 1ви кръг
-    [FromQuery] int? leagueId = null     // по избор конкретна лига
+    [FromQuery] int? round = 1,
+    [FromQuery] int? leagueId = null
 )
         {
             var query = _context.Fixtures
@@ -37,7 +37,6 @@ namespace TheDugout.Controllers
             }
             else
             {
-                // взимаме първа лига по Tier
                 var firstLeagueId = await _context.Leagues
                     .Where(l => l.GameSaveId == gameSaveId)
                     .OrderBy(l => l.Tier)
@@ -60,14 +59,15 @@ namespace TheDugout.Controllers
                     HomeTeam = f.HomeTeam.Name,
                     AwayTeam = f.AwayTeam.Name,
                     f.HomeTeamGoals,
-                    f.AwayTeamGoals
-
+                    f.AwayTeamGoals,
+                    HomeLogoFileName = f.HomeTeam.LogoFileName,   // 👈 добавено
+                    AwayLogoFileName = f.AwayTeam.LogoFileName    // 👈 добавено
                 })
                 .ToListAsync();
 
-            // връщаме като плосък списък, а не групиран
             return Ok(fixtures);
         }
+
 
 
     }

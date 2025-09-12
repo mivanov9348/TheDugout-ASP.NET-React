@@ -29,14 +29,14 @@ namespace TheDugout.Controllers
         .ThenInclude(t => t.TransactionsTo)
     .Include(gs => gs.Seasons)
         .ThenInclude(s => s.Fixtures)
-            .ThenInclude(f => f.HomeTeam) 
+            .ThenInclude(f => f.HomeTeam)
     .Include(gs => gs.Seasons)
         .ThenInclude(s => s.Fixtures)
-            .ThenInclude(f => f.AwayTeam) 
+            .ThenInclude(f => f.AwayTeam)
     .Include(gs => gs.Seasons)
         .ThenInclude(s => s.Fixtures)
-            .ThenInclude(f => f.League)   
-                .ThenInclude(l => l.Template) 
+            .ThenInclude(f => f.League)
+                .ThenInclude(l => l.Template)
     .FirstOrDefaultAsync(gs => gs.Id == gameSaveId);
 
 
@@ -66,9 +66,7 @@ namespace TheDugout.Controllers
             // Следващ мач
             var nextMatch = gameSave.Seasons
                 .SelectMany(s => s.Fixtures)
-                .Where(f => !f.IsFinished &&
-                            (f.HomeTeamId == team.Id || f.AwayTeamId == team.Id))
-                .OrderBy(f => f.Date)
+                                .OrderBy(f => f.Date)
                 .FirstOrDefault();
 
             var dto = new DashboardDto

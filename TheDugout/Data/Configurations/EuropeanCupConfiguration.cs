@@ -16,12 +16,12 @@ namespace TheDugout.Data.Configurations
             builder.Property(e => e.TemplateId).IsRequired();
 
             builder.HasOne(e => e.Template)
-                   .WithMany() // templates don't necessarily have collection of cups
+                   .WithMany() 
                    .HasForeignKey(e => e.TemplateId)
                    .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(e => e.GameSave)
-                   .WithMany() // add WithMany(gs => gs.EuropeanCups) if GameSave has nav
+                   .WithMany() 
                    .HasForeignKey(e => e.GameSaveId)
                    .OnDelete(DeleteBehavior.Cascade);
 
@@ -39,6 +39,12 @@ namespace TheDugout.Data.Configurations
                    .WithOne(s => s.EuropeanCup)
                    .HasForeignKey(s => s.EuropeanCupId)
                    .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasOne(e => e.Season)
+                    .WithMany(s => s.EuropeanCups)
+                    .HasForeignKey(e => e.SeasonId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
         }
     }
 }

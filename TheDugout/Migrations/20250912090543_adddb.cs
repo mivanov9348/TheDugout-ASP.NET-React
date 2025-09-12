@@ -243,26 +243,6 @@ namespace TheDugout.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "EuropeanCupMatches",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    PhaseId = table.Column<int>(type: "int", nullable: false),
-                    HomeCupTeamId = table.Column<int>(type: "int", nullable: false),
-                    AwayCupTeamId = table.Column<int>(type: "int", nullable: false),
-                    Leg = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
-                    MatchDate = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    HomeGoals = table.Column<int>(type: "int", nullable: true),
-                    AwayGoals = table.Column<int>(type: "int", nullable: true),
-                    Status = table.Column<int>(type: "int", nullable: false, defaultValue: 0)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_EuropeanCupMatches", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "EuropeanCupPhases",
                 columns: table => new
                 {
@@ -289,7 +269,8 @@ namespace TheDugout.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     TemplateId = table.Column<int>(type: "int", nullable: false),
-                    GameSaveId = table.Column<int>(type: "int", nullable: false)
+                    GameSaveId = table.Column<int>(type: "int", nullable: false),
+                    SeasonId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -385,19 +366,27 @@ namespace TheDugout.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     GameSaveId = table.Column<int>(type: "int", nullable: false),
-                    LeagueId = table.Column<int>(type: "int", nullable: false),
                     SeasonId = table.Column<int>(type: "int", nullable: false),
+                    CompetitionType = table.Column<int>(type: "int", nullable: false),
+                    LeagueId = table.Column<int>(type: "int", nullable: true),
+                    EuropeanCupPhaseId = table.Column<int>(type: "int", nullable: true),
                     HomeTeamId = table.Column<int>(type: "int", nullable: false),
                     AwayTeamId = table.Column<int>(type: "int", nullable: false),
-                    HomeTeamGoals = table.Column<int>(type: "int", nullable: false),
-                    AwayTeamGoals = table.Column<int>(type: "int", nullable: false),
+                    HomeTeamGoals = table.Column<int>(type: "int", nullable: true),
+                    AwayTeamGoals = table.Column<int>(type: "int", nullable: true),
                     Date = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Round = table.Column<int>(type: "int", nullable: false),
-                    IsFinished = table.Column<bool>(type: "bit", nullable: false)
+                    Status = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Fixtures", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Fixtures_EuropeanCupPhases_EuropeanCupPhaseId",
+                        column: x => x.EuropeanCupPhaseId,
+                        principalTable: "EuropeanCupPhases",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -954,21 +943,6 @@ namespace TheDugout.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_EuropeanCupMatches_AwayCupTeamId",
-                table: "EuropeanCupMatches",
-                column: "AwayCupTeamId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_EuropeanCupMatches_HomeCupTeamId",
-                table: "EuropeanCupMatches",
-                column: "HomeCupTeamId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_EuropeanCupMatches_PhaseId",
-                table: "EuropeanCupMatches",
-                column: "PhaseId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_EuropeanCupPhases_EuropeanCupId",
                 table: "EuropeanCupPhases",
                 column: "EuropeanCupId");
@@ -992,6 +966,11 @@ namespace TheDugout.Migrations
                 name: "IX_EuropeanCups_GameSaveId",
                 table: "EuropeanCups",
                 column: "GameSaveId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_EuropeanCups_SeasonId",
+                table: "EuropeanCups",
+                column: "SeasonId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_EuropeanCups_TemplateId",
@@ -1039,6 +1018,11 @@ namespace TheDugout.Migrations
                 name: "IX_Fixtures_AwayTeamId",
                 table: "Fixtures",
                 column: "AwayTeamId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Fixtures_EuropeanCupPhaseId",
+                table: "Fixtures",
+                column: "EuropeanCupPhaseId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Fixtures_GameSaveId",
@@ -1325,30 +1309,6 @@ namespace TheDugout.Migrations
                 onDelete: ReferentialAction.Cascade);
 
             migrationBuilder.AddForeignKey(
-                name: "FK_EuropeanCupMatches_EuropeanCupPhases_PhaseId",
-                table: "EuropeanCupMatches",
-                column: "PhaseId",
-                principalTable: "EuropeanCupPhases",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_EuropeanCupMatches_EuropeanCupTeams_AwayCupTeamId",
-                table: "EuropeanCupMatches",
-                column: "AwayCupTeamId",
-                principalTable: "EuropeanCupTeams",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Restrict);
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_EuropeanCupMatches_EuropeanCupTeams_HomeCupTeamId",
-                table: "EuropeanCupMatches",
-                column: "HomeCupTeamId",
-                principalTable: "EuropeanCupTeams",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Restrict);
-
-            migrationBuilder.AddForeignKey(
                 name: "FK_EuropeanCupPhases_EuropeanCups_EuropeanCupId",
                 table: "EuropeanCupPhases",
                 column: "EuropeanCupId",
@@ -1363,6 +1323,14 @@ namespace TheDugout.Migrations
                 principalTable: "GameSaves",
                 principalColumn: "Id",
                 onDelete: ReferentialAction.Cascade);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_EuropeanCups_Seasons_SeasonId",
+                table: "EuropeanCups",
+                column: "SeasonId",
+                principalTable: "Seasons",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Restrict);
 
             migrationBuilder.AddForeignKey(
                 name: "FK_EuropeanCupStandings_Teams_TeamId",
@@ -1473,10 +1441,10 @@ namespace TheDugout.Migrations
                 table: "Users");
 
             migrationBuilder.DropTable(
-                name: "EuropeanCupMatches");
+                name: "EuropeanCupStandings");
 
             migrationBuilder.DropTable(
-                name: "EuropeanCupStandings");
+                name: "EuropeanCupTeams");
 
             migrationBuilder.DropTable(
                 name: "FinancialTransactions");
@@ -1518,13 +1486,10 @@ namespace TheDugout.Migrations
                 name: "Transfers");
 
             migrationBuilder.DropTable(
-                name: "EuropeanCupPhases");
-
-            migrationBuilder.DropTable(
-                name: "EuropeanCupTeams");
-
-            migrationBuilder.DropTable(
                 name: "Banks");
+
+            migrationBuilder.DropTable(
+                name: "EuropeanCupPhases");
 
             migrationBuilder.DropTable(
                 name: "MessageTemplates");

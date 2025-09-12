@@ -49,29 +49,11 @@ namespace TheDugout.Services.Team
                 team.Popularity = CalculateTeamPopularity(team);
 
                 teams.Add(team);
-            }                      
-
-            // След като вече имаме валидни Id-та, добавяме началните пари
-            foreach (var team in teams)
-            {
-                var initialFunds = CalculateInitialFunds(team.Popularity);
-
-                if (gameSave.Bank != null)
-                {
-                    _financeService.BankToClubAsync(
-                        gameSave.Bank,
-                        team,
-                        initialFunds,
-                        $"Bank added {initialFunds} to {team.Name}!",
-                        TransactionType.StartingFunds
-                    ).GetAwaiter().GetResult();
-                }
-            }
+            }                   
+                 
 
             return teams;
         }
-
-
         private int CalculateTeamPopularity(Models.Team team)
         {
             if (team.Players == null || !team.Players.Any())

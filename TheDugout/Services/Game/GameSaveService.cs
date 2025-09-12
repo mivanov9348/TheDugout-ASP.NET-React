@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TheDugout.Data;
 using TheDugout.Models;
+using TheDugout.Services.EuropeanCup;
 using TheDugout.Services.Finance;
 using TheDugout.Services.Fixture;
 using TheDugout.Services.League;
@@ -20,6 +21,7 @@ namespace TheDugout.Services.Game
         private readonly IPlayerGenerationService _playerGenerator;
         private readonly IFinanceService _financeService;
         private readonly ITeamPlanService _teamPlanService;
+        private readonly IEuropeanCupService _europeanCupService;
 
         public GameSaveService(
             DugoutDbContext context,
@@ -29,7 +31,8 @@ namespace TheDugout.Services.Game
             IFixturesService fixturesService,
             IPlayerGenerationService playerGenerator,
             IFinanceService financeService,
-            ITeamPlanService teamPlanService
+            ITeamPlanService teamPlanService,
+            IEuropeanCupService europeanCupService
         )
         {
             _context = context;
@@ -40,6 +43,7 @@ namespace TheDugout.Services.Game
             _playerGenerator = playerGenerator;
             _financeService = financeService;
             _teamPlanService = teamPlanService;
+            this._europeanCupService = europeanCupService;
         }
 
         public async Task<List<object>> GetUserSavesAsync(int userId)
@@ -115,6 +119,25 @@ namespace TheDugout.Services.Game
                     gameSave.Leagues.Add(league);
 
                 await _context.SaveChangesAsync();
+
+                await _financeService.InitializeClubFundsAsync(gameSave, leagues);
+
+                // 4.5 Инициализиране на European Cup за първата година (ако имаш шаблон)
+                var euroTemplate = await _context.Set<EuropeanCupTemplate>()
+                                                 .FirstOrDefaultAsync(t => t.Name == "Champions League")
+                                 ?? await _context.Set<EuropeanCupTemplate>().FirstOrDefaultAsync();
+
+                if (euroTemplate != null)
+                {
+                    var cup = await _europeanCupService.InitializeTournamentAsync(euroTemplate.Id, gameSave.Id, season.Id);
+                    // Генерираме league-phase fixtures за този сезон (season.Id)
+                    await _europeanCupService.GenerateLeaguePhaseFixturesAsync(cup.Id, season.Id);
+                }
+                else
+                {
+                    _logger.LogWarning("No EuropeanCupTemplate found — skipping European Cup creation.");
+                }
+
 
                 // 5. Свободни агенти
                 var freeAgents = _playerGenerator.GenerateFreeAgents(gameSave, 100);

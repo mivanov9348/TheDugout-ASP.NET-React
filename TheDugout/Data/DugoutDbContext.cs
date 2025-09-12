@@ -38,7 +38,6 @@ namespace TheDugout.Data
         public DbSet<PlayerTraining> PlayerTrainings { get; set; }
         public DbSet<Transfer> Transfers { get; set; }
         public DbSet<EuropeanCup> EuropeanCups { get; set; }
-        public DbSet<EuropeanCupMatch> EuropeanCupMatches { get; set; }
         public DbSet<EuropeanCupPhase> EuropeanCupPhases { get; set; }
         public DbSet<EuropeanCupTeam> EuropeanCupTeams { get; set; }
         public DbSet<EuropeanCupPhaseTemplate> EuropeanCupPhaseTemplates { get; set; }

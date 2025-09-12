@@ -35,6 +35,28 @@ namespace TheDugout.Services.Finance
             return bank;
         }
 
+        public async Task InitializeClubFundsAsync(GameSave gameSave, IEnumerable<Models.League> leagues)
+        {
+            foreach (var league in leagues)
+            {
+                foreach (var team in league.Teams)
+                {
+                    var initialFunds = team.Popularity * 1_000m + 50_000m;
+
+                    await BankToClubAsync(
+                        gameSave.Bank!,
+                        team,
+                        initialFunds,
+                        $"Bank added {initialFunds} to {team.Name}!",
+                        TransactionType.StartingFunds
+                    );
+                }
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
+
         public async Task<FinancialTransaction> ClubToBankAsync(Models.Team team, Bank bank, decimal amount, string description, TransactionType type)
         {
             var tx = new FinancialTransaction

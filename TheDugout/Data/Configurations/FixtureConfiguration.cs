@@ -10,22 +10,30 @@ namespace TheDugout.Data.Configurations
         {
             builder.HasKey(f => f.Id);
 
-
             builder.HasOne(f => f.GameSave)
-       .WithMany(gs => gs.Fixtures)
-       .HasForeignKey(f => f.GameSaveId)
-       .OnDelete(DeleteBehavior.Cascade);
+                   .WithMany(gs => gs.Fixtures)
+                   .HasForeignKey(f => f.GameSaveId)
+                   .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasOne(f => f.Season)
+                   .WithMany(s => s.Fixtures)
+                   .HasForeignKey(f => f.SeasonId)
+                   .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(f => f.League)
                    .WithMany(l => l.Fixtures)
                    .HasForeignKey(f => f.LeagueId)
                    .OnDelete(DeleteBehavior.Restrict);
 
-            builder.HasOne(f => f.Season)
-       .WithMany(s => s.Fixtures)
-       .HasForeignKey(f => f.SeasonId)
-       .OnDelete(DeleteBehavior.Restrict);
+            //builder.HasOne(f => f.Cup)
+            //       .WithMany(c => c.Fixtures)
+            //       .HasForeignKey(f => f.CupId)
+            //       .OnDelete(DeleteBehavior.Restrict);
 
+            builder.HasOne(f => f.EuropeanCupPhase)
+                   .WithMany(p => p.Fixtures)
+                   .HasForeignKey(f => f.EuropeanCupPhaseId)
+                   .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(f => f.HomeTeam)
                    .WithMany(t => t.HomeFixtures)
@@ -36,11 +44,6 @@ namespace TheDugout.Data.Configurations
                    .WithMany(t => t.AwayFixtures)
                    .HasForeignKey(f => f.AwayTeamId)
                    .OnDelete(DeleteBehavior.Restrict);
-
-
-
-
         }
-
     }
 }

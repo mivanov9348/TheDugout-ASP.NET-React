@@ -321,6 +321,30 @@ public static class SeedData
 
         await db.SaveChangesAsync();
 
+        // 7) European Cups
+        var europeanCupsPath = Path.Combine(seedDir, "europeanCup.json");
+        var europeanCups = await ReadJsonAsync<List<EuropeanCupTemplate>>(europeanCupsPath);
+
+        foreach (var ec in europeanCups)
+        {
+            var existing = await db.EuropeanCupTemplates.FirstOrDefaultAsync(x => x.Name == ec.Name);
+            if (existing == null)
+            {
+                db.EuropeanCupTemplates.Add(new EuropeanCupTemplate
+                {
+                    Name = ec.Name,
+                    TeamsCount = ec.TeamsCount,
+                    LeaguePhaseMatchesPerTeam = ec.LeaguePhaseMatchesPerTeam,
+                    PhaseTemplates = ec.PhaseTemplates ?? new List<EuropeanCupPhaseTemplate>()
+                });
+            }
+            else
+            {
+                existing.TeamsCount = ec.TeamsCount;
+                existing.LeaguePhaseMatchesPerTeam = ec.LeaguePhaseMatchesPerTeam;
+            }
+        }
+        await db.SaveChangesAsync();
 
         // 4) Валидирай брой отбори спрямо лигите (информативно)
         var teamsByLeague = allTeams

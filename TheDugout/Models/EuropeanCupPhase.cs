@@ -10,6 +10,6 @@
         public int PhaseTemplateId { get; set; }
         public EuropeanCupPhaseTemplate PhaseTemplate { get; set; } = null!;
 
-        public ICollection<EuropeanCupMatch> Matches { get; set; } = new List<EuropeanCupMatch>();
+        public ICollection<Fixture> Fixtures { get; set; } = new List<Fixture>();
     }
 }

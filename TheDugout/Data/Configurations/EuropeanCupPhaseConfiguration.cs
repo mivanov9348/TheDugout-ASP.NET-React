@@ -22,9 +22,9 @@ namespace TheDugout.Data.Configurations
                    .HasForeignKey(e => e.PhaseTemplateId)
                    .OnDelete(DeleteBehavior.Restrict);
 
-            builder.HasMany(e => e.Matches)
-                   .WithOne(m => m.Phase)
-                   .HasForeignKey(m => m.PhaseId)
+            builder.HasMany(e => e.Fixtures)
+                   .WithOne(f => f.EuropeanCupPhase)
+                   .HasForeignKey(f => f.EuropeanCupPhaseId)
                    .OnDelete(DeleteBehavior.Cascade);
         }
     }

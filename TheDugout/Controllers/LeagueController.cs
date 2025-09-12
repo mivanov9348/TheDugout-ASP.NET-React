@@ -66,7 +66,8 @@ namespace TheDugout.Controllers
 
                     teams = _context.LeagueStandings
                         .Where(ls => ls.LeagueId == l.Id && ls.SeasonId == season.Id)
-                        .OrderByDescending(ls => ls.Points)
+                        .OrderBy(ls => ls.Ranking) // 👈 използваме официалното класиране
+                        .ThenByDescending(ls => ls.Points)
                         .ThenByDescending(ls => ls.GoalDifference)
                         .ThenByDescending(ls => ls.GoalsFor)
                         .Select(ls => new
@@ -74,8 +75,8 @@ namespace TheDugout.Controllers
                             id = ls.Team.Id,
                             name = ls.Team.Name,
                             abbreviation = ls.Team.Abbreviation,
-                            logoFileName = ls.Team.LogoFileName, // 👈 за TeamLogo компонента
-                            matches = ls.Wins + ls.Draws + ls.Losses, // 👈 общо изиграни мачове
+                            logoFileName = ls.Team.LogoFileName,
+                            matches = ls.Matches, // 👈 директно от колоната
                             wins = ls.Wins,
                             draws = ls.Draws,
                             losses = ls.Losses,
@@ -84,6 +85,7 @@ namespace TheDugout.Controllers
                             goalDifference = ls.GoalDifference,
                             points = ls.Points
                         })
+                        .ToList()
                 })
                 .ToListAsync();
 

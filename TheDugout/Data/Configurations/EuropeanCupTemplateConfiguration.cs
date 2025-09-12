@@ -20,13 +20,7 @@ namespace TheDugout.Data.Configurations
                    .IsRequired();
 
             builder.Property(e => e.LeaguePhaseMatchesPerTeam)
-                   .IsRequired();
-
-            builder.Property(e => e.PotsCount)
-                   .HasDefaultValue(4);
-
-            builder.Property(e => e.TeamsPerPot)
-                   .HasDefaultValue(9);
+                   .IsRequired();           
 
             builder.HasMany(e => e.PhaseTemplates)
                    .WithOne()
