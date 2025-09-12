@@ -30,6 +30,7 @@ namespace TheDugout.Services.Team
                 {
                     TemplateId = tt.Id,
                     GameSave = gameSave,
+                    GameSaveId = gameSave.Id,
                     League = league,
                     Name = tt.Name,
                     Abbreviation = tt.Abbreviation,
@@ -49,8 +50,9 @@ namespace TheDugout.Services.Team
                 team.Popularity = CalculateTeamPopularity(team);
 
                 teams.Add(team);
-            }                   
-                 
+            }
+
+            _context.Teams.AddRange(teams);
 
             return teams;
         }
@@ -88,6 +90,47 @@ namespace TheDugout.Services.Team
 
             return $"{cleanName}.png";
         }
+
+        public async Task<List<Models.Team>> GenerateIndependentTeamsAsync(GameSave gameSave)
+        {
+            var templates = await _context.TeamTemplates
+                .Where(tt => tt.LeagueId == null) 
+                .ToListAsync();
+
+            var teams = new List<Models.Team>();
+
+            foreach (var tt in templates)
+            {
+                var team = new Models.Team
+                {
+                    TemplateId = tt.Id,
+                    GameSave = gameSave,
+                    GameSaveId = gameSave.Id,
+                    League = null, // няма лига
+                    Name = tt.Name,
+                    Abbreviation = tt.Abbreviation,
+                    CountryId = tt.CountryId,
+                    Country = tt.Country,
+                    Popularity = 10,
+                    LogoFileName = GenerateLogoFileName(tt.Name)
+                };
+
+                // Генерираме играчи
+                var players = _playerGenerator.GenerateTeamPlayers(gameSave, team);
+                foreach (var player in players)
+                {
+                    gameSave.Players.Add(player);
+                    team.Players.Add(player);
+                }
+
+                team.Popularity = CalculateTeamPopularity(team);
+                teams.Add(team);
+            }
+
+            _context.Teams.AddRange(teams);
+            return teams;
+        }
+
 
     }
 }

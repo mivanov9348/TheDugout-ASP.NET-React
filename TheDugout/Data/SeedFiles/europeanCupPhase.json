@@ -1,0 +1,37 @@
+[
+  {
+    "Id": 1,
+    "Name": "Group Stage",
+    "Order": 1,
+    "IsKnockout": false,
+    "IsTwoLegged": true
+  },
+  {
+    "Id": 2,
+    "Name": "Round of 16",
+    "Order": 2,
+    "IsKnockout": true,
+    "IsTwoLegged": true
+  },
+  {
+    "Id": 3,
+    "Name": "Quarterfinals",
+    "Order": 3,
+    "IsKnockout": true,
+    "IsTwoLegged": true
+  },
+  {
+    "Id": 4,
+    "Name": "Semifinals",
+    "Order": 4,
+    "IsKnockout": true,
+    "IsTwoLegged": true
+  },
+  {
+    "Id": 5,
+    "Name": "Final",
+    "Order": 5,
+    "IsKnockout": true,
+    "IsTwoLegged": false
+  }
+]

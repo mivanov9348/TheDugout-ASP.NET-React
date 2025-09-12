@@ -20,6 +20,7 @@ namespace TheDugout.Services.Game
         private readonly IFixturesService _fixturesService;
         private readonly IPlayerGenerationService _playerGenerator;
         private readonly IFinanceService _financeService;
+        private readonly ITeamGenerationService _teamGenerator;
         private readonly ITeamPlanService _teamPlanService;
         private readonly IEuropeanCupService _europeanCupService;
 
@@ -32,7 +33,8 @@ namespace TheDugout.Services.Game
             IPlayerGenerationService playerGenerator,
             IFinanceService financeService,
             ITeamPlanService teamPlanService,
-            IEuropeanCupService europeanCupService
+            IEuropeanCupService europeanCupService,
+            ITeamGenerationService teamGenerator
         )
         {
             _context = context;
@@ -44,6 +46,7 @@ namespace TheDugout.Services.Game
             _financeService = financeService;
             _teamPlanService = teamPlanService;
             this._europeanCupService = europeanCupService;
+            _teamGenerator = teamGenerator;
         }
 
         public async Task<List<object>> GetUserSavesAsync(int userId)
@@ -115,8 +118,16 @@ namespace TheDugout.Services.Game
 
                 // 4. Генерираме лиги + отбори
                 var leagues = await _leagueGenerator.GenerateLeaguesAsync(gameSave, season);
-                foreach (var league in leagues)
-                    gameSave.Leagues.Add(league);
+                //foreach (var league in leagues)
+                //    gameSave.Leagues.Add(league);
+
+                await _context.SaveChangesAsync();
+
+                var independentTeams = await _teamGenerator.GenerateIndependentTeamsAsync(gameSave);
+                foreach (var team in independentTeams)
+                {
+                    gameSave.Teams.Add(team);
+                }
 
                 await _context.SaveChangesAsync();
 
@@ -124,7 +135,7 @@ namespace TheDugout.Services.Game
 
                 // 4.5 Инициализиране на European Cup за първата година (ако имаш шаблон)
                 var euroTemplate = await _context.Set<EuropeanCupTemplate>()
-                                                 .FirstOrDefaultAsync(t => t.Name == "Champions League")
+                                                 .FirstOrDefaultAsync(t => t.Name == "European Cup")
                                  ?? await _context.Set<EuropeanCupTemplate>().FirstOrDefaultAsync();
 
                 if (euroTemplate != null)
@@ -150,6 +161,7 @@ namespace TheDugout.Services.Game
                 await _fixturesService.GenerateFixturesAsync(gameSave.Id, season.Id, startDate);
 
                 // 7. Инициализираме standings (таблици за класиране)
+                await _context.SaveChangesAsync();
                 await _leagueGenerator.InitializeStandingsAsync(gameSave, season);
 
                 // 8. Дефолтни тактики

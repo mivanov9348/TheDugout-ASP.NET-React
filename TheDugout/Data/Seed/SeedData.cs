@@ -202,12 +202,11 @@ public static class SeedData
             allTeams.AddRange(teams);
         }
 
-        // всички отбори от базата
         var dbTeams = await db.TeamTemplates.ToListAsync();
 
         foreach (var t in allTeams)
         {
-            // 🟢 Евро-отбор (без лига)
+            // Евро-отбор (без лига)
             if (string.IsNullOrEmpty(t.CompetitionCode))
             {
                 var existing = dbTeams
@@ -219,7 +218,7 @@ public static class SeedData
                     {
                         Name = t.Name,
                         Abbreviation = t.ShortName,
-                        CountryId = countriesByCode.Values.First().Id, // може да зададеш правилната държава
+                        CountryId = countriesByCode.Values.First().Id,
                         LeagueId = null
                     });
                 }
@@ -232,7 +231,7 @@ public static class SeedData
                 continue;
             }
 
-            // 🟢 Нормален отбор с лига
+            // Нормален отбор с лига
             if (!leaguesByCode.TryGetValue(t.CompetitionCode, out var league))
             {
                 logger.LogWarning("Team {Team} references missing league {LeagueCode}", t.Name, t.CompetitionCode);
@@ -265,13 +264,15 @@ public static class SeedData
             }
         }
 
-        // изтриване на тези, които ги няма в JSON
         var jsonKeys = allTeams
-            .Select(t => (t.ShortName, t.CompetitionCode))
+            .Select(t => (t.ShortName, string.IsNullOrEmpty(t.CompetitionCode) ? null : t.CompetitionCode))
             .ToHashSet();
 
         var toRemove = dbTeams
-            .Where(x => !jsonKeys.Contains((x.Abbreviation, x.League?.LeagueCode)))
+            .Where(x => !jsonKeys.Contains((
+                x.Abbreviation,
+                x.LeagueId == null ? null : x.League.LeagueCode
+            )))
             .ToList();
 
         if (toRemove.Any())
@@ -280,7 +281,6 @@ public static class SeedData
         }
 
         await db.SaveChangesAsync();
-
 
         // 6) MessageTemplates
         var msgTemplatesPath = Path.Combine(seedDir, "messageTemplates.json");
@@ -321,32 +321,87 @@ public static class SeedData
 
         await db.SaveChangesAsync();
 
-        // 7) European Cups
+        // 7.1) European Cup Phases
+        var phasesPath = Path.Combine(seedDir, "europeanCupPhase.json");
+        var phases = await ReadJsonAsync<List<EuropeanCupPhaseTemplate>>(phasesPath);
+
+        foreach (var p in phases)
+        {
+            var existing = await db.EuropeanCupPhaseTemplates.FirstOrDefaultAsync(x => x.Name == p.Name);
+            if (existing == null)
+            {
+                db.EuropeanCupPhaseTemplates.Add(new EuropeanCupPhaseTemplate
+                {
+                    Name = p.Name,
+                    Order = p.Order,
+                    IsKnockout = p.IsKnockout,
+                    IsTwoLegged = p.IsTwoLegged
+                });
+            }
+            else
+            {
+                existing.Order = p.Order;
+                existing.IsKnockout = p.IsKnockout;
+                existing.IsTwoLegged = p.IsTwoLegged;
+            }
+        }
+        await db.SaveChangesAsync();
+
+        var dbPhases = await db.EuropeanCupPhaseTemplates.ToDictionaryAsync(x => x.Id, x => x);
+
+        // 7.2) European Cups
         var europeanCupsPath = Path.Combine(seedDir, "europeanCup.json");
         var europeanCups = await ReadJsonAsync<List<EuropeanCupTemplate>>(europeanCupsPath);
 
         foreach (var ec in europeanCups)
         {
-            var existing = await db.EuropeanCupTemplates.FirstOrDefaultAsync(x => x.Name == ec.Name);
+            var existing = await db.EuropeanCupTemplates
+                .Include(x => x.PhaseTemplates)
+                .FirstOrDefaultAsync(x => x.Name == ec.Name);
+
             if (existing == null)
             {
-                db.EuropeanCupTemplates.Add(new EuropeanCupTemplate
+                var newCup = new EuropeanCupTemplate
                 {
                     Name = ec.Name,
                     TeamsCount = ec.TeamsCount,
-                    LeaguePhaseMatchesPerTeam = ec.LeaguePhaseMatchesPerTeam,
-                    PhaseTemplates = ec.PhaseTemplates ?? new List<EuropeanCupPhaseTemplate>()
-                });
+                    LeaguePhaseMatchesPerTeam = ec.LeaguePhaseMatchesPerTeam
+                };
+
+                if (ec.PhaseTemplates != null && ec.PhaseTemplates.Count > 0)
+                {
+                    foreach (var phaseId in ec.PhaseTemplates.Select(p => p.Id))
+                    {
+                        if (dbPhases.TryGetValue(phaseId, out var phase))
+                        {
+                            newCup.PhaseTemplates.Add(phase);
+                        }
+                    }
+                }
+
+                db.EuropeanCupTemplates.Add(newCup);
             }
             else
             {
                 existing.TeamsCount = ec.TeamsCount;
                 existing.LeaguePhaseMatchesPerTeam = ec.LeaguePhaseMatchesPerTeam;
+
+                existing.PhaseTemplates.Clear();
+                if (ec.PhaseTemplates != null && ec.PhaseTemplates.Count > 0)
+                {
+                    foreach (var phaseId in ec.PhaseTemplates.Select(p => p.Id))
+                    {
+                        if (dbPhases.TryGetValue(phaseId, out var phase))
+                        {
+                            existing.PhaseTemplates.Add(phase);
+                        }
+                    }
+                }
             }
         }
         await db.SaveChangesAsync();
 
-        // 4) Валидирай брой отбори спрямо лигите (информативно)
+        // Валидирай брой отбори спрямо лигите
         var teamsByLeague = allTeams
             .GroupBy(x => x.CompetitionCode)
             .ToDictionary(g => g.Key, g => g.Count());
@@ -359,7 +414,6 @@ public static class SeedData
                     l.Code, l.Teams, count);
             }
         }
-
     }
 
     private static async Task<T> ReadJsonAsync<T>(string path)

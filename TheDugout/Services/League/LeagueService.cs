@@ -41,6 +41,7 @@ namespace TheDugout.Services.League
 
 
                 var teams = _teamGenerator.GenerateTeams(gameSave, league, lt.TeamTemplates);
+                league.Teams = teams.ToList();
                 leagues.Add(league);
             }
 

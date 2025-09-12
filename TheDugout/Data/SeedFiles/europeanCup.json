@@ -1,9 +1,15 @@
 [
-{
-"Id": 1,
-"Name": "European Cup",
-"TeamsCount": 36,
-"LeaguePhaseMatchesPerTeam": 8,
-"PhaseTemplates": []
-}
+  {
+    "Id": 1,
+    "Name": "European Cup",
+    "TeamsCount": 36,
+    "LeaguePhaseMatchesPerTeam": 8,
+    "PhaseTemplates": [
+      { "Id": 1 },
+      { "Id": 2 },
+      { "Id": 3 },
+      { "Id": 4 },
+      { "Id": 5 }
+    ]
+  }
 ]

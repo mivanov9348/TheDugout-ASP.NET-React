@@ -248,7 +248,15 @@ function AppInner() {
                       <Route index element={<Navigate to="league" replace />} />
                       <Route path="league" element={<League gameSaveId={currentGameSave?.id} />} />
                       <Route path="cup" element={<Cup />} />
-                      <Route path="europe" element={<EuropeanCup />} />
+<Route
+  path="europe"
+  element={
+    <EuropeanCup
+      gameSaveId={currentGameSave?.id}
+      seasonId={currentGameSave?.seasons?.[0]?.id}
+    />
+  }
+/>
                     </Route>
 
                     <Route path="/inbox" element={<Inbox />} />

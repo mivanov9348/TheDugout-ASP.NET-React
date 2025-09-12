@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 export default function EuropeanCup({ gameSaveId, seasonId }) {
   const [cup, setCup] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [selectedRound, setSelectedRound] = useState(null);
 
   useEffect(() => {
     if (!gameSaveId || !seasonId) return;
@@ -16,6 +17,11 @@ export default function EuropeanCup({ gameSaveId, seasonId }) {
         if (!res.ok) throw new Error("Error while loading European Cup");
         const data = await res.json();
         setCup(data);
+
+        // по подразбиране избира първия рунд
+        if (data?.fixtures?.length > 0) {
+          setSelectedRound(data.fixtures[0].round);
+        }
       } catch (err) {
         console.error(err);
       } finally {
@@ -27,7 +33,7 @@ export default function EuropeanCup({ gameSaveId, seasonId }) {
   }, [gameSaveId, seasonId]);
 
   if (loading) return <p>Loading...</p>;
-  if (!cup) return <p>No European Cup for this season.</p>;
+  if (!cup?.exists) return <p>No European Cup for this season.</p>;
 
   return (
     <div className="p-4">
@@ -80,32 +86,51 @@ export default function EuropeanCup({ gameSaveId, seasonId }) {
           </table>
         </div>
 
-        {/* Fixtures grouped by round */}
+        {/* Fixtures with round selection */}
         <div className="bg-white shadow rounded-2xl p-4">
-          <h3 className="text-xl font-semibold mb-3">Fixtures</h3>
-          {cup.fixtures.map((round) => (
-            <div key={round.round} className="mb-4">
-              <h4 className="text-lg font-medium bg-slate-100 p-2 rounded">
-                Round {round.round}
-              </h4>
-              <ul className="divide-y">
+          <div className="flex justify-between items-center mb-3">
+            <h3 className="text-xl font-semibold">Fixtures</h3>
+            <select
+              value={selectedRound ?? ""}
+              onChange={(e) => setSelectedRound(Number(e.target.value))}
+              className="border rounded px-2 py-1 text-sm"
+            >
+              {cup.fixtures.map((round) => (
+                <option key={round.round} value={round.round}>
+                  Round {round.round}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Matches for selected round */}
+          {cup.fixtures
+            .filter((r) => r.round === selectedRound)
+            .map((round) => (
+              <ul key={round.round} className="divide-y">
                 {round.matches.map((m) => (
-                  <li key={m.id} className="flex justify-between items-center p-2">
-                    <div className="flex-1 text-right">{m.homeTeam}</div>
-                    <div className="w-20 text-center font-semibold">
+                  <li
+                    key={m.id}
+                    className="flex items-center justify-between p-2 hover:bg-slate-50 rounded"
+                  >
+                    <div className="flex-1 text-right pr-2 font-medium">
+                      {m.homeTeam}
+                    </div>
+                    <div className="w-28 text-center font-bold">
                       {m.homeTeamGoals != null && m.awayTeamGoals != null
-                        ? `${m.homeTeamGoals} - ${m.awayTeamGoals}`
+                        ? `${m.homeTeamGoals} : ${m.awayTeamGoals}`
                         : "vs"}
                     </div>
-                    <div className="flex-1">{m.awayTeam}</div>
-                    <div className="ml-4 text-sm text-slate-500">
+                    <div className="flex-1 pl-2 font-medium">
+                      {m.awayTeam}
+                    </div>
+                    <div className="ml-4 text-xs text-slate-500 whitespace-nowrap">
                       {new Date(m.date).toLocaleDateString()}
                     </div>
                   </li>
                 ))}
               </ul>
-            </div>
-          ))}
+            ))}
         </div>
       </div>
     </div>

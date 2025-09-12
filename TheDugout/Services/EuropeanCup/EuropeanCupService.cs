@@ -27,9 +27,11 @@ namespace TheDugout.Services.EuropeanCup
                 .FirstOrDefaultAsync(t => t.Id == templateId, ct)
                 ?? throw new InvalidOperationException($"Template {templateId} not found.");
 
+            var teams = await _context.Set<Models.Team>().ToListAsync();
+
             // 2. Взимаме eligible отбори (LeagueId == null и същия GameSave)
             var eligibleTeams = await _context.Set<Models.Team>()
-                .Where(t => t.LeagueId == null && t.GameSaveId == gameSaveId)
+                .Where(t => t.LeagueId == null)
                 .ToListAsync(ct);
 
             if (eligibleTeams.Count < template.TeamsCount)
