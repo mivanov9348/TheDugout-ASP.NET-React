@@ -40,9 +40,9 @@ namespace TheDugout.Services.EuropeanCup
 
             // 3. Рандъмизираме избора
             var chosenTeams = eligibleTeams
-                .OrderBy(_ => _rng.Next())
-                .Take(template.TeamsCount)
-                .ToList();
+    .OrderBy(_ => _rng.Next()) 
+    .Take(template.TeamsCount)
+    .ToList();
 
             // 4. Създаваме Cup
             var cup = new Models.EuropeanCup
@@ -55,15 +55,28 @@ namespace TheDugout.Services.EuropeanCup
             _context.Add(cup);
             await _context.SaveChangesAsync(ct); // Id нужен за FK
 
-            // 5. Добавяме отбори + standings
-            foreach (var t in chosenTeams)
+            // 5. Добавяме отбори + standings с ПРЕДВАРИТЕЛЕН РАНКИНГ ПО ПОПУЛЯРНОСТ!
+            var rankedTeams = chosenTeams
+                .OrderByDescending(t => t.Popularity)
+                .ThenByDescending(t => t.Id)                    
+                .ThenBy(t => t.Country?.Name ?? "")             
+                .ThenBy(t => t.Name)                            
+                .ToList();
+
+            for (int i = 0; i < rankedTeams.Count; i++)
             {
-                _context.Add(new EuropeanCupTeam { EuropeanCupId = cup.Id, TeamId = t.Id });
+                var team = rankedTeams[i];
+
+                _context.Add(new EuropeanCupTeam
+                {
+                    EuropeanCupId = cup.Id,
+                    TeamId = team.Id
+                });
 
                 _context.Add(new EuropeanCupStanding
                 {
                     EuropeanCupId = cup.Id,
-                    TeamId = t.Id,
+                    TeamId = team.Id,
                     Points = 0,
                     Matches = 0,
                     Wins = 0,
@@ -72,7 +85,7 @@ namespace TheDugout.Services.EuropeanCup
                     GoalsFor = 0,
                     GoalsAgainst = 0,
                     GoalDifference = 0,
-                    Ranking = 0
+                    Ranking = i + 1 
                 });
             }
 

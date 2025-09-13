@@ -110,6 +110,12 @@ namespace TheDugout.Migrations
                     b.Property<int>("GameSaveId")
                         .HasColumnType("int");
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("Ranking")
+                        .HasColumnType("int");
+
                     b.Property<int>("SeasonId")
                         .HasColumnType("int");
 
@@ -289,6 +295,9 @@ namespace TheDugout.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
                     b.Property<int>("LeaguePhaseMatchesPerTeam")
                         .HasColumnType("int");
 
@@ -296,6 +305,9 @@ namespace TheDugout.Migrations
                         .IsRequired()
                         .HasMaxLength(150)
                         .HasColumnType("nvarchar(150)");
+
+                    b.Property<int>("Ranking")
+                        .HasColumnType("int");
 
                     b.Property<int>("TeamsCount")
                         .HasColumnType("int");
@@ -1072,7 +1084,7 @@ namespace TheDugout.Migrations
                     b.Property<decimal>("Balance")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int>("CountryId")
+                    b.Property<int?>("CountryId")
                         .HasColumnType("int");
 
                     b.Property<int>("GameSaveId")
@@ -1155,7 +1167,10 @@ namespace TheDugout.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
 
-                    b.Property<int>("CountryId")
+                    b.Property<string>("CountryCode")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("CountryId")
                         .HasColumnType("int");
 
                     b.Property<int?>("LeagueId")
@@ -1746,8 +1761,7 @@ namespace TheDugout.Migrations
                     b.HasOne("TheDugout.Models.Country", "Country")
                         .WithMany()
                         .HasForeignKey("CountryId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("TheDugout.Models.GameSave", "GameSave")
                         .WithMany("Teams")
@@ -1799,8 +1813,7 @@ namespace TheDugout.Migrations
                     b.HasOne("TheDugout.Models.Country", "Country")
                         .WithMany("TeamTemplates")
                         .HasForeignKey("CountryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("TheDugout.Models.LeagueTemplate", "League")
                         .WithMany("TeamTemplates")

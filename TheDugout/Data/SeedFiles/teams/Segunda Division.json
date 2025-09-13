@@ -15,7 +15,11 @@
   { "name": "Leganés", "shortName": "LEG", "competitionCode": "ESP_2" },
   { "name": "Málaga CF", "shortName": "MAL", "competitionCode": "ESP_2" },
   { "name": "Mirandés", "shortName": "MIR", "competitionCode": "ESP_2" },
-  { "name": "Real Sociedad B", "shortName": "RSB", "competitionCode": "ESP_2" },
+  {
+    "name": "SD Compostela",
+    "shortName": "RSB",
+    "competitionCode": "ESP_2"
+  },
   { "name": "Real Valladolid", "shortName": "VAD", "competitionCode": "ESP_2" },
   { "name": "Real Zaragoza", "shortName": "ZAR", "competitionCode": "ESP_2" },
   { "name": "Sporting Gijón", "shortName": "SPG", "competitionCode": "ESP_2" },

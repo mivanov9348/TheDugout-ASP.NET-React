@@ -31,20 +31,36 @@ namespace TheDugout.Controllers
             if (round.HasValue)
                 query = query.Where(f => f.Round == round.Value);
 
+            // ⭐ АКО ПОТРЕБИТЕЛЯТ Е ПОСОЧИЛ ЛИГА — използвай я
             if (leagueId.HasValue)
             {
                 query = query.Where(f => f.LeagueId == leagueId.Value);
             }
             else
             {
-                var firstLeagueId = await _context.Leagues
-                    .Where(l => l.GameSaveId == gameSaveId)
-                    .OrderBy(l => l.Tier)
-                    .Select(l => l.Id)
+                // ⭐⭐⭐ НОВА ЛОГИКА: АКО НЕ Е ПОСОЧЕНА — намери лигата на UserTeam
+                var userTeamLeagueId = await _context.GameSaves
+                    .Where(gs => gs.Id == gameSaveId)
+                    .Select(gs => gs.UserTeam.LeagueId) // Nullable<int>
                     .FirstOrDefaultAsync();
 
-                if (firstLeagueId != 0)
-                    query = query.Where(f => f.LeagueId == firstLeagueId);
+                // Ако UserTeam е зададен и е в лига — използвай нейната лига
+                if (userTeamLeagueId.HasValue && userTeamLeagueId.Value > 0)
+                {
+                    query = query.Where(f => f.LeagueId == userTeamLeagueId.Value);
+                }
+                else
+                {
+                    // Fallback: ако няма UserTeam или не е в лига — използвай първата лига по ранг
+                    var firstLeagueId = await _context.Leagues
+                        .Where(l => l.GameSaveId == gameSaveId)
+                        .OrderBy(l => l.Tier)
+                        .Select(l => l.Id)
+                        .FirstOrDefaultAsync();
+
+                    if (firstLeagueId != 0)
+                        query = query.Where(f => f.LeagueId == firstLeagueId);
+                }
             }
 
             var fixtures = await query
@@ -60,14 +76,13 @@ namespace TheDugout.Controllers
                     AwayTeam = f.AwayTeam.Name,
                     f.HomeTeamGoals,
                     f.AwayTeamGoals,
-                    HomeLogoFileName = f.HomeTeam.LogoFileName,   // 👈 добавено
-                    AwayLogoFileName = f.AwayTeam.LogoFileName    // 👈 добавено
+                    HomeLogoFileName = f.HomeTeam.LogoFileName,
+                    AwayLogoFileName = f.AwayTeam.LogoFileName
                 })
                 .ToListAsync();
 
             return Ok(fixtures);
         }
-
 
 
     }

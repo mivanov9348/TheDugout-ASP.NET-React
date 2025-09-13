@@ -82,7 +82,7 @@ namespace TheDugout.Services.Game
             return true;
         }
 
-        public async Task<GameSave> StartNewGameAsync(int userId)
+        public async Task<GameSave> StartNewGameAsync(int userId, CancellationToken ct = default)
         {
             if (userId <= 0)
                 throw new ArgumentException("Invalid userId.");
@@ -134,19 +134,46 @@ namespace TheDugout.Services.Game
                 await _financeService.InitializeClubFundsAsync(gameSave, leagues);
 
                 // 4.5 Инициализиране на European Cup за първата година (ако имаш шаблон)
-                var euroTemplate = await _context.Set<EuropeanCupTemplate>()
-                                                 .FirstOrDefaultAsync(t => t.Name == "European Cup")
-                                 ?? await _context.Set<EuropeanCupTemplate>().FirstOrDefaultAsync();
+                var euroTemplates = await _context.Set<EuropeanCupTemplate>()
+                                    .Include(t => t.PhaseTemplates) 
+                                    .ToListAsync(ct);
 
-                if (euroTemplate != null)
+                foreach (var template in euroTemplates)
                 {
-                    var cup = await _europeanCupService.InitializeTournamentAsync(euroTemplate.Id, gameSave.Id, season.Id);
-                    // Генерираме league-phase fixtures за този сезон (season.Id)
-                    await _europeanCupService.GenerateLeaguePhaseFixturesAsync(cup.Id, season.Id);
-                }
-                else
-                {
-                    _logger.LogWarning("No EuropeanCupTemplate found — skipping European Cup creation.");
+                    try
+                    {
+                        // 1. Вземаме подходящи отбори: LeagueId == null и същия GameSave
+                        var eligibleTeams = await _context.Set<Models.Team>()
+                            .Where(t => t.LeagueId == null && t.GameSaveId == gameSave.Id)
+                            .ToListAsync(ct);
+
+                        if (eligibleTeams.Count < template.TeamsCount)
+                        {
+                            _logger.LogWarning(
+                                "Not enough eligible teams ({Eligible}) for European Cup Template '{TemplateName}' ({TemplateId}). Requires {Required}. Skipping.",
+                                eligibleTeams.Count, template.Name, template.Id, template.TeamsCount);
+                            continue; // прескачаме, но не прекъсваме цялото стартиране
+                        }
+
+                        // 2. Създаваме турнир
+                        var cup = await _europeanCupService.InitializeTournamentAsync(
+                            templateId: template.Id,
+                            gameSaveId: gameSave.Id,
+                            seasonId: season.Id,
+                            ct: ct);
+
+                        // 3. Генерираме league-phase fixtures
+                        await _europeanCupService.GenerateLeaguePhaseFixturesAsync(cup.Id, season.Id, ct);
+
+                        _logger.LogInformation(
+                            "Successfully initialized European Cup '{TemplateName}' (ID: {CupId}) with {Teams} teams.",
+                            template.Name, cup.Id, template.TeamsCount);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Failed to initialize European Cup template '{TemplateName}' ({TemplateId})",
+                            template.Name, template.Id);
+                    }
                 }
 
 

@@ -69,7 +69,7 @@ namespace TheDugout.Controllers
 
             try
             {
-                var save = await _gameSaveService.StartNewGameAsync(userId.Value);
+                var save = await _gameSaveService.StartNewGameAsync(userId.Value, default);
                 var user = await _context.Users.FirstAsync(u => u.Id == userId.Value);
                 user.CurrentSaveId = null;
                 await _context.SaveChangesAsync();

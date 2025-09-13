@@ -19,7 +19,8 @@ namespace TheDugout.Data.Seed
         public record TeamTemplateDto(
             string Name,
             string ShortName,
-            string CompetitionCode
+            string? CompetitionCode,
+            string? CountryCode
         );
 
         public record PositionWeightDto(

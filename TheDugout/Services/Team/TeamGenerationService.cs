@@ -106,7 +106,7 @@ namespace TheDugout.Services.Team
                     TemplateId = tt.Id,
                     GameSave = gameSave,
                     GameSaveId = gameSave.Id,
-                    League = null, // няма лига
+                    League = null, 
                     Name = tt.Name,
                     Abbreviation = tt.Abbreviation,
                     CountryId = tt.CountryId,

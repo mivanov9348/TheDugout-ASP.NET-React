@@ -206,11 +206,29 @@ public static class SeedData
 
         foreach (var t in allTeams)
         {
+            // ⬇️ ДЕКЛАРИРАМЕ ВСИЧКИ ПРОМЕНЛИВИ ЕДНАЖ — В НАЧАЛОТО НА ЦИКЪЛА!
+            int? countryId = null;
+            string? countryCode = null;
+
             // Евро-отбор (без лига)
             if (string.IsNullOrEmpty(t.CompetitionCode))
             {
                 var existing = dbTeams
                     .FirstOrDefault(x => x.Abbreviation == t.ShortName && x.LeagueId == null);
+
+                // Ако има валиден countryCode (не null и не празен стринг)
+                if (!string.IsNullOrWhiteSpace(t.CountryCode))
+                {
+                    countryCode = t.CountryCode.Trim().ToUpper();
+                    if (countriesByCode.TryGetValue(countryCode, out var country))
+                    {
+                        countryId = country.Id;
+                    }
+                    else
+                    {
+                        logger.LogWarning("Team '{Team}' has invalid or unknown country code: {CountryCode}", t.Name, t.CountryCode);
+                    }
+                }
 
                 if (existing == null)
                 {
@@ -218,14 +236,37 @@ public static class SeedData
                     {
                         Name = t.Name,
                         Abbreviation = t.ShortName,
-                        CountryId = countriesByCode.Values.First().Id,
-                        LeagueId = null
+                        CountryId = countryId,
+                        LeagueId = null,
+                        CountryCode = countryCode // Записваме само ако е зададен
                     });
                 }
                 else
                 {
+                    bool needsUpdate = false;
+
                     if (existing.Name != t.Name)
+                    {
                         existing.Name = t.Name;
+                        needsUpdate = true;
+                    }
+
+                    if (existing.CountryId != countryId)
+                    {
+                        existing.CountryId = countryId;
+                        needsUpdate = true;
+                    }
+
+                    if (existing.CountryCode != countryCode)
+                    {
+                        existing.CountryCode = countryCode;
+                        needsUpdate = true;
+                    }
+
+                    if (needsUpdate)
+                    {
+                        db.TeamTemplates.Update(existing);
+                    }
                 }
 
                 continue;
@@ -241,25 +282,73 @@ public static class SeedData
             var existingLeagueTeam = dbTeams
                 .FirstOrDefault(x => x.Abbreviation == t.ShortName && x.LeagueId == league.Id);
 
+            // 👉 ЛОГИКА ЗА ОТБОРИ С ЛИГА — ПРИОРИТЕТ НА country-code ОТ JSON
+            if (!string.IsNullOrWhiteSpace(t.CountryCode))
+            {
+                // Ако има валиден countryCode в JSON — използвай го
+                countryCode = t.CountryCode.Trim().ToUpper();
+                if (countriesByCode.TryGetValue(countryCode, out var country))
+                {
+                    countryId = country.Id;
+                }
+                else
+                {
+                    logger.LogWarning("Team '{Team}' has invalid or unknown country code: {CountryCode} (league: {League})",
+                        t.Name, t.CountryCode, t.CompetitionCode);
+                    // Не падаме на лигата — просто оставяме countryId = null и ще паднем по-долу
+                }
+            }
+
+            if (countryId == null)
+            {
+                countryId = league.CountryId;
+            }
+
+            // --- СЪЗДАВАНЕ / ОБНОВЯВАНЕ НА ОТБОРА ---
             if (existingLeagueTeam == null)
             {
                 db.TeamTemplates.Add(new TeamTemplate
                 {
                     Name = t.Name,
                     Abbreviation = t.ShortName,
-                    CountryId = league.CountryId,
-                    LeagueId = league.Id
+                    CountryId = countryId,
+                    LeagueId = league.Id,
+                    CountryCode = countryCode
                 });
             }
             else
             {
-                if (existingLeagueTeam.Name != t.Name ||
-                    existingLeagueTeam.LeagueId != league.Id ||
-                    existingLeagueTeam.CountryId != league.CountryId)
+                bool needsUpdate = false;
+
+                if (existingLeagueTeam.Name != t.Name)
                 {
                     existingLeagueTeam.Name = t.Name;
+                    needsUpdate = true;
+                }
+
+                if (existingLeagueTeam.LeagueId != league.Id)
+                {
                     existingLeagueTeam.LeagueId = league.Id;
-                    existingLeagueTeam.CountryId = league.CountryId;
+                    needsUpdate = true;
+                }
+
+                if (existingLeagueTeam.CountryId != countryId)
+                {
+                    existingLeagueTeam.CountryId = countryId;
+                    needsUpdate = true;
+                }
+
+                // 👉 ПРОМЯНА: само ако имаме явно зададен countryCode — го запазваме
+                // Ако беше "NED", а сега е null (от лигата) — го зануляваме!
+                if (existingLeagueTeam.CountryCode != countryCode)
+                {
+                    existingLeagueTeam.CountryCode = countryCode;
+                    needsUpdate = true;
+                }
+
+                if (needsUpdate)
+                {
+                    db.TeamTemplates.Update(existingLeagueTeam);
                 }
             }
         }
@@ -365,7 +454,9 @@ public static class SeedData
                 {
                     Name = ec.Name,
                     TeamsCount = ec.TeamsCount,
-                    LeaguePhaseMatchesPerTeam = ec.LeaguePhaseMatchesPerTeam
+                    LeaguePhaseMatchesPerTeam = ec.LeaguePhaseMatchesPerTeam,
+                    Ranking = ec.Ranking,
+                    IsActive = ec.IsActive,
                 };
 
                 if (ec.PhaseTemplates != null && ec.PhaseTemplates.Count > 0)
@@ -385,6 +476,8 @@ public static class SeedData
             {
                 existing.TeamsCount = ec.TeamsCount;
                 existing.LeaguePhaseMatchesPerTeam = ec.LeaguePhaseMatchesPerTeam;
+                existing.Ranking = ec.Ranking;
+                existing.IsActive = ec.IsActive;
 
                 existing.PhaseTemplates.Clear();
                 if (ec.PhaseTemplates != null && ec.PhaseTemplates.Count > 0)

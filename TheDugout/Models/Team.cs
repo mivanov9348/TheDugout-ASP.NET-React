@@ -18,8 +18,8 @@ namespace TheDugout.Models
         public int? LeagueId { get; set; }
         public League? League { get; set; }
 
-        public int CountryId { get; set; }
-        public Country Country { get; set; } = null!;
+        public int? CountryId { get; set; }
+        public Country? Country { get; set; } = null!;
 
         public decimal Balance { get; set; }
         public int Popularity { get; set; } = 10;

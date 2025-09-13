@@ -35,11 +35,15 @@ namespace TheDugout.Controllers
             var userId = GetUserIdFromClaims();
             if (userId == null) return Unauthorized();
 
+            // Намираме твоя отбор
             var myTeam = await _context.Teams
+                .Include(t => t.League)
+                    .ThenInclude(l => l.GameSave)
                 .FirstOrDefaultAsync(t => t.GameSaveId == gameSaveId);
 
             if (myTeam == null) return NotFound("No team found for this save.");
 
+            // Намираме текущия сезон (ако не е подаден)
             var season = seasonId.HasValue
                 ? await _context.Seasons.FirstOrDefaultAsync(s => s.Id == seasonId && s.GameSaveId == gameSaveId)
                 : await _context.Seasons
@@ -49,6 +53,7 @@ namespace TheDugout.Controllers
 
             if (season == null) return NotFound("No season found.");
 
+            // Вземаме всички лиги в този save
             var leagues = await _context.Leagues
                 .Include(l => l.Template)
                 .Include(l => l.Teams)
@@ -59,24 +64,17 @@ namespace TheDugout.Controllers
                     name = l.Template.Name,
                     tier = l.Tier,
                     countryId = l.CountryId,
-                    rounds = l.Teams
-                        .SelectMany(t => t.HomeFixtures)
-                        .Max(f => (int?)f.Round) ?? 0,
                     hasMyTeam = l.Teams.Any(t => t.Id == myTeam.Id),
-
                     teams = _context.LeagueStandings
                         .Where(ls => ls.LeagueId == l.Id && ls.SeasonId == season.Id)
-                        .OrderBy(ls => ls.Ranking) // 👈 използваме официалното класиране
-                        .ThenByDescending(ls => ls.Points)
-                        .ThenByDescending(ls => ls.GoalDifference)
-                        .ThenByDescending(ls => ls.GoalsFor)
+                        .OrderBy(ls => ls.Ranking)
                         .Select(ls => new
                         {
                             id = ls.Team.Id,
                             name = ls.Team.Name,
                             abbreviation = ls.Team.Abbreviation,
                             logoFileName = ls.Team.LogoFileName,
-                            matches = ls.Matches, // 👈 директно от колоната
+                            matches = ls.Matches,
                             wins = ls.Wins,
                             draws = ls.Draws,
                             losses = ls.Losses,
@@ -89,8 +87,9 @@ namespace TheDugout.Controllers
                 })
                 .ToListAsync();
 
+            // Подреждаме: Първо — лигата на моя отбор, после останалите
             var ordered = leagues
-                .OrderByDescending(l => l.hasMyTeam)
+                .OrderByDescending(l => l.hasMyTeam) // Моята лига е първа!
                 .ToList();
 
             return Ok(ordered);

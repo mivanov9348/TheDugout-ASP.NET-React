@@ -60,6 +60,7 @@ namespace TheDugout.Controllers
                     {
                         teamId = s.TeamId,
                         name = s.Team.Name,
+                        logoFileName = s.Team.LogoFileName,
                         points = s.Points,
                         matches = s.Matches,
                         wins = s.Wins,
@@ -71,22 +72,33 @@ namespace TheDugout.Controllers
                         ranking = s.Ranking
                     }),
                 fixtures = cup.Phases
-                    .SelectMany(p => p.Fixtures)
-                    .GroupBy(f => f.Round)
-                    .Select(g => new
-                    {
-                        round = g.Key,
-                        matches = g.Select(f => new
-                        {
-                            id = f.Id,
-                            homeTeam = f.HomeTeam?.Name,
-                            awayTeam = f.AwayTeam?.Name,
-                            homeTeamGoals = f.HomeTeamGoals,
-                            awayTeamGoals = f.AwayTeamGoals,
-                            date = f.Date,
-                            status = f.Status
-                        })
-                    })
+    .SelectMany(p => p.Fixtures)
+    .GroupBy(f => f.Round)
+    .Select(g => new
+    {
+        round = g.Key,
+        matches = g.Select(f => new
+        {
+            id = f.Id,
+            homeTeam = f.HomeTeam == null ? null : new
+            {
+                id = f.HomeTeam.Id,
+                name = f.HomeTeam.Name,
+                logoFileName = f.HomeTeam.LogoFileName
+            },
+            awayTeam = f.AwayTeam == null ? null : new
+            {
+                id = f.AwayTeam.Id,
+                name = f.AwayTeam.Name,
+                logoFileName = f.AwayTeam.LogoFileName
+            },
+            homeTeamGoals = f.HomeTeamGoals,
+            awayTeamGoals = f.AwayTeamGoals,
+            date = f.Date,
+            status = f.Status
+        })
+    })
+
             };
 
             return Ok(result);

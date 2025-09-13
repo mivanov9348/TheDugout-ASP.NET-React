@@ -4,12 +4,148 @@
     "Name": "European Cup",
     "TeamsCount": 36,
     "LeaguePhaseMatchesPerTeam": 8,
+    "Ranking": 1,
+    "IsActive": true,
     "PhaseTemplates": [
-      { "Id": 1 },
-      { "Id": 2 },
-      { "Id": 3 },
-      { "Id": 4 },
-      { "Id": 5 }
+      {
+        "Id": 1,
+        "Name": "Group Stage",
+        "Order": 1,
+        "IsKnockout": false,
+        "IsTwoLegged": true
+      },
+      {
+        "Id": 2,
+        "Name": "Round of 16",
+        "Order": 2,
+        "IsKnockout": true,
+        "IsTwoLegged": true
+      },
+      {
+        "Id": 3,
+        "Name": "Quarterfinals",
+        "Order": 3,
+        "IsKnockout": true,
+        "IsTwoLegged": true
+      },
+      {
+        "Id": 4,
+        "Name": "Semifinals",
+        "Order": 4,
+        "IsKnockout": true,
+        "IsTwoLegged": true
+      },
+      {
+        "Id": 5,
+        "Name": "Final",
+        "Order": 5,
+        "IsKnockout": true,
+        "IsTwoLegged": false
+      }
+    ]
+  },
+  {
+    "Id": 2,
+    "Name": "Continental Trophy",
+    "TeamsCount": 36,
+    "LeaguePhaseMatchesPerTeam": 8,
+    "Ranking": 2,
+    "IsActive": false,
+    "PhaseTemplates": [
+      {
+        "Id": 6,
+        "Name": "Group Stage",
+        "Order": 1,
+        "IsKnockout": false,
+        "IsTwoLegged": true
+      },
+      {
+        "Id": 7,
+        "Name": "Round of 32",
+        "Order": 2,
+        "IsKnockout": true,
+        "IsTwoLegged": true
+      },
+      {
+        "Id": 8,
+        "Name": "Round of 16",
+        "Order": 3,
+        "IsKnockout": true,
+        "IsTwoLegged": true
+      },
+      {
+        "Id": 9,
+        "Name": "Quarterfinals",
+        "Order": 4,
+        "IsKnockout": true,
+        "IsTwoLegged": true
+      },
+      {
+        "Id": 10,
+        "Name": "Semifinals",
+        "Order": 5,
+        "IsKnockout": true,
+        "IsTwoLegged": true
+      },
+      {
+        "Id": 11,
+        "Name": "Final",
+        "Order": 6,
+        "IsKnockout": true,
+        "IsTwoLegged": false
+      }
+    ]
+  },
+  {
+    "Id": 3,
+    "Name": "Champions Alliance",
+    "TeamsCount": 36,
+    "LeaguePhaseMatchesPerTeam": 8,
+    "Ranking": 3,
+    "IsActive": false,
+    "PhaseTemplates": [
+      {
+        "Id": 12,
+        "Name": "Group Stage",
+        "Order": 1,
+        "IsKnockout": false,
+        "IsTwoLegged": true
+      },
+      {
+        "Id": 13,
+        "Name": "Play-off Round",
+        "Order": 2,
+        "IsKnockout": true,
+        "IsTwoLegged": true
+      },
+      {
+        "Id": 14,
+        "Name": "Round of 16",
+        "Order": 3,
+        "IsKnockout": true,
+        "IsTwoLegged": true
+      },
+      {
+        "Id": 15,
+        "Name": "Quarterfinals",
+        "Order": 4,
+        "IsKnockout": true,
+        "IsTwoLegged": true
+      },
+      {
+        "Id": 16,
+        "Name": "Semifinals",
+        "Order": 5,
+        "IsKnockout": true,
+        "IsTwoLegged": true
+      },
+      {
+        "Id": 17,
+        "Name": "Final",
+        "Order": 6,
+        "IsKnockout": true,
+        "IsTwoLegged": false
+      }
     ]
   }
 ]

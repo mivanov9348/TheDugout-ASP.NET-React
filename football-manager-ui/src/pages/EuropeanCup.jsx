@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import TeamLogo from "../components/TeamLogo";
 
 export default function EuropeanCup({ gameSaveId, seasonId }) {
   const [cup, setCup] = useState(null);
@@ -65,10 +66,10 @@ export default function EuropeanCup({ gameSaveId, seasonId }) {
                 <tr key={s.teamId} className="border-b hover:bg-slate-50">
                   <td className="p-2">{s.ranking}</td>
                   <td className="p-2 flex items-center gap-2">
-                    <img
-                      src={`/logos/${s.logoFileName}`}
-                      alt={s.name}
-                      className="w-6 h-6 object-contain"
+                    <TeamLogo
+                      teamName={s.name}
+                      logoFileName={s.logoFileName}
+                      className="w-6 h-6"
                     />
                     {s.name}
                   </td>
@@ -113,16 +114,24 @@ export default function EuropeanCup({ gameSaveId, seasonId }) {
                     key={m.id}
                     className="flex items-center justify-between p-2 hover:bg-slate-50 rounded"
                   >
-                    <div className="flex-1 text-right pr-2 font-medium">
-                      {m.homeTeam}
+                    <div className="flex-1 text-right pr-2 font-medium flex items-center justify-end gap-2">
+                      <span>{m.homeTeam?.name}</span>
+                      <TeamLogo
+                        teamName={m.homeTeam?.name}
+                        logoFileName={m.homeTeam?.logoFileName}
+                      />
                     </div>
                     <div className="w-28 text-center font-bold">
                       {m.homeTeamGoals != null && m.awayTeamGoals != null
                         ? `${m.homeTeamGoals} : ${m.awayTeamGoals}`
                         : "vs"}
                     </div>
-                    <div className="flex-1 pl-2 font-medium">
-                      {m.awayTeam}
+                    <div className="flex-1 pl-2 font-medium flex items-center gap-2">
+                      <TeamLogo
+                        teamName={m.awayTeam?.name}
+                        logoFileName={m.awayTeam?.logoFileName}
+                      />
+                      <span>{m.awayTeam?.name}</span>
                     </div>
                     <div className="ml-4 text-xs text-slate-500 whitespace-nowrap">
                       {new Date(m.date).toLocaleDateString()}

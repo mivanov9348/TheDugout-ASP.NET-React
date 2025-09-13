@@ -1,5 +1,5 @@
 [
-  { "name": "Arsenal", "shortName": "ARS", "competitionCode": "EPL" },
+  { "name": "Arsenal", "shortName": "ARS", "competitionCode": "EPL", "countryCode": "ENG"  },
   { "name": "Aston Villa", "shortName": "AVL", "competitionCode": "EPL" },
   { "name": "Bournemouth", "shortName": "BOU", "competitionCode": "EPL" },
   { "name": "Brentford", "shortName": "BRE", "competitionCode": "EPL" },

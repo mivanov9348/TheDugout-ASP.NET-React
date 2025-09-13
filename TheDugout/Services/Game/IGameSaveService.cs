@@ -8,6 +8,6 @@ namespace TheDugout.Services.Game
         Task<List<object>> GetUserSavesAsync(int userId);
         Task<GameSave?> GetGameSaveAsync(int userId, int saveId);
         Task<bool> DeleteGameSaveAsync(int userId, int saveId);
-        Task<GameSave> StartNewGameAsync(int userId);
+        Task<GameSave> StartNewGameAsync(int userId, CancellationToken ct);
     }
 }
