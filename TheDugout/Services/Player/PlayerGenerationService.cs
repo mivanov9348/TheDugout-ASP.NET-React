@@ -6,7 +6,10 @@
     using System.Collections.Generic;
     using System.Linq;
     using TheDugout.Data;
-    using TheDugout.Models;
+    using TheDugout.Models.Common;
+    using TheDugout.Models.Game;
+    using TheDugout.Models.Players;
+    using TheDugout.Models.Teams;
     using TheDugout.Services.Team;
 
     public class PlayerGenerationService : IPlayerGenerationService

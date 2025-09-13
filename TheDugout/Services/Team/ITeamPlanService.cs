@@ -1,4 +1,5 @@
-﻿using TheDugout.Models;
+﻿using TheDugout.Models.Game;
+using TheDugout.Models.Teams;
 
 namespace TheDugout.Services.Team
 {

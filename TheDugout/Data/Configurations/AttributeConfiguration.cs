@@ -1,12 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using TheDugout.Models;
 
 namespace TheDugout.Data.Configurations
 {
-    public class AttributeConfiguration : IEntityTypeConfiguration<Models.Attribute>
+    public class AttributeConfiguration : IEntityTypeConfiguration<Models.Players.Attribute>
     {
-        public void Configure(EntityTypeBuilder<Models.Attribute> builder)
+        public void Configure(EntityTypeBuilder<Models.Players.Attribute> builder)
         {
             builder.ToTable("Attributes");
 

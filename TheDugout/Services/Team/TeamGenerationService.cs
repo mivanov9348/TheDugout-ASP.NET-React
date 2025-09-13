@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TheDugout.Data;
-using TheDugout.Models;
+using TheDugout.Models.Game;
+using TheDugout.Models.Teams;
 using TheDugout.Services.Finance;
 using TheDugout.Services.Players;
 using TheDugout.Services.Team;
@@ -20,9 +21,9 @@ namespace TheDugout.Services.Team
             _context = context;
         }
 
-        public List<Models.Team> GenerateTeams(GameSave gameSave, Models.League league, IEnumerable<TeamTemplate> templates)
+        public List<Models.Teams.Team> GenerateTeams(GameSave gameSave, Models.Competitions.League league, IEnumerable<TeamTemplate> templates)
         {
-            var teams = new List<Models.Team>();
+            var teams = new List<Models.Teams.Team>();
 
             foreach (var tt in templates)
             {
@@ -56,7 +57,7 @@ namespace TheDugout.Services.Team
 
             return teams;
         }
-        private int CalculateTeamPopularity(Models.Team team)
+        private int CalculateTeamPopularity(Models.Teams.Team team)
         {
             if (team.Players == null || !team.Players.Any())
                 return 10;
@@ -91,13 +92,13 @@ namespace TheDugout.Services.Team
             return $"{cleanName}.png";
         }
 
-        public async Task<List<Models.Team>> GenerateIndependentTeamsAsync(GameSave gameSave)
+        public async Task<List<Models.Teams.Team>> GenerateIndependentTeamsAsync(GameSave gameSave)
         {
             var templates = await _context.TeamTemplates
                 .Where(tt => tt.LeagueId == null) 
                 .ToListAsync();
 
-            var teams = new List<Models.Team>();
+            var teams = new List<Models.Teams.Team>();
 
             foreach (var tt in templates)
             {

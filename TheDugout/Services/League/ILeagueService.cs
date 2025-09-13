@@ -1,11 +1,11 @@
-﻿using TheDugout.Models;
+﻿using TheDugout.Models.Game;
 
 namespace TheDugout.Services.League
 {
     public interface ILeagueService
     {
-        Task<List<Models.League>> GenerateLeaguesAsync(GameSave gameSave, Models.Season season);
-        Task InitializeStandingsAsync(GameSave gameSave, Models.Season season);
+        Task<List<Models.Competitions.League>> GenerateLeaguesAsync(GameSave gameSave, Models.Seasons.Season season);
+        Task InitializeStandingsAsync(GameSave gameSave, Models.Seasons.Season season);
     }
 
 }

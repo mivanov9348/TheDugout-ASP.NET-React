@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TheDugout.Data;
-using TheDugout.Models;
+using TheDugout.Models.Finance;
+using TheDugout.Models.Seasons;
 using TheDugout.Services.Finance;
 
 namespace TheDugout.Services.Transfer

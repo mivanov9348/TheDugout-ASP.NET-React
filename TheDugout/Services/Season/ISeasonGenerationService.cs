@@ -1,9 +1,9 @@
-﻿using TheDugout.Models;
+﻿using TheDugout.Models.Game;
 
 namespace TheDugout.Services.Season
 {
     public interface ISeasonGenerationService
     {
-        Models.Season GenerateSeason(GameSave gameSave, DateTime startDate);
+        Models.Seasons.Season GenerateSeason(GameSave gameSave, DateTime startDate);
     }
 }

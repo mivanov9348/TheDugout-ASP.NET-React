@@ -2,6 +2,10 @@
 using System.Text.Json;
 using TheDugout.Data;
 using TheDugout.Models;
+using TheDugout.Models.Competitions;
+using TheDugout.Models.Messages;
+using TheDugout.Models.Players;
+using TheDugout.Models.Teams;
 using static TheDugout.Data.Seed.SeedDtos;
 
 namespace TheDugout.Infrastructure;
@@ -72,7 +76,7 @@ public static class SeedData
 
         // 1) Attributes
         var attributesPath = Path.Combine(seedDir, "attributes.json");
-        var attributes = await ReadJsonAsync<List<Models.Attribute>>(attributesPath);
+        var attributes = await ReadJsonAsync<List<Models.Players.Attribute>>(attributesPath);
 
         foreach (var a in attributes)
         {

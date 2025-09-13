@@ -1,7 +1,8 @@
 ﻿using Bogus;
 using Microsoft.EntityFrameworkCore;
 using TheDugout.Data;
-using TheDugout.Models;
+using TheDugout.Models.Competitions;
+using TheDugout.Models.Game;
 using TheDugout.Services.Team;
 
 namespace TheDugout.Services.League
@@ -16,10 +17,9 @@ namespace TheDugout.Services.League
             _context = context;
             _teamGenerator = teamGenerator;
         }
-
-        public async Task<List<Models.League>> GenerateLeaguesAsync(GameSave gameSave, Models.Season season)
+        public async Task<List<Models.Competitions.League>> GenerateLeaguesAsync(GameSave gameSave, Models.Seasons.Season season)
         {
-            var leagues = new List<Models.League>();
+            var leagues = new List<Models.Competitions.League>();
 
             var leagueTemplates = await _context.LeagueTemplates
                 .Include(lt => lt.TeamTemplates)
@@ -39,7 +39,6 @@ namespace TheDugout.Services.League
                     PromotionSpots = lt.PromotionSpots
                 };
 
-
                 var teams = _teamGenerator.GenerateTeams(gameSave, league, lt.TeamTemplates);
                 league.Teams = teams.ToList();
                 leagues.Add(league);
@@ -48,16 +47,29 @@ namespace TheDugout.Services.League
             return leagues;
         }
 
-        public async Task InitializeStandingsAsync(GameSave gameSave, Models.Season season)
+        public async Task InitializeStandingsAsync(GameSave gameSave, Models.Seasons.Season season)
         {
             var standings = new List<LeagueStanding>();
 
             foreach (var league in gameSave.Leagues)
             {
-                foreach (var team in league.Teams)
+                
+                var teamsInLeague = league.Teams
+                    .Select(t => new { Team = t, LeagueId = league.Id })
+                    .ToList();
+                
+                var sortedTeams = teamsInLeague
+                    .OrderByDescending(x => x.Team.Popularity) 
+                    .ThenBy(x => x.Team.Name)                   
+                    .ToList();
+
+                for (int i = 0; i < sortedTeams.Count; i++)
                 {
+                    var team = sortedTeams[i].Team;
+                    var leagueId = sortedTeams[i].LeagueId;
+
                     bool exists = await _context.LeagueStandings
-                        .AnyAsync(ls => ls.LeagueId == league.Id && ls.TeamId == team.Id && ls.SeasonId == season.Id);
+                        .AnyAsync(ls => ls.LeagueId == leagueId && ls.TeamId == team.Id && ls.SeasonId == season.Id);
 
                     if (!exists)
                     {
@@ -65,13 +77,13 @@ namespace TheDugout.Services.League
                         {
                             GameSaveId = gameSave.Id,
                             SeasonId = season.Id,
-                            LeagueId = league.Id,
-                            TeamId = team.Id
+                            LeagueId = leagueId,
+                            TeamId = team.Id,
+                            Ranking = i + 1 
                         });
                     }
                 }
             }
-
 
             await _context.LeagueStandings.AddRangeAsync(standings);
             await _context.SaveChangesAsync();

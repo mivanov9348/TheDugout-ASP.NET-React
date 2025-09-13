@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using TheDugout.DTOs.Player;
-using TheDugout.Models;
+using TheDugout.Models.Players;
 
 public class MappingProfile : Profile
 {

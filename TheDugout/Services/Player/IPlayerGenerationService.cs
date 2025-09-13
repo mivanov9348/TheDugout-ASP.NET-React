@@ -1,11 +1,12 @@
-﻿using TheDugout.Models;
+﻿using TheDugout.Models.Game;
+using TheDugout.Models.Players;
 
 namespace TheDugout.Services.Players
 {
     public interface IPlayerGenerationService
     {
         
-        List<Models.Player> GenerateTeamPlayers(GameSave save, Models.Team team);
+        List<Player> GenerateTeamPlayers(GameSave save, Models.Teams.Team team);
         List<Player> GenerateFreeAgents(GameSave save, int count = 100);
 
     }

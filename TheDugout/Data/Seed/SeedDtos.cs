@@ -1,4 +1,4 @@
-﻿using TheDugout.Models;
+﻿using TheDugout.Models.Teams;
 
 namespace TheDugout.Data.Seed
 {

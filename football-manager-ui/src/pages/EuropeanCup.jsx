@@ -36,10 +36,25 @@ export default function EuropeanCup({ gameSaveId, seasonId }) {
   if (loading) return <p>Loading...</p>;
   if (!cup?.exists) return <p>No European Cup for this season.</p>;
 
+  // ✅ Просто конкатенираме името на файла с пътя
+  const competitionLogoUrl = cup.logoFileName
+    ? `/competitionsLogos/${cup.logoFileName}`
+    : "/competitionsLogos/default.png";
+
   return (
     <div className="p-4">
-      {/* Title */}
-      <h2 className="text-3xl font-bold mb-6 text-center">{cup.name}</h2>
+      {/* Title + Competition Logo */}
+      <div className="flex items-center justify-center gap-4 mb-6">
+        <img
+          src={competitionLogoUrl}
+          alt={cup.name}
+          className="w-16 h-16 object-contain border rounded-full shadow-md"
+          onError={(e) => {
+            e.target.src = "/competitionsLogos/default.png";
+          }}
+        />
+        <h2 className="text-3xl font-bold text-center">{cup.name}</h2>
+      </div>
 
       {/* Grid layout: standings on the left, fixtures on the right */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

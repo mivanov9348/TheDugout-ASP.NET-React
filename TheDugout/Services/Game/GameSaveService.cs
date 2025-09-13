@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TheDugout.Data;
-using TheDugout.Models;
+using TheDugout.Models.Competitions;
+using TheDugout.Models.Game;
 using TheDugout.Services.EuropeanCup;
 using TheDugout.Services.Finance;
 using TheDugout.Services.Fixture;
@@ -143,7 +144,7 @@ namespace TheDugout.Services.Game
                     try
                     {
                         // 1. Вземаме подходящи отбори: LeagueId == null и същия GameSave
-                        var eligibleTeams = await _context.Set<Models.Team>()
+                        var eligibleTeams = await _context.Set<Models.Teams.Team>()
                             .Where(t => t.LeagueId == null && t.GameSaveId == gameSave.Id)
                             .ToListAsync(ct);
 

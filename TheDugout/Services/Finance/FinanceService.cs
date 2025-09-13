@@ -1,7 +1,8 @@
 ﻿using TheDugout.Data;
-using TheDugout.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using TheDugout.Models.Finance;
+using TheDugout.Models.Game;
 
 namespace TheDugout.Services.Finance
 {
@@ -35,7 +36,7 @@ namespace TheDugout.Services.Finance
             return bank;
         }
 
-        public async Task InitializeClubFundsAsync(GameSave gameSave, IEnumerable<Models.League> leagues)
+        public async Task InitializeClubFundsAsync(GameSave gameSave, IEnumerable<Models.Competitions.League> leagues)
         {
             foreach (var league in leagues)
             {
@@ -57,7 +58,7 @@ namespace TheDugout.Services.Finance
         }
 
 
-        public async Task<FinancialTransaction> ClubToBankAsync(Models.Team team, Bank bank, decimal amount, string description, TransactionType type)
+        public async Task<FinancialTransaction> ClubToBankAsync(Models.Teams.Team team, Bank bank, decimal amount, string description, TransactionType type)
         {
             var tx = new FinancialTransaction
             {
@@ -72,7 +73,7 @@ namespace TheDugout.Services.Finance
             return await ExecuteTransactionAsync(tx);
         }
 
-        public async Task<FinancialTransaction> BankToClubAsync(Bank bank, Models.Team team, decimal amount, string description, TransactionType type)
+        public async Task<FinancialTransaction> BankToClubAsync(Bank bank, Models.Teams.Team team, decimal amount, string description, TransactionType type)
         {
             var tx = new FinancialTransaction
             {
@@ -87,7 +88,7 @@ namespace TheDugout.Services.Finance
             return await ExecuteTransactionAsync(tx);
         }
 
-        public async Task<FinancialTransaction> ClubToClubAsync(Models.Team fromTeam, Models.Team toTeam, decimal amount, string description, TransactionType type)
+        public async Task<FinancialTransaction> ClubToClubAsync(Models.Teams.Team fromTeam, Models.Teams.Team toTeam, decimal amount, string description, TransactionType type)
         {
             var tx = new FinancialTransaction
             {

@@ -1,10 +1,11 @@
-﻿using TheDugout.Models;
+﻿using TheDugout.Models.Game;
+using TheDugout.Models.Seasons;
 
 namespace TheDugout.Services.Season
 {
     public class SeasonGenerationService : ISeasonGenerationService
     {
-        public Models.Season GenerateSeason(GameSave gameSave, DateTime startDate)
+        public Models.Seasons.Season GenerateSeason(GameSave gameSave, DateTime startDate)
         {
             var season = new Models.Season
             {

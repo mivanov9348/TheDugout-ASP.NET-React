@@ -2,7 +2,7 @@
 {
     public interface IEuropeanCupService
     {        
-            Task<Models.EuropeanCup> InitializeTournamentAsync(
+            Task<Models.Competitions.EuropeanCup> InitializeTournamentAsync(
                 int templateId,
                 int gameSaveId,
                 int seasonId,
@@ -20,6 +20,6 @@
         Task GenerateKnockoutFixturesAsync(int europeanCupId, int knockoutPhaseTemplateId, CancellationToken ct = default);
         Task ResolveKnockoutPhaseAsync(int europeanCupPhaseId, CancellationToken ct = default);
         Task FinalizeTournamentAsync(int europeanCupId, CancellationToken ct = default);
-        Task<Models.EuropeanCup?> GetByIdAsync(int europeanCupId, CancellationToken ct = default);
+        Task<Models.Competitions.EuropeanCup?> GetByIdAsync(int europeanCupId, CancellationToken ct = default);
     }
 }

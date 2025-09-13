@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TheDugout.Data;
-using TheDugout.Models;
+using TheDugout.Models.Competitions;
+using TheDugout.Models.Matches;
 
 namespace TheDugout.Services.EuropeanCup
 {
@@ -15,7 +16,7 @@ namespace TheDugout.Services.EuropeanCup
             _logger = logger;
         }
 
-        public async Task<Models.EuropeanCup> InitializeTournamentAsync(
+        public async Task<Models.Competitions.EuropeanCup> InitializeTournamentAsync(
     int templateId,
     int gameSaveId,
     int seasonId,
@@ -27,10 +28,10 @@ namespace TheDugout.Services.EuropeanCup
                 .FirstOrDefaultAsync(t => t.Id == templateId, ct)
                 ?? throw new InvalidOperationException($"Template {templateId} not found.");
 
-            var teams = await _context.Set<Models.Team>().ToListAsync();
+            var teams = await _context.Set<Models.Teams.Team>().ToListAsync();
 
             // 2. Взимаме eligible отбори (LeagueId == null и същия GameSave)
-            var eligibleTeams = await _context.Set<Models.Team>()
+            var eligibleTeams = await _context.Set<Models.Teams.Team>()
                 .Where(t => t.LeagueId == null)
                 .ToListAsync(ct);
 
@@ -40,16 +41,28 @@ namespace TheDugout.Services.EuropeanCup
 
             // 3. Рандъмизираме избора
             var chosenTeams = eligibleTeams
-    .OrderBy(_ => _rng.Next()) 
-    .Take(template.TeamsCount)
-    .ToList();
+                .OrderBy(_ => _rng.Next())
+                .Take(template.TeamsCount)
+                .ToList();
+
+            string logoFileName = $"{template.Name}.png";
+
+            string validLogoFileName = new string(logoFileName
+                .Select(c => c switch
+                {
+                    '\\' or '/' or ':' or '*' or '?' or '"' or '<' or '>' or '|' => '_',
+                    _ => c
+                })
+                .ToArray());
+
 
             // 4. Създаваме Cup
             var cup = new Models.EuropeanCup
             {
                 TemplateId = template.Id,
                 GameSaveId = gameSaveId,
-                SeasonId = seasonId
+                SeasonId = seasonId,
+                LogoFileName = logoFileName 
             };
 
             _context.Add(cup);
@@ -58,9 +71,9 @@ namespace TheDugout.Services.EuropeanCup
             // 5. Добавяме отбори + standings с ПРЕДВАРИТЕЛЕН РАНКИНГ ПО ПОПУЛЯРНОСТ!
             var rankedTeams = chosenTeams
                 .OrderByDescending(t => t.Popularity)
-                .ThenByDescending(t => t.Id)                    
-                .ThenBy(t => t.Country?.Name ?? "")             
-                .ThenBy(t => t.Name)                            
+                .ThenByDescending(t => t.Id)
+                .ThenBy(t => t.Country?.Name ?? "")
+                .ThenBy(t => t.Name)
                 .ToList();
 
             for (int i = 0; i < rankedTeams.Count; i++)
@@ -85,7 +98,7 @@ namespace TheDugout.Services.EuropeanCup
                     GoalsFor = 0,
                     GoalsAgainst = 0,
                     GoalDifference = 0,
-                    Ranking = i + 1 
+                    Ranking = i + 1
                 });
             }
 
@@ -101,17 +114,18 @@ namespace TheDugout.Services.EuropeanCup
             }
 
             await _context.SaveChangesAsync(ct);
-            _logger.LogInformation("Initialized EuropeanCup {CupId} with {Teams} teams", cup.Id, chosenTeams.Count);
+            _logger.LogInformation("Initialized EuropeanCup {CupId} with {Teams} teams and logo: {Logo}", cup.Id, chosenTeams.Count, validLogoFileName);
 
             return cup;
         }
+
         public async Task GenerateLeaguePhaseFixturesAsync(
     int europeanCupId,
     int seasonId,
     CancellationToken ct = default)
         {
             // 1. Зареждаме купата
-            var cup = await _context.Set<Models.EuropeanCup>()
+            var cup = await _context.Set<Models.Competitions.EuropeanCup>()
                 .Include(x => x.Template)
                 .Include(x => x.Teams)
                 .Include(x => x.Phases).ThenInclude(p => p.PhaseTemplate)
@@ -128,14 +142,14 @@ namespace TheDugout.Services.EuropeanCup
 
             // 3. Проверяваме за вече генерирани fixtures
             var existingPairs = new HashSet<string>();
-            var existing = await _context.Set<Models.Fixture>()
+            var existing = await _context.Set<Models.Matches.Fixture>()
                 .Where(f => f.EuropeanCupPhaseId == leaguePhase.Id)
                 .ToListAsync(ct);
             foreach (var f in existing)
                 existingPairs.Add(PairKey(f.HomeTeamId, f.AwayTeamId));
 
             var homeCount = teamIds.ToDictionary(id => id, id => 0);
-            var fixturesToAdd = new List<Models.Fixture>();
+            var fixturesToAdd = new List<Models.Matches.Fixture>();
 
             // 4. Генерираме всеки рунд
             for (int round = 1; round <= rounds; round++)
@@ -261,7 +275,7 @@ namespace TheDugout.Services.EuropeanCup
 
         public async Task CreateStandingsIfNotExistsAsync(int europeanCupId, CancellationToken ct = default)
         {
-            var cup = await _context.Set<Models.EuropeanCup>()
+            var cup = await _context.Set<Models.Competitions.EuropeanCup>()
                                .Include(c => c.Teams)
                                .FirstOrDefaultAsync(c => c.Id == europeanCupId, ct)
                       ?? throw new InvalidOperationException($"Cup {europeanCupId} not found.");
@@ -286,7 +300,7 @@ namespace TheDugout.Services.EuropeanCup
         }
         public async Task RecordFixtureResultAsync(int fixtureId, int homeGoals, int awayGoals, CancellationToken ct = default)
         {
-            var fixture = await _context.Set<Models.Fixture>()
+            var fixture = await _context.Set<Models.Matches.Fixture>()
                                    .Include(f => f.HomeTeam)
                                    .Include(f => f.AwayTeam)
                                    .FirstOrDefaultAsync(f => f.Id == fixtureId, ct)
@@ -308,7 +322,7 @@ namespace TheDugout.Services.EuropeanCup
             }
         }
 
-        private async Task UpdateStandingsAfterFixtureAsync(Models.Fixture fixture, CancellationToken ct = default)
+        private async Task UpdateStandingsAfterFixtureAsync(Models.Matches.Fixture fixture, CancellationToken ct = default)
         {
             // Called after saving fixture
             var cupPhase = fixture.EuropeanCupPhaseId.HasValue ? fixture.EuropeanCupPhaseId.Value : 0;
@@ -382,7 +396,7 @@ namespace TheDugout.Services.EuropeanCup
             await _context.SaveChangesAsync(ct);
 
             // get all played fixtures for that cup's league-phase(s) (only league-phase fixtures affect league standings)
-            var fixtures = await _context.Set<Models.Fixture>()
+            var fixtures = await _context.Set<Models.Matches.Fixture>()
                                     .Where(f => f.EuropeanCupPhaseId == europeanCupPhaseId && f.Status == MatchStatus.Played)
                                     .ToListAsync(ct);
 
@@ -446,7 +460,7 @@ namespace TheDugout.Services.EuropeanCup
         public async Task ProgressToNextPhaseIfReadyAsync(int europeanCupId, CancellationToken ct = default)
         {
             // check if league phase fixtures all played -> then compute standings and create knockout fixtures
-            var cup = await _context.Set<Models.EuropeanCup>()
+            var cup = await _context.Set<Models.Competitions.EuropeanCup>()
                                .Include(c => c.Template)
                                .Include(c => c.Phases).ThenInclude(p => p.PhaseTemplate)
                                .FirstOrDefaultAsync(c => c.Id == europeanCupId, ct)
@@ -456,7 +470,7 @@ namespace TheDugout.Services.EuropeanCup
                               ?? throw new InvalidOperationException("No league phase.");
 
             // check if any scheduled/unplayed fixture exists
-            var anyUnplayed = await _context.Set<Models.Fixture>()
+            var anyUnplayed = await _context.Set<Models.Matches.Fixture>()
                                        .AnyAsync(f => f.EuropeanCupPhaseId == leaguePhase.Id && f.Status != MatchStatus.Played, ct);
 
             if (anyUnplayed) return; // not ready
@@ -503,7 +517,7 @@ namespace TheDugout.Services.EuropeanCup
             // pairing strategy: random shuffle then pair sequentially (can change to seeded)
             var shuffled = top16.OrderBy(_ => _rng.Next()).ToList();
 
-            var fixturesToAdd = new List<Models.Fixture>();
+            var fixturesToAdd = new List<Models.Matches.Fixture>();
             for (int i = 0; i < shuffled.Count; i += 2)
             {
                 int a = shuffled[i];
@@ -521,7 +535,7 @@ namespace TheDugout.Services.EuropeanCup
                         Date = DateTime.UtcNow.AddDays(7 + (i / 2) * 14),
                         Round = 1,
                         Status = MatchStatus.Scheduled,
-                        GameSaveId = (await _context.Set<Models.EuropeanCup>().Where(c => c.Id == europeanCupId).Select(c => c.GameSaveId).FirstAsync(ct))
+                        GameSaveId = (await _context.Set<Models.Competitions.EuropeanCup>().Where(c => c.Id == europeanCupId).Select(c => c.GameSaveId).FirstAsync(ct))
                     };
                     var f2 = new Models.Fixture
                     {
@@ -548,7 +562,7 @@ namespace TheDugout.Services.EuropeanCup
                         Date = DateTime.UtcNow.AddDays(7 + (i / 2) * 7),
                         Round = 1,
                         Status = MatchStatus.Scheduled,
-                        GameSaveId = (await _context.Set<Models.EuropeanCup>().Where(c => c.Id == europeanCupId).Select(c => c.GameSaveId).FirstAsync(ct))
+                        GameSaveId = (await _context.Set<Models.Competitions.EuropeanCup>().Where(c => c.Id == europeanCupId).Select(c => c.GameSaveId).FirstAsync(ct))
                     };
                     fixturesToAdd.Add(f);
                 }
@@ -568,7 +582,7 @@ namespace TheDugout.Services.EuropeanCup
             if (!phase.PhaseTemplate.IsKnockout) throw new InvalidOperationException("Phase is not knockout.");
 
             // if two-legged combine pairs by matching unordered pair
-            var fixtures = await _context.Set<Models.Fixture>()
+            var fixtures = await _context.Set<Models.Matches.Fixture>()
                                     .Where(f => f.EuropeanCupPhaseId == europeanCupPhaseId && f.Status == MatchStatus.Played)
                                     .ToListAsync(ct);
 
@@ -654,7 +668,7 @@ namespace TheDugout.Services.EuropeanCup
 
             // now create next phase fixtures or finalize if last
             var cupId = phase.EuropeanCupId;
-            var cup = await _context.Set<Models.EuropeanCup>().Include(c => c.Template).ThenInclude(t => t.PhaseTemplates).FirstAsync(c => c.Id == cupId, ct);
+            var cup = await _context.Set<Models.Competitions.EuropeanCup>().Include(c => c.Template).ThenInclude(t => t.PhaseTemplates).FirstAsync(c => c.Id == cupId, ct);
             // find the next phase template by order
             var orderedTemplates = cup.Template.PhaseTemplates.OrderBy(p => p.Order).ToList();
             var currentIdx = orderedTemplates.FindIndex(pt => pt.Id == phase.PhaseTemplateId);
@@ -683,7 +697,7 @@ namespace TheDugout.Services.EuropeanCup
 
             // Generate fixtures in next phase using winners (random pairings)
             var winnersShuf = winners.OrderBy(_ => _rng.Next()).ToList();
-            var newFixtures = new List<Models.Fixture>();
+            var newFixtures = new List<Models.Matches.Fixture>();
             for (int i = 0; i < winnersShuf.Count; i += 2)
             {
                 if (i + 1 >= winnersShuf.Count) break; // odd leftover (shouldn't happen in standard bracket)
@@ -737,9 +751,9 @@ namespace TheDugout.Services.EuropeanCup
             }
         }
 
-        public async Task<Models.EuropeanCup?> GetByIdAsync(int europeanCupId, CancellationToken ct = default)
+        public async Task<Models.Competitions.EuropeanCup?> GetByIdAsync(int europeanCupId, CancellationToken ct = default)
         {
-            return await _context.Set<Models.EuropeanCup>()
+            return await _context.Set<Models.Competitions.EuropeanCup>()
                             .Include(c => c.Teams).ThenInclude(et => et.Team)
                             .Include(c => c.Phases).ThenInclude(p => p.PhaseTemplate)
                             .Include(c => c.Standings)

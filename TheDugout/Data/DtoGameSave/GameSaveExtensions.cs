@@ -1,5 +1,5 @@
 ﻿using TheDugout.Data.DtoGameSave;
-using TheDugout.Models;
+using TheDugout.Models.Game;
 
 public static class GameSaveExtensions
 {

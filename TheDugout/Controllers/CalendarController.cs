@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using TheDugout.Data;
-using TheDugout.Models;
+using TheDugout.Models.Seasons;
 
 namespace TheDugout.Controllers
 {

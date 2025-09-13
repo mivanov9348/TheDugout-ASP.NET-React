@@ -1,5 +1,15 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using TheDugout.Models;
+using TheDugout.Models.Common;
+using TheDugout.Models.Competitions;
+using TheDugout.Models.Finance;
+using TheDugout.Models.Game;
+using TheDugout.Models.Matches;
+using TheDugout.Models.Messages;
+using TheDugout.Models.Players;
+using TheDugout.Models.Seasons;
+using TheDugout.Models.Teams;
+using TheDugout.Models.Training;
+using TheDugout.Models.Transfers;
 
 namespace TheDugout.Data
 {
@@ -28,7 +38,7 @@ namespace TheDugout.Data
         public DbSet<PlayerMatchStats> PlayerMatchStats { get; set; }
         public DbSet<PlayerSeasonStats> PlayerSeasonStats { get; set; }
         public DbSet<PlayerAttribute> PlayerAttributes { get; set; }
-        public DbSet<Models.Attribute> Attributes { get; set; }
+        public DbSet<Models.Players.Attribute> Attributes { get; set; }
         public DbSet<Position> Positions { get; set; }
         public DbSet<PositionWeight> PositionWeights { get; set; }  
         public DbSet<Fixture> Fixtures { get; set; }

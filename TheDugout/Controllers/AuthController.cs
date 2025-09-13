@@ -6,7 +6,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using TheDugout.Data;
-using TheDugout.Models;
+using TheDugout.Models.Game;
 
 namespace TheDugout.Controllers
 {

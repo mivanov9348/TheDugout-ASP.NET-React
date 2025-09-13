@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using TheDugout.Models;
+using TheDugout.Models.Transfers;
 
 public class TransferConfiguration : IEntityTypeConfiguration<Transfer>
 {

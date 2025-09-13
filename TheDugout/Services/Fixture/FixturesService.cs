@@ -36,7 +36,7 @@ namespace TheDugout.Services.Fixture
                 int rounds = teamCount - 1;          // each team plays (n-1) rounds
                 int matchesPerRound = teamCount / 2; // number of matches per round
 
-                var fixtures = new List<Models.Fixture>();
+                var fixtures = new List<Models.Matches.Fixture>();
                 DateTime currentDate = startDate;
 
                 // --- FIRST LEG (standard round-robin rotation) ---

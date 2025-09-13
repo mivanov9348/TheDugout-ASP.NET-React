@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using TheDugout.Data;
 using TheDugout.Models;
+using TheDugout.Models.Training;
 using TheDugout.Services.Training;
 
 public class TrainingService : ITrainingService

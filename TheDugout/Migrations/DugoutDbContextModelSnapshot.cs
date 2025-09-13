@@ -113,6 +113,9 @@ namespace TheDugout.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
+                    b.Property<string>("LogoFileName")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("Ranking")
                         .HasColumnType("int");
 

@@ -1,0 +1,30 @@
+﻿using TheDugout.Models.Game;
+using TheDugout.Models.Seasons;
+
+namespace TheDugout.Models.Competitions
+{
+    public class EuropeanCup
+    {
+        public int Id { get; set; }
+
+        public int TemplateId { get; set; }
+        public EuropeanCupTemplate Template { get; set; } = null!;
+
+        public int GameSaveId { get; set; }
+        public GameSave GameSave { get; set; } = null!;
+
+        public int SeasonId { get; set; }
+        public Season Season { get; set; } = null!;
+
+        public int Ranking { get; set; }     
+        public bool IsActive { get; set; }
+
+        public string? LogoFileName { get; set; }
+
+        public ICollection<EuropeanCupTeam> Teams { get; set; } = new List<EuropeanCupTeam>();
+        public ICollection<EuropeanCupPhase> Phases { get; set; } = new List<EuropeanCupPhase>();
+        public ICollection<EuropeanCupStanding> Standings { get; set; } = new List<EuropeanCupStanding>();
+    }
+
+}
+

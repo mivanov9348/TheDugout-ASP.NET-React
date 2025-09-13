@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using TheDugout.Models;
+using TheDugout.Models.Finance;
+using TheDugout.Models.Game;
 
 namespace TheDugout.Data.Configurations
 {

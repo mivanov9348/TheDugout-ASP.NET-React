@@ -2,8 +2,8 @@
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 using System.Linq;
-using TheDugout.Models;
 using TheDugout.Data;
+using TheDugout.Models.Seasons;
 
 namespace TheDugout.Controllers
 {
