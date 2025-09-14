@@ -282,6 +282,36 @@ public static class SeedData
             .Include(x => x.Country)
             .ToDictionaryAsync(x => x.LeagueCode, x => x);
 
+        // 4) Cups
+        var cupsPath = Path.Combine(seedDir, "cups.json");
+        var cupTemplates = await ReadJsonAsync<List<CupTemplateDto>>(cupsPath);
+
+        foreach (var c in cupTemplates)
+        {
+            var existing = await db.CupTemplates
+                .FirstOrDefaultAsync(x => x.Name == c.Name && x.CountryCode == c.CountryCode);
+
+            if (existing == null)
+            {
+                db.CupTemplates.Add(new CupTemplate
+                {
+                    Name = c.Name,
+                    CountryCode = c.CountryCode,
+                    IsActive = c.IsActive,
+                    MinTeams = c.MinTeams,
+                    MaxTeams = c.MaxTeams
+                });
+            }
+            else
+            {
+                existing.IsActive = c.IsActive;
+                existing.MinTeams = c.MinTeams;
+                existing.MaxTeams = c.MaxTeams;
+            }
+        }
+
+        await db.SaveChangesAsync();
+
         // 10) Teams
         var teamsDir = Path.Combine(seedDir, "teams");
         var allTeams = new List<TeamTemplateDto>();

@@ -33,7 +33,7 @@ namespace TheDugout.Models.Game
         public ICollection<Fixture> Fixtures { get; set; } = new List<Fixture>();
         public ICollection<TrainingSession> TrainingSessions { get; set; } = new List<TrainingSession>();
         public ICollection<LeagueStanding> LeagueStandings { get; set; } = new List<LeagueStanding>();
-
+        public ICollection<Cup> Cups { get; set; } = new List<Cup>();
 
     }
 }

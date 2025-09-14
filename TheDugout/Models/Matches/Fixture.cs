@@ -34,8 +34,8 @@ namespace TheDugout.Models.Matches
         public int? LeagueId { get; set; }
         public League? League { get; set; }
 
-        //public int? CupId { get; set; }
-        //public Cup? Cup { get; set; }
+        public int? CupRoundId { get; set; }
+        public CupRound? CupRound { get; set; }
 
         public int? EuropeanCupPhaseId { get; set; }
         public EuropeanCupPhase? EuropeanCupPhase { get; set; }
@@ -48,6 +48,9 @@ namespace TheDugout.Models.Matches
 
         public int? HomeTeamGoals { get; set; }
         public int? AwayTeamGoals { get; set; }
+
+        public int? WinnerTeamId { get; set; }
+        public Team? WinnerTeam { get; set; }
 
         public DateTime Date { get; set; }
 

@@ -23,5 +23,7 @@ namespace TheDugout.Models.Seasons
         public ICollection<League> Leagues { get; set; } = new List<League>();
         public ICollection<LeagueStanding> LeagueStandings { get; set; } = new List<LeagueStanding>();
         public ICollection<EuropeanCup> EuropeanCups { get; set; } = new List<EuropeanCup>();
+        public ICollection<Cup> Cups { get; set; } = new List<Cup>();
+
     }
 }

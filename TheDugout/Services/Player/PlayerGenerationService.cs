@@ -64,11 +64,27 @@
                     if (position == null)
                         throw new InvalidOperationException($"Position with code '{selectedPositionCode}' not found in database.");
 
-                    var randomCountry = countries[_rng.Next(countries.Count)];
-                    if (randomCountry == null)
-                        throw new InvalidOperationException("Selected random country is null.");
+                    Country selectedCountry;
+                    if (team != null && team.Country != null && countries.Any())
+                    {
+                        if (_rng.NextDouble() < 0.8)
+                        {
+                            selectedCountry = team.Country;
+                        }
+                        else
+                        {
+                            selectedCountry = countries[_rng.Next(countries.Count)];
+                        }
+                    }
+                    else
+                    {
+                        selectedCountry = countries[_rng.Next(countries.Count)];
+                    }
 
-                    var player = CreateBasePlayer(save, team, randomCountry, position);
+                    if (selectedCountry == null)
+                        throw new InvalidOperationException("Selected country is null.");
+
+                    var player = CreateBasePlayer(save, team, selectedCountry, position);
                     players.Add(player);
                 }
             }

@@ -27,6 +27,10 @@ namespace TheDugout.Data
         public DbSet<LastName> LastNames { get; set; }
         public DbSet<LeagueTemplate> LeagueTemplates { get; set; }
         public DbSet<League> Leagues { get; set; }
+        public DbSet<CupTemplate> CupTemplates { get; set; }
+        public DbSet<Cup> Cups { get; set; }
+        public DbSet<CupRound> CupRounds { get; set; }
+        public DbSet<CupTeam> CupTeams { get; set; }
         public DbSet<TeamTemplate> TeamTemplates { get; set; }
         public DbSet<Team> Teams { get; set; }
         public DbSet<LeagueStanding> LeagueStandings { get; set; }

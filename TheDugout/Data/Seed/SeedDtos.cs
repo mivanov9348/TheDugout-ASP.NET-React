@@ -20,6 +20,15 @@ namespace TheDugout.Data.Seed
             int PromotionSpots
         );
 
+        public record CupTemplateDto(
+    int Id,
+    string Name,
+    string CountryCode,
+    bool IsActive,
+    int? MinTeams,
+    int? MaxTeams
+);
+
         public record TeamTemplateDto(
             string Name,
             string ShortName,

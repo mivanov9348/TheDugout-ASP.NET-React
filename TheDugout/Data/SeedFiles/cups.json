@@ -1,0 +1,44 @@
+[
+  {
+    "Name": "Bulgarian Cup",
+    "CountryCode": "BUL",
+    "IsActive": true,
+    "MinTeams": 32,
+    "MaxTeams": 64
+  },
+  {
+    "Name": "FA Cup",
+    "CountryCode": "ENG",
+    "IsActive": true,
+    "MinTeams": 32,
+    "MaxTeams": 128
+  },
+  {
+    "Name": "DFB-Pokal",
+    "CountryCode": "GER",
+    "IsActive": true,
+    "MinTeams": 32,
+    "MaxTeams": 64
+  },
+  {
+    "Name": "Coppa Italia",
+    "CountryCode": "ITA",
+    "IsActive": true,
+    "MinTeams": 32,
+    "MaxTeams": 64
+  },
+  {
+    "Name": "Copa del Rey",
+    "CountryCode": "ESP",
+    "IsActive": true,
+    "MinTeams": 32,
+    "MaxTeams": 128
+  },
+  {
+    "Name": "Coupe de France",
+    "CountryCode": "FRA",
+    "IsActive": true,
+    "MinTeams": 32,
+    "MaxTeams": 128
+  }
+]

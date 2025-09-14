@@ -68,11 +68,12 @@ namespace TheDugout.Data.Configurations
                    .HasForeignKey(ft => ft.ToTeamId)
                    .OnDelete(DeleteBehavior.Restrict);
 
-            // 🆕 връзка 1:1 между Team и TeamTactic
             builder.HasOne(t => t.TeamTactic)
                    .WithOne(tt => tt.Team)
                    .HasForeignKey<TeamTactic>(tt => tt.TeamId)
                    .OnDelete(DeleteBehavior.Cascade);
+
+
         }
     }
 }

@@ -2,6 +2,7 @@
 using TheDugout.Data;
 using TheDugout.Models.Competitions;
 using TheDugout.Models.Game;
+using TheDugout.Services.Cup;
 using TheDugout.Services.EuropeanCup;
 using TheDugout.Services.Finance;
 using TheDugout.Services.Fixture;
@@ -24,6 +25,7 @@ namespace TheDugout.Services.Game
         private readonly ITeamGenerationService _teamGenerator;
         private readonly ITeamPlanService _teamPlanService;
         private readonly IEuropeanCupService _europeanCupService;
+        private readonly ICupService _cupService;
 
         public GameSaveService(
             DugoutDbContext context,
@@ -35,7 +37,8 @@ namespace TheDugout.Services.Game
             IFinanceService financeService,
             ITeamPlanService teamPlanService,
             IEuropeanCupService europeanCupService,
-            ITeamGenerationService teamGenerator
+            ITeamGenerationService teamGenerator,
+            ICupService cupService
         )
         {
             _context = context;
@@ -48,6 +51,7 @@ namespace TheDugout.Services.Game
             _teamPlanService = teamPlanService;
             this._europeanCupService = europeanCupService;
             _teamGenerator = teamGenerator;
+            _cupService = cupService;
         }
 
         public async Task<List<object>> GetUserSavesAsync(int userId)
@@ -119,9 +123,6 @@ namespace TheDugout.Services.Game
 
                 // 4. Генерираме лиги + отбори
                 var leagues = await _leagueGenerator.GenerateLeaguesAsync(gameSave, season);
-                //foreach (var league in leagues)
-                //    gameSave.Leagues.Add(league);
-
                 await _context.SaveChangesAsync();
 
                 var independentTeams = await _teamGenerator.GenerateIndependentTeamsAsync(gameSave);
@@ -136,7 +137,7 @@ namespace TheDugout.Services.Game
 
                 // 4.5 Инициализиране на European Cup за първата година (ако имаш шаблон)
                 var euroTemplates = await _context.Set<EuropeanCupTemplate>()
-                                    .Include(t => t.PhaseTemplates) 
+                                    .Include(t => t.PhaseTemplates)
                                     .ToListAsync(ct);
 
                 foreach (var template in euroTemplates)
@@ -177,6 +178,7 @@ namespace TheDugout.Services.Game
                     }
                 }
 
+                await _cupService.InitializeCupsForGameSaveAsync(gameSave, season.Id);
 
                 // 5. Свободни агенти
                 var freeAgents = _playerGenerator.GenerateFreeAgents(gameSave, 100);

@@ -1,7 +1,4 @@
-﻿// Models/Team.cs
-
-// Models/Team.cs
-using TheDugout.Models.Common;
+﻿using TheDugout.Models.Common;
 using TheDugout.Models.Competitions;
 using TheDugout.Models.Finance;
 using TheDugout.Models.Game;
@@ -41,6 +38,8 @@ namespace TheDugout.Models.Teams
         public ICollection<EuropeanCupTeam> EuropeanCupTeams { get; set; } = new List<EuropeanCupTeam>();
         public ICollection<LeagueStanding> LeagueStandings { get; set; } = new List<LeagueStanding>();
         public ICollection<EuropeanCupStanding> EuropeanCupStandings { get; set; } = new List<EuropeanCupStanding>();
+
+        public ICollection<CupTeam> CupTeams { get; set; } = new List<CupTeam>();
 
         public ICollection<FinancialTransaction> TransactionsFrom { get; set; } = new List<FinancialTransaction>();
         public ICollection<FinancialTransaction> TransactionsTo { get; set; } = new List<FinancialTransaction>();

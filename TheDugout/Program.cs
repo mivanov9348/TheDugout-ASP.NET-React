@@ -4,6 +4,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using TheDugout.Data;
 using TheDugout.Services;
+using TheDugout.Services.Cup;
 using TheDugout.Services.EuropeanCup;
 using TheDugout.Services.Finance;
 using TheDugout.Services.Fixture;
@@ -24,7 +25,7 @@ var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("Default");
 
 builder.Services.AddDbContext<DugoutDbContext>(options =>
-options.UseSqlServer(connectionString, opt => opt.CommandTimeout(60)));
+options.UseSqlServer(connectionString, opt => opt.CommandTimeout(90)));
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -45,6 +46,7 @@ builder.Services.AddScoped<IFinanceService, FinanceService>();
 builder.Services.AddScoped<ITrainingService, TrainingService>();
 builder.Services.AddScoped<ITransferService, TransferService>();
 builder.Services.AddScoped<IEuropeanCupService, EuropeanCupService>();
+builder.Services.AddScoped<ICupService, CupService>();
 
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 
