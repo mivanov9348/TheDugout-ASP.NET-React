@@ -17,6 +17,11 @@ namespace TheDugout.Data.Configurations
                    .IsRequired()
                    .HasMaxLength(3);
 
+            builder.HasOne(c => c.Region)
+               .WithMany(r => r.Countries)
+               .HasForeignKey(c => c.RegionCode)
+               .HasPrincipalKey(r => r.Code);
+
             builder.Property(e => e.Name)
                    .IsRequired()
                    .HasMaxLength(100);

@@ -3,6 +3,7 @@ using TheDugout.Data;
 using TheDugout.Models.Competitions;
 using TheDugout.Models.Matches;
 
+
 namespace TheDugout.Services.EuropeanCup
 {
     public class EuropeanCupService : IEuropeanCupService
@@ -57,7 +58,7 @@ namespace TheDugout.Services.EuropeanCup
 
 
             // 4. Създаваме Cup
-            var cup = new Models.EuropeanCup
+            var cup = new Models.Competitions.EuropeanCup
             {
                 TemplateId = template.Id,
                 GameSaveId = gameSaveId,
@@ -162,7 +163,7 @@ namespace TheDugout.Services.EuropeanCup
                     int home = DecideHome(a, b, homeCount);
                     int away = home == a ? b : a;
 
-                    fixturesToAdd.Add(new Models.Fixture
+                    fixturesToAdd.Add(new Models.Matches.Fixture
                     {
                         CompetitionType = CompetitionType.EuropeanCup,
                         EuropeanCupPhaseId = leaguePhase.Id,
@@ -526,7 +527,7 @@ namespace TheDugout.Services.EuropeanCup
                 if (phaseTemplate.IsTwoLegged)
                 {
                     // two fixtures: a home vs b, then b home vs a
-                    var f1 = new Models.Fixture
+                    var f1 = new Models.Matches.Fixture
                     {
                         CompetitionType = CompetitionType.EuropeanCup,
                         EuropeanCupPhaseId = phase.Id,
@@ -537,7 +538,7 @@ namespace TheDugout.Services.EuropeanCup
                         Status = MatchStatus.Scheduled,
                         GameSaveId = (await _context.Set<Models.Competitions.EuropeanCup>().Where(c => c.Id == europeanCupId).Select(c => c.GameSaveId).FirstAsync(ct))
                     };
-                    var f2 = new Models.Fixture
+                    var f2 = new Models.Matches.Fixture
                     {
                         CompetitionType = CompetitionType.EuropeanCup,
                         EuropeanCupPhaseId = phase.Id,
@@ -553,7 +554,7 @@ namespace TheDugout.Services.EuropeanCup
                 }
                 else
                 {
-                    var f = new Models.Fixture
+                    var f = new Models.Matches.Fixture
                     {
                         CompetitionType = CompetitionType.EuropeanCup,
                         EuropeanCupPhaseId = phase.Id,
@@ -705,7 +706,7 @@ namespace TheDugout.Services.EuropeanCup
                 int b = winnersShuf[i + 1];
                 if (nextTemplate.IsTwoLegged)
                 {
-                    newFixtures.Add(new Models.Fixture
+                    newFixtures.Add(new Models.Matches.Fixture
                     {
                         CompetitionType = CompetitionType.EuropeanCup,
                         EuropeanCupPhaseId = nextPhase.Id,
@@ -716,7 +717,7 @@ namespace TheDugout.Services.EuropeanCup
                         Status = MatchStatus.Scheduled,
                         GameSaveId = cup.GameSaveId
                     });
-                    newFixtures.Add(new Models.Fixture
+                    newFixtures.Add(new Models.Matches.Fixture
                     {
                         CompetitionType = CompetitionType.EuropeanCup,
                         EuropeanCupPhaseId = nextPhase.Id,
@@ -730,7 +731,7 @@ namespace TheDugout.Services.EuropeanCup
                 }
                 else
                 {
-                    newFixtures.Add(new Models.Fixture
+                    newFixtures.Add(new Models.Matches.Fixture
                     {
                         CompetitionType = CompetitionType.EuropeanCup,
                         EuropeanCupPhaseId = nextPhase.Id,

@@ -27,7 +27,7 @@ namespace TheDugout.Services.Team
 
             foreach (var tt in templates)
             {
-                var team = new Models.Team
+                var team = new Models.Teams.Team
                 {
                     TemplateId = tt.Id,
                     GameSave = gameSave,
@@ -102,7 +102,7 @@ namespace TheDugout.Services.Team
 
             foreach (var tt in templates)
             {
-                var team = new Models.Team
+                var team = new Models.Teams.Team
                 {
                     TemplateId = tt.Id,
                     GameSave = gameSave,

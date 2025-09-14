@@ -1,838 +1,1047 @@
 [
   {
     "code": "AFG",
-    "name": "Afghanistan"
+    "name": "Afghanistan",
+    "regionCode": "SAS"
   },
   {
     "code": "ALB",
-    "name": "Albania"
+    "name": "Albania",
+    "regionCode": "SEE"
   },
   {
     "code": "ALG",
-    "name": "Algeria"
+    "name": "Algeria",
+    "regionCode": "NAF"
   },
   {
     "code": "AND",
-    "name": "Andorra"
+    "name": "Andorra",
+    "regionCode": "MED"
   },
   {
     "code": "ANG",
-    "name": "Angola"
+    "name": "Angola",
+    "regionCode": "SAF"
   },
   {
     "code": "AIA",
-    "name": "Anguilla"
+    "name": "Anguilla",
+    "regionCode": "CAR"
   },
   {
     "code": "ATG",
-    "name": "Antigua and Barbuda"
+    "name": "Antigua and Barbuda",
+    "regionCode": "CAR"
   },
   {
     "code": "ARG",
-    "name": "Argentina"
+    "name": "Argentina",
+    "regionCode": "SAM"
   },
   {
     "code": "ARM",
-    "name": "Armenia"
+    "name": "Armenia",
+    "regionCode": "MEA"
   },
   {
     "code": "ARU",
-    "name": "Aruba"
+    "name": "Aruba",
+    "regionCode": "CAR"
   },
   {
     "code": "AUS",
-    "name": "Australia"
+    "name": "Australia",
+    "regionCode": "OCE"
   },
   {
     "code": "AUT",
-    "name": "Austria"
+    "name": "Austria",
+    "regionCode": "WEU"
   },
   {
     "code": "AZE",
-    "name": "Azerbaijan"
+    "name": "Azerbaijan",
+    "regionCode": "CAS"
   },
   {
     "code": "BAH",
-    "name": "Bahamas"
+    "name": "Bahamas",
+    "regionCode": "CAR"
   },
   {
     "code": "BHR",
-    "name": "Bahrain"
+    "name": "Bahrain",
+    "regionCode": "MEA"
   },
   {
     "code": "BAN",
-    "name": "Bangladesh"
+    "name": "Bangladesh",
+    "regionCode": "SAS"
   },
   {
     "code": "BRB",
-    "name": "Barbados"
+    "name": "Barbados",
+    "regionCode": "CAR"
   },
   {
     "code": "BLR",
-    "name": "Belarus"
+    "name": "Belarus",
+    "regionCode": "EEU"
   },
   {
     "code": "BEL",
-    "name": "Belgium"
+    "name": "Belgium",
+    "regionCode": "WEU"
   },
   {
     "code": "BLZ",
-    "name": "Belize"
+    "name": "Belize",
+    "regionCode": "NAL"
   },
   {
     "code": "BEN",
-    "name": "Benin"
+    "name": "Benin",
+    "regionCode": "CAF"
   },
   {
     "code": "BER",
-    "name": "Bermuda"
+    "name": "Bermuda",
+    "regionCode": "NAE"
   },
   {
     "code": "BHU",
-    "name": "Bhutan"
+    "name": "Bhutan",
+    "regionCode": "SAS"
   },
   {
     "code": "BOL",
-    "name": "Bolivia"
+    "name": "Bolivia",
+    "regionCode": "SAM"
   },
   {
     "code": "BIH",
-    "name": "Bosnia and Herzegovina"
+    "name": "Bosnia and Herzegovina",
+    "regionCode": "SEE"
   },
   {
     "code": "BOT",
-    "name": "Botswana"
+    "name": "Botswana",
+    "regionCode": "SAF"
   },
   {
     "code": "BRA",
-    "name": "Brazil"
+    "name": "Brazil",
+    "regionCode": "SAM"
   },
   {
     "code": "VGB",
-    "name": "British Virgin Islands"
+    "name": "British Virgin Islands",
+    "regionCode": "CAR"
   },
   {
     "code": "BRU",
-    "name": "Brunei Darussalam"
+    "name": "Brunei Darussalam",
+    "regionCode": "SEA"
   },
   {
     "code": "BUL",
-    "name": "Bulgaria"
+    "name": "Bulgaria",
+    "regionCode": "SEE"
   },
   {
     "code": "BFA",
-    "name": "Burkina Faso"
+    "name": "Burkina Faso",
+    "regionCode": "CAF"
   },
   {
     "code": "BDI",
-    "name": "Burundi"
+    "name": "Burundi",
+    "regionCode": "EAF"
   },
   {
     "code": "CAM",
-    "name": "Cambodia"
+    "name": "Cambodia",
+    "regionCode": "SEA"
   },
   {
     "code": "CMR",
-    "name": "Cameroon"
+    "name": "Cameroon",
+    "regionCode": "CAF"
   },
   {
     "code": "CAN",
-    "name": "Canada"
+    "name": "Canada",
+    "regionCode": "NAE"
   },
   {
     "code": "CPV",
-    "name": "Cape Verde"
+    "name": "Cape Verde",
+    "regionCode": "NAF"
   },
   {
     "code": "CAY",
-    "name": "Cayman Islands"
+    "name": "Cayman Islands",
+    "regionCode": "CAR"
   },
   {
     "code": "CTA",
-    "name": "Central African Republic"
+    "name": "Central African Republic",
+    "regionCode": "CAF"
   },
   {
     "code": "CHA",
-    "name": "Chad"
+    "name": "Chad",
+    "regionCode": "CAF"
   },
   {
     "code": "CHI",
-    "name": "Chile"
+    "name": "Chile",
+    "regionCode": "SAM"
   },
   {
     "code": "CHN",
-    "name": "China PR"
+    "name": "China PR",
+    "regionCode": "EAS"
   },
   {
     "code": "COL",
-    "name": "Colombia"
+    "name": "Colombia",
+    "regionCode": "SAM"
   },
   {
     "code": "COM",
-    "name": "Comoros"
+    "name": "Comoros",
+    "regionCode": "EAF"
   },
   {
     "code": "CGO",
-    "name": "Congo"
+    "name": "Congo",
+    "regionCode": "CAF"
   },
   {
     "code": "COD",
-    "name": "Congo DR"
+    "name": "Congo DR",
+    "regionCode": "CAF"
   },
   {
     "code": "COK",
-    "name": "Cook Islands"
+    "name": "Cook Islands",
+    "regionCode": "OCE"
   },
   {
     "code": "CRC",
-    "name": "Costa Rica"
+    "name": "Costa Rica",
+    "regionCode": "NAL"
   },
   {
     "code": "CIV",
-    "name": "Côte d'Ivoire"
+    "name": "Côte d'Ivoire",
+    "regionCode": "CAF"
   },
   {
     "code": "CRO",
-    "name": "Croatia"
+    "name": "Croatia",
+    "regionCode": "SEE"
   },
   {
     "code": "CUB",
-    "name": "Cuba"
+    "name": "Cuba",
+    "regionCode": "CAR"
   },
   {
     "code": "CUW",
-    "name": "Curaçao"
+    "name": "Curaçao",
+    "regionCode": "CAR"
   },
   {
     "code": "CYP",
-    "name": "Cyprus"
+    "name": "Cyprus",
+    "regionCode": "MED"
   },
   {
     "code": "CZE",
-    "name": "Czech Republic"
+    "name": "Czech Republic",
+    "regionCode": "EEU"
   },
   {
     "code": "DEN",
-    "name": "Denmark"
+    "name": "Denmark",
+    "regionCode": "NEU"
   },
   {
     "code": "DJI",
-    "name": "Djibouti"
+    "name": "Djibouti",
+    "regionCode": "EAF"
   },
   {
     "code": "DMA",
-    "name": "Dominica"
+    "name": "Dominica",
+    "regionCode": "CAR"
   },
   {
     "code": "DOM",
-    "name": "Dominican Republic"
+    "name": "Dominican Republic",
+    "regionCode": "CAR"
   },
   {
     "code": "ECU",
-    "name": "Ecuador"
+    "name": "Ecuador",
+    "regionCode": "SAM"
   },
   {
     "code": "EGY",
-    "name": "Egypt"
+    "name": "Egypt",
+    "regionCode": "NAF"
   },
   {
     "code": "SLV",
-    "name": "El Salvador"
+    "name": "El Salvador",
+    "regionCode": "NAL"
   },
   {
     "code": "ENG",
-    "name": "England"
+    "name": "England",
+    "regionCode": "WEU"
   },
   {
     "code": "EQG",
-    "name": "Equatorial Guinea"
+    "name": "Equatorial Guinea",
+    "regionCode": "CAF"
   },
   {
     "code": "ERI",
-    "name": "Eritrea"
+    "name": "Eritrea",
+    "regionCode": "EAF"
   },
   {
     "code": "EST",
-    "name": "Estonia"
+    "name": "Estonia",
+    "regionCode": "EEU"
   },
   {
     "code": "ETH",
-    "name": "Ethiopia"
+    "name": "Ethiopia",
+    "regionCode": "EAF"
   },
   {
     "code": "FRO",
-    "name": "Faroe Islands"
+    "name": "Faroe Islands",
+    "regionCode": "NEU"
   },
   {
     "code": "FIJ",
-    "name": "Fiji"
+    "name": "Fiji",
+    "regionCode": "OCE"
   },
   {
     "code": "FIN",
-    "name": "Finland"
+    "name": "Finland",
+    "regionCode": "NEU"
   },
   {
     "code": "FRA",
-    "name": "France"
+    "name": "France",
+    "regionCode": "WEU"
   },
   {
     "code": "GAB",
-    "name": "Gabon"
+    "name": "Gabon",
+    "regionCode": "CAF"
   },
   {
     "code": "GAM",
-    "name": "Gambia"
+    "name": "Gambia",
+    "regionCode": "NAF"
   },
   {
     "code": "GEO",
-    "name": "Georgia"
+    "name": "Georgia",
+    "regionCode": "MEA"
   },
   {
     "code": "GER",
-    "name": "Germany"
+    "name": "Germany",
+    "regionCode": "WEU"
   },
   {
     "code": "GHA",
-    "name": "Ghana"
+    "name": "Ghana",
+    "regionCode": "CAF"
   },
   {
     "code": "GIB",
-    "name": "Gibraltar"
+    "name": "Gibraltar",
+    "regionCode": "MED"
   },
   {
     "code": "GRE",
-    "name": "Greece"
+    "name": "Greece",
+    "regionCode": "MED"
   },
   {
     "code": "GRN",
-    "name": "Grenada"
+    "name": "Grenada",
+    "regionCode": "CAR"
   },
   {
     "code": "GUA",
-    "name": "Guatemala"
+    "name": "Guatemala",
+    "regionCode": "NAL"
   },
   {
     "code": "GCI",
-    "name": "Guernsey"
+    "name": "Guernsey",
+    "regionCode": "WEU"
   },
   {
     "code": "GUI",
-    "name": "Guinea"
+    "name": "Guinea",
+    "regionCode": "NAF"
   },
   {
     "code": "GNB",
-    "name": "Guinea-Bissau"
+    "name": "Guinea-Bissau",
+    "regionCode": "NAF"
   },
   {
     "code": "GUY",
-    "name": "Guyana"
+    "name": "Guyana",
+    "regionCode": "SAM"
   },
   {
     "code": "HAI",
-    "name": "Haiti"
+    "name": "Haiti",
+    "regionCode": "CAR"
   },
   {
     "code": "HON",
-    "name": "Honduras"
+    "name": "Honduras",
+    "regionCode": "NAL"
   },
   {
     "code": "HKG",
-    "name": "Hong Kong"
+    "name": "Hong Kong",
+    "regionCode": "EAS"
   },
   {
     "code": "HUN",
-    "name": "Hungary"
+    "name": "Hungary",
+    "regionCode": "EEU"
   },
   {
     "code": "ISL",
-    "name": "Iceland"
+    "name": "Iceland",
+    "regionCode": "NEU"
   },
   {
     "code": "IND",
-    "name": "India"
+    "name": "India",
+    "regionCode": "SAS"
   },
   {
     "code": "IDN",
-    "name": "Indonesia"
+    "name": "Indonesia",
+    "regionCode": "SEA"
   },
   {
     "code": "IRN",
-    "name": "Iran"
+    "name": "Iran",
+    "regionCode": "MEA"
   },
   {
     "code": "IRQ",
-    "name": "Iraq"
+    "name": "Iraq",
+    "regionCode": "MEA"
   },
   {
     "code": "IRL",
-    "name": "Republic of Ireland"
+    "name": "Republic of Ireland",
+    "regionCode": "WEU"
   },
   {
     "code": "ISR",
-    "name": "Israel"
+    "name": "Israel",
+    "regionCode": "MEA"
   },
   {
     "code": "ITA",
-    "name": "Italy"
+    "name": "Italy",
+    "regionCode": "MED"
   },
   {
     "code": "JAM",
-    "name": "Jamaica"
+    "name": "Jamaica",
+    "regionCode": "CAR"
   },
   {
     "code": "JPN",
-    "name": "Japan"
+    "name": "Japan",
+    "regionCode": "EAS"
   },
   {
     "code": "JOR",
-    "name": "Jordan"
+    "name": "Jordan",
+    "regionCode": "MEA"
   },
   {
     "code": "KAZ",
-    "name": "Kazakhstan"
+    "name": "Kazakhstan",
+    "regionCode": "CAS"
   },
   {
     "code": "KEN",
-    "name": "Kenya"
+    "name": "Kenya",
+    "regionCode": "EAF"
   },
   {
     "code": "KIR",
-    "name": "Kiribati"
+    "name": "Kiribati",
+    "regionCode": "OCE"
   },
   {
     "code": "PRK",
-    "name": "Korea DPR"
+    "name": "Korea DPR",
+    "regionCode": "EAS"
   },
   {
     "code": "KOR",
-    "name": "Korea Republic"
+    "name": "Korea Republic",
+    "regionCode": "EAS"
   },
   {
     "code": "KUW",
-    "name": "Kuwait"
+    "name": "Kuwait",
+    "regionCode": "MEA"
   },
   {
     "code": "KGZ",
-    "name": "Kyrgyz Republic"
+    "name": "Kyrgyz Republic",
+    "regionCode": "CAS"
   },
   {
     "code": "LAO",
-    "name": "Laos"
+    "name": "Laos",
+    "regionCode": "SEA"
   },
   {
     "code": "LVA",
-    "name": "Latvia"
+    "name": "Latvia",
+    "regionCode": "EEU"
   },
   {
     "code": "LBN",
-    "name": "Lebanon"
+    "name": "Lebanon",
+    "regionCode": "MEA"
   },
   {
     "code": "LES",
-    "name": "Lesotho"
+    "name": "Lesotho",
+    "regionCode": "SAF"
   },
   {
     "code": "LBR",
-    "name": "Liberia"
+    "name": "Liberia",
+    "regionCode": "CAF"
   },
   {
     "code": "LBY",
-    "name": "Libya"
+    "name": "Libya",
+    "regionCode": "NAF"
   },
   {
     "code": "LIE",
-    "name": "Liechtenstein"
+    "name": "Liechtenstein",
+    "regionCode": "WEU"
   },
   {
     "code": "LTU",
-    "name": "Lithuania"
+    "name": "Lithuania",
+    "regionCode": "EEU"
   },
   {
     "code": "LUX",
-    "name": "Luxembourg"
+    "name": "Luxembourg",
+    "regionCode": "WEU"
   },
   {
     "code": "MAC",
-    "name": "Macau"
+    "name": "Macau",
+    "regionCode": "EAS"
   },
   {
     "code": "MKD",
-    "name": "North Macedonia"
+    "name": "North Macedonia",
+    "regionCode": "SEE"
   },
   {
     "code": "MAD",
-    "name": "Madagascar"
+    "name": "Madagascar",
+    "regionCode": "SAF"
   },
   {
     "code": "MWI",
-    "name": "Malawi"
+    "name": "Malawi",
+    "regionCode": "SAF"
   },
   {
     "code": "MAS",
-    "name": "Malaysia"
+    "name": "Malaysia",
+    "regionCode": "SEA"
   },
   {
     "code": "MDV",
-    "name": "Maldives"
+    "name": "Maldives",
+    "regionCode": "SAS"
   },
   {
     "code": "MLI",
-    "name": "Mali"
+    "name": "Mali",
+    "regionCode": "NAF"
   },
   {
     "code": "MLT",
-    "name": "Malta"
+    "name": "Malta",
+    "regionCode": "MED"
   },
   {
     "code": "MTN",
-    "name": "Mauritania"
+    "name": "Mauritania",
+    "regionCode": "NAF"
   },
   {
     "code": "MRI",
-    "name": "Mauritius"
+    "name": "Mauritius",
+    "regionCode": "SAF"
   },
   {
     "code": "MEX",
-    "name": "Mexico"
+    "name": "Mexico",
+    "regionCode": "NAL"
   },
   {
     "code": "MDA",
-    "name": "Moldova"
+    "name": "Moldova",
+    "regionCode": "EEU"
   },
   {
     "code": "MCO",
-    "name": "Monaco"
+    "name": "Monaco",
+    "regionCode": "MED"
   },
   {
     "code": "MNG",
-    "name": "Mongolia"
+    "name": "Mongolia",
+    "regionCode": "EAS"
   },
   {
     "code": "MNE",
-    "name": "Montenegro"
+    "name": "Montenegro",
+    "regionCode": "SEE"
   },
   {
     "code": "MSR",
-    "name": "Montserrat"
+    "name": "Montserrat",
+    "regionCode": "CAR"
   },
   {
     "code": "MAR",
-    "name": "Morocco"
+    "name": "Morocco",
+    "regionCode": "NAF"
   },
   {
     "code": "MOZ",
-    "name": "Mozambique"
+    "name": "Mozambique",
+    "regionCode": "SAF"
   },
   {
     "code": "MYA",
-    "name": "Myanmar"
+    "name": "Myanmar",
+    "regionCode": "SEA"
   },
   {
     "code": "NAM",
-    "name": "Namibia"
+    "name": "Namibia",
+    "regionCode": "SAF"
   },
   {
     "code": "NEP",
-    "name": "Nepal"
+    "name": "Nepal",
+    "regionCode": "SAS"
   },
   {
     "code": "NED",
-    "name": "Netherlands"
+    "name": "Netherlands",
+    "regionCode": "WEU"
   },
   {
     "code": "NCL",
-    "name": "New Caledonia"
+    "name": "New Caledonia",
+    "regionCode": "OCE"
   },
   {
     "code": "NZL",
-    "name": "New Zealand"
+    "name": "New Zealand",
+    "regionCode": "OCE"
   },
   {
     "code": "NCA",
-    "name": "Nicaragua"
+    "name": "Nicaragua",
+    "regionCode": "NAL"
   },
   {
     "code": "NIG",
-    "name": "Niger"
+    "name": "Niger",
+    "regionCode": "CAF"
   },
   {
     "code": "NGA",
-    "name": "Nigeria"
+    "name": "Nigeria",
+    "regionCode": "CAF"
   },
   {
     "code": "NIR",
-    "name": "Northern Ireland"
+    "name": "Northern Ireland",
+    "regionCode": "WEU"
   },
   {
     "code": "NOR",
-    "name": "Norway"
+    "name": "Norway",
+    "regionCode": "NEU"
   },
   {
     "code": "OMA",
-    "name": "Oman"
+    "name": "Oman",
+    "regionCode": "MEA"
   },
   {
     "code": "PAK",
-    "name": "Pakistan"
+    "name": "Pakistan",
+    "regionCode": "SAS"
   },
   {
     "code": "PLE",
-    "name": "Palestine"
+    "name": "Palestine",
+    "regionCode": "MEA"
   },
   {
     "code": "PAN",
-    "name": "Panama"
+    "name": "Panama",
+    "regionCode": "NAL"
   },
   {
     "code": "PNG",
-    "name": "Papua New Guinea"
+    "name": "Papua New Guinea",
+    "regionCode": "OCE"
   },
   {
     "code": "PAR",
-    "name": "Paraguay"
+    "name": "Paraguay",
+    "regionCode": "SAM"
   },
   {
     "code": "PER",
-    "name": "Peru"
+    "name": "Peru",
+    "regionCode": "SAM"
   },
   {
     "code": "PHI",
-    "name": "Philippines"
+    "name": "Philippines",
+    "regionCode": "SEA"
   },
   {
     "code": "POL",
-    "name": "Poland"
+    "name": "Poland",
+    "regionCode": "EEU"
   },
   {
     "code": "POR",
-    "name": "Portugal"
+    "name": "Portugal",
+    "regionCode": "MED"
   },
   {
     "code": "PUR",
-    "name": "Puerto Rico"
+    "name": "Puerto Rico",
+    "regionCode": "CAR"
   },
   {
     "code": "QAT",
-    "name": "Qatar"
+    "name": "Qatar",
+    "regionCode": "MEA"
   },
   {
     "code": "ROU",
-    "name": "Romania"
+    "name": "Romania",
+    "regionCode": "EEU"
   },
   {
     "code": "RUS",
-    "name": "Russia"
+    "name": "Russia",
+    "regionCode": "EEU"
   },
   {
     "code": "RWA",
-    "name": "Rwanda"
+    "name": "Rwanda",
+    "regionCode": "EAF"
   },
   {
     "code": "SKN",
-    "name": "Saint Kitts and Nevis"
+    "name": "Saint Kitts and Nevis",
+    "regionCode": "CAR"
   },
   {
     "code": "LCA",
-    "name": "Saint Lucia"
+    "name": "Saint Lucia",
+    "regionCode": "CAR"
   },
   {
     "code": "VIN",
-    "name": "Saint Vincent and the Grenadines"
+    "name": "Saint Vincent and the Grenadines",
+    "regionCode": "CAR"
   },
   {
     "code": "SAM",
-    "name": "Samoa"
+    "name": "Samoa",
+    "regionCode": "OCE"
   },
   {
     "code": "SMR",
-    "name": "San Marino"
+    "name": "San Marino",
+    "regionCode": "MED"
   },
   {
     "code": "STP",
-    "name": "São Tomé and Príncipe"
+    "name": "São Tomé and Príncipe",
+    "regionCode": "CAF"
   },
   {
     "code": "KSA",
-    "name": "Saudi Arabia"
+    "name": "Saudi Arabia",
+    "regionCode": "MEA"
   },
   {
     "code": "SCO",
-    "name": "Scotland"
+    "name": "Scotland",
+    "regionCode": "WEU"
   },
   {
     "code": "SEN",
-    "name": "Senegal"
+    "name": "Senegal",
+    "regionCode": "NAF"
   },
   {
     "code": "SRB",
-    "name": "Serbia"
+    "name": "Serbia",
+    "regionCode": "SEE"
   },
   {
     "code": "SEY",
-    "name": "Seychelles"
+    "name": "Seychelles",
+    "regionCode": "SAF"
   },
   {
     "code": "SLE",
-    "name": "Sierra Leone"
+    "name": "Sierra Leone",
+    "regionCode": "CAF"
   },
   {
     "code": "SIN",
-    "name": "Singapore"
+    "name": "Singapore",
+    "regionCode": "SEA"
   },
   {
     "code": "SVK",
-    "name": "Slovakia"
+    "name": "Slovakia",
+    "regionCode": "EEU"
   },
   {
     "code": "SVN",
-    "name": "Slovenia"
+    "name": "Slovenia",
+    "regionCode": "EEU"
   },
   {
     "code": "SOL",
-    "name": "Solomon Islands"
+    "name": "Solomon Islands",
+    "regionCode": "OCE"
   },
   {
     "code": "SOM",
-    "name": "Somalia"
+    "name": "Somalia",
+    "regionCode": "EAF"
   },
   {
     "code": "RSA",
-    "name": "South Africa"
+    "name": "South Africa",
+    "regionCode": "SAF"
   },
   {
     "code": "SSD",
-    "name": "South Sudan"
+    "name": "South Sudan",
+    "regionCode": "EAF"
   },
   {
     "code": "ESP",
-    "name": "Spain"
+    "name": "Spain",
+    "regionCode": "MED"
   },
   {
     "code": "SRI",
-    "name": "Sri Lanka"
+    "name": "Sri Lanka",
+    "regionCode": "SAS"
   },
   {
     "code": "SDN",
-    "name": "Sudan"
+    "name": "Sudan",
+    "regionCode": "NAF"
   },
   {
     "code": "SUR",
-    "name": "Suriname"
+    "name": "Suriname",
+    "regionCode": "SAM"
   },
   {
     "code": "SWZ",
-    "name": "Eswatini"
+    "name": "Eswatini",
+    "regionCode": "SAF"
   },
   {
     "code": "SWE",
-    "name": "Sweden"
+    "name": "Sweden",
+    "regionCode": "NEU"
   },
   {
     "code": "SUI",
-    "name": "Switzerland"
+    "name": "Switzerland",
+    "regionCode": "WEU"
   },
   {
     "code": "SYR",
-    "name": "Syria"
+    "name": "Syria",
+    "regionCode": "MEA"
   },
   {
     "code": "TPE",
-    "name": "Chinese Taipei"
+    "name": "Chinese Taipei",
+    "regionCode": "EAS"
   },
   {
     "code": "TJK",
-    "name": "Tajikistan"
+    "name": "Tajikistan",
+    "regionCode": "CAS"
   },
   {
     "code": "TAN",
-    "name": "Tanzania"
+    "name": "Tanzania",
+    "regionCode": "EAF"
   },
   {
     "code": "THA",
-    "name": "Thailand"
+    "name": "Thailand",
+    "regionCode": "SEA"
   },
   {
     "code": "TLS",
-    "name": "Timor-Leste"
+    "name": "Timor-Leste",
+    "regionCode": "SEA"
   },
   {
     "code": "TOG",
-    "name": "Togo"
+    "name": "Togo",
+    "regionCode": "CAF"
   },
   {
     "code": "TGA",
-    "name": "Tonga"
+    "name": "Tonga",
+    "regionCode": "OCE"
   },
   {
     "code": "TRI",
-    "name": "Trinidad and Tobago"
+    "name": "Trinidad and Tobago",
+    "regionCode": "CAR"
   },
   {
     "code": "TUN",
-    "name": "Tunisia"
+    "name": "Tunisia",
+    "regionCode": "NAF"
   },
   {
     "code": "TUR",
-    "name": "Turkey"
+    "name": "Turkey",
+    "regionCode": "TUR"
   },
   {
     "code": "TKM",
-    "name": "Turkmenistan"
+    "name": "Turkmenistan",
+    "regionCode": "CAS"
   },
   {
     "code": "TCA",
-    "name": "Turks and Caicos Islands"
+    "name": "Turks and Caicos Islands",
+    "regionCode": "CAR"
   },
   {
     "code": "UGA",
-    "name": "Uganda"
+    "name": "Uganda",
+    "regionCode": "EAF"
   },
   {
     "code": "UKR",
-    "name": "Ukraine"
+    "name": "Ukraine",
+    "regionCode": "EEU"
   },
   {
     "code": "UAE",
-    "name": "United Arab Emirates"
+    "name": "United Arab Emirates",
+    "regionCode": "MEA"
   },
   {
     "code": "USA",
-    "name": "United States"
+    "name": "United States",
+    "regionCode": "NAE"
   },
   {
     "code": "URU",
-    "name": "Uruguay"
+    "name": "Uruguay",
+    "regionCode": "SAM"
   },
   {
     "code": "UZB",
-    "name": "Uzbekistan"
+    "name": "Uzbekistan",
+    "regionCode": "CAS"
   },
   {
     "code": "VAN",
-    "name": "Vanuatu"
+    "name": "Vanuatu",
+    "regionCode": "OCE"
   },
   {
     "code": "VEN",
-    "name": "Venezuela"
+    "name": "Venezuela",
+    "regionCode": "SAM"
   },
   {
     "code": "VIE",
-    "name": "Vietnam"
+    "name": "Vietnam",
+    "regionCode": "SEA"
   },
   {
     "code": "WAL",
-    "name": "Wales"
+    "name": "Wales",
+    "regionCode": "WEU"
   },
   {
     "code": "YEM",
-    "name": "Yemen"
+    "name": "Yemen",
+    "regionCode": "MEA"
   },
   {
     "code": "ZAM",
-    "name": "Zambia"
+    "name": "Zambia",
+    "regionCode": "SAF"
   },
   {
     "code": "ZIM",
-    "name": "Zimbabwe"
+    "name": "Zimbabwe",
+    "regionCode": "SAF"
   }
 ]

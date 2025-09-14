@@ -209,7 +209,7 @@ namespace TheDugout.Services.Transfer
             if (!inTransferWindow)
                 return (false, "Transfers are not allowed outside of the transfer window.");
 
-            var transfer = new Models.Transfer
+            var transfer = new Models.Transfers.Transfer
             {
                 GameSaveId = gameSaveId,
                 SeasonId = season.Id,

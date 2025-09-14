@@ -7,7 +7,7 @@ namespace TheDugout.Services.Season
     {
         public Models.Seasons.Season GenerateSeason(GameSave gameSave, DateTime startDate)
         {
-            var season = new Models.Season
+            var season = new Models.Seasons.Season
             {
                 GameSave = gameSave,
                 StartDate = startDate,

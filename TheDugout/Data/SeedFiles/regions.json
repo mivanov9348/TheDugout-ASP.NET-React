@@ -1,0 +1,22 @@
+[
+  { "Code": "NAE", "Name": "North America - English" },
+  { "Code": "NAL", "Name": "North America - Latin/Spanish" },
+  { "Code": "SAM", "Name": "South America" },
+  { "Code": "CAR", "Name": "Caribbean" },
+  { "Code": "WEU", "Name": "Western Europe" },
+  { "Code": "NEU", "Name": "Northern Europe" },
+  { "Code": "EEU", "Name": "Eastern Europe (Slavic/Baltic)" },
+  { "Code": "SEE", "Name": "South-Eastern Europe / Balkans" },
+  { "Code": "MED", "Name": "Mediterranean (Italy, Greece, Spain, Portugal)" },
+  { "Code": "MEA", "Name": "Middle East / Arabia" },
+  { "Code": "TUR", "Name": "Turkey & Anatolia" },
+  { "Code": "CAF", "Name": "Central Africa" },
+  { "Code": "NAF", "Name": "North Africa / Maghreb" },
+  { "Code": "EAF", "Name": "East Africa" },
+  { "Code": "SAF", "Name": "Southern Africa" },
+  { "Code": "CAS", "Name": "Central Asia" },
+  { "Code": "SAS", "Name": "South Asia (India, Pakistan, etc.)" },
+  { "Code": "SEA", "Name": "South-East Asia" },
+  { "Code": "EAS", "Name": "East Asia (China, Japan, Korea)" },
+  { "Code": "OCE", "Name": "Oceania / Pacific" }
+]

@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TheDugout.Data;
+using TheDugout.Models.Teams;
+
 
 namespace TheDugout.Services.Fixture
 {
@@ -29,7 +31,7 @@ namespace TheDugout.Services.Fixture
                 bool hasBye = teams.Count % 2 != 0;
                 if (hasBye)
                 {
-                    teams.Add(new Models.Team { Id = -1, Name = "BYE" });
+                    teams.Add(new Models.Teams.Team { Id = -1, Name = "BYE" });
                 }
 
                 int teamCount = teams.Count;
@@ -54,7 +56,7 @@ namespace TheDugout.Services.Fixture
                         // Small tweak: sometimes swap home/away to balance
                         bool swap = (round % 2 == 1 && match == 0);
 
-                        fixtures.Add(new Models.Fixture
+                        fixtures.Add(new Models.Matches.Fixture
                         {
                             GameSaveId = gameSaveId,
                             LeagueId = league.Id,
@@ -79,7 +81,7 @@ namespace TheDugout.Services.Fixture
                 int firstLegRounds = rounds;
                 foreach (var f in fixtures.ToList()) // copy list before adding to it
                 {
-                    fixtures.Add(new Models.Fixture
+                    fixtures.Add(new Models.Matches.Fixture
                     {
                         GameSaveId = f.GameSaveId,
                         LeagueId = f.LeagueId,

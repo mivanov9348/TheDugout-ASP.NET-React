@@ -4,7 +4,11 @@ namespace TheDugout.Data.Seed
 {
     public static class SeedDtos
     {
-        public record CountryDto(string Code, string Name);
+        public record CountryDto(
+               string Code,
+               string Name,
+               string RegionCode 
+           );
 
         public record LeagueTemplateDto(
             string Code,

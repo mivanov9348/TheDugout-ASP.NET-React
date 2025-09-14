@@ -26,20 +26,6 @@ namespace TheDugout.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Countries",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Code = table.Column<string>(type: "nvarchar(3)", maxLength: 3, nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Countries", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "EuropeanCupTemplates",
                 columns: table => new
                 {
@@ -48,8 +34,8 @@ namespace TheDugout.Migrations
                     Name = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: false),
                     TeamsCount = table.Column<int>(type: "int", nullable: false),
                     LeaguePhaseMatchesPerTeam = table.Column<int>(type: "int", nullable: false),
-                    PotsCount = table.Column<int>(type: "int", nullable: false, defaultValue: 4),
-                    TeamsPerPot = table.Column<int>(type: "int", nullable: false, defaultValue: 9)
+                    Ranking = table.Column<int>(type: "int", nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -90,6 +76,21 @@ namespace TheDugout.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Regions",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Code = table.Column<string>(type: "nvarchar(3)", maxLength: 3, nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Regions", x => x.Id);
+                    table.UniqueConstraint("AK_Regions_Code", x => x.Code);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Tactics",
                 columns: table => new
                 {
@@ -103,31 +104,6 @@ namespace TheDugout.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Tactics", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "LeagueTemplates",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    LeagueCode = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
-                    CountryId = table.Column<int>(type: "int", nullable: false),
-                    Tier = table.Column<int>(type: "int", nullable: false),
-                    TeamsCount = table.Column<int>(type: "int", nullable: false),
-                    RelegationSpots = table.Column<int>(type: "int", nullable: false),
-                    PromotionSpots = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_LeagueTemplates", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_LeagueTemplates_Countries_CountryId",
-                        column: x => x.CountryId,
-                        principalTable: "Countries",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -201,6 +177,92 @@ namespace TheDugout.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Countries",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Code = table.Column<string>(type: "nvarchar(3)", maxLength: 3, nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    RegionCode = table.Column<string>(type: "nvarchar(3)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Countries", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Countries_Regions_RegionCode",
+                        column: x => x.RegionCode,
+                        principalTable: "Regions",
+                        principalColumn: "Code",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "FirstNames",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    RegionCode = table.Column<string>(type: "nvarchar(3)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_FirstNames", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_FirstNames_Regions_RegionCode",
+                        column: x => x.RegionCode,
+                        principalTable: "Regions",
+                        principalColumn: "Code",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "LastNames",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    RegionCode = table.Column<string>(type: "nvarchar(3)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_LastNames", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_LastNames_Regions_RegionCode",
+                        column: x => x.RegionCode,
+                        principalTable: "Regions",
+                        principalColumn: "Code",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "LeagueTemplates",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    LeagueCode = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
+                    CountryId = table.Column<int>(type: "int", nullable: false),
+                    Tier = table.Column<int>(type: "int", nullable: false),
+                    TeamsCount = table.Column<int>(type: "int", nullable: false),
+                    RelegationSpots = table.Column<int>(type: "int", nullable: false),
+                    PromotionSpots = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_LeagueTemplates", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_LeagueTemplates_Countries_CountryId",
+                        column: x => x.CountryId,
+                        principalTable: "Countries",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "TeamTemplates",
                 columns: table => new
                 {
@@ -208,7 +270,8 @@ namespace TheDugout.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Abbreviation = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
-                    CountryId = table.Column<int>(type: "int", nullable: false),
+                    CountryId = table.Column<int>(type: "int", nullable: true),
+                    CountryCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     LeagueId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
@@ -270,7 +333,10 @@ namespace TheDugout.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     TemplateId = table.Column<int>(type: "int", nullable: false),
                     GameSaveId = table.Column<int>(type: "int", nullable: false),
-                    SeasonId = table.Column<int>(type: "int", nullable: false)
+                    SeasonId = table.Column<int>(type: "int", nullable: false),
+                    Ranking = table.Column<int>(type: "int", nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    LogoFileName = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -558,7 +624,7 @@ namespace TheDugout.Migrations
                     Abbreviation = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
                     LogoFileName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     LeagueId = table.Column<int>(type: "int", nullable: true),
-                    CountryId = table.Column<int>(type: "int", nullable: false),
+                    CountryId = table.Column<int>(type: "int", nullable: true),
                     Balance = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     Popularity = table.Column<int>(type: "int", nullable: false)
                 },
@@ -943,6 +1009,11 @@ namespace TheDugout.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_Countries_RegionCode",
+                table: "Countries",
+                column: "RegionCode");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_EuropeanCupPhases_EuropeanCupId",
                 table: "EuropeanCupPhases",
                 column: "EuropeanCupId");
@@ -1015,6 +1086,11 @@ namespace TheDugout.Migrations
                 column: "ToTeamId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_FirstNames_RegionCode",
+                table: "FirstNames",
+                column: "RegionCode");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Fixtures_AwayTeamId",
                 table: "Fixtures",
                 column: "AwayTeamId");
@@ -1053,6 +1129,11 @@ namespace TheDugout.Migrations
                 name: "IX_GameSaves_UserTeamId",
                 table: "GameSaves",
                 column: "UserTeamId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_LastNames_RegionCode",
+                table: "LastNames",
+                column: "RegionCode");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Leagues_CountryId",
@@ -1202,6 +1283,12 @@ namespace TheDugout.Migrations
                 name: "IX_PositionWeights_PositionId_AttributeId",
                 table: "PositionWeights",
                 columns: new[] { "PositionId", "AttributeId" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Regions_Code",
+                table: "Regions",
+                column: "Code",
                 unique: true);
 
             migrationBuilder.CreateIndex(
@@ -1450,7 +1537,13 @@ namespace TheDugout.Migrations
                 name: "FinancialTransactions");
 
             migrationBuilder.DropTable(
+                name: "FirstNames");
+
+            migrationBuilder.DropTable(
                 name: "Fixtures");
+
+            migrationBuilder.DropTable(
+                name: "LastNames");
 
             migrationBuilder.DropTable(
                 name: "LeagueStandings");
@@ -1541,6 +1634,9 @@ namespace TheDugout.Migrations
 
             migrationBuilder.DropTable(
                 name: "Countries");
+
+            migrationBuilder.DropTable(
+                name: "Regions");
         }
     }
 }

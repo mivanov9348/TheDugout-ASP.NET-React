@@ -22,6 +22,9 @@ namespace TheDugout.Data
         public DbSet<Bank> Banks { get; set; }
         public DbSet<FinancialTransaction> FinancialTransactions { get; set; }
         public DbSet<Country> Countries { get; set; }
+        public DbSet<Region> Regions { get; set; }
+        public DbSet<FirstName> FirstNames { get; set; }
+        public DbSet<LastName> LastNames { get; set; }
         public DbSet<LeagueTemplate> LeagueTemplates { get; set; }
         public DbSet<League> Leagues { get; set; }
         public DbSet<TeamTemplate> TeamTemplates { get; set; }

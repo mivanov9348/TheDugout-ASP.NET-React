@@ -27,7 +27,7 @@ namespace TheDugout.Services.League
 
             foreach (var lt in leagueTemplates)
             {
-                var league = new Models.League
+                var league = new Models.Competitions.League
                 {
                     TemplateId = lt.Id,
                     GameSave = gameSave,

@@ -109,15 +109,34 @@
             if (country == null) throw new ArgumentNullException(nameof(country));
             if (position == null) throw new ArgumentNullException(nameof(position));
 
-            var locale = GetLocaleForCountry(country.Code);
-            var faker = new Faker(locale);
+            var regionCode = country.RegionCode;
+            if (string.IsNullOrWhiteSpace(regionCode))
+                throw new InvalidOperationException($"Country {country.Code} няма RegionCode.");
+
+            var firstNames = _context.FirstNames
+                .Where(fn => fn.RegionCode == regionCode)
+                .Select(fn => fn.Name)
+                .ToList();
+
+            var lastNames = _context.LastNames
+                .Where(ln => ln.RegionCode == regionCode)
+                .Select(ln => ln.Name)
+                .ToList();
+
+            if (!firstNames.Any())
+                throw new InvalidOperationException($"No First Names For {regionCode}");
+            if (!lastNames.Any())
+                throw new InvalidOperationException($"No First Names For {regionCode}");
+
+            var firstName = firstNames[_rng.Next(firstNames.Count)];
+            var lastName = lastNames[_rng.Next(lastNames.Count)];
 
             var player = new Player
             {
-                FirstName = faker.Name.FirstName(Bogus.DataSets.Name.Gender.Male),
-                LastName = faker.Name.LastName(Bogus.DataSets.Name.Gender.Male),
+                FirstName = firstName,
+                LastName = lastName,
                 BirthDate = RandomBirthDate(),
-                Team = team, 
+                Team = team,
                 GameSave = save,
                 Position = position,
                 HeightCm = _rng.Next(165, 200),
@@ -196,7 +215,7 @@
             int final = (int)Math.Round(weighted * ageFactor * variation);
 
             return Math.Clamp(final, 1, 20);
-        }        
+        }
 
         private DateTime RandomBirthDate()
         {
@@ -242,56 +261,5 @@
             return Math.Round((decimal)price, 0);
         }
 
-        private string GetLocaleForCountry(string countryCode)
-        {
-            return countryCode switch
-            {
-                "RSA" => "af_ZA",
-                "ALG" => "ar",
-                "AZE" => "az",
-                "CZE" => "cz",
-                "GER" => "de",
-                "AUT" => "de_AT",
-                "SUI" => "de_CH",
-                "GRE" => "el",
-                "AUS" => "en_AU",
-                "CAN" => "en_CA",
-                "ENG" => "en_GB",
-                "IRL" => "en_IE",
-                "IND" => "en_IND",
-                "NGA" => "en_NG",
-                "USA" => "en_US",
-                "ESP" => "es",
-                "MEX" => "es_MX",
-                "IRN" => "fa",
-                "FIN" => "fi",
-                "FRA" => "fr",
-                "GEO" => "ge",
-                "CRO" => "hr",
-                "IDN" => "id_ID",
-                "ITA" => "it",
-                "JPN" => "ja",
-                "KOR" => "ko",
-                "LVA" => "lv",
-                "NOR" => "nb_NO",
-                "NEP" => "ne",
-                "NED" => "nl",
-                "BEL" => "nl_BE",
-                "POL" => "pl",
-                "BRA" => "pt_BR",
-                "POR" => "pt_PT",
-                "ROU" => "ro",
-                "RUS" => "ru",
-                "SVK" => "sk",
-                "SWE" => "sv",
-                "TUR" => "tr",
-                "UKR" => "uk",
-                "VIE" => "vi",
-                "CHN" => "zh_CN",
-                "TPE" => "zh_TW",
-                "BUL" => "ru", 
-                _ => "en"
-            };
-        }
     }
 }

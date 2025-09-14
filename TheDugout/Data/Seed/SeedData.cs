@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 using TheDugout.Data;
-using TheDugout.Models;
+using TheDugout.Models.Common;
 using TheDugout.Models.Competitions;
 using TheDugout.Models.Messages;
 using TheDugout.Models.Players;
@@ -23,7 +23,7 @@ public static class SeedData
         var env = scope.ServiceProvider.GetRequiredService<IHostEnvironment>();
         var seedDir = Path.Combine(env.ContentRootPath, "Data", "SeedFiles");
 
-        // 0) Tactics
+        // 1) Tactics
         var tacticsPath = Path.Combine(seedDir, "tactics.json");
         var tactics = await ReadJsonAsync<List<TacticDto>>(tacticsPath);
 
@@ -50,7 +50,7 @@ public static class SeedData
         }
         await db.SaveChangesAsync();
 
-        // 0) Positions
+        // 2) Positions
         var positionsPath = Path.Combine(seedDir, "positions.json");
         var positions = await ReadJsonAsync<List<Position>>(positionsPath);
 
@@ -74,7 +74,7 @@ public static class SeedData
 
         var positionsByCode = await db.Positions.ToDictionaryAsync(x => x.Code, x => x);
 
-        // 1) Attributes
+        // 3) Attributes
         var attributesPath = Path.Combine(seedDir, "attributes.json");
         var attributes = await ReadJsonAsync<List<Models.Players.Attribute>>(attributesPath);
 
@@ -83,7 +83,7 @@ public static class SeedData
             var existing = await db.Attributes.FirstOrDefaultAsync(x => x.Code == a.Code);
             if (existing == null)
             {
-                db.Attributes.Add(new Models.Attribute
+                db.Attributes.Add(new Models.Players.Attribute
                 {
                     Code = a.Code,
                     Name = a.Name
@@ -98,7 +98,7 @@ public static class SeedData
 
         var attributesByCode = await db.Attributes.ToDictionaryAsync(x => x.Code, x => x);
 
-        // 2) Position Weights
+        // 4) Position Weights
         var weightsPath = Path.Combine(seedDir, "positionWeights.json");
         var weights = await ReadJsonAsync<List<PositionWeightDto>>(weightsPath);
 
@@ -134,7 +134,27 @@ public static class SeedData
         }
         await db.SaveChangesAsync();
 
-        // 3) Countries
+        // 5) Regions
+        var regionsPath = Path.Combine(seedDir, "regions.json");
+        var regions = await ReadJsonAsync<List<Region>>(regionsPath);
+
+        foreach (var r in regions)
+        {
+            var existing = await db.Regions.FirstOrDefaultAsync(x => x.Code == r.Code);
+            if (existing == null)
+            {
+                db.Regions.Add(new Region { Code = r.Code, Name = r.Name });
+            }
+            else if (existing.Name != r.Name)
+            {
+                existing.Name = r.Name;
+            }
+        }
+        await db.SaveChangesAsync();
+
+        var regionsByCode = await db.Regions.ToDictionaryAsync(x => x.Code, x => x);
+
+        // 6) Countries
         var countriesPath = Path.Combine(seedDir, "countries.json");
         var countries = await ReadJsonAsync<List<CountryDto>>(countriesPath);
 
@@ -143,18 +163,84 @@ public static class SeedData
             var existing = await db.Countries.FirstOrDefaultAsync(x => x.Code == c.Code);
             if (existing == null)
             {
-                db.Countries.Add(new Country { Code = c.Code, Name = c.Name });
+                db.Countries.Add(new Models.Common.Country
+                {
+                    Code = c.Code,
+                    Name = c.Name,
+                    RegionCode = c.RegionCode 
+                });
             }
-            else if (existing.Name != c.Name)
+            else
             {
                 existing.Name = c.Name;
+
+                if (existing.RegionCode != c.RegionCode)
+                    existing.RegionCode = c.RegionCode;
             }
         }
         await db.SaveChangesAsync();
 
         var countriesByCode = await db.Countries.ToDictionaryAsync(x => x.Code, x => x);
 
-        // 4) Leagues
+        // 7) First Names
+        var firstNamesPath = Path.Combine(seedDir, "firstnames.json");
+        var firstNamesDict = await ReadJsonAsync<Dictionary<string, List<string>>>(firstNamesPath);
+
+        foreach (var kvp in firstNamesDict)
+        {
+            var regionCode = kvp.Key;
+            if (!regionsByCode.TryGetValue(regionCode, out var region))
+            {
+                logger.LogWarning("FirstNames references missing region {RegionCode}", regionCode);
+                continue;
+            }
+
+            foreach (var name in kvp.Value)
+            {
+                var exists = await db.FirstNames.FirstOrDefaultAsync(x => x.Name == name && x.RegionCode == regionCode);
+                if (exists == null)
+                {
+                    db.FirstNames.Add(new FirstName
+                    {
+                        Name = name,
+                        RegionCode = regionCode,
+                        Region = region
+                    });
+                }
+            }
+        }
+        await db.SaveChangesAsync();
+
+        // 8) Last Names
+        var lastNamesPath = Path.Combine(seedDir, "lastnames.json");
+        var lastNamesDict = await ReadJsonAsync<Dictionary<string, List<string>>>(lastNamesPath);
+
+        foreach (var kvp in lastNamesDict)
+        {
+            var regionCode = kvp.Key;
+            if (!regionsByCode.TryGetValue(regionCode, out var region))
+            {
+                logger.LogWarning("LastNames references missing region {RegionCode}", regionCode);
+                continue;
+            }
+
+            foreach (var name in kvp.Value)
+            {
+                var exists = await db.LastNames.FirstOrDefaultAsync(x => x.Name == name && x.RegionCode == regionCode);
+                if (exists == null)
+                {
+                    db.LastNames.Add(new LastName
+                    {
+                        Name = name,
+                        RegionCode = regionCode,
+                        Region = region
+                    });
+                }
+            }
+        }
+        await db.SaveChangesAsync();
+
+        // 9) Leagues
         var leaguesPath = Path.Combine(seedDir, "leagues.json");
         var leagues = await ReadJsonAsync<List<LeagueTemplateDto>>(leaguesPath);
 
@@ -196,7 +282,7 @@ public static class SeedData
             .Include(x => x.Country)
             .ToDictionaryAsync(x => x.LeagueCode, x => x);
 
-        // 5) Teams
+        // 10) Teams
         var teamsDir = Path.Combine(seedDir, "teams");
         var allTeams = new List<TeamTemplateDto>();
 
@@ -210,17 +296,14 @@ public static class SeedData
 
         foreach (var t in allTeams)
         {
-            // ⬇️ ДЕКЛАРИРАМЕ ВСИЧКИ ПРОМЕНЛИВИ ЕДНАЖ — В НАЧАЛОТО НА ЦИКЪЛА!
             int? countryId = null;
             string? countryCode = null;
 
-            // Евро-отбор (без лига)
             if (string.IsNullOrEmpty(t.CompetitionCode))
             {
                 var existing = dbTeams
                     .FirstOrDefault(x => x.Abbreviation == t.ShortName && x.LeagueId == null);
 
-                // Ако има валиден countryCode (не null и не празен стринг)
                 if (!string.IsNullOrWhiteSpace(t.CountryCode))
                 {
                     countryCode = t.CountryCode.Trim().ToUpper();
@@ -375,7 +458,7 @@ public static class SeedData
 
         await db.SaveChangesAsync();
 
-        // 6) MessageTemplates
+        // 11) MessageTemplates
         var msgTemplatesPath = Path.Combine(seedDir, "messageTemplates.json");
         var msgTemplates = await ReadJsonAsync<List<MessageTemplateDto>>(msgTemplatesPath);
 
@@ -414,7 +497,7 @@ public static class SeedData
 
         await db.SaveChangesAsync();
 
-        // 7.1) European Cup Phases
+        // 12) European Cup Phases
         var phasesPath = Path.Combine(seedDir, "europeanCupPhase.json");
         var phases = await ReadJsonAsync<List<EuropeanCupPhaseTemplate>>(phasesPath);
 
@@ -442,7 +525,7 @@ public static class SeedData
 
         var dbPhases = await db.EuropeanCupPhaseTemplates.ToDictionaryAsync(x => x.Id, x => x);
 
-        // 7.2) European Cups
+        // 13) European Cups
         var europeanCupsPath = Path.Combine(seedDir, "europeanCup.json");
         var europeanCups = await ReadJsonAsync<List<EuropeanCupTemplate>>(europeanCupsPath);
 
