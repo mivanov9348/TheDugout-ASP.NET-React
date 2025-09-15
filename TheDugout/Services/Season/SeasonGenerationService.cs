@@ -24,8 +24,9 @@ namespace TheDugout.Services.Season
                 {
                     Season = season,
                     Date = currentDate,
-                    Type = GetEventType(currentDate),
-                    Description = GetDescription(currentDate)
+                    Type = GetEventType(currentDate, season.StartDate),
+                    Description = GetDescription(currentDate, season.StartDate),
+                    IsOccupied = false
                 };
 
                 events.Add(evt);
@@ -36,10 +37,10 @@ namespace TheDugout.Services.Season
             return season;
         }
 
-        private SeasonEventType GetEventType(DateTime date)
+        private SeasonEventType GetEventType(DateTime date, DateTime seasonStart)
         {
-            if ((date.Month == 7 && date.Day <= 10) ||
-                (date.Month == 1 && date.Day <= 10))
+            // първите 7 дни от сезона са трансферен прозорец
+            if (date >= seasonStart && date < seasonStart.AddDays(7))
                 return SeasonEventType.TransferWindow;
 
             return date.DayOfWeek switch
@@ -51,8 +52,8 @@ namespace TheDugout.Services.Season
             };
         }
 
-        private string GetDescription(DateTime date) =>
-            GetEventType(date) switch
+        private string GetDescription(DateTime date, DateTime seasonStart) =>
+            GetEventType(date, seasonStart) switch
             {
                 SeasonEventType.TransferWindow => "Transfer Window",
                 SeasonEventType.ChampionshipMatch => "League Matchday",

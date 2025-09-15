@@ -48,7 +48,7 @@ public class AgencyService : IAgencyService
                 AgencyTemplateId = template.Id,
                 GameSaveId = save.Id,
                 TotalEarnings = 0,
-                Logo = $"{template.Name.Replace(" ", string.Empty)}.png",
+                Logo = $"{template.Name}.png",
                 IsActive = true,
                 RegionId = regionId,
                 Popularity = _rng.Next(1, 4)

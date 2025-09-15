@@ -18,6 +18,7 @@
         public DateTime Date { get; set; }
         public SeasonEventType Type { get; set; }
         public string Description { get; set; } = string.Empty;
+        public bool IsOccupied { get; set; } = false;
 
     }
 }

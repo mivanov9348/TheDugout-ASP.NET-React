@@ -142,8 +142,11 @@ export default function SearchPlayers({ gameSaveId }) {
     }
   };
 
+  // 🔹 Проверка дали да показваме колоната "Agency"
+  const showAgencyColumn = players.some((p) => p.agency);
+
   return (
-    <div className="mt-6 p-6 border rounded-xl bg-white shadow-lg max-w-[1400px] mx-auto">
+    <div className="mt-6 p-6 border rounded-xl bg-white shadow-lg max-w-[1400px] mx-auto overflow-hidden">
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
         <button
@@ -199,6 +202,7 @@ export default function SearchPlayers({ gameSaveId }) {
           <option value="position">Position</option>
           <option value="age">Age</option>
           <option value="price">Price</option>
+          <option value="freeagent">Free Agent</option>
         </select>
         <select
           className="border p-2 rounded-lg shadow-sm"
@@ -246,117 +250,164 @@ export default function SearchPlayers({ gameSaveId }) {
         </label>
       </div>
 
-      {/* Table */}
-      <div className="overflow-x-auto rounded-lg border">
-        <table className="w-full border-collapse text-sm">
-          <thead>
-            <tr className="bg-sky-50 text-sky-700">
-              <th className="p-3 border">Name</th>
-              <th className="p-3 border">Team</th>
-              <th className="p-3 border">Country</th>
-              <th className="p-3 border">Position</th>
-              {showInfo && (
-                <>
-                  <th className="p-3 border">Age</th>
-                  <th className="p-3 border">Price</th>
-                </>
-              )}
-              {showAttributes &&
-                allAttributeNames.map((attr) => (
-                  <th key={attr} className="p-3 border">
-                    {attr}
-                  </th>
-                ))}
-              {showStats && <th className="p-3 border">Season Stats</th>}
-              <th className="p-3 border">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {players.map((p) => (
-              <tr
-                key={p.id}
-                className="text-center hover:bg-sky-50 transition-colors"
-              >
-                <td
-                  className="p-2 border font-medium cursor-pointer"
-                  onClick={() => navigate(`/player/${p.id}`)}
-                >
-                  {p.name}
-                </td>
-                <td className="p-2 border">{p.team}</td>
-                <td className="p-2 border">{p.country}</td>
-                <td className="p-2 border">{p.position}</td>
-                {showInfo && (
-                  <>
-                    <td className="p-2 border">{p.age}</td>
-                    <td className="p-2 border">{formatPrice(p.price)}</td>
-                  </>
-                )}
-                {showAttributes &&
-                  allAttributeNames.map((attr) => {
-                    const attribute = p.attributes?.find(
-                      (a) => a.name === attr
-                    );
-                    return (
-                      <td key={attr} className="p-2 border">
-                        {attribute ? attribute.value : "-"}
-                      </td>
-                    );
-                  })}
-                {showStats && (
-                  <td className="p-2 border">
-                    {p.seasonStats && p.seasonStats.length > 0 ? (
-                      <ul className="list-disc list-inside text-left">
-                        {p.seasonStats.map((s, i) => (
-                          <li key={i}>
-                            Season {s.seasonId}: {s.goals}G / {s.assists}A /{" "}
-                            {s.matchesPlayed}M
-                          </li>
-                        ))}
-                      </ul>
-                    ) : (
-                      "-"
-                    )}
-                  </td>
-                )}
-                <td className="p-2 border">
-                  {!p.team ? (
-                    <button
-                      onClick={() => openBuyModal(p)}
-                      className="px-3 py-1 bg-green-500 hover:bg-green-600 text-white rounded-lg text-xs"
-                    >
-                      Buy
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() =>
-                        Swal.fire({
-                          icon: "info",
-                          title: "Not active yet",
-                          text: "Sending offers will be available in a future update.",
-                        })
-                      }
-                      disabled
-                      className="px-3 py-1 bg-gray-400 text-white rounded-lg text-xs cursor-not-allowed"
-                    >
-                      Send Offer
-                    </button>
-                  )}
-                </td>
-              </tr>
-            ))}
-            {players.length === 0 && (
-              <tr>
-                <td
-                  colSpan={9 + allAttributeNames.length}
-                  className="text-center py-6 text-gray-500"
-                >
-                  No players found.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+      {/* Table — FIXED: Scrollable without stretching page */}
+      <div className="overflow-x-auto rounded-lg border max-w-full scrollbar-thin">
+        <div className="min-w-full">
+          <table className="w-full border-collapse text-sm table-fixed">
+            <thead className="bg-sky-50 text-sky-700 sticky top-0">
+  <tr>
+    <th className="p-3 border whitespace-nowrap min-w-[180px]">Name</th>
+    <th className="p-3 border whitespace-nowrap min-w-[120px]">Team</th>
+    <th className="p-3 border whitespace-nowrap min-w-[100px]">Country</th>
+    <th className="p-3 border whitespace-nowrap min-w-[100px]">Position</th>
+    {showInfo && (
+      <>
+        <th className="p-3 border whitespace-nowrap min-w-[60px]">Age</th>
+        <th className="p-3 border whitespace-nowrap min-w-[100px]">Price</th>
+      </>
+    )}
+    {showAttributes &&
+      allAttributeNames.map((attr) => (
+        <th key={attr} className="p-3 border whitespace-nowrap min-w-[80px]">
+          {attr}
+        </th>
+      ))}
+    {showStats && (
+      <th className="p-3 border whitespace-nowrap min-w-[200px]">
+        Season Stats
+      </th>
+    )}
+    {showAgencyColumn && (
+      <th className="p-3 border whitespace-nowrap min-w-[120px]">Agency</th>
+    )}
+    <th className="p-3 border whitespace-nowrap min-w-[100px]">Actions</th>
+  </tr>
+</thead>
+            <tbody>
+  {players.map((p) => (
+    <tr
+      key={p.id}
+      className="text-center hover:bg-sky-50 transition-colors"
+    >
+      <td
+        className="p-2 border font-medium cursor-pointer whitespace-nowrap min-w-[180px]"
+        onClick={() => navigate(`/player/${p.id}`)}
+      >
+        {p.name}
+      </td>
+      <td className="p-2 border whitespace-nowrap min-w-[120px]">
+        {p.team || "—"}
+      </td>
+      <td className="p-2 border whitespace-nowrap min-w-[100px]">
+        {p.country}
+      </td>
+      <td className="p-2 border whitespace-nowrap min-w-[100px]">
+        {p.position}
+      </td>
+      {showInfo && (
+        <>
+          <td className="p-2 border whitespace-nowrap min-w-[60px]">
+            {p.age}
+          </td>
+          <td className="p-2 border whitespace-nowrap min-w-[100px]">
+            {formatPrice(p.price)}
+          </td>
+        </>
+      )}
+      {showAttributes &&
+        allAttributeNames.map((attr) => {
+          const attribute = p.attributes?.find((a) => a.name === attr);
+          return (
+            <td
+              key={attr}
+              className="p-2 border whitespace-nowrap min-w-[80px]"
+            >
+              {attribute ? attribute.value : "-"}
+            </td>
+          );
+        })}
+      {showStats && (
+        <td className="p-2 border min-w-[200px]">
+          {p.seasonStats && p.seasonStats.length > 0 ? (
+            <ul className="list-disc list-inside text-left">
+              {p.seasonStats.map((s, i) => (
+                <li key={i} className="whitespace-nowrap">
+                  Season {s.seasonId}: {s.goals}G / {s.assists}A /{" "}
+                  {s.matchesPlayed}M
+                </li>
+              ))}
+            </ul>
+          ) : (
+            "-"
+          )}
+        </td>
+      )}
+      {/* 🔹 Колона за агенция */}
+      {showAgencyColumn && (
+        <td className="p-2 border min-w-[120px]">
+          {p.agency ? (
+            <div className="flex flex-col items-center gap-1">
+              <img
+                src={
+                  `/agenciesLogos/${p.agency.logo}` || "/default-logo.png"
+                }
+                alt="Agency Logo"
+                className="w-8 h-8 rounded-full object-cover border"
+                onError={(e) => {
+                  e.target.src = "/default-logo.png";
+                }}
+              />
+              <div className="text-xs text-gray-600">{p.agency.name}</div>
+              <div className="text-xs bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded-full">
+                ★ {p.agency.popularity}
+              </div>
+            </div>
+          ) : (
+            "—"
+          )}
+        </td>
+      )}
+      <td className="p-2 border whitespace-nowrap min-w-[100px]">
+        {!p.team ? (
+          <button
+            onClick={() => openBuyModal(p)}
+            className="px-3 py-1 bg-green-500 hover:bg-green-600 text-white rounded-lg text-xs"
+          >
+            Buy
+          </button>
+        ) : (
+          <button
+            onClick={() =>
+              Swal.fire({
+                icon: "info",
+                title: "Not active yet",
+                text: "Sending offers will be available in a future update.",
+              })
+            }
+            disabled
+            className="px-3 py-1 bg-gray-400 text-white rounded-lg text-xs cursor-not-allowed"
+          >
+            Send Offer
+          </button>
+        )}
+      </td>
+    </tr>
+  ))}
+  {players.length === 0 && (
+    <tr>
+      <td
+        colSpan={
+          9 + allAttributeNames.length + (showAgencyColumn ? 1 : 0)
+        }
+        className="text-center py-6 text-gray-500"
+      >
+        No players found.
+      </td>
+    </tr>
+  )}
+</tbody>
+          </table>
+        </div>
       </div>
 
       {/* Pagination */}
@@ -390,9 +441,32 @@ export default function SearchPlayers({ gameSaveId }) {
               <span className="font-semibold">{selectedPlayer.name}</span>?
             </p>
             <p className="mb-4 text-gray-600">
-              Age: {selectedPlayer.age} | Position: {selectedPlayer.position} |
+              Age: {selectedPlayer.age} | Position: {selectedPlayer.position} |{" "}
               Price: {formatPrice(selectedPlayer.price)}
             </p>
+            {/* 🔹 Показваме агенцията и в модала */}
+            {selectedPlayer.agency && (
+              <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <img
+                    src={
+                      `/agenciesLogos/${selectedPlayer.agency.logo}` ||
+                      "/default-logo.png"
+                    }
+                    alt="Agency"
+                    className="w-6 h-6 rounded-full object-cover"
+                    onError={(e) => {
+                      e.target.src = "/default-logo.png";
+                    }}
+                  />
+                  <span className="text-sm">
+                    Represented by{" "}
+                    <strong>{selectedPlayer.agency.regionName}</strong> agency (
+                    ★{selectedPlayer.agency.popularity})
+                  </span>
+                </div>
+              </div>
+            )}
             <div className="flex justify-end gap-3">
               <button
                 onClick={closeBuyModal}

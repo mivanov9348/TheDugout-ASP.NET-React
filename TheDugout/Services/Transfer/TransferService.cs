@@ -36,6 +36,7 @@ namespace TheDugout.Services.Transfer
                 .Include(p => p.Country)
                 .Include(p => p.Attributes).ThenInclude(pa => pa.Attribute)
                 .Include(p => p.SeasonStats)
+                .Include(p => p.Agency).ThenInclude(a => a.Region)
                 .Where(p => p.GameSaveId == gameSaveId)
                 .AsQueryable();
 
@@ -123,7 +124,16 @@ namespace TheDugout.Services.Transfer
                         s.Goals,
                         s.Assists,
                         s.MatchesPlayed
-                    }).ToList()
+                    }).ToList(),
+                    Agency = p.TeamId == null ? new // ← Само ако е свободен агент
+                    {
+                        p.Agency!.Id,
+                        p.Agency.Logo,
+                        p.Agency.Budget,
+                        p.Agency.Popularity,
+                        RegionName = p.Agency.Region.Name,
+                        name = p.Agency.AgencyTemplate.Name
+                    } : null
                 })
                 .ToListAsync();
 
