@@ -5,6 +5,7 @@ using TheDugout.Models.Common;
 using TheDugout.Models.Competitions;
 using TheDugout.Models.Messages;
 using TheDugout.Models.Players;
+using TheDugout.Models.Staff;
 using TheDugout.Models.Teams;
 using static TheDugout.Data.Seed.SeedDtos;
 
@@ -488,7 +489,37 @@ public static class SeedData
 
         await db.SaveChangesAsync();
 
-        // 11) MessageTemplates
+        // Agencies
+        var agenciesPath = Path.Combine(seedDir, "agencies.json");
+        var agencies = await ReadJsonAsync<List<AgencyTemplateDto>>(agenciesPath);
+
+        foreach (var agencyDto in agencies)
+        {
+            var existing = await db.AgencyTemplates
+                .FirstOrDefaultAsync(x => x.Name == agencyDto.Name);
+
+            if (existing == null)
+            {
+                var newAgency = new AgencyTemplate
+                {
+                    Id = agencyDto.Id,
+                    Name = agencyDto.Name,
+                    RegionCode = agencyDto.RegionCode,
+                    IsActive = agencyDto.IsActive
+                };
+
+                db.AgencyTemplates.Add(newAgency);
+            }
+            else
+            {
+                existing.RegionCode = agencyDto.RegionCode;
+                existing.IsActive = agencyDto.IsActive;
+            }
+        }
+
+        await db.SaveChangesAsync();
+
+        // MessageTemplates
         var msgTemplatesPath = Path.Combine(seedDir, "messageTemplates.json");
         var msgTemplates = await ReadJsonAsync<List<MessageTemplateDto>>(msgTemplatesPath);
 
@@ -527,7 +558,7 @@ public static class SeedData
 
         await db.SaveChangesAsync();
 
-        // 12) European Cup Phases
+        // European Cup Phases
         var phasesPath = Path.Combine(seedDir, "europeanCupPhase.json");
         var phases = await ReadJsonAsync<List<EuropeanCupPhaseTemplate>>(phasesPath);
 

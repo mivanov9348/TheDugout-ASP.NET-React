@@ -27,6 +27,11 @@ namespace TheDugout.Data.Configurations
                    .WithMany(g => g.Players)
                    .HasForeignKey(p => p.GameSaveId)
                    .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasOne(p => p.Agency)
+                   .WithMany(a => a.Players)
+                   .HasForeignKey(p => p.AgencyId)
+                   .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

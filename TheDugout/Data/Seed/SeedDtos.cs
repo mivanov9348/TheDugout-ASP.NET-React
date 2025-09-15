@@ -61,5 +61,14 @@ namespace TheDugout.Data.Seed
            List<TeamTactic> TeamTactics
        );
 
+        public record AgencyTemplateDto(
+    int Id,
+    string Name,
+    string Logo,
+    string RegionCode,
+    bool IsActive
+);
+
+
     }
 }

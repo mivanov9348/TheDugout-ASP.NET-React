@@ -26,6 +26,16 @@ namespace TheDugout.Data.Configurations
                 .HasForeignKey(ft => ft.ToTeamId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            builder.HasOne(ft => ft.FromAgency)
+                .WithMany(a => a.TransactionsFrom)
+                .HasForeignKey(ft => ft.FromAgencyId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasOne(ft => ft.ToAgency)
+                .WithMany(a => a.TransactionsTo)
+                .HasForeignKey(ft => ft.ToAgencyId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             builder.HasOne(ft => ft.Bank)
                 .WithMany(b => b.Transactions)
                 .HasForeignKey(ft => ft.BankId)

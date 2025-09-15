@@ -13,6 +13,7 @@ using TheDugout.Services.Interfaces;
 using TheDugout.Services.League;
 using TheDugout.Services.Players;
 using TheDugout.Services.Season;
+using TheDugout.Services.Staff;
 using TheDugout.Services.Team;
 using TheDugout.Services.Template;
 using TheDugout.Services.Training;
@@ -47,6 +48,7 @@ builder.Services.AddScoped<ITrainingService, TrainingService>();
 builder.Services.AddScoped<ITransferService, TransferService>();
 builder.Services.AddScoped<IEuropeanCupService, EuropeanCupService>();
 builder.Services.AddScoped<ICupService, CupService>();
+builder.Services.AddScoped<IAgencyService, AgencyService>();
 
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 

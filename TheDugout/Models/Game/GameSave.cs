@@ -4,6 +4,7 @@ using TheDugout.Models.Matches;
 using TheDugout.Models.Messages;
 using TheDugout.Models.Players;
 using TheDugout.Models.Seasons;
+using TheDugout.Models.Staff;
 using TheDugout.Models.Teams;
 using TheDugout.Models.Training;
 
@@ -34,6 +35,8 @@ namespace TheDugout.Models.Game
         public ICollection<TrainingSession> TrainingSessions { get; set; } = new List<TrainingSession>();
         public ICollection<LeagueStanding> LeagueStandings { get; set; } = new List<LeagueStanding>();
         public ICollection<Cup> Cups { get; set; } = new List<Cup>();
+        public ICollection<Agency> Agencies { get; set; } = new List<Agency>();
+
 
     }
 }

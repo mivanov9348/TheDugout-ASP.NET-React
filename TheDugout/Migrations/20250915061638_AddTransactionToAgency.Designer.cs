@@ -12,8 +12,8 @@ using TheDugout.Data;
 namespace TheDugout.Migrations
 {
     [DbContext(typeof(DugoutDbContext))]
-    [Migration("20250914161011_adddb")]
-    partial class adddb
+    [Migration("20250915061638_AddTransactionToAgency")]
+    partial class AddTransactionToAgency
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -691,10 +691,16 @@ namespace TheDugout.Migrations
                     b.Property<decimal>("Fee")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<int?>("FromAgencyId")
+                        .HasColumnType("int");
+
                     b.Property<int?>("FromTeamId")
                         .HasColumnType("int");
 
                     b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ToAgencyId")
                         .HasColumnType("int");
 
                     b.Property<int?>("ToTeamId")
@@ -707,7 +713,11 @@ namespace TheDugout.Migrations
 
                     b.HasIndex("BankId");
 
+                    b.HasIndex("FromAgencyId");
+
                     b.HasIndex("FromTeamId");
+
+                    b.HasIndex("ToAgencyId");
 
                     b.HasIndex("ToTeamId");
 
@@ -999,6 +1009,9 @@ namespace TheDugout.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int?>("AgencyId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("BirthDate")
                         .HasColumnType("datetime2");
 
@@ -1040,6 +1053,8 @@ namespace TheDugout.Migrations
                         .HasColumnType("float");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AgencyId");
 
                     b.HasIndex("CountryId");
 
@@ -1262,6 +1277,92 @@ namespace TheDugout.Migrations
                     b.HasIndex("SeasonId");
 
                     b.ToTable("SeasonEvents");
+                });
+
+            modelBuilder.Entity("TheDugout.Models.Staff.Agency", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AgencyTemplateId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Budget")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Focus")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("GameSaveId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<string>("Logo")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<int>("Popularity")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RegionId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("TotalEarnings")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("decimal(18,2)")
+                        .HasDefaultValue(0m);
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AgencyTemplateId");
+
+                    b.HasIndex("GameSaveId");
+
+                    b.HasIndex("RegionId");
+
+                    b.ToTable("Agencies", (string)null);
+                });
+
+            modelBuilder.Entity("TheDugout.Models.Staff.AgencyTemplate", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Focus")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("RegionCode")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AgencyTemplates", (string)null);
                 });
 
             modelBuilder.Entity("TheDugout.Models.Teams.Tactic", b =>
@@ -1817,9 +1918,19 @@ namespace TheDugout.Migrations
                         .HasForeignKey("BankId")
                         .OnDelete(DeleteBehavior.Cascade);
 
+                    b.HasOne("TheDugout.Models.Staff.Agency", "FromAgency")
+                        .WithMany("TransactionsFrom")
+                        .HasForeignKey("FromAgencyId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("TheDugout.Models.Teams.Team", "FromTeam")
                         .WithMany("TransactionsFrom")
                         .HasForeignKey("FromTeamId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("TheDugout.Models.Staff.Agency", "ToAgency")
+                        .WithMany("TransactionsTo")
+                        .HasForeignKey("ToAgencyId")
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("TheDugout.Models.Teams.Team", "ToTeam")
@@ -1829,7 +1940,11 @@ namespace TheDugout.Migrations
 
                     b.Navigation("Bank");
 
+                    b.Navigation("FromAgency");
+
                     b.Navigation("FromTeam");
+
+                    b.Navigation("ToAgency");
 
                     b.Navigation("ToTeam");
                 });
@@ -1955,6 +2070,11 @@ namespace TheDugout.Migrations
 
             modelBuilder.Entity("TheDugout.Models.Players.Player", b =>
                 {
+                    b.HasOne("TheDugout.Models.Staff.Agency", "Agency")
+                        .WithMany("Players")
+                        .HasForeignKey("AgencyId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("TheDugout.Models.Common.Country", "Country")
                         .WithMany("Players")
                         .HasForeignKey("CountryId")
@@ -1976,6 +2096,8 @@ namespace TheDugout.Migrations
                         .WithMany("Players")
                         .HasForeignKey("TeamId")
                         .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Agency");
 
                     b.Navigation("Country");
 
@@ -2074,6 +2196,33 @@ namespace TheDugout.Migrations
                         .IsRequired();
 
                     b.Navigation("Season");
+                });
+
+            modelBuilder.Entity("TheDugout.Models.Staff.Agency", b =>
+                {
+                    b.HasOne("TheDugout.Models.Staff.AgencyTemplate", "AgencyTemplate")
+                        .WithMany()
+                        .HasForeignKey("AgencyTemplateId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TheDugout.Models.Game.GameSave", "GameSave")
+                        .WithMany("Agencies")
+                        .HasForeignKey("GameSaveId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TheDugout.Models.Common.Region", "Region")
+                        .WithMany("Agencies")
+                        .HasForeignKey("RegionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("AgencyTemplate");
+
+                    b.Navigation("GameSave");
+
+                    b.Navigation("Region");
                 });
 
             modelBuilder.Entity("TheDugout.Models.Teams.Team", b =>
@@ -2252,6 +2401,8 @@ namespace TheDugout.Migrations
 
             modelBuilder.Entity("TheDugout.Models.Common.Region", b =>
                 {
+                    b.Navigation("Agencies");
+
                     b.Navigation("Countries");
 
                     b.Navigation("FirstNames");
@@ -2311,6 +2462,8 @@ namespace TheDugout.Migrations
 
             modelBuilder.Entity("TheDugout.Models.Game.GameSave", b =>
                 {
+                    b.Navigation("Agencies");
+
                     b.Navigation("Bank")
                         .IsRequired();
 
@@ -2385,6 +2538,15 @@ namespace TheDugout.Migrations
                     b.Navigation("PlayerStats");
 
                     b.Navigation("TrainingSessions");
+                });
+
+            modelBuilder.Entity("TheDugout.Models.Staff.Agency", b =>
+                {
+                    b.Navigation("Players");
+
+                    b.Navigation("TransactionsFrom");
+
+                    b.Navigation("TransactionsTo");
                 });
 
             modelBuilder.Entity("TheDugout.Models.Teams.Tactic", b =>

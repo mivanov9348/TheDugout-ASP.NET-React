@@ -7,6 +7,7 @@ using TheDugout.Models.Matches;
 using TheDugout.Models.Messages;
 using TheDugout.Models.Players;
 using TheDugout.Models.Seasons;
+using TheDugout.Models.Staff;
 using TheDugout.Models.Teams;
 using TheDugout.Models.Training;
 using TheDugout.Models.Transfers;
@@ -60,6 +61,8 @@ namespace TheDugout.Data
         public DbSet<EuropeanCupPhaseTemplate> EuropeanCupPhaseTemplates { get; set; }
         public DbSet<EuropeanCupStanding> EuropeanCupStandings { get; set; }
         public DbSet<EuropeanCupTemplate> EuropeanCupTemplates { get; set; }
+        public DbSet<AgencyTemplate> AgencyTemplates { get; set; }
+        public DbSet<Agency> Agencies { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

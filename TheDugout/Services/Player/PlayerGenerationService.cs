@@ -9,6 +9,7 @@
     using TheDugout.Models.Common;
     using TheDugout.Models.Game;
     using TheDugout.Models.Players;
+    using TheDugout.Models.Staff;
     using TheDugout.Models.Teams;
     using TheDugout.Services.Team;
 
@@ -92,34 +93,31 @@
             return players;
         }
 
-        public List<Player> GenerateFreeAgents(GameSave save, int count = 100)
+        public Player? GenerateFreeAgent(GameSave save, Agency agency)
         {
-            if (save == null) throw new ArgumentNullException(nameof(save), "GameSave cannot be null.");
-            if (count <= 0) throw new ArgumentOutOfRangeException(nameof(count), "Count must be positive.");
+            if (save == null) throw new ArgumentNullException(nameof(save));
+            if (agency == null) throw new ArgumentNullException(nameof(agency));
 
             var countries = _context.Countries.ToList();
             var positions = _context.Positions.ToList();
 
-            if (!countries.Any())
-                throw new InvalidOperationException("No countries found in the database.");
-            if (!positions.Any())
-                throw new InvalidOperationException("No positions found in the database.");
+            if (!countries.Any() || !positions.Any())
+                return null;
 
-            var players = new List<Player>();
+            var position = positions[_rng.Next(positions.Count)];
+            var country = countries[_rng.Next(countries.Count)];
 
-            for (int i = 0; i < count; i++)
-            {
-                var randomCountry = countries[_rng.Next(countries.Count)];
-                var position = positions[_rng.Next(positions.Count)];
+            var player = CreateBasePlayer(save, null, country, position, agency);
 
-                var player = CreateBasePlayer(save, null, randomCountry, position);
-                players.Add(player);
-            }
+            if (player.Price > agency.Budget)
+                return null;
 
-            return players;
+            agency.Budget -= player.Price;
+
+            return player;
         }
 
-        private Player CreateBasePlayer(GameSave save, Team? team, Country country, Position position)
+        private Player CreateBasePlayer(GameSave save, Team? team, Country country, Position position, Agency? agency = null)
         {
             if (save == null) throw new ArgumentNullException(nameof(save));
             if (country == null) throw new ArgumentNullException(nameof(country));
@@ -159,7 +157,8 @@
                 WeightKg = _rng.Next(65, 95),
                 IsActive = true,
                 Country = country,
-                Attributes = new List<PlayerAttribute>()
+                Attributes = new List<PlayerAttribute>(),
+                Agency = agency
             };
 
             AssignAttributes(player, position);

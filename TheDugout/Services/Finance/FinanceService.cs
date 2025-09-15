@@ -1,14 +1,16 @@
-﻿using TheDugout.Data;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using TheDugout.Data;
 using TheDugout.Models.Finance;
 using TheDugout.Models.Game;
+using TheDugout.Models.Staff;
 
 namespace TheDugout.Services.Finance
 {
     public class FinanceService : IFinanceService
     {
         private readonly DugoutDbContext _context;
+        private readonly Random _rng = new();
         private readonly ILogger<FinanceService> _logger;
 
         public FinanceService(DugoutDbContext context, ILogger<FinanceService> logger)
@@ -56,7 +58,32 @@ namespace TheDugout.Services.Finance
 
             await _context.SaveChangesAsync();
         }
+        public async Task InitializeAgencyFundsAsync(GameSave gameSave, Agency agency)
+        {
+            if (gameSave == null) throw new ArgumentNullException(nameof(gameSave));
+            if (agency == null) throw new ArgumentNullException(nameof(agency));
 
+            var popularity = agency.Popularity;
+            var baseBudget = 1_000_000m;
+            var popularityAdjustment = (popularity - 2) * 200_000m; 
+            var randomVariance = _rng.Next(-100_000, 100_000); 
+
+            var initialFunds = baseBudget + popularityAdjustment + randomVariance;
+
+            initialFunds = Math.Clamp(initialFunds, 600_000m, 1_400_000m);
+
+            agency.Budget = initialFunds;
+
+            await BankToAgencyAsync(
+                gameSave.Bank!,
+                agency,
+                initialFunds,
+                $"Bank allocated {initialFunds:C0} to {agency.AgencyTemplate.Name}!",
+                TransactionType.StartingFunds
+            );
+
+            await _context.SaveChangesAsync();
+        }
 
         public async Task<FinancialTransaction> ClubToBankAsync(Models.Teams.Team team, Bank bank, decimal amount, string description, TransactionType type)
         {
@@ -102,6 +129,27 @@ namespace TheDugout.Services.Finance
 
             return await ExecuteTransactionAsync(tx);
         }
+
+        public async Task<FinancialTransaction> BankToAgencyAsync(
+    Bank bank,
+    Agency agency,
+    decimal amount,
+    string description,
+    TransactionType type)
+        {
+            var tx = new FinancialTransaction
+            {
+                BankId = bank.Id,
+                ToAgencyId = agency.Id,
+                Amount = amount,
+                Description = description,
+                Type = type,
+                Status = TransactionStatus.Pending
+            };
+
+            return await ExecuteTransactionAsync(tx);
+        }
+
 
         public async Task<FinancialTransaction> ExecuteTransactionAsync(FinancialTransaction transaction)
         {

@@ -1,0 +1,102 @@
+[
+  {
+    "Name": "No Offside Agency",
+    "RegionCode": "NAE",
+    "IsActive": true
+  },
+  {
+    "Name": "¡Mano de Dios Management!",
+    "RegionCode": "NAL",
+    "IsActive": true
+  },
+  {
+    "Name": "Samba Nutmeg Syndicate",
+    "RegionCode": "SAM",
+    "IsActive": true
+  },
+  {
+    "Name": "Island Diving Academy",
+    "RegionCode": "CAR",
+    "IsActive": true
+  },
+  {
+    "Name": "VAR My Agent – London Branch",
+    "RegionCode": "WEU",
+    "IsActive": true
+  },
+  {
+    "Name": "Viking Boot Deal Agency",
+    "RegionCode": "NEU",
+    "IsActive": true
+  },
+  {
+    "Name": "Red Card Rehab – Moscow Office",
+    "RegionCode": "EEU",
+    "IsActive": true
+  },
+  {
+    "Name": "Balkan Banana Kick Talent",
+    "RegionCode": "SEE",
+    "IsActive": true
+  },
+  {
+    "Name": "Mediterranean Maestros & Co.",
+    "RegionCode": "MED",
+    "IsActive": true
+  },
+  {
+    "Name": "Desert Top Bins Only",
+    "RegionCode": "MEA",
+    "IsActive": true
+  },
+  {
+    "Name": "Bosphorus Transfer Cleaners",
+    "RegionCode": "TUR",
+    "IsActive": true
+  },
+  {
+    "Name": "Jungle Corner Flag Syndicate",
+    "RegionCode": "CAF",
+    "IsActive": true
+  },
+  {
+    "Name": "Atlas Own Goal Agency",
+    "RegionCode": "NAF",
+    "IsActive": true
+  },
+  {
+    "Name": "Savanna Assist Department",
+    "RegionCode": "EAF",
+    "IsActive": true
+  },
+  {
+    "Name": "Veldt Last Man Standing FC",
+    "RegionCode": "SAF",
+    "IsActive": true
+  },
+  {
+    "Name": "Steppe Boot Deal Agency",
+    "RegionCode": "CAS",
+    "IsActive": true
+  },
+  {
+    "Name": "Monsoon Penalty Box Pros",
+    "RegionCode": "SAS",
+    "IsActive": true
+  },
+  {
+    "Name": "Dragon’s Diving School",
+    "RegionCode": "EAS",
+    "IsActive": true
+  },
+  {
+    "Name": "Tropical VAR My Agent",
+    "RegionCode": "OCE",
+    "IsActive": true
+  },
+  {
+    "Name": "Agent Rooney (Not Him) – Bangkok Branch",
+    "RegionCode": "SEA",
+    "IsActive": true
+  }
+]

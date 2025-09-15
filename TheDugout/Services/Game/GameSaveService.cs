@@ -9,6 +9,7 @@ using TheDugout.Services.Fixture;
 using TheDugout.Services.League;
 using TheDugout.Services.Players;
 using TheDugout.Services.Season;
+using TheDugout.Services.Staff;
 using TheDugout.Services.Team;
 
 namespace TheDugout.Services.Game
@@ -26,6 +27,7 @@ namespace TheDugout.Services.Game
         private readonly ITeamPlanService _teamPlanService;
         private readonly IEuropeanCupService _europeanCupService;
         private readonly ICupService _cupService;
+        private readonly IAgencyService _agencyService;
 
         public GameSaveService(
             DugoutDbContext context,
@@ -38,7 +40,8 @@ namespace TheDugout.Services.Game
             ITeamPlanService teamPlanService,
             IEuropeanCupService europeanCupService,
             ITeamGenerationService teamGenerator,
-            ICupService cupService
+            ICupService cupService,
+            IAgencyService agencyService
         )
         {
             _context = context;
@@ -52,6 +55,7 @@ namespace TheDugout.Services.Game
             this._europeanCupService = europeanCupService;
             _teamGenerator = teamGenerator;
             _cupService = cupService;
+            _agencyService = agencyService;
         }
 
         public async Task<List<object>> GetUserSavesAsync(int userId)
@@ -114,6 +118,9 @@ namespace TheDugout.Services.Game
                 // 2. Банка / финанси
                 await _financeService.CreateBankAsync(gameSave);
                 await _context.SaveChangesAsync();
+
+                // Инициализация на агенции
+                await _agencyService.InitializeAgenciesForGameSaveAsync(gameSave);
 
                 // 3. Създаваме първи сезон
                 var startDate = new DateTime(DateTime.UtcNow.Year, 7, 1);
@@ -178,14 +185,7 @@ namespace TheDugout.Services.Game
                     }
                 }
 
-                await _cupService.InitializeCupsForGameSaveAsync(gameSave, season.Id);
-
-                // 5. Свободни агенти
-                var freeAgents = _playerGenerator.GenerateFreeAgents(gameSave, 100);
-                foreach (var agent in freeAgents)
-                    _context.Players.Add(agent);
-
-                await _context.SaveChangesAsync();
+                await _cupService.InitializeCupsForGameSaveAsync(gameSave, season.Id);               
 
                 // 6. Генерираме fixtures
                 await _fixturesService.GenerateFixturesAsync(gameSave.Id, season.Id, startDate);

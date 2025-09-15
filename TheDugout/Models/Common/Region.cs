@@ -1,4 +1,6 @@
-﻿namespace TheDugout.Models.Common
+﻿using TheDugout.Models.Staff;
+
+namespace TheDugout.Models.Common
 {
     public class Region
     {
@@ -9,5 +11,7 @@
         public ICollection<Country> Countries { get; set; } = new List<Country>();
         public ICollection<FirstName> FirstNames { get; set; } = new List<FirstName>();
         public ICollection<LastName> LastNames { get; set; } = new List<LastName>();
+        public ICollection<Agency> Agencies { get; set; } = new List<Agency>();
+
     }
 }
