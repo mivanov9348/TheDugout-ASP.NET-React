@@ -1,101 +1,101 @@
 [
   {
-    "Name": "No Offside Agency",
+    "Name": "Offside United",
     "RegionCode": "NAE",
     "IsActive": true
   },
   {
-    "Name": "¡Mano de Dios Management!",
+    "Name": "Golazo Group",
     "RegionCode": "NAL",
     "IsActive": true
   },
   {
-    "Name": "Samba Nutmeg Syndicate",
+    "Name": "Samba Strikers",
     "RegionCode": "SAM",
     "IsActive": true
   },
   {
-    "Name": "Island Diving Academy",
+    "Name": "Carib Dribblers",
     "RegionCode": "CAR",
     "IsActive": true
   },
   {
-    "Name": "VAR My Agent – London Branch",
+    "Name": "VAR & Sons",
     "RegionCode": "WEU",
     "IsActive": true
   },
   {
-    "Name": "Viking Boot Deal Agency",
+    "Name": "Nordic Boots",
     "RegionCode": "NEU",
     "IsActive": true
   },
   {
-    "Name": "Red Card Rehab – Moscow Office",
+    "Name": "Slav Kicks",
     "RegionCode": "EEU",
     "IsActive": true
   },
   {
-    "Name": "Balkan Banana Kick Talent",
+    "Name": "Balkan Ballers",
     "RegionCode": "SEE",
     "IsActive": true
   },
   {
-    "Name": "Mediterranean Maestros & Co.",
+    "Name": "Med Forwards",
     "RegionCode": "MED",
     "IsActive": true
   },
   {
-    "Name": "Desert Top Bins Only",
+    "Name": "Desert Goals",
     "RegionCode": "MEA",
     "IsActive": true
   },
   {
-    "Name": "Bosphorus Transfer Cleaners",
+    "Name": "Anatolia Transfers",
     "RegionCode": "TUR",
     "IsActive": true
   },
   {
-    "Name": "Jungle Corner Flag Syndicate",
+    "Name": "Congo Corners",
     "RegionCode": "CAF",
     "IsActive": true
   },
   {
-    "Name": "Atlas Own Goal Agency",
+    "Name": "Maghreb Agents",
     "RegionCode": "NAF",
     "IsActive": true
   },
   {
-    "Name": "Savanna Assist Department",
+    "Name": "Savanna Strikers",
     "RegionCode": "EAF",
     "IsActive": true
   },
   {
-    "Name": "Veldt Last Man Standing FC",
+    "Name": "Zulu Goals",
     "RegionCode": "SAF",
     "IsActive": true
   },
   {
-    "Name": "Steppe Boot Deal Agency",
+    "Name": "Steppe XI",
     "RegionCode": "CAS",
     "IsActive": true
   },
   {
-    "Name": "Monsoon Penalty Box Pros",
+    "Name": "Cricket Boots",
     "RegionCode": "SAS",
     "IsActive": true
   },
   {
-    "Name": "Dragon’s Diving School",
+    "Name": "Dragon XI",
     "RegionCode": "EAS",
     "IsActive": true
   },
   {
-    "Name": "Tropical VAR My Agent",
+    "Name": "Pacific VAR",
     "RegionCode": "OCE",
     "IsActive": true
   },
   {
-    "Name": "Agent Rooney (Not Him) – Bangkok Branch",
+    "Name": "Bangkok Ballers",
     "RegionCode": "SEA",
     "IsActive": true
   }

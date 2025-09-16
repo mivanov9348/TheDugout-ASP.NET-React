@@ -4,6 +4,7 @@ using System;
 using TheDugout.Data;
 using TheDugout.Models.Competitions;
 using TheDugout.Models.Matches;
+using TheDugout.Services.Season;
 
 namespace TheDugout.Services.Fixture
 {
@@ -11,18 +12,23 @@ namespace TheDugout.Services.Fixture
     {
         private readonly DugoutDbContext _context;
         private readonly IFixturesHelperService _fixturesHelperService;
+        private readonly ISeasonCalendarService _seasonCalendarService;
         private readonly ILogger<EurocupFixturesService> _logger;
         private readonly Random _random = new();
 
 
-        public EurocupFixturesService(DugoutDbContext context, IFixturesHelperService fixturesHelperService, ILogger<EurocupFixturesService> logger)
+        public EurocupFixturesService(DugoutDbContext context, IFixturesHelperService fixturesHelperService, ILogger<EurocupFixturesService> logger, ISeasonCalendarService seasonCalendarService)
         {
             _context = context;
             _fixturesHelperService = fixturesHelperService;
+            _seasonCalendarService = seasonCalendarService;
             _logger = logger;
         }
 
-        public async Task GenerateEuropeanLeaguePhaseFixturesAsync(int europeanCupId, int seasonId, CancellationToken ct = default)
+        public async Task GenerateEuropeanLeaguePhaseFixturesAsync(
+    int europeanCupId,
+    int seasonId,
+    CancellationToken ct = default)
         {
             var cup = await _context.Set<Models.Competitions.EuropeanCup>()
                 .Include(x => x.Template)
@@ -30,6 +36,11 @@ namespace TheDugout.Services.Fixture
                 .Include(x => x.Phases).ThenInclude(p => p.PhaseTemplate)
                 .FirstOrDefaultAsync(x => x.Id == europeanCupId, ct)
                 ?? throw new InvalidOperationException($"Cup {europeanCupId} not found.");
+
+            var season = await _context.Seasons
+                .Include(s => s.Events)
+                .FirstOrDefaultAsync(s => s.Id == seasonId, ct)
+                ?? throw new InvalidOperationException("Season not found.");
 
             var leaguePhase = cup.Phases.FirstOrDefault(p => !p.PhaseTemplate.IsKnockout)
                 ?? throw new InvalidOperationException("No league phase found.");
@@ -48,6 +59,9 @@ namespace TheDugout.Services.Fixture
             var homeCount = teamIds.ToDictionary(id => id, _ => 0);
             var fixturesToAdd = new List<Models.Matches.Fixture>();
 
+            // Взимаме равномерно разпределени дати от календара
+            var roundDates = _seasonCalendarService.DistributeEuropeanRounds(season, rounds);
+
             for (int round = 1; round <= rounds; round++)
             {
                 var roundPairs = _fixturesHelperService.TryFindRoundPairing(teamIds, existingPairs, 2000)
@@ -63,7 +77,7 @@ namespace TheDugout.Services.Fixture
                         seasonId,
                         home,
                         away,
-                        DateTime.UtcNow.AddDays(round * 7),
+                        roundDates[Math.Min(round - 1, roundDates.Count - 1)], // <-- вече от календара
                         round,
                         CompetitionType.EuropeanCup,
                         europeanCupPhaseId: leaguePhase.Id
@@ -79,6 +93,7 @@ namespace TheDugout.Services.Fixture
 
             _logger.LogInformation("Generated {Count} league fixtures for cup {CupId}", fixturesToAdd.Count, cup.Id);
         }
+
 
         // ---------------- EUROCUP: KNOCKOUT ----------------
         public async Task GenerateEuropeanKnockoutFixturesAsync(int europeanCupId, int knockoutPhaseTemplateId, CancellationToken ct = default)

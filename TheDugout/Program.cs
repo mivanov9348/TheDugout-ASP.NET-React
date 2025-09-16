@@ -20,7 +20,6 @@ using TheDugout.Services.Training;
 using TheDugout.Services.Transfer;
 using TheDugout.Services.User;
 
-
 var builder = WebApplication.CreateBuilder(args);
 
 var connectionString = builder.Configuration.GetConnectionString("Default");
@@ -40,6 +39,8 @@ builder.Services.AddScoped<ITeamPlanService, TeamPlanService>();
 builder.Services.AddScoped<ITeamGenerationService, TeamGenerationService>();
 builder.Services.AddScoped<ILeagueService, LeagueService>();
 builder.Services.AddScoped<ISeasonGenerationService, SeasonGenerationService>();
+builder.Services.AddScoped<ISeasonCalendarService, SeasonCalendarService>();
+builder.Services.AddScoped<ISeasonSchedulingService, SeasonSchedulingService>();
 builder.Services.AddScoped<IPlayerInfoService, PlayerInfoService>();
 builder.Services.AddScoped<ITeamService, TeamService>();
 builder.Services.AddScoped<IFinanceService, FinanceService>();
@@ -53,9 +54,7 @@ builder.Services.AddScoped<ILeagueFixturesService, LeagueFixturesService>();
 builder.Services.AddScoped<ICupFixturesService, CupFixturesService>();
 builder.Services.AddScoped<IEurocupFixturesService, EurocupFixturesService>();
 
-
 builder.Services.AddAutoMapper(typeof(MappingProfile));
-
 
 builder.Services.AddCors(options =>
 {
