@@ -2,6 +2,7 @@
 using TheDugout.Data;
 using TheDugout.Models.Competitions;
 using TheDugout.Models.Matches;
+using TheDugout.Services.Fixture;
 
 
 namespace TheDugout.Services.EuropeanCup
@@ -9,11 +10,16 @@ namespace TheDugout.Services.EuropeanCup
     public class EuropeanCupService : IEuropeanCupService
     {
         private readonly DugoutDbContext _context;
+        //private readonly IFixturesService _fixturesService;
+        private readonly IEurocupFixturesService _eurocupFixturesService;
+        private readonly IFixturesHelperService _fixturesHelperService;
         private readonly ILogger<EuropeanCupService> _logger;
         private readonly Random _rng = new Random();
-        public EuropeanCupService(DugoutDbContext context, ILogger<EuropeanCupService> logger)
+        public EuropeanCupService(DugoutDbContext context, IFixturesHelperService fixturesHelperService,IEurocupFixturesService eurocupFixturesService, ILogger<EuropeanCupService> logger)
         {
             _context = context;
+            _eurocupFixturesService = eurocupFixturesService;
+            _fixturesHelperService = fixturesHelperService;
             _logger = logger;
         }
 
@@ -118,161 +124,7 @@ namespace TheDugout.Services.EuropeanCup
             _logger.LogInformation("Initialized EuropeanCup {CupId} with {Teams} teams and logo: {Logo}", cup.Id, chosenTeams.Count, validLogoFileName);
 
             return cup;
-        }
-
-        public async Task GenerateLeaguePhaseFixturesAsync(
-    int europeanCupId,
-    int seasonId,
-    CancellationToken ct = default)
-        {
-            // 1. Зареждаме купата
-            var cup = await _context.Set<Models.Competitions.EuropeanCup>()
-                .Include(x => x.Template)
-                .Include(x => x.Teams)
-                .Include(x => x.Phases).ThenInclude(p => p.PhaseTemplate)
-                .FirstOrDefaultAsync(x => x.Id == europeanCupId, ct)
-                ?? throw new InvalidOperationException($"Cup {europeanCupId} not found.");
-
-            // 2. Намираме league фаза
-            var leaguePhase = cup.Phases
-                .FirstOrDefault(p => !p.PhaseTemplate.IsKnockout)
-                ?? throw new InvalidOperationException("No league phase template found for this cup.");
-
-            int rounds = cup.Template.LeaguePhaseMatchesPerTeam; // 8
-            var teamIds = cup.Teams.Select(t => t.TeamId).ToList();
-
-            // 3. Проверяваме за вече генерирани fixtures
-            var existingPairs = new HashSet<string>();
-            var existing = await _context.Set<Models.Matches.Fixture>()
-                .Where(f => f.EuropeanCupPhaseId == leaguePhase.Id)
-                .ToListAsync(ct);
-            foreach (var f in existing)
-                existingPairs.Add(PairKey(f.HomeTeamId, f.AwayTeamId));
-
-            var homeCount = teamIds.ToDictionary(id => id, id => 0);
-            var fixturesToAdd = new List<Models.Matches.Fixture>();
-
-            // 4. Генерираме всеки рунд
-            for (int round = 1; round <= rounds; round++)
-            {
-                var roundPairs = TryFindRoundPairing(teamIds, existingPairs, maxAttempts: 2000)
-                                 ?? GreedyPairingMinimizeRepeats(teamIds, existingPairs);
-
-                foreach (var (a, b) in roundPairs)
-                {
-                    int home = DecideHome(a, b, homeCount);
-                    int away = home == a ? b : a;
-
-                    fixturesToAdd.Add(new Models.Matches.Fixture
-                    {
-                        CompetitionType = CompetitionType.EuropeanCup,
-                        EuropeanCupPhaseId = leaguePhase.Id,
-                        HomeTeamId = home,
-                        AwayTeamId = away,
-                        Date = DateTime.UtcNow.AddDays(round * 7),
-                        Round = round,
-                        Status = MatchStatus.Scheduled,
-                        GameSaveId = cup.GameSaveId,
-                        SeasonId = seasonId
-                    });
-
-                    existingPairs.Add(PairKey(a, b));
-                    homeCount[home]++;
-                }
-            }
-
-            await _context.AddRangeAsync(fixturesToAdd, ct);
-            await _context.SaveChangesAsync(ct);
-
-            _logger.LogInformation("Generated {Count} league fixtures for cup {CupId}", fixturesToAdd.Count, cup.Id);
-        }
-
-        private List<(int, int)> TryFindRoundPairing(List<int> teamIds, HashSet<string> existingPairs, int maxAttempts)
-        {
-            // attempt shuffles to find a pairing where none of the pairs exist in existingPairs
-            var rnd = _rng;
-            var n = teamIds.Count;
-            if (n % 2 != 0) throw new InvalidOperationException("Team count must be even for pairing.");
-
-            var working = teamIds.ToArray();
-            for (int attempt = 0; attempt < maxAttempts; attempt++)
-            {
-                // Fisher-Yates shuffle
-                for (int i = n - 1; i > 0; i--)
-                {
-                    int j = rnd.Next(i + 1);
-                    var tmp = working[i];
-                    working[i] = working[j];
-                    working[j] = tmp;
-                }
-
-                bool ok = true;
-                var pairs = new List<(int, int)>(n / 2);
-                for (int i = 0; i < n; i += 2)
-                {
-                    var a = working[i];
-                    var b = working[i + 1];
-                    if (existingPairs.Contains(PairKey(a, b)))
-                    {
-                        ok = false;
-                        break;
-                    }
-                    pairs.Add((a, b));
-                }
-
-                if (ok) return pairs;
-            }
-
-            return null; // no perfect pairing found
-        }
-
-        private List<(int, int)> GreedyPairingMinimizeRepeats(List<int> teamIds, HashSet<string> existingPairs)
-        {
-            // Greedy: for each team, try to pick opponent not used yet, else accept least-worse
-            var remaining = new HashSet<int>(teamIds);
-            var pairs = new List<(int, int)>();
-            while (remaining.Count > 0)
-            {
-                int a = remaining.First();
-                remaining.Remove(a);
-
-                int best = -1;
-                foreach (var cand in remaining)
-                {
-                    if (!existingPairs.Contains(PairKey(a, cand)))
-                    {
-                        best = cand;
-                        break;
-                    }
-                }
-                if (best == -1)
-                {
-                    // all remaining have been seen with a — pick random one (minimize future harm)
-                    best = remaining.First();
-                }
-
-                remaining.Remove(best);
-                pairs.Add((a, best));
-                // do NOT add to existingPairs here — caller will add after acceptance
-            }
-            return pairs;
-        }
-
-        private string PairKey(int a, int b)
-        {
-            if (a < b) return $"{a}:{b}";
-            return $"{b}:{a}";
-        }
-
-        private int DecideHome(int a, int b, Dictionary<int, int> homeCount)
-        {
-            var aHome = homeCount.TryGetValue(a, out var ac) ? ac : 0;
-            var bHome = homeCount.TryGetValue(b, out var bc) ? bc : 0;
-            if (aHome < bHome) return a;
-            if (bHome < aHome) return b;
-            // equal -> random
-            return _rng.Next(2) == 0 ? a : b;
-        }
+        }       
 
         public async Task CreateStandingsIfNotExistsAsync(int europeanCupId, CancellationToken ct = default)
         {
@@ -490,89 +342,8 @@ namespace TheDugout.Services.EuropeanCup
             var nextKnockoutTemplate = cup.Template.PhaseTemplates.OrderBy(p => p.Order).FirstOrDefault(p => p.IsKnockout)
                                         ?? throw new InvalidOperationException("No knockout phase template defined.");
 
-            await GenerateKnockoutFixturesAsync(europeanCupId, nextKnockoutTemplate.Id, ct);
-        }
-
-        public async Task GenerateKnockoutFixturesAsync(int europeanCupId, int knockoutPhaseTemplateId, CancellationToken ct = default)
-        {
-            // Load target phase template and corresponding phase instance
-            var phaseTemplate = await _context.Set<EuropeanCupPhaseTemplate>()
-                                         .FirstOrDefaultAsync(p => p.Id == knockoutPhaseTemplateId, ct)
-                              ?? throw new InvalidOperationException("Phase template not found.");
-
-            var phase = await _context.Set<EuropeanCupPhase>()
-                                 .FirstOrDefaultAsync(p => p.EuropeanCupId == europeanCupId && p.PhaseTemplateId == knockoutPhaseTemplateId, ct)
-                        ?? throw new InvalidOperationException("Phase instance not found for this cup/template.");
-
-            // get top 16 teams from standings
-            var top16 = await _context.Set<EuropeanCupStanding>()
-                                 .Where(s => s.EuropeanCupId == europeanCupId)
-                                 .OrderBy(s => s.Ranking)
-                                 .Take(16)
-                                 .Select(s => s.TeamId)
-                                 .ToListAsync(ct);
-
-            if (top16.Count != 16)
-                throw new InvalidOperationException($"Expect 16 teams to generate knockout, got {top16.Count}.");
-
-            // pairing strategy: random shuffle then pair sequentially (can change to seeded)
-            var shuffled = top16.OrderBy(_ => _rng.Next()).ToList();
-
-            var fixturesToAdd = new List<Models.Matches.Fixture>();
-            for (int i = 0; i < shuffled.Count; i += 2)
-            {
-                int a = shuffled[i];
-                int b = shuffled[i + 1];
-
-                if (phaseTemplate.IsTwoLegged)
-                {
-                    // two fixtures: a home vs b, then b home vs a
-                    var f1 = new Models.Matches.Fixture
-                    {
-                        CompetitionType = CompetitionType.EuropeanCup,
-                        EuropeanCupPhaseId = phase.Id,
-                        HomeTeamId = a,
-                        AwayTeamId = b,
-                        Date = DateTime.UtcNow.AddDays(7 + (i / 2) * 14),
-                        Round = 1,
-                        Status = MatchStatus.Scheduled,
-                        GameSaveId = (await _context.Set<Models.Competitions.EuropeanCup>().Where(c => c.Id == europeanCupId).Select(c => c.GameSaveId).FirstAsync(ct))
-                    };
-                    var f2 = new Models.Matches.Fixture
-                    {
-                        CompetitionType = CompetitionType.EuropeanCup,
-                        EuropeanCupPhaseId = phase.Id,
-                        HomeTeamId = b,
-                        AwayTeamId = a,
-                        Date = f1.Date.AddDays(7), // return leg
-                        Round = 2,
-                        Status = MatchStatus.Scheduled,
-                        GameSaveId = f1.GameSaveId,
-                    };
-                    fixturesToAdd.Add(f1);
-                    fixturesToAdd.Add(f2);
-                }
-                else
-                {
-                    var f = new Models.Matches.Fixture
-                    {
-                        CompetitionType = CompetitionType.EuropeanCup,
-                        EuropeanCupPhaseId = phase.Id,
-                        HomeTeamId = a,
-                        AwayTeamId = b,
-                        Date = DateTime.UtcNow.AddDays(7 + (i / 2) * 7),
-                        Round = 1,
-                        Status = MatchStatus.Scheduled,
-                        GameSaveId = (await _context.Set<Models.Competitions.EuropeanCup>().Where(c => c.Id == europeanCupId).Select(c => c.GameSaveId).FirstAsync(ct))
-                    };
-                    fixturesToAdd.Add(f);
-                }
-            }
-
-            await _context.AddRangeAsync(fixturesToAdd, ct);
-            await _context.SaveChangesAsync(ct);
-            _logger.LogInformation("Generated {Count} knockout fixtures for phase {PhaseId}", fixturesToAdd.Count, phase.Id);
-        }
+            await _eurocupFixturesService.GenerateEuropeanKnockoutFixturesAsync(europeanCupId, nextKnockoutTemplate.Id, ct);
+        }        
         public async Task ResolveKnockoutPhaseAsync(int europeanCupPhaseId, CancellationToken ct = default)
         {
             var phase = await _context.Set<EuropeanCupPhase>()
@@ -591,7 +362,7 @@ namespace TheDugout.Services.EuropeanCup
             if (phase.PhaseTemplate.IsTwoLegged)
             {
                 // group fixtures by unordered pair key
-                var grouped = fixtures.GroupBy(f => PairKey(f.HomeTeamId, f.AwayTeamId));
+                var grouped = fixtures.GroupBy(f => _fixturesHelperService.PairKey(f.HomeTeamId, f.AwayTeamId));
                 foreach (var g in grouped)
                 {
                     // pick the two fixtures, compute aggregate
@@ -768,5 +539,7 @@ namespace TheDugout.Services.EuropeanCup
             _logger.LogInformation("FinalizeTournament called for {CupId}", europeanCupId);
             return Task.CompletedTask;
         }
+
+
     }
 }

@@ -20,7 +20,8 @@ namespace TheDugout.Services.Game
         private readonly ILogger<GameSaveService> _logger;
         private readonly ILeagueService _leagueGenerator;
         private readonly ISeasonGenerationService _seasonGenerator;
-        private readonly IFixturesService _fixturesService;
+        private readonly ILeagueFixturesService _leagueFixturesService;
+        private readonly IEurocupFixturesService _eurocupFixturesService;
         private readonly IPlayerGenerationService _playerGenerator;
         private readonly IFinanceService _financeService;
         private readonly ITeamGenerationService _teamGenerator;
@@ -34,28 +35,30 @@ namespace TheDugout.Services.Game
             ILogger<GameSaveService> logger,
             ILeagueService leagueGenerator,
             ISeasonGenerationService seasonGenerator,
-            IFixturesService fixturesService,
             IPlayerGenerationService playerGenerator,
             IFinanceService financeService,
             ITeamPlanService teamPlanService,
             IEuropeanCupService europeanCupService,
             ITeamGenerationService teamGenerator,
             ICupService cupService,
-            IAgencyService agencyService
+            IAgencyService agencyService,
+            ILeagueFixturesService leagueFixturesService,
+            IEurocupFixturesService eurocupFixturesService
         )
         {
             _context = context;
             _logger = logger;
             _leagueGenerator = leagueGenerator;
             _seasonGenerator = seasonGenerator;
-            _fixturesService = fixturesService;
             _playerGenerator = playerGenerator;
             _financeService = financeService;
             _teamPlanService = teamPlanService;
-            this._europeanCupService = europeanCupService;
+            _europeanCupService = europeanCupService;
             _teamGenerator = teamGenerator;
             _cupService = cupService;
             _agencyService = agencyService;
+            _leagueFixturesService = leagueFixturesService;
+            _eurocupFixturesService = eurocupFixturesService;
         }
 
         public async Task<List<object>> GetUserSavesAsync(int userId)
@@ -172,7 +175,7 @@ namespace TheDugout.Services.Game
                             ct: ct);
 
                         // 3. Генерираме league-phase fixtures
-                        await _europeanCupService.GenerateLeaguePhaseFixturesAsync(cup.Id, season.Id, ct);
+                        await _eurocupFixturesService.GenerateEuropeanLeaguePhaseFixturesAsync(cup.Id, season.Id, ct);
 
                         _logger.LogInformation(
                             "Successfully initialized European Cup '{TemplateName}' (ID: {CupId}) with {Teams} teams.",
@@ -187,8 +190,8 @@ namespace TheDugout.Services.Game
 
                 await _cupService.InitializeCupsForGameSaveAsync(gameSave, season.Id);               
 
-                // 6. Генерираме fixtures
-                await _fixturesService.GenerateFixturesAsync(gameSave.Id, season.Id, startDate);
+                // 6. Генерираме league fixtures
+                await _leagueFixturesService.GenerateLeagueFixturesAsync(gameSave.Id, season.Id, startDate);
 
                 // 7. Инициализираме standings (таблици за класиране)
                 await _context.SaveChangesAsync();

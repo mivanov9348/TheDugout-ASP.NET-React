@@ -5,17 +5,22 @@ using TheDugout.Data;
 using TheDugout.Models.Competitions;
 using TheDugout.Models.Game;
 using TheDugout.Models.Matches;
+using TheDugout.Services.Fixture;
 
 namespace TheDugout.Services.Cup
 {
     public class CupService : ICupService
     {
         private readonly DugoutDbContext _context;
+        private readonly IFixturesHelperService _fixturesHelperService;
+        private readonly ICupFixturesService _cupFixturesService;
         private readonly Random _random = new Random();
 
-        public CupService(DugoutDbContext context)
+        public CupService(DugoutDbContext context, ICupFixturesService cupFixturesService, IFixturesHelperService fixturesHelperService)
         {
             _context = context;
+            _cupFixturesService = cupFixturesService;
+            _fixturesHelperService = fixturesHelperService;
         }
 
         public async Task InitializeCupsForGameSaveAsync(GameSave gameSave, int seasonId)
@@ -65,113 +70,9 @@ namespace TheDugout.Services.Cup
                 _context.Cups.Add(cup);
                 await _context.SaveChangesAsync();
 
-                Console.WriteLine($"[INFO] Created cup {template.Name} with {teamsCount} teams");
 
-                await GenerateCupFixturesAsync(cup, seasonId, gameSave.Id);
+                await _cupFixturesService.GenerateCupFixturesAsync(cup, seasonId, gameSave.Id);
             }
-        }
-
-        public async Task GenerateCupFixturesAsync(Models.Competitions.Cup cup, int seasonId, int gameSaveId)
-        {
-            var teams = cup.Teams.Select(ct => new Models.Teams.Team
-            {
-                Id = ct.TeamId,
-                Name = ct.Team?.Name ?? $"Team {ct.TeamId}"
-            }).ToList();
-
-            int teamsCount = teams.Count;
-
-            if (teamsCount < 2)
-            {
-                Console.WriteLine($"[WARN] Cup {cup.Id}: Not enough teams ({teamsCount})");
-                return;
-            }
-
-            int nextPowerOfTwo = (int)Math.Pow(2, Math.Ceiling(Math.Log2(teamsCount)));
-            int prelimTeams = 2 * (teamsCount - (nextPowerOfTwo / 2));
-            int prelimMatches = prelimTeams / 2;
-
-            teams = teams.OrderBy(t => _random.Next()).ToList();
-
-            var roundNumber = 1;
-            var advancingTeams = new List<Models.Teams.Team>(teams);
-
-            // --- Preliminary round ---
-            if (prelimMatches > 0)
-            {
-                var prelimRound = new CupRound
-                {
-                    CupId = cup.Id,
-                    RoundNumber = roundNumber,
-                    Name = "Preliminary Round"
-                };
-
-                for (int i = 0; i < prelimMatches; i++)
-                {
-                    var home = advancingTeams[i * 2];
-                    var away = advancingTeams[i * 2 + 1];
-
-                    prelimRound.Fixtures.Add(new Models.Matches.Fixture
-                    {
-                        GameSaveId = gameSaveId,
-                        SeasonId = seasonId,
-                        CompetitionType = CompetitionType.DomesticCup,
-                        CupRound = prelimRound,
-                        HomeTeamId = home.Id,
-                        AwayTeamId = away.Id,
-                        Date = DateTime.UtcNow.AddDays(roundNumber * 7),
-                        Round = roundNumber,
-                        Status = MatchStatus.Scheduled
-                    });
-                }
-
-                _context.CupRounds.Add(prelimRound);
-                await _context.SaveChangesAsync();
-
-                return; 
-            }
-
-            string roundName = teamsCount switch
-            {
-                2 => "Final",
-                4 => "Semifinals",
-                8 => "Quarterfinals",
-                16 => "Round of 16",
-                32 => "Round of 32",
-                64 => "Round of 64",
-                _ => $"Round {roundNumber}"
-            };
-
-            var round = new CupRound
-            {
-                CupId = cup.Id,
-                RoundNumber = roundNumber,
-                Name = roundName
-            };
-
-            advancingTeams = advancingTeams.OrderBy(t => _random.Next()).ToList();
-
-            for (int i = 0; i < advancingTeams.Count; i += 2)
-            {
-                var home = advancingTeams[i];
-                var away = advancingTeams[i + 1];
-
-                round.Fixtures.Add(new Models.Matches.Fixture
-                {
-                    GameSaveId = gameSaveId,
-                    SeasonId = seasonId,
-                    CompetitionType = CompetitionType.DomesticCup,
-                    CupRound = round,
-                    HomeTeamId = home.Id,
-                    AwayTeamId = away.Id,
-                    Date = DateTime.UtcNow.AddDays(roundNumber * 7),
-                    Round = roundNumber,
-                    Status = MatchStatus.Scheduled
-                });
-            }
-
-            _context.CupRounds.Add(round);
-            await _context.SaveChangesAsync();
         }
 
         public async Task GenerateNextRoundAsync(int cupId, int seasonId, int gameSaveId)
@@ -187,7 +88,6 @@ namespace TheDugout.Services.Cup
                 return;
             }
 
-            // намираме последния рунд
             var lastRound = cup.Rounds
                 .OrderByDescending(r => r.RoundNumber)
                 .FirstOrDefault();
@@ -198,14 +98,12 @@ namespace TheDugout.Services.Cup
                 return;
             }
 
-            // проверка дали всички мачове са приключили и имат WinnerTeamId
             if (lastRound.Fixtures.Any(f => f.Status != MatchStatus.Played || f.WinnerTeamId == null))
             {
                 Console.WriteLine($"[WARN] Not all fixtures in {lastRound.Name} are finished or have winners.");
                 return;
             }
 
-            // взимаме победителите директно
             var winnerIds = lastRound.Fixtures
                 .Select(f => f.WinnerTeamId!.Value)
                 .ToList();
@@ -220,7 +118,6 @@ namespace TheDugout.Services.Cup
                 return;
             }
 
-            // нов рунд
             int nextRoundNumber = lastRound.RoundNumber + 1;
             string roundName = winners.Count switch
             {
@@ -240,10 +137,8 @@ namespace TheDugout.Services.Cup
                 Name = roundName
             };
 
-            // разбъркваме победителите
             winners = winners.OrderBy(t => _random.Next()).ToList();
 
-            // ако са нечетен брой – bye
             Models.Teams.Team? byeTeam = null;
             if (winners.Count % 2 != 0)
             {
@@ -256,18 +151,18 @@ namespace TheDugout.Services.Cup
                 var home = winners[i];
                 var away = winners[i + 1];
 
-                newRound.Fixtures.Add(new Models.Matches.Fixture
-                {
-                    GameSaveId = gameSaveId,
-                    SeasonId = seasonId,
-                    CompetitionType = CompetitionType.DomesticCup,
-                    CupRound = newRound,
-                    HomeTeamId = home.Id,
-                    AwayTeamId = away.Id,
-                    Date = DateTime.UtcNow.AddDays(nextRoundNumber * 7),
-                    Round = nextRoundNumber,
-                    Status = MatchStatus.Scheduled
-                });
+                var fixture = _fixturesHelperService.CreateFixture(
+                    gameSaveId,
+                    seasonId,
+                    home.Id,
+                    away.Id,
+                    DateTime.UtcNow.AddDays(nextRoundNumber * 7),
+                    nextRoundNumber,
+                    CompetitionType.DomesticCup,
+                    newRound
+                );
+
+                newRound.Fixtures.Add(fixture);
             }
 
             _context.CupRounds.Add(newRound);
@@ -276,6 +171,7 @@ namespace TheDugout.Services.Cup
             if (byeTeam != null)
                 Console.WriteLine($"[INFO] {byeTeam.Name} gets a bye to {roundName}");
         }
+
 
     }
 }

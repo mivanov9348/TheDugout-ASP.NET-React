@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace TheDugout.Migrations
 {
     /// <inheritdoc />
-    public partial class Initial : Migration
+    public partial class AddDB : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -18,7 +18,6 @@ namespace TheDugout.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    Focus = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     RegionCode = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
                     IsActive = table.Column<bool>(type: "bit", nullable: false, defaultValue: true)
                 },
@@ -332,6 +331,7 @@ namespace TheDugout.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     AgencyTemplateId = table.Column<int>(type: "int", nullable: false),
                     RegionId = table.Column<int>(type: "int", nullable: false),
+                    Popularity = table.Column<int>(type: "int", nullable: false),
                     Budget = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     TotalEarnings = table.Column<decimal>(type: "decimal(18,2)", nullable: false, defaultValue: 0m),
                     IsActive = table.Column<bool>(type: "bit", nullable: false, defaultValue: true),
@@ -537,6 +537,8 @@ namespace TheDugout.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     FromTeamId = table.Column<int>(type: "int", nullable: true),
                     ToTeamId = table.Column<int>(type: "int", nullable: true),
+                    FromAgencyId = table.Column<int>(type: "int", nullable: true),
+                    ToAgencyId = table.Column<int>(type: "int", nullable: true),
                     BankId = table.Column<int>(type: "int", nullable: true),
                     Date = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Amount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
@@ -548,6 +550,18 @@ namespace TheDugout.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_FinancialTransactions", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_FinancialTransactions_Agencies_FromAgencyId",
+                        column: x => x.FromAgencyId,
+                        principalTable: "Agencies",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_FinancialTransactions_Agencies_ToAgencyId",
+                        column: x => x.ToAgencyId,
+                        principalTable: "Agencies",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_FinancialTransactions_Banks_BankId",
                         column: x => x.BankId,
@@ -738,7 +752,8 @@ namespace TheDugout.Migrations
                     SeasonId = table.Column<int>(type: "int", nullable: false),
                     Date = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Type = table.Column<int>(type: "int", maxLength: 50, nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false)
+                    Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    IsOccupied = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -1272,9 +1287,19 @@ namespace TheDugout.Migrations
                 column: "BankId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_FinancialTransactions_FromAgencyId",
+                table: "FinancialTransactions",
+                column: "FromAgencyId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_FinancialTransactions_FromTeamId",
                 table: "FinancialTransactions",
                 column: "FromTeamId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_FinancialTransactions_ToAgencyId",
+                table: "FinancialTransactions",
+                column: "ToAgencyId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_FinancialTransactions_ToTeamId",
