@@ -8,7 +8,8 @@ namespace TheDugout.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<Fixture> builder)
         {
-            builder.HasKey(f => f.Id);
+            builder.Property(f => f.Id)
+                   .ValueGeneratedOnAdd();
 
             builder.HasOne(f => f.GameSave)
                    .WithMany(gs => gs.Fixtures)

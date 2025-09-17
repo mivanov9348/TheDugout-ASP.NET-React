@@ -186,8 +186,9 @@ namespace TheDugout.Services.Game
                         _logger.LogError(ex, "Failed to initialize European Cup template '{TemplateName}' ({TemplateId})",
                             template.Name, template.Id);
                     }
-                }
+                }   
 
+                // Generating Cup
                 await _cupService.InitializeCupsForGameSaveAsync(gameSave, season.Id);               
 
                 // 6. Генерираме league fixtures

@@ -39,8 +39,6 @@ builder.Services.AddScoped<ITeamPlanService, TeamPlanService>();
 builder.Services.AddScoped<ITeamGenerationService, TeamGenerationService>();
 builder.Services.AddScoped<ILeagueService, LeagueService>();
 builder.Services.AddScoped<ISeasonGenerationService, SeasonGenerationService>();
-builder.Services.AddScoped<ISeasonCalendarService, SeasonCalendarService>();
-builder.Services.AddScoped<ISeasonSchedulingService, SeasonSchedulingService>();
 builder.Services.AddScoped<IPlayerInfoService, PlayerInfoService>();
 builder.Services.AddScoped<ITeamService, TeamService>();
 builder.Services.AddScoped<IFinanceService, FinanceService>();
@@ -53,6 +51,9 @@ builder.Services.AddScoped<IFixturesHelperService, FixturesHelperService>();
 builder.Services.AddScoped<ILeagueFixturesService, LeagueFixturesService>();
 builder.Services.AddScoped<ICupFixturesService, CupFixturesService>();
 builder.Services.AddScoped<IEurocupFixturesService, EurocupFixturesService>();
+builder.Services.AddScoped<ILeagueScheduleService, LeagueScheduleService>();
+builder.Services.AddScoped<ICupScheduleService, CupScheduleService>();
+builder.Services.AddScoped<IEurocupScheduleService, EurocupScheduleService>();
 
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 

@@ -11,12 +11,14 @@ namespace TheDugout.Services.Fixture
     {
         private readonly DugoutDbContext _context;
         private readonly IFixturesHelperService _fixturesHelperService;
-        private readonly ISeasonSchedulingService _seasonSchedulingService;
-        public LeagueFixturesService(DugoutDbContext context, IFixturesHelperService fixturesHelperService, ISeasonSchedulingService seasonSchedulingService)
+        //private readonly ISeasonSchedulingService _seasonSchedulingService;
+        private readonly ILeagueScheduleService _leagueScheduleService;
+        public LeagueFixturesService(DugoutDbContext context, IFixturesHelperService fixturesHelperService, ILeagueScheduleService leagueScheduleService)
         {
             _context = context;
             _fixturesHelperService = fixturesHelperService;
-            _seasonSchedulingService = seasonSchedulingService;
+            _leagueScheduleService = leagueScheduleService;
+            //_seasonSchedulingService = seasonSchedulingService;
         }
 
         public async Task GenerateLeagueFixturesAsync(int gameSaveId, int seasonId, DateTime startDate)
@@ -39,7 +41,7 @@ namespace TheDugout.Services.Fixture
                     league.Teams.ToList(),
                     _fixturesHelperService);
 
-                _seasonSchedulingService.AssignFixtureDates(fixtures, season, startDate);
+                _leagueScheduleService.AssignLeagueFixtures(fixtures, season);
 
                 await _context.Fixtures.AddRangeAsync(fixtures);
             }

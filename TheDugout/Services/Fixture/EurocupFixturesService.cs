@@ -12,16 +12,17 @@ namespace TheDugout.Services.Fixture
     {
         private readonly DugoutDbContext _context;
         private readonly IFixturesHelperService _fixturesHelperService;
-        private readonly ISeasonCalendarService _seasonCalendarService;
+        //private readonly ISeasonCalendarService _seasonCalendarService;
+        private readonly IEurocupScheduleService _eurocupScheduleService;
         private readonly ILogger<EurocupFixturesService> _logger;
         private readonly Random _random = new();
 
-
-        public EurocupFixturesService(DugoutDbContext context, IFixturesHelperService fixturesHelperService, ILogger<EurocupFixturesService> logger, ISeasonCalendarService seasonCalendarService)
+        public EurocupFixturesService(DugoutDbContext context, IFixturesHelperService fixturesHelperService, ILogger<EurocupFixturesService> logger, IEurocupScheduleService eurocupScheduleService)
         {
             _context = context;
             _fixturesHelperService = fixturesHelperService;
-            _seasonCalendarService = seasonCalendarService;
+            //_seasonCalendarService = seasonCalendarService;
+            _eurocupScheduleService = eurocupScheduleService;
             _logger = logger;
         }
 
@@ -60,7 +61,7 @@ namespace TheDugout.Services.Fixture
             var fixturesToAdd = new List<Models.Matches.Fixture>();
 
             // Взимаме равномерно разпределени дати от календара
-            var roundDates = _seasonCalendarService.DistributeEuropeanRounds(season, rounds);
+            var roundDates = _eurocupScheduleService.AssignEuropeanFixtures(season, rounds);
 
             for (int round = 1; round <= rounds; round++)
             {
