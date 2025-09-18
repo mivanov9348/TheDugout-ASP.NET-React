@@ -1,0 +1,14 @@
+{
+  "StadiumLevels": {
+    "1": { "Capacity": 1000, "TicketPrice": 1.00 },
+    "2": { "Capacity": 5000, "TicketPrice": 2.00 },
+    "3": { "Capacity": 8000, "TicketPrice": 3.00 },
+    "4": { "Capacity": 10000, "TicketPrice": 5.00 },
+    "5": { "Capacity": 20000, "TicketPrice": 8.00 },
+    "6": { "Capacity": 30000, "TicketPrice": 10.00 },
+    "7": { "Capacity": 40000, "TicketPrice": 12.00 },
+    "8": { "Capacity": 50000, "TicketPrice": 15.00 },
+    "9": { "Capacity": 60000, "TicketPrice": 20.00 },
+    "10": { "Capacity": 80000, "TicketPrice": 30.00 }
+  }
+}

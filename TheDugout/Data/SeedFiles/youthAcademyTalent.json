@@ -1,0 +1,14 @@
+{
+  "YouthAcademyLevels": {
+    "1": { "TalentMultiplier": 1.5 },
+    "2": { "TalentMultiplier": 2.0 },
+    "3": { "TalentMultiplier": 2.5 },
+    "4": { "TalentMultiplier": 3.0 },
+    "5": { "TalentMultiplier": 3.5 },
+    "6": { "TalentMultiplier": 4.0 },
+    "7": { "TalentMultiplier": 4.5 },
+    "8": { "TalentMultiplier": 5.0 },
+    "9": { "TalentMultiplier": 5.5 },
+    "10": { "TalentMultiplier": 6.0 }
+  }
+}

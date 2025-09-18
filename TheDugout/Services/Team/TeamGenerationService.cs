@@ -2,9 +2,11 @@
 using TheDugout.Data;
 using TheDugout.Models.Game;
 using TheDugout.Models.Teams;
+using TheDugout.Services.Facilities;
 using TheDugout.Services.Finance;
 using TheDugout.Services.Players;
 using TheDugout.Services.Team;
+using TheDugout.Services.Training;
 
 namespace TheDugout.Services.Team
 {
@@ -12,16 +14,25 @@ namespace TheDugout.Services.Team
     {
         private readonly IPlayerGenerationService _playerGenerator;
         private readonly IFinanceService _financeService;
+        private readonly IStadiumService _stadiumService;
+        private readonly ITrainingFacilitiesService _trainingService;
+        private readonly IYouthAcademyService _academyService;
         private readonly DugoutDbContext _context;
 
-        public TeamGenerationService(IPlayerGenerationService playerGenerator, IFinanceService financeService, DugoutDbContext context)
+        public TeamGenerationService(IPlayerGenerationService playerGenerator, IFinanceService financeService, DugoutDbContext context, IStadiumService stadiumService, ITrainingFacilitiesService trainingFacilitiesService, IYouthAcademyService youthAcademyService)
         {
             _playerGenerator = playerGenerator;
             _financeService = financeService;
             _context = context;
+            _stadiumService = stadiumService;
+            _trainingService = trainingFacilitiesService;
+            _academyService = youthAcademyService;
         }
 
-        public List<Models.Teams.Team> GenerateTeams(GameSave gameSave, Models.Competitions.League league, IEnumerable<TeamTemplate> templates)
+        public async Task<List<Models.Teams.Team>> GenerateTeamsAsync(
+        GameSave gameSave,
+        Models.Competitions.League league,
+        IEnumerable<TeamTemplate> templates)
         {
             var teams = new List<Models.Teams.Team>();
 
@@ -54,6 +65,14 @@ namespace TheDugout.Services.Team
             }
 
             _context.Teams.AddRange(teams);
+            await _context.SaveChangesAsync(); 
+
+            foreach (var team in teams)
+            {
+                await _stadiumService.AddStadiumAsync(team.Id);
+                await _trainingService.AddTrainingFacilityAsync(team.Id);
+                await _academyService.AddYouthAcademyAsync(team.Id);
+            }
 
             return teams;
         }

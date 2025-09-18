@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TheDugout.Models.Common;
 using TheDugout.Models.Competitions;
+using TheDugout.Models.Facilities;
 using TheDugout.Models.Finance;
 using TheDugout.Models.Game;
 using TheDugout.Models.Matches;
@@ -63,7 +64,9 @@ namespace TheDugout.Data
         public DbSet<EuropeanCupTemplate> EuropeanCupTemplates { get; set; }
         public DbSet<AgencyTemplate> AgencyTemplates { get; set; }
         public DbSet<Agency> Agencies { get; set; }
-
+        public DbSet<Stadium> Stadiums { get; set; }
+        public DbSet<TrainingFacility> TrainingFacilities { get; set; }
+        public DbSet<YouthAcademy> YouthAcademies { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

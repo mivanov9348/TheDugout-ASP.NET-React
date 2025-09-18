@@ -1,5 +1,6 @@
 ﻿using TheDugout.Models.Common;
 using TheDugout.Models.Competitions;
+using TheDugout.Models.Facilities;
 using TheDugout.Models.Finance;
 using TheDugout.Models.Game;
 using TheDugout.Models.Matches;
@@ -27,6 +28,10 @@ namespace TheDugout.Models.Teams
 
         public int? CountryId { get; set; }
         public Country? Country { get; set; } = null!;
+
+        public Stadium? Stadium { get; set; }
+        public TrainingFacility? TrainingFacility { get; set; }
+        public YouthAcademy? YouthAcademy { get; set; }
 
         public decimal Balance { get; set; }
         public int Popularity { get; set; } = 10;

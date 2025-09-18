@@ -244,28 +244,30 @@ function AppInner() {
                 <main className="flex-1 overflow-y-auto p-4">
                   <Routes>
                     <Route path="/" element={<Home gameSaveId={currentGameSave?.id} />} />
-                    <Route path="/competitions/*" element={<Competitions />}>
+                    <Route path="/competitions/*" element={<Competitions gameSaveId={currentGameSave?.id} />}>
                       <Route index element={<Navigate to="league" replace />} />
                       <Route path="league" element={<League gameSaveId={currentGameSave?.id} />} />
-                      <Route path="cup" element={
-  <Cup 
-    gameSaveId={currentGameSave?.id} 
-    seasonId={currentGameSave?.seasons?.[0]?.id} 
-  />
-} />
-
-<Route
-  path="europe"
-  element={
-    <EuropeanCup
-      gameSaveId={currentGameSave?.id}
-      seasonId={currentGameSave?.seasons?.[0]?.id}
-    />
-  }
-/>
+                      <Route
+                        path="cup"
+                        element={
+                          <Cup
+                            gameSaveId={currentGameSave?.id}
+                            seasonId={currentGameSave?.seasons?.[0]?.id}
+                          />
+                        }
+                      />
+                      <Route
+                        path="europe"
+                        element={
+                          <EuropeanCup
+                            gameSaveId={currentGameSave?.id}
+                            seasonId={currentGameSave?.seasons?.[0]?.id}
+                          />
+                        }
+                      />
                     </Route>
 
-                    <Route path="/inbox" element={<Inbox />} />
+                    <Route path="/inbox" element={<Inbox gameSaveId={currentGameSave?.id} />} />
                     <Route path="/calendar" element={<Calendar gameSaveId={currentGameSave?.id} />} />
                     <Route path="/squad" element={<Squad gameSaveId={currentGameSave?.id} />} />
                     <Route
@@ -278,18 +280,21 @@ function AppInner() {
                     />
                     <Route
                       path="/fixtures"
-                      element={
-                        <Fixtures gameSaveId={currentGameSave?.id} seasonId={currentGameSave?.seasons?.[0]?.id} />
-                      }
+                      element={<Fixtures gameSaveId={currentGameSave?.id} seasonId={currentGameSave?.seasons?.[0]?.id} />}
                     />
-                    <Route path="/transfers" element={<Transfers />}>
+                    <Route path="/transfers" element={<Transfers gameSaveId={currentGameSave?.id} />}>
                       <Route index element={<Navigate to="search" replace />} />
                       <Route path="search" element={<SearchPlayers gameSaveId={currentGameSave?.id} />} />
                       <Route path="negotiations" element={<Negotiations gameSaveId={currentGameSave?.id} />} />
                       <Route path="history" element={<TransferHistory gameSaveId={currentGameSave?.id} />} />
                     </Route>
-                    <Route path="/facilities" element={<Facilities />} />
-                    <Route path="/club" element={<Club />} />
+<Route path="/facilities" element={
+  <Facilities 
+    gameSaveId={currentGameSave?.id} 
+    teamId={currentGameSave?.userTeamId} 
+  />
+} />
+                    <Route path="/club" element={<Club gameSaveId={currentGameSave?.id} />} />
                     <Route path="/finances" element={<Finances gameSaveId={currentGameSave?.id} />} />
                     <Route path="/player/:playerId" element={<PlayerProfile gameSaveId={currentGameSave?.id} />} />
                   </Routes>

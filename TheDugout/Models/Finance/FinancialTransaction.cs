@@ -13,7 +13,8 @@ namespace TheDugout.Models.Finance
         Prize,
         LoanPayment,
         LoanReceived,
-        Misc
+        Misc,
+        FacilityUpgrade
     }
 
     public enum TransactionStatus

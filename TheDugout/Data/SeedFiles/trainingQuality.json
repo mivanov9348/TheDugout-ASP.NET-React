@@ -1,0 +1,14 @@
+{
+  "TrainingLevels": {
+    "1": { "TrainingQuality": 1 },
+    "2": { "TrainingQuality": 2 },
+    "3": { "TrainingQuality": 3 },
+    "4": { "TrainingQuality": 4 },
+    "5": { "TrainingQuality": 5 },
+    "6": { "TrainingQuality": 6 },
+    "7": { "TrainingQuality": 7 },
+    "8": { "TrainingQuality": 8 },
+    "9": { "TrainingQuality": 9 },
+    "10": { "TrainingQuality": 10 }
+  }
+}
