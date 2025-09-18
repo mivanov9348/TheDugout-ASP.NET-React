@@ -13,7 +13,7 @@ namespace TheDugout.Controllers
         private readonly DugoutDbContext _context;
         private readonly IStadiumService _stadiumService;
         private readonly ITrainingFacilitiesService _trainingService;
-        //private readonly IYouthAcademyService _academyService;
+        private readonly IYouthAcademyService _academyService;
 
         public FacilityController(
             DugoutDbContext context,
@@ -24,12 +24,11 @@ namespace TheDugout.Controllers
             _context = context;
             _stadiumService = stadiumService;
             _trainingService = trainingService;
-            //_academyService = academyService;
+            _academyService = academyService;
         }
 
         // GET: api/facility/team/5
         [HttpGet("team/{teamId}")]
-        //[HttpGet("{teamId}")]
         public async Task<IActionResult> GetFacilities(int teamId)
         {
             var team = await _context.Teams
@@ -60,11 +59,10 @@ namespace TheDugout.Controllers
                     },
                     YouthAcademy = team.YouthAcademy == null ? null : new YouthAcademyDto
                     {
-                        Level = team.YouthAcademy.Level,
-                        TalentPointsPerYear = team.YouthAcademy.TalentPointsPerYear
+                        Level = team.YouthAcademy.Level
+                        // ако решиш по-късно, тук може да върнем и конфигурацията за PlayersPerYear/PotentialMultiplier
                     }
                 };
-
 
                 return Ok(dto);
             }
@@ -92,13 +90,13 @@ namespace TheDugout.Controllers
             return Ok(new { Message = "Training Facility upgraded successfully" });
         }
 
-        //// POST: api/facility/academy/upgrade/5
-        //[HttpPost("academy/upgrade/{teamId}")]
-        //public async Task<IActionResult> UpgradeAcademy(int teamId)
-        //{
-        //    var result = await _academyService.UpgradeYouthAcademyAsync(teamId);
-        //    if (!result) return BadRequest("Not enough funds or invalid upgrade.");
-        //    return Ok(new { Message = "Youth Academy upgraded successfully" });
-        //}
+        // POST: api/facility/academy/upgrade/5
+        [HttpPost("academy/upgrade/{teamId}")]
+        public async Task<IActionResult> UpgradeAcademy(int teamId)
+        {
+            var result = await _academyService.UpgradeYouthAcademyAsync(teamId);
+            if (!result) return BadRequest("Not enough funds or invalid upgrade.");
+            return Ok(new { Message = "Youth Academy upgraded successfully" });
+        }
     }
 }

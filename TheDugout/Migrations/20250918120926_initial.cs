@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace TheDugout.Migrations
 {
     /// <inheritdoc />
-    public partial class AddDB : Migration
+    public partial class initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -916,6 +916,28 @@ namespace TheDugout.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Stadiums",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    TeamId = table.Column<int>(type: "int", nullable: false),
+                    Level = table.Column<int>(type: "int", nullable: false),
+                    Capacity = table.Column<int>(type: "int", nullable: false),
+                    TicketPrice = table.Column<decimal>(type: "decimal(10,2)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Stadiums", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Stadiums_Teams_TeamId",
+                        column: x => x.TeamId,
+                        principalTable: "Teams",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "TeamTactics",
                 columns: table => new
                 {
@@ -937,6 +959,27 @@ namespace TheDugout.Migrations
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_TeamTactics_Teams_TeamId",
+                        column: x => x.TeamId,
+                        principalTable: "Teams",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "TrainingFacilities",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    TeamId = table.Column<int>(type: "int", nullable: false),
+                    Level = table.Column<int>(type: "int", nullable: false),
+                    TrainingQuality = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TrainingFacilities", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_TrainingFacilities_Teams_TeamId",
                         column: x => x.TeamId,
                         principalTable: "Teams",
                         principalColumn: "Id",
@@ -975,6 +1018,26 @@ namespace TheDugout.Migrations
                         principalTable: "Teams",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "YouthAcademies",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    TeamId = table.Column<int>(type: "int", nullable: false),
+                    Level = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_YouthAcademies", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_YouthAcademies_Teams_TeamId",
+                        column: x => x.TeamId,
+                        principalTable: "Teams",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -1538,6 +1601,12 @@ namespace TheDugout.Migrations
                 column: "GameSaveId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Stadiums_TeamId",
+                table: "Stadiums",
+                column: "TeamId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Teams_CountryId",
                 table: "Teams",
                 column: "CountryId");
@@ -1577,6 +1646,12 @@ namespace TheDugout.Migrations
                 name: "IX_TeamTemplates_LeagueId",
                 table: "TeamTemplates",
                 column: "LeagueId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TrainingFacilities_TeamId",
+                table: "TrainingFacilities",
+                column: "TeamId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_TrainingSessions_GameSaveId",
@@ -1622,6 +1697,12 @@ namespace TheDugout.Migrations
                 name: "IX_Users_CurrentSaveId",
                 table: "Users",
                 column: "CurrentSaveId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_YouthAcademies_TeamId",
+                table: "YouthAcademies",
+                column: "TeamId",
+                unique: true);
 
             migrationBuilder.AddForeignKey(
                 name: "FK_Agencies_GameSaves_GameSaveId",
@@ -1860,10 +1941,19 @@ namespace TheDugout.Migrations
                 name: "SeasonEvents");
 
             migrationBuilder.DropTable(
+                name: "Stadiums");
+
+            migrationBuilder.DropTable(
                 name: "TeamTactics");
 
             migrationBuilder.DropTable(
+                name: "TrainingFacilities");
+
+            migrationBuilder.DropTable(
                 name: "Transfers");
+
+            migrationBuilder.DropTable(
+                name: "YouthAcademies");
 
             migrationBuilder.DropTable(
                 name: "Banks");

@@ -706,9 +706,6 @@ namespace TheDugout.Migrations
                     b.Property<int>("Level")
                         .HasColumnType("int");
 
-                    b.Property<int>("TalentPointsPerYear")
-                        .HasColumnType("int");
-
                     b.Property<int>("TeamId")
                         .HasColumnType("int");
 

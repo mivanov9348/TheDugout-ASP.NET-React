@@ -18,8 +18,6 @@ namespace TheDugout.Data.Configurations.Facilities
             builder.Property(ya => ya.Level)
                    .IsRequired();
 
-            builder.Property(ya => ya.TalentPointsPerYear)
-                   .IsRequired();
         }
     }
 }

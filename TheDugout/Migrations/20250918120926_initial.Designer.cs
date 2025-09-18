@@ -12,8 +12,8 @@ using TheDugout.Data;
 namespace TheDugout.Migrations
 {
     [DbContext(typeof(DugoutDbContext))]
-    [Migration("20250917085613_identity")]
-    partial class identity
+    [Migration("20250918120926_initial")]
+    partial class initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -643,6 +643,81 @@ namespace TheDugout.Migrations
                     b.HasIndex("CountryId");
 
                     b.ToTable("LeagueTemplates");
+                });
+
+            modelBuilder.Entity("TheDugout.Models.Facilities.Stadium", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Capacity")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Level")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TeamId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("TicketPrice")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TeamId")
+                        .IsUnique();
+
+                    b.ToTable("Stadiums");
+                });
+
+            modelBuilder.Entity("TheDugout.Models.Facilities.TrainingFacility", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Level")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TeamId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TrainingQuality")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TeamId")
+                        .IsUnique();
+
+                    b.ToTable("TrainingFacilities");
+                });
+
+            modelBuilder.Entity("TheDugout.Models.Facilities.YouthAcademy", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Level")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TeamId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TeamId")
+                        .IsUnique();
+
+                    b.ToTable("YouthAcademies");
                 });
 
             modelBuilder.Entity("TheDugout.Models.Finance.Bank", b =>
@@ -1894,6 +1969,39 @@ namespace TheDugout.Migrations
                     b.Navigation("Country");
                 });
 
+            modelBuilder.Entity("TheDugout.Models.Facilities.Stadium", b =>
+                {
+                    b.HasOne("TheDugout.Models.Teams.Team", "Team")
+                        .WithOne("Stadium")
+                        .HasForeignKey("TheDugout.Models.Facilities.Stadium", "TeamId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Team");
+                });
+
+            modelBuilder.Entity("TheDugout.Models.Facilities.TrainingFacility", b =>
+                {
+                    b.HasOne("TheDugout.Models.Teams.Team", "Team")
+                        .WithOne("TrainingFacility")
+                        .HasForeignKey("TheDugout.Models.Facilities.TrainingFacility", "TeamId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Team");
+                });
+
+            modelBuilder.Entity("TheDugout.Models.Facilities.YouthAcademy", b =>
+                {
+                    b.HasOne("TheDugout.Models.Teams.Team", "Team")
+                        .WithOne("YouthAcademy")
+                        .HasForeignKey("TheDugout.Models.Facilities.YouthAcademy", "TeamId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Team");
+                });
+
             modelBuilder.Entity("TheDugout.Models.Finance.Bank", b =>
                 {
                     b.HasOne("TheDugout.Models.Game.GameSave", "GameSave")
@@ -2564,13 +2672,19 @@ namespace TheDugout.Migrations
 
                     b.Navigation("Players");
 
+                    b.Navigation("Stadium");
+
                     b.Navigation("TeamTactic");
+
+                    b.Navigation("TrainingFacility");
 
                     b.Navigation("TrainingSessions");
 
                     b.Navigation("TransactionsFrom");
 
                     b.Navigation("TransactionsTo");
+
+                    b.Navigation("YouthAcademy");
                 });
 
             modelBuilder.Entity("TheDugout.Models.Training.TrainingSession", b =>
