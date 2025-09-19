@@ -1084,6 +1084,10 @@ namespace TheDugout.Migrations
                     b.Property<int?>("AgencyId")
                         .HasColumnType("int");
 
+                    b.Property<string>("AvatarFileName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("BirthDate")
                         .HasColumnType("datetime2");
 

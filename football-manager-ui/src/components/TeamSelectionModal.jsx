@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import TeamLogo from "./TeamLogo";
 
 export default function TeamSelectionModal({ saveId, onClose, onSelected }) {
   const [loading, setLoading] = useState(true);
@@ -111,22 +112,32 @@ export default function TeamSelectionModal({ saveId, onClose, onSelected }) {
           {currentLeague ? (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
               {currentLeague.teams.map(t => (
-                <button
-                  key={t.id}
-                  onClick={() => setSelectedTeamId(t.id)}
-                  className={`p-4 rounded-xl border text-left hover:shadow transition
-                    ${
-                      selectedTeamId === t.id
-                        ? "ring-2 ring-blue-500 border-blue-500"
-                        : "hover:border-gray-400"
-                    }`}
-                >
-                  <div className="text-base font-semibold truncate">{t.name}</div>
-                  <div className="text-xs text-gray-500">
-                    {t.abbreviation} • {t.countryName}
-                  </div>
-                </button>
-              ))}
+  <button
+  key={t.id}
+  onClick={() => setSelectedTeamId(t.id)}
+  className={`p-4 rounded-xl border text-left hover:shadow transition
+    ${
+      selectedTeamId === t.id
+        ? "ring-2 ring-blue-500 border-blue-500"
+        : "hover:border-gray-400"
+    }`}
+>
+  <div className="flex items-center gap-3">
+    <TeamLogo
+      teamName={t.name}
+      logoFileName={t.logoFileName}
+      className="w-10 h-10 flex-shrink-0"
+    />
+    <div className="min-w-0"> {/* <-- важно за truncate */}
+      <div className="text-base font-semibold truncate">{t.name}</div>
+      <div className="text-xs text-gray-500 truncate">
+        {t.abbreviation} • {t.countryName}
+      </div>
+    </div>
+  </div>
+</button>
+
+))}
             </div>
           ) : (
             <div className="text-gray-500">Няма избрана лига</div>

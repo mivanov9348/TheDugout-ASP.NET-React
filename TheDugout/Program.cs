@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using System.Text.Json;
 using TheDugout.Data;
 using TheDugout.Services;
 using TheDugout.Services.Cup;
@@ -28,7 +30,12 @@ var connectionString = builder.Configuration.GetConnectionString("Default");
 builder.Services.AddDbContext<DugoutDbContext>(options =>
 options.UseSqlServer(connectionString, opt => opt.CommandTimeout(90)));
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+    });
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -59,8 +66,6 @@ builder.Services.AddScoped<ITrainingFacilitiesService, TrainingFacilitiesService
 builder.Services.AddScoped<IYouthAcademyService, YouthAcademyService>();
 builder.Services.AddScoped<IStadiumService, StadiumService>();
 
-
-builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 builder.Services.AddCors(options =>
 {
@@ -112,6 +117,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseStaticFiles();
+
 
 app.UseHttpsRedirection();
 app.UseCors("AllowFrontend");

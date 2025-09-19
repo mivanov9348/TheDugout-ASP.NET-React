@@ -60,7 +60,6 @@ namespace TheDugout.Controllers
                     YouthAcademy = team.YouthAcademy == null ? null : new YouthAcademyDto
                     {
                         Level = team.YouthAcademy.Level
-                        // ако решиш по-късно, тук може да върнем и конфигурацията за PlayersPerYear/PotentialMultiplier
                     }
                 };
 

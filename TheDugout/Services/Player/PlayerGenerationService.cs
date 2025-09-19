@@ -1,7 +1,10 @@
-﻿namespace TheDugout.Services.Players
+﻿using System.IO;
+
+namespace TheDugout.Services.Players
 {
     using Bogus;
     using Microsoft.EntityFrameworkCore;
+    using Microsoft.AspNetCore.Hosting;
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -19,10 +22,29 @@
         private readonly DugoutDbContext _context;
         private readonly Random _rng = new();
 
-        public PlayerGenerationService(ITeamPlanService teamPlan, DugoutDbContext context)
+        private readonly string[] _avatarFiles;
+        private readonly string _avatarFolder;
+
+        public PlayerGenerationService(ITeamPlanService teamPlan, DugoutDbContext context, IWebHostEnvironment env)
         {
             _teamPlan = teamPlan;
             _context = context;
+
+            // Използваме WebRootPath (wwwroot), ако го няма – fallback към ContentRootPath/wwwroot
+            var webRoot = env.WebRootPath ?? Path.Combine(env.ContentRootPath, "wwwroot");
+            _avatarFolder = Path.Combine(webRoot, "Avatars");
+
+            if (!Directory.Exists(_avatarFolder))
+            {
+                Directory.CreateDirectory(_avatarFolder); // вместо да гърми -> създаваме папката
+            }
+
+            _avatarFiles = Directory.GetFiles(_avatarFolder);
+
+            if (_avatarFiles.Length == 0)
+            {
+                throw new InvalidOperationException($"No avatar files found in {_avatarFolder}");
+            }
         }
 
         public List<Player> GenerateTeamPlayers(GameSave save, Team team)
@@ -158,7 +180,8 @@
                 IsActive = true,
                 Country = country,
                 Attributes = new List<PlayerAttribute>(),
-                Agency = agency
+                Agency = agency,
+                AvatarFileName = GetRandomAvatarFileName()
             };
 
             AssignAttributes(player, position);
@@ -276,5 +299,10 @@
             return Math.Round((decimal)price, 0);
         }
 
+        public string GetRandomAvatarFileName()
+        {
+            var randomFile = _avatarFiles[_rng.Next(_avatarFiles.Length)];
+            return Path.GetFileName(randomFile);
+        }
     }
 }

@@ -60,14 +60,14 @@ namespace TheDugout.Services.Facilities
 
             // Load costs
             var costsJson = await File.ReadAllTextAsync(_facilityCostsPath);
-            var costs = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, int>>>(costsJson);
+            var root = JsonSerializer.Deserialize<FacilityCostRoot>(costsJson);
 
-            if (costs == null ||
-                !costs.ContainsKey("YouthAcademy") ||
-                !costs["YouthAcademy"].ContainsKey((currentLevel + 1).ToString()))
+            if (root == null ||
+                !root.FacilityCosts.ContainsKey("YouthAcademy") ||
+                !root.FacilityCosts["YouthAcademy"].ContainsKey((currentLevel + 1).ToString()))
                 throw new Exception("Upgrade cost not found");
 
-            var upgradeCost = costs["YouthAcademy"][(currentLevel + 1).ToString()];
+            var upgradeCost = root.FacilityCosts["YouthAcademy"][(currentLevel + 1).ToString()];
 
             // Load new level data
             var levelsJson = await File.ReadAllTextAsync(_academyLevelsPath);
@@ -97,11 +97,17 @@ namespace TheDugout.Services.Facilities
             return true;
         }
 
+
         public class YouthAcademyLevelConfig
         {
             public int Level { get; set; }
             public int PlayersPerYear { get; set; }
             public double PotentialMultiplier { get; set; }
+        }
+
+        public class FacilityCostRoot
+        {
+            public Dictionary<string, Dictionary<string, int>> FacilityCosts { get; set; } = new();
         }
     }
 }

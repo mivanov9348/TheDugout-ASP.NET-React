@@ -61,10 +61,10 @@ namespace TheDugout.Services.Facilities
             
             var costsJson = await File.ReadAllTextAsync(_facilityCostsPath);
             var costs = JsonSerializer.Deserialize<FacilityCostsRoot>(costsJson);
-            if (costs == null || !costs.FacilityCosts["Training"].ContainsKey((currentLevel + 1).ToString()))
+            if (costs == null || !costs.FacilityCosts["TrainingFacility"].ContainsKey((currentLevel + 1).ToString()))
                 throw new Exception("Upgrade cost not found");
 
-            var upgradeCost = costs.FacilityCosts["Training"][(currentLevel + 1).ToString()];
+            var upgradeCost = costs.FacilityCosts["TrainingFacility"][(currentLevel + 1).ToString()];
 
             var levelsJson = await File.ReadAllTextAsync(_trainingLevelsPath);
             var levels = JsonSerializer.Deserialize<TrainingLevelsRoot>(levelsJson);
@@ -100,6 +100,7 @@ namespace TheDugout.Services.Facilities
         public class TrainingLevelData
         {
             public int TrainingQuality { get; set; }
+
         }
 
     }

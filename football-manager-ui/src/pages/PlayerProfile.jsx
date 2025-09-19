@@ -7,6 +7,8 @@ const PlayerProfile = ({ gameSaveId }) => {
   const { playerId } = useParams();
   const navigate = useNavigate();
   const [player, setPlayer] = useState(null);
+  const [imgError, setImgError] = useState(false);
+
 
   useEffect(() => {
     const fetchPlayer = async () => {
@@ -46,10 +48,13 @@ const PlayerProfile = ({ gameSaveId }) => {
         {/* Header Section */}
         <div className="flex flex-col md:flex-row items-center md:items-start mb-8 mt-8">
           <img
-            src={`https://via.placeholder.com/300x300?text=${player.fullName}`}
-            alt={`${player.fullName}'s photo`}
-            className="w-56 h-56 rounded-full object-cover mb-4 md:mb-0 md:mr-6 border-4 border-blue-500"
-          />
+  src={`http://localhost:7117/Avatars/${player.AvatarUrl}`}
+  alt={`${player.fullName} avatar`}
+  onError={() => setImgError(true)}
+  className="w-56 h-56 rounded-full object-cover mb-4 md:mb-0 md:mr-6 border-4 border-blue-500"
+/>
+
+
           <div className="text-center md:text-left">
             <h1 className="text-4xl font-bold text-gray-800">
               {player.fullName}

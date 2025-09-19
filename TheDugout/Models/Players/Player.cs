@@ -21,7 +21,7 @@ namespace TheDugout.Models.Players
                 return age;
             }
         }
-        public int? TeamId { get; set; }      
+        public int? TeamId { get; set; }
         public Team? Team { get; set; }
         public int? AgencyId { get; set; }
         public Agency? Agency { get; set; }
@@ -36,6 +36,8 @@ namespace TheDugout.Models.Players
         public int GameSaveId { get; set; }
         public GameSave GameSave { get; set; } = null!;
         public decimal Price { get; set; }
+        public string AvatarFileName { get; set; } = null!;
+
         public ICollection<PlayerAttribute> Attributes { get; set; } = new List<PlayerAttribute>();
         public ICollection<PlayerMatchStats> MatchStats { get; set; } = new List<PlayerMatchStats>();
         public ICollection<PlayerSeasonStats> SeasonStats { get; set; } = new List<PlayerSeasonStats>();

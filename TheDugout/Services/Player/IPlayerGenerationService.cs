@@ -9,6 +9,7 @@ namespace TheDugout.Services.Players
 
         List<Player> GenerateTeamPlayers(GameSave save, Models.Teams.Team team);
         public Player? GenerateFreeAgent(GameSave save, Agency? agency = null);
+        string GetRandomAvatarFileName();
 
     }
 }
