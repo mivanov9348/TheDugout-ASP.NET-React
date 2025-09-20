@@ -33,10 +33,18 @@ namespace TheDugout.Models.Players
         public double HeightCm { get; set; }
         public double WeightKg { get; set; }
         public bool IsActive { get; set; }
+
         public int GameSaveId { get; set; }
         public GameSave GameSave { get; set; } = null!;
         public decimal Price { get; set; }
         public string AvatarFileName { get; set; } = null!;
+
+        public int CurrentAbility
+        {
+            get;set;
+        }
+
+        public int PotentialAbility { get; set; }
 
         public ICollection<PlayerAttribute> Attributes { get; set; } = new List<PlayerAttribute>();
         public ICollection<PlayerMatchStats> MatchStats { get; set; } = new List<PlayerMatchStats>();

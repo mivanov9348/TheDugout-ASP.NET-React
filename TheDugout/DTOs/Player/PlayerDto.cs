@@ -1,4 +1,6 @@
-﻿namespace TheDugout.DTOs.Player
+﻿using TheDugout.Models.Players;
+
+namespace TheDugout.DTOs.Player
 {
     public class PlayerDto
     {
@@ -24,6 +26,7 @@
         public int AttributeId { get; set; }
         public string Name { get; set; } = null!;
         public int Value { get; set; }
+        public AttributeCategory Category { get; set; }
     }
 
     public class PlayerSeasonStatsDto

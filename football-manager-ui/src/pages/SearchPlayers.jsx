@@ -25,12 +25,10 @@ export default function SearchPlayers({ gameSaveId }) {
   const [filterPosition, setFilterPosition] = useState("");
   const [filterFreeAgents, setFilterFreeAgents] = useState(false);
 
-  // toggles
   const [showInfo, setShowInfo] = useState(true);
   const [showAttributes, setShowAttributes] = useState(true);
   const [showStats, setShowStats] = useState(true);
 
-  // modal state
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -38,7 +36,6 @@ export default function SearchPlayers({ gameSaveId }) {
     setSelectedPlayer(player);
     setIsModalOpen(true);
   };
-
   const closeBuyModal = () => {
     setSelectedPlayer(null);
     setIsModalOpen(false);
@@ -46,10 +43,8 @@ export default function SearchPlayers({ gameSaveId }) {
 
   const playersPerPage = 15;
   const debouncedSearch = useDebounce(search, 400);
-
   const navigate = useNavigate();
 
-  // Collect attribute names dynamically
   const allAttributeNames = useMemo(() => {
     const names = new Set();
     players.forEach((p) => {
@@ -58,7 +53,6 @@ export default function SearchPlayers({ gameSaveId }) {
     return Array.from(names);
   }, [players]);
 
-  // Fetch players
   useEffect(() => {
     if (!gameSaveId) return;
 
@@ -103,7 +97,6 @@ export default function SearchPlayers({ gameSaveId }) {
 
   const handleConfirmBuy = async () => {
     if (!selectedPlayer) return;
-
     try {
       const res = await fetch("/api/transfers/buy", {
         method: "POST",
@@ -113,9 +106,7 @@ export default function SearchPlayers({ gameSaveId }) {
           playerId: selectedPlayer.id,
         }),
       });
-
       const data = await res.json();
-
       if (!res.ok || !data.success) {
         Swal.fire({
           icon: "error",
@@ -128,10 +119,9 @@ export default function SearchPlayers({ gameSaveId }) {
           title: "Success",
           text: `You signed ${selectedPlayer.name}!`,
         });
-        // reload list
         setPlayers((prev) => prev.filter((p) => p.id !== selectedPlayer.id));
       }
-    } catch (e) {
+    } catch {
       Swal.fire({
         icon: "error",
         title: "Error",
@@ -142,11 +132,10 @@ export default function SearchPlayers({ gameSaveId }) {
     }
   };
 
-  // 🔹 Проверка дали да показваме колоната "Agency"
   const showAgencyColumn = players.some((p) => p.agency);
 
   return (
-    <div className="mt-6 p-6 border rounded-xl bg-white shadow-lg max-w-[1400px] mx-auto overflow-hidden">
+    <div className="mt-6 p-6 border rounded-xl bg-white shadow-lg max-w-[1600px] mx-auto overflow-hidden">
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
         <button
@@ -250,164 +239,150 @@ export default function SearchPlayers({ gameSaveId }) {
         </label>
       </div>
 
-      {/* Table — FIXED: Scrollable without stretching page */}
+      {/* Table */}
       <div className="overflow-x-auto rounded-lg border max-w-full scrollbar-thin">
-        <div className="min-w-full">
-          <table className="w-full border-collapse text-sm table-fixed">
-            <thead className="bg-sky-50 text-sky-700 sticky top-0">
-  <tr>
-    <th className="p-3 border whitespace-nowrap min-w-[180px]">Name</th>
-    <th className="p-3 border whitespace-nowrap min-w-[120px]">Team</th>
-    <th className="p-3 border whitespace-nowrap min-w-[100px]">Country</th>
-    <th className="p-3 border whitespace-nowrap min-w-[100px]">Position</th>
-    {showInfo && (
-      <>
-        <th className="p-3 border whitespace-nowrap min-w-[60px]">Age</th>
-        <th className="p-3 border whitespace-nowrap min-w-[100px]">Price</th>
-      </>
-    )}
-    {showAttributes &&
-      allAttributeNames.map((attr) => (
-        <th key={attr} className="p-3 border whitespace-nowrap min-w-[80px]">
-          {attr}
-        </th>
-      ))}
-    {showStats && (
-      <th className="p-3 border whitespace-nowrap min-w-[200px]">
-        Season Stats
-      </th>
-    )}
-    {showAgencyColumn && (
-      <th className="p-3 border whitespace-nowrap min-w-[120px]">Agency</th>
-    )}
-    <th className="p-3 border whitespace-nowrap min-w-[100px]">Actions</th>
-  </tr>
-</thead>
-            <tbody>
-  {players.map((p) => (
-    <tr
-      key={p.id}
-      className="text-center hover:bg-sky-50 transition-colors"
-    >
-      <td
-        className="p-2 border font-medium cursor-pointer whitespace-nowrap min-w-[180px]"
-        onClick={() => navigate(`/player/${p.id}`)}
-      >
-        {p.name}
-      </td>
-      <td className="p-2 border whitespace-nowrap min-w-[120px]">
-        {p.team || "—"}
-      </td>
-      <td className="p-2 border whitespace-nowrap min-w-[100px]">
-        {p.country}
-      </td>
-      <td className="p-2 border whitespace-nowrap min-w-[100px]">
-        {p.position}
-      </td>
-      {showInfo && (
-        <>
-          <td className="p-2 border whitespace-nowrap min-w-[60px]">
-            {p.age}
-          </td>
-          <td className="p-2 border whitespace-nowrap min-w-[100px]">
-            {formatPrice(p.price)}
-          </td>
-        </>
-      )}
-      {showAttributes &&
-        allAttributeNames.map((attr) => {
-          const attribute = p.attributes?.find((a) => a.name === attr);
-          return (
-            <td
-              key={attr}
-              className="p-2 border whitespace-nowrap min-w-[80px]"
-            >
-              {attribute ? attribute.value : "-"}
-            </td>
-          );
-        })}
-      {showStats && (
-        <td className="p-2 border min-w-[200px]">
-          {p.seasonStats && p.seasonStats.length > 0 ? (
-            <ul className="list-disc list-inside text-left">
-              {p.seasonStats.map((s, i) => (
-                <li key={i} className="whitespace-nowrap">
-                  Season {s.seasonId}: {s.goals}G / {s.assists}A /{" "}
-                  {s.matchesPlayed}M
-                </li>
-              ))}
-            </ul>
-          ) : (
-            "-"
-          )}
-        </td>
-      )}
-      {/* 🔹 Колона за агенция */}
-      {showAgencyColumn && (
-        <td className="p-2 border min-w-[120px]">
-          {p.agency ? (
-            <div className="flex flex-col items-center gap-1">
-              <img
-                src={
-                  `/agenciesLogos/${p.agency.logo}` || "/default-logo.png"
-                }
-                alt="Agency Logo"
-                className="w-8 h-8 rounded-full object-cover border"
-                onError={(e) => {
-                  e.target.src = "/default-logo.png";
-                }}
-              />
-              <div className="text-xs text-gray-600">{p.agency.name}</div>
-              <div className="text-xs bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded-full">
-                ★ {p.agency.popularity}
-              </div>
-            </div>
-          ) : (
-            "—"
-          )}
-        </td>
-      )}
-      <td className="p-2 border whitespace-nowrap min-w-[100px]">
-        {!p.team ? (
-          <button
-            onClick={() => openBuyModal(p)}
-            className="px-3 py-1 bg-green-500 hover:bg-green-600 text-white rounded-lg text-xs"
-          >
-            Buy
-          </button>
-        ) : (
-          <button
-            onClick={() =>
-              Swal.fire({
-                icon: "info",
-                title: "Not active yet",
-                text: "Sending offers will be available in a future update.",
-              })
-            }
-            disabled
-            className="px-3 py-1 bg-gray-400 text-white rounded-lg text-xs cursor-not-allowed"
-          >
-            Send Offer
-          </button>
-        )}
-      </td>
-    </tr>
-  ))}
-  {players.length === 0 && (
-    <tr>
-      <td
-        colSpan={
-          9 + allAttributeNames.length + (showAgencyColumn ? 1 : 0)
-        }
-        className="text-center py-6 text-gray-500"
-      >
-        No players found.
-      </td>
-    </tr>
-  )}
-</tbody>
-          </table>
-        </div>
+        <table className="w-full border-collapse text-sm table-fixed">
+          <thead className="bg-sky-50 text-sky-700 sticky top-0">
+            <tr>
+              <th className="p-3 border min-w-[200px]">Name</th>
+              <th className="p-3 border min-w-[160px]">Team</th>
+              <th className="p-3 border min-w-[140px]">Country</th>
+              <th className="p-3 border min-w-[120px]">Position</th>
+              {showInfo && (
+                <>
+                  <th className="p-3 border min-w-[80px]">Age</th>
+                  <th className="p-3 border min-w-[140px]">Price</th>
+                </>
+              )}
+              {showAttributes &&
+                allAttributeNames.map((attr) => (
+                  <th key={attr} className="p-3 border min-w-[100px]">
+                    {attr}
+                  </th>
+                ))}
+              {showStats && (
+                <th className="p-3 border min-w-[250px]">Season Stats</th>
+              )}
+              {showAgencyColumn && (
+                <th className="p-3 border min-w-[150px]">Agency</th>
+              )}
+              <th className="p-3 border min-w-[120px]">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {players.map((p) => (
+              <tr
+                key={p.id}
+                className="text-center hover:bg-sky-50 transition-colors"
+              >
+                <td
+                  className="p-3 border font-medium cursor-pointer break-words whitespace-normal"
+                  title={p.name}
+                  onClick={() => navigate(`/player/${p.id}`)}
+                >
+                  {p.name}
+                </td>
+                <td className="p-3 border break-words whitespace-normal" title={p.team}>
+                  {p.team || "—"}
+                </td>
+                <td className="p-3 border break-words whitespace-normal" title={p.country}>
+                  {p.country}
+                </td>
+                <td className="p-3 border break-words whitespace-normal" title={p.position}>
+                  {p.position}
+                </td>
+                {showInfo && (
+                  <>
+                    <td className="p-3 border">{p.age}</td>
+                    <td className="p-3 border">{formatPrice(p.price)}</td>
+                  </>
+                )}
+                {showAttributes &&
+                  allAttributeNames.map((attr) => {
+                    const attribute = p.attributes?.find((a) => a.name === attr);
+                    return (
+                      <td key={attr} className="p-3 border">
+                        {attribute ? attribute.value : "-"}
+                      </td>
+                    );
+                  })}
+                {showStats && (
+                  <td className="p-3 border text-left">
+                    {p.seasonStats && p.seasonStats.length > 0 ? (
+                      <ul className="list-disc list-inside">
+                        {p.seasonStats.map((s, i) => (
+                          <li key={i}>
+                            Season {s.seasonId}: {s.goals}G / {s.assists}A / {s.matchesPlayed}M
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      "-"
+                    )}
+                  </td>
+                )}
+                {showAgencyColumn && (
+                  <td className="p-3 border break-words whitespace-normal">
+                    {p.agency ? (
+                      <div className="flex flex-col items-center gap-1">
+                        <img
+                          src={`/agenciesLogos/${p.agency.logo}` || "/default-logo.png"}
+                          alt="Agency Logo"
+                          className="w-8 h-8 rounded-full object-cover border"
+                          onError={(e) => {
+                            e.target.src = "/default-logo.png";
+                          }}
+                        />
+                        <div className="text-xs text-gray-600">{p.agency.name}</div>
+                        <div className="text-xs bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded-full">
+                          ★ {p.agency.popularity}
+                        </div>
+                      </div>
+                    ) : (
+                      "—"
+                    )}
+                  </td>
+                )}
+                <td className="p-3 border">
+                  {!p.team ? (
+                    <button
+                      onClick={() => openBuyModal(p)}
+                      className="px-3 py-1 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm"
+                    >
+                      Buy
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() =>
+                        Swal.fire({
+                          icon: "info",
+                          title: "Not active yet",
+                          text: "Sending offers will be available in a future update.",
+                        })
+                      }
+                      disabled
+                      className="px-3 py-1 bg-gray-400 text-white rounded-lg text-sm cursor-not-allowed"
+                    >
+                      Send Offer
+                    </button>
+                  )}
+                </td>
+              </tr>
+            ))}
+            {players.length === 0 && (
+              <tr>
+                <td
+                  colSpan={
+                    9 + allAttributeNames.length + (showAgencyColumn ? 1 : 0)
+                  }
+                  className="text-center py-6 text-gray-500"
+                >
+                  No players found.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
       </div>
 
       {/* Pagination */}
@@ -441,18 +416,14 @@ export default function SearchPlayers({ gameSaveId }) {
               <span className="font-semibold">{selectedPlayer.name}</span>?
             </p>
             <p className="mb-4 text-gray-600">
-              Age: {selectedPlayer.age} | Position: {selectedPlayer.position} |{" "}
-              Price: {formatPrice(selectedPlayer.price)}
+              Age: {selectedPlayer.age} | Position: {selectedPlayer.position} | Price:{" "}
+              {formatPrice(selectedPlayer.price)}
             </p>
-            {/* 🔹 Показваме агенцията и в модала */}
             {selectedPlayer.agency && (
               <div className="mb-4 p-3 bg-gray-50 rounded-lg">
                 <div className="flex items-center gap-2">
                   <img
-                    src={
-                      `/agenciesLogos/${selectedPlayer.agency.logo}` ||
-                      "/default-logo.png"
-                    }
+                    src={`/agenciesLogos/${selectedPlayer.agency.logo}` || "/default-logo.png"}
                     alt="Agency"
                     className="w-6 h-6 rounded-full object-cover"
                     onError={(e) => {
@@ -460,9 +431,8 @@ export default function SearchPlayers({ gameSaveId }) {
                     }}
                   />
                   <span className="text-sm">
-                    Represented by{" "}
-                    <strong>{selectedPlayer.agency.regionName}</strong> agency (
-                    ★{selectedPlayer.agency.popularity})
+                    Represented by <strong>{selectedPlayer.agency.regionName}</strong> agency (★
+                    {selectedPlayer.agency.popularity})
                   </span>
                 </div>
               </div>

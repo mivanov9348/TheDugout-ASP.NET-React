@@ -43,8 +43,10 @@ namespace TheDugout.Services
                     {
                         AttributeId = a.AttributeId,
                         Name = a.Attribute.Name,
-                        Value = a.Value
+                        Value = a.Value,
+                        Category = a.Attribute.Category
                     }).ToList(),
+
                     SeasonStats = p.SeasonStats.Select(s => new PlayerSeasonStatsDto
                     {
                         SeasonId = s.SeasonId,

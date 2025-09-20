@@ -4,6 +4,7 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using TheDugout.Data;
 using TheDugout.Services;
 using TheDugout.Services.Cup;
@@ -34,6 +35,7 @@ builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());    
     });
 
 builder.Services.AddEndpointsApiExplorer();

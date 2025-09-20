@@ -87,12 +87,17 @@ public static class SeedData
                 db.Attributes.Add(new Models.Players.Attribute
                 {
                     Code = a.Code,
-                    Name = a.Name
+                    Name = a.Name,
+                    Category = a.Category   
                 });
             }
-            else if (existing.Name != a.Name)
+            else
             {
-                existing.Name = a.Name;
+                if (existing.Name != a.Name)
+                    existing.Name = a.Name;
+
+                if (existing.Category != a.Category)   
+                    existing.Category = a.Category;
             }
         }
         await db.SaveChangesAsync();

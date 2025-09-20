@@ -192,67 +192,90 @@ namespace TheDugout.Services.Players
 
         private void AssignAttributes(Player player, Position position)
         {
-            try
+            if (player == null)
+                throw new ArgumentNullException(nameof(player));
+            if (position == null)
+                throw new ArgumentNullException(nameof(position));
+
+            int age = player.Age;
+
+            var weights = _context.PositionWeights
+                .Include(w => w.Attribute)
+                .Where(w => w.PositionId == position.Id)
+                .ToList();
+
+            if (weights == null || weights.Count == 0)
+                throw new InvalidOperationException($"No position weights found for position '{position.Code}'.");
+
+            double totalWeight = weights.Sum(w => w.Weight);
+            double weightedSum = 0;
+
+            foreach (var w in weights)
             {
-                if (player == null)
-                    throw new ArgumentNullException(nameof(player), "Player cannot be null.");
-                if (position == null)
-                    throw new ArgumentNullException(nameof(position), "Position cannot be null.");
+                int value = GenerateWeightedAttribute(w.Weight, totalWeight, age);
 
-                int age = DateTime.Today.Year - player.BirthDate.Year;
-                if (player.BirthDate.Date > DateTime.Today.AddYears(-age)) age--;
-
-                var weights = _context.PositionWeights
-                    .Include(w => w.Attribute)
-                    .Where(w => w.PositionId == position.Id)
-                    .ToList();
-
-                if (weights == null || weights.Count == 0)
-                    throw new InvalidOperationException($"No position weights found for position '{position.Code}'.");
-
-                foreach (var w in weights)
+                player.Attributes.Add(new PlayerAttribute
                 {
-                    if (w.AttributeId <= 0)
-                        throw new InvalidOperationException("Invalid AttributeId in PositionWeight.");
-                    if (w.Weight < 0)
-                        throw new InvalidOperationException("Weight in PositionWeight cannot be negative.");
+                    AttributeId = w.AttributeId,
+                    Value = value
+                });
 
-                    int value = GenerateRealisticAttribute(w.Weight, age);
+                // за CA ще използваме претегленото средно
+                weightedSum += value * w.Weight;
+            }
 
-                    player.Attributes.Add(new PlayerAttribute
-                    {
-                        AttributeId = w.AttributeId,
-                        Value = value
-                    });
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[ERROR in AssignAttributes] {ex.GetType().Name}: {ex.Message}");
-                Console.WriteLine(ex.StackTrace);
-                throw;
-            }
+            // CurrentAbility = претеглено средно, скалирано към 200
+            double normalizedCA = (weightedSum / totalWeight) * 10; // (атрибутите са до 20, умножаваме за скала)
+            player.CurrentAbility = (int)Math.Clamp(Math.Round(normalizedCA), 1, 200);
+
+            // PotentialAbility се базира на възраст + развитие
+            player.PotentialAbility = CalculatePotentialAbility(player, position);
         }
-
-        private int GenerateRealisticAttribute(double weight, int age)
+        private int GenerateWeightedAttribute(double weight, double totalWeight, int age)
         {
-            double baseRandom = 5 + _rng.NextDouble() * 15; // между 5 и 20
-            double weighted = baseRandom * (0.5 + weight);
+            // базово разпределение – играчите с важен атрибут за позицията да получават по-високи стойности
+            double baseValue = 5 + _rng.NextDouble() * 15; // 5–20
+            double importanceFactor = 0.5 + (weight / totalWeight) * 1.5; // по-висока тежест = по-голям шанс за висок атрибут
 
+            // възрастов фактор (млади са по-непостоянни, пик 24–28, спад след 32)
             double ageFactor = age switch
             {
-                <= 20 => 0.6 + (age - 16) * 0.1,
-                <= 24 => 1.0,
-                <= 28 => 1.2,
+                <= 20 => 0.7 + _rng.NextDouble() * 0.4, // непостоянни, някои добри, други слаби
+                <= 24 => 0.9 + _rng.NextDouble() * 0.3,
+                <= 28 => 1.1 + _rng.NextDouble() * 0.2,
                 <= 32 => 1.0,
-                <= 35 => 0.8,
-                _ => 0.6
+                <= 35 => 0.8 + _rng.NextDouble() * 0.2,
+                _ => 0.6 + _rng.NextDouble() * 0.2
             };
 
-            double variation = 0.9 + _rng.NextDouble() * 0.2;
-            int final = (int)Math.Round(weighted * ageFactor * variation);
+            // финална стойност
+            double final = baseValue * importanceFactor * ageFactor;
+            return Math.Clamp((int)Math.Round(final), 1, 20);
+        }
 
-            return Math.Clamp(final, 1, 20);
+        private int CalculatePotentialAbility(Player player, Position position)
+        {
+            int growthMargin = player.Age switch
+            {
+                <= 19 => _rng.Next(60, 100),
+                <= 23 => _rng.Next(30, 70),
+                <= 27 => _rng.Next(15, 40),
+                <= 30 => _rng.Next(5, 20),
+                _ => 0
+            };
+
+            double posFactor = position.Code switch
+            {
+                "ATT" => 1.15,
+                "MID" => 1.05,
+                "DF" => 1.0,
+                "GK" => 0.95,
+                _ => 1.0
+            };
+
+            int potential = (int)(player.CurrentAbility + growthMargin * posFactor);
+
+            return Math.Min(potential, 200);
         }
 
         private DateTime RandomBirthDate()

@@ -1,165 +1,405 @@
 [
   {
     "positionCode": "GK",
-    "attributeCode": "REF",
-    "weight": 0.30
+    "attributeCode": "PAC",
+    "weight": 0.018
   },
   {
     "positionCode": "GK",
-    "attributeCode": "HAN",
-    "weight": 0.30
+    "attributeCode": "STA",
+    "weight": 0.018
   },
   {
     "positionCode": "GK",
-    "attributeCode": "TAC",
-    "weight": 0.05
+    "attributeCode": "STR",
+    "weight": 0.018
   },
   {
     "positionCode": "GK",
-    "attributeCode": "POS",
-    "weight": 0.20
+    "attributeCode": "AGI",
+    "weight": 0.045
+  },
+  {
+    "positionCode": "GK",
+    "attributeCode": "JMP",
+    "weight": 0.045
   },
   {
     "positionCode": "GK",
     "attributeCode": "PAS",
-    "weight": 0.05
-  },
-  {
-    "positionCode": "GK",
-    "attributeCode": "VIS",
-    "weight": 0.05
+    "weight": 0.036
   },
   {
     "positionCode": "GK",
     "attributeCode": "FIN",
-    "weight": 0.02
+    "weight": 0.009
   },
   {
     "positionCode": "GK",
-    "attributeCode": "PAC",
-    "weight": 0.03
+    "attributeCode": "DRI",
+    "weight": 0.009
+  },
+  {
+    "positionCode": "GK",
+    "attributeCode": "TAC",
+    "weight": 0.018
+  },
+  {
+    "positionCode": "GK",
+    "attributeCode": "CRS",
+    "weight": 0.009
+  },
+  {
+    "positionCode": "GK",
+    "attributeCode": "FRK",
+    "weight": 0.009
+  },
+  {
+    "positionCode": "GK",
+    "attributeCode": "VIS",
+    "weight": 0.027
+  },
+  {
+    "positionCode": "GK",
+    "attributeCode": "COM",
+    "weight": 0.027
+  },
+  {
+    "positionCode": "GK",
+    "attributeCode": "DEC",
+    "weight": 0.036
+  },
+  {
+    "positionCode": "GK",
+    "attributeCode": "WRK",
+    "weight": 0.018
+  },
+  {
+    "positionCode": "GK",
+    "attributeCode": "LDR",
+    "weight": 0.018
+  },
+  {
+    "positionCode": "GK",
+    "attributeCode": "ANT",
+    "weight": 0.027
+  },
+  {
+    "positionCode": "GK",
+    "attributeCode": "POS",
+    "weight": 0.180
+  },
+  {
+    "positionCode": "GK",
+    "attributeCode": "REF",
+    "weight": 0.180
+  },
+  {
+    "positionCode": "GK",
+    "attributeCode": "HAN",
+    "weight": 0.180
   },
 
   {
     "positionCode": "DF",
-    "attributeCode": "REF",
-    "weight": 0.05
+    "attributeCode": "PAC",
+    "weight": 0.090
   },
   {
     "positionCode": "DF",
-    "attributeCode": "HAN",
-    "weight": 0.05
+    "attributeCode": "STA",
+    "weight": 0.045
   },
   {
     "positionCode": "DF",
-    "attributeCode": "TAC",
-    "weight": 0.35
+    "attributeCode": "STR",
+    "weight": 0.126
   },
   {
     "positionCode": "DF",
-    "attributeCode": "POS",
-    "weight": 0.30
+    "attributeCode": "AGI",
+    "weight": 0.036
+  },
+  {
+    "positionCode": "DF",
+    "attributeCode": "JMP",
+    "weight": 0.072
   },
   {
     "positionCode": "DF",
     "attributeCode": "PAS",
-    "weight": 0.10
-  },
-  {
-    "positionCode": "DF",
-    "attributeCode": "VIS",
-    "weight": 0.05
+    "weight": 0.045
   },
   {
     "positionCode": "DF",
     "attributeCode": "FIN",
-    "weight": 0.02
+    "weight": 0.009
   },
   {
     "positionCode": "DF",
-    "attributeCode": "PAC",
-    "weight": 0.08
+    "attributeCode": "DRI",
+    "weight": 0.018
+  },
+  {
+    "positionCode": "DF",
+    "attributeCode": "TAC",
+    "weight": 0.270
+  },
+  {
+    "positionCode": "DF",
+    "attributeCode": "CRS",
+    "weight": 0.027
+  },
+  {
+    "positionCode": "DF",
+    "attributeCode": "FRK",
+    "weight": 0.009
+  },
+  {
+    "positionCode": "DF",
+    "attributeCode": "VIS",
+    "weight": 0.018
+  },
+  {
+    "positionCode": "DF",
+    "attributeCode": "COM",
+    "weight": 0.027
+  },
+  {
+    "positionCode": "DF",
+    "attributeCode": "DEC",
+    "weight": 0.027
+  },
+  {
+    "positionCode": "DF",
+    "attributeCode": "WRK",
+    "weight": 0.018
+  },
+  {
+    "positionCode": "DF",
+    "attributeCode": "LDR",
+    "weight": 0.027
+  },
+  {
+    "positionCode": "DF",
+    "attributeCode": "ANT",
+    "weight": 0.045
+  },
+  {
+    "positionCode": "DF",
+    "attributeCode": "POS",
+    "weight": 0.180
+  },
+  {
+    "positionCode": "DF",
+    "attributeCode": "REF",
+    "weight": 0.009
+  },
+  {
+    "positionCode": "DF",
+    "attributeCode": "HAN",
+    "weight": 0.009
   },
 
   {
     "positionCode": "MID",
-    "attributeCode": "REF",
-    "weight": 0.02
+    "attributeCode": "PAC",
+    "weight": 0.054
   },
   {
     "positionCode": "MID",
-    "attributeCode": "HAN",
-    "weight": 0.03
+    "attributeCode": "STA",
+    "weight": 0.072
   },
   {
     "positionCode": "MID",
-    "attributeCode": "TAC",
-    "weight": 0.15
+    "attributeCode": "STR",
+    "weight": 0.036
   },
   {
     "positionCode": "MID",
-    "attributeCode": "POS",
-    "weight": 0.15
+    "attributeCode": "AGI",
+    "weight": 0.045
+  },
+  {
+    "positionCode": "MID",
+    "attributeCode": "JMP",
+    "weight": 0.036
   },
   {
     "positionCode": "MID",
     "attributeCode": "PAS",
-    "weight": 0.25
-  },
-  {
-    "positionCode": "MID",
-    "attributeCode": "VIS",
-    "weight": 0.25
+    "weight": 0.180
   },
   {
     "positionCode": "MID",
     "attributeCode": "FIN",
-    "weight": 0.05
+    "weight": 0.036
   },
   {
     "positionCode": "MID",
-    "attributeCode": "PAC",
-    "weight": 0.10
+    "attributeCode": "DRI",
+    "weight": 0.054
+  },
+  {
+    "positionCode": "MID",
+    "attributeCode": "TAC",
+    "weight": 0.045
+  },
+  {
+    "positionCode": "MID",
+    "attributeCode": "CRS",
+    "weight": 0.027
+  },
+  {
+    "positionCode": "MID",
+    "attributeCode": "FRK",
+    "weight": 0.027
+  },
+  {
+    "positionCode": "MID",
+    "attributeCode": "VIS",
+    "weight": 0.135
+  },
+  {
+    "positionCode": "MID",
+    "attributeCode": "COM",
+    "weight": 0.036
+  },
+  {
+    "positionCode": "MID",
+    "attributeCode": "DEC",
+    "weight": 0.108
+  },
+  {
+    "positionCode": "MID",
+    "attributeCode": "WRK",
+    "weight": 0.072
+  },
+  {
+    "positionCode": "MID",
+    "attributeCode": "LDR",
+    "weight": 0.027
+  },
+  {
+    "positionCode": "MID",
+    "attributeCode": "ANT",
+    "weight": 0.054
+  },
+  {
+    "positionCode": "MID",
+    "attributeCode": "POS",
+    "weight": 0.054
+  },
+  {
+    "positionCode": "MID",
+    "attributeCode": "REF",
+    "weight": 0.009
+  },
+  {
+    "positionCode": "MID",
+    "attributeCode": "HAN",
+    "weight": 0.009
   },
 
   {
     "positionCode": "ATT",
-    "attributeCode": "REF",
-    "weight": 0.02
+    "attributeCode": "PAC",
+    "weight": 0.153
   },
   {
     "positionCode": "ATT",
-    "attributeCode": "HAN",
-    "weight": 0.02
+    "attributeCode": "STA",
+    "weight": 0.036
   },
   {
     "positionCode": "ATT",
-    "attributeCode": "TAC",
-    "weight": 0.05
+    "attributeCode": "STR",
+    "weight": 0.036
   },
   {
     "positionCode": "ATT",
-    "attributeCode": "POS",
-    "weight": 0.10
+    "attributeCode": "AGI",
+    "weight": 0.063
+  },
+  {
+    "positionCode": "ATT",
+    "attributeCode": "JMP",
+    "weight": 0.045
   },
   {
     "positionCode": "ATT",
     "attributeCode": "PAS",
-    "weight": 0.10
-  },
-  {
-    "positionCode": "ATT",
-    "attributeCode": "VIS",
-    "weight": 0.10
+    "weight": 0.036
   },
   {
     "positionCode": "ATT",
     "attributeCode": "FIN",
-    "weight": 0.40
+    "weight": 0.270
   },
   {
     "positionCode": "ATT",
-    "attributeCode": "PAC",
-    "weight": 0.21
+    "attributeCode": "DRI",
+    "weight": 0.108
+  },
+  {
+    "positionCode": "ATT",
+    "attributeCode": "TAC",
+    "weight": 0.009
+  },
+  {
+    "positionCode": "ATT",
+    "attributeCode": "CRS",
+    "weight": 0.027
+  },
+  {
+    "positionCode": "ATT",
+    "attributeCode": "FRK",
+    "weight": 0.027
+  },
+  {
+    "positionCode": "ATT",
+    "attributeCode": "VIS",
+    "weight": 0.036
+  },
+  {
+    "positionCode": "ATT",
+    "attributeCode": "COM",
+    "weight": 0.072
+  },
+  {
+    "positionCode": "ATT",
+    "attributeCode": "DEC",
+    "weight": 0.036
+  },
+  {
+    "positionCode": "ATT",
+    "attributeCode": "WRK",
+    "weight": 0.036
+  },
+  {
+    "positionCode": "ATT",
+    "attributeCode": "LDR",
+    "weight": 0.018
+  },
+  {
+    "positionCode": "ATT",
+    "attributeCode": "ANT",
+    "weight": 0.045
+  },
+  {
+    "positionCode": "ATT",
+    "attributeCode": "POS",
+    "weight": 0.036
+  },
+  {
+    "positionCode": "ATT",
+    "attributeCode": "REF",
+    "weight": 0.009
+  },
+  {
+    "positionCode": "ATT",
+    "attributeCode": "HAN",
+    "weight": 0.009
   }
 ]

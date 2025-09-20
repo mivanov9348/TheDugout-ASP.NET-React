@@ -1055,6 +1055,9 @@ namespace TheDugout.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("Category")
+                        .HasColumnType("int");
+
                     b.Property<string>("Code")
                         .IsRequired()
                         .HasMaxLength(10)
@@ -1094,6 +1097,9 @@ namespace TheDugout.Migrations
                     b.Property<int?>("CountryId")
                         .HasColumnType("int");
 
+                    b.Property<int>("CurrentAbility")
+                        .HasColumnType("int");
+
                     b.Property<string>("FirstName")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -1117,6 +1123,9 @@ namespace TheDugout.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<int>("PositionId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PotentialAbility")
                         .HasColumnType("int");
 
                     b.Property<decimal>("Price")

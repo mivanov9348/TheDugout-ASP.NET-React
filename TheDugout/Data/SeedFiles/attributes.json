@@ -1,34 +1,102 @@
 [
   {
-    "code": "REF",
-    "name": "Reflexes"
+    "code": "PAC",
+    "name": "Pace",
+    "category": 1
   },
   {
-    "code": "HAN",
-    "name": "Handling"
+    "code": "STA",
+    "name": "Stamina",
+    "category": 1
   },
   {
-    "code": "TAC",
-    "name": "Tackling"
+    "code": "STR",
+    "name": "Strength",
+    "category": 1
   },
   {
-    "code": "POS",
-    "name": "Positioning"
+    "code": "AGI",
+    "name": "Agility",
+    "category": 1
+  },
+  {
+    "code": "JMP",
+    "name": "Jumping",
+    "category": 1
   },
   {
     "code": "PAS",
-    "name": "Passing"
-  },
-  {
-    "code": "VIS",
-    "name": "Vision"
+    "name": "Passing",
+    "category": 2
   },
   {
     "code": "FIN",
-    "name": "Finishing"
+    "name": "Finishing",
+    "category": 2
   },
   {
-    "code": "PAC",
-    "name": "Pace"
+    "code": "DRI",
+    "name": "Dribbling",
+    "category": 2
+  },
+  {
+    "code": "TAC",
+    "name": "Tackling",
+    "category": 2
+  },
+  {
+    "code": "CRS",
+    "name": "Crossing",
+    "category": 2
+  },
+  {
+    "code": "FRK",
+    "name": "FreeKicks",
+    "category": 2
+  },
+  {
+    "code": "VIS",
+    "name": "Vision",
+    "category": 3
+  },
+  {
+    "code": "COM",
+    "name": "Composure",
+    "category": 3
+  },
+  {
+    "code": "DEC",
+    "name": "Decisions",
+    "category": 3
+  },
+  {
+    "code": "WRK",
+    "name": "WorkRate",
+    "category": 3
+  },
+  {
+    "code": "LDR",
+    "name": "Leadership",
+    "category": 3
+  },
+  {
+    "code": "ANT",
+    "name": "Anticipation",
+    "category": 3
+  },
+  {
+    "code": "POS",
+    "name": "Positioning",
+    "category": 3
+  },
+  {
+    "code": "REF",
+    "name": "Reflexes",
+    "category": 4
+  },
+  {
+    "code": "HAN",
+    "name": "Handling",
+    "category": 4
   }
 ]
