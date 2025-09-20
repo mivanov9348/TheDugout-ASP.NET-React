@@ -1,20 +1,86 @@
 [
   {
     "Category": "Welcome",
-    "SubjectTemplate": "Welcome, {UserName}!",
-    "BodyTemplate": "{UserName} has taken charge of {TeamName}. Best of luck in the new challenge!",
-    "Placeholders": [ "UserName", "TeamName" ],
-    "Weight": 1,
-    "IsActive": true,
-    "Language": "en"
+    "Sender": "Board",
+    "SubjectTemplate": "Welcome to {ClubName}!",
+    "BodyTemplate": "Dear {ManagerName},\n\nWe are delighted to welcome you as the new manager of {ClubName}. We trust you will lead us to success."
   },
   {
-    "Category": "Welcome",
-    "SubjectTemplate": "{UserName} starts a new adventure!",
-    "BodyTemplate": "{UserName} is now the manager of {TeamName}. Fans are looking forward to their first match.",
-    "Placeholders": [ "UserName", "TeamName" ],
-    "Weight": 1,
-    "IsActive": true,
-    "Language": "en"
+    "Category": "Transfer",
+    "Sender": "Media",
+    "SubjectTemplate": "{PlayerName} joins {ClubName}",
+    "BodyTemplate": "The transfer of {PlayerName} to {ClubName} has been confirmed for a fee of {Amount}. Fans are excited to see the player in action."
+  },
+  {
+    "Category": "MatchResult",
+    "Sender": "System",
+    "SubjectTemplate": "Full-time: {ClubName} {Score} {OpponentName}",
+    "BodyTemplate": "The match between {ClubName} and {OpponentName} has ended {Score}. Analysts are already debating your tactical choices."
+  },
+  {
+    "Category": "Board",
+    "Sender": "Board",
+    "SubjectTemplate": "Board expectations update",
+    "BodyTemplate": "The board reminds you that the minimum expectation is to finish in the top {Position} this season. We will be monitoring your progress closely."
+  },
+  {
+    "Category": "Fans",
+    "Sender": "Fans",
+    "SubjectTemplate": "Fans react to performance",
+    "BodyTemplate": "Supporters of {ClubName} were {Reaction} after the recent match against {OpponentName}. The atmosphere online is {Mood}."
+  },
+  {
+    "Category": "Media",
+    "Sender": "Media",
+    "SubjectTemplate": "Press comments about {ClubName}",
+    "BodyTemplate": "The media has been discussing your team, {ClubName}. Many pundits believe {Comment}."
+  },
+  {
+    "Category": "Injury",
+    "Sender": "Assistant",
+    "SubjectTemplate": "Injury update: {PlayerName}",
+    "BodyTemplate": "{PlayerName} suffered an injury during training. The medical team estimates {InjuryLength} weeks until full recovery."
+  },
+  {
+    "Category": "Training",
+    "Sender": "Assistant",
+    "SubjectTemplate": "Training report",
+    "BodyTemplate": "{PlayerName} showed remarkable progress in training today, impressing the staff with improved {Attribute}."
+  },
+  {
+    "Category": "YouthAcademy",
+    "Sender": "Board",
+    "SubjectTemplate": "New talent promoted",
+    "BodyTemplate": "{PlayerName}, a promising youth player, has been promoted from the academy to the first team."
+  },
+  {
+    "Category": "Finance",
+    "Sender": "Board",
+    "SubjectTemplate": "Financial update",
+    "BodyTemplate": "{ClubName} has reported a net profit of {Amount} this quarter. The board is pleased with the financial management."
+  },
+  {
+    "Category": "Milestone",
+    "Sender": "System",
+    "SubjectTemplate": "Milestone achieved",
+    "BodyTemplate": "{PlayerName} has reached {Milestone} appearances for {ClubName}. Fans and teammates alike celebrated the achievement."
+  },
+  {
+    "Category": "Scouting",
+    "Sender": "Assistant",
+    "SubjectTemplate": "Scouting report: {PlayerName}",
+    "BodyTemplate": "Our scouts have completed a detailed report on {PlayerName}. Key strengths include {Strengths}, while weaknesses are {Weaknesses}."
+  },
+  {
+    "Category": "Competition",
+    "Sender": "System",
+    "SubjectTemplate": "Cup draw result",
+    "BodyTemplate": "{ClubName} has been drawn against {OpponentName} in the next round of the {CompetitionName}."
+  },
+  {
+    "Category": "General",
+    "Sender": "System",
+    "SubjectTemplate": "General information",
+    "BodyTemplate": "A new update regarding {Topic} has been received. Please check the details in your office."
   }
 ]

@@ -28,6 +28,7 @@ import TransferHistory from "./pages/TransferHistory";
 import Fixtures from "./pages/Fixtures";
 import PlayerProfile from "./pages/PlayerProfile"; 
 import Facilities from "./pages/Facilities";
+import Match from "./pages/Match";
 
 // 👉 Context
 import { GameSaveProvider, useGameSave } from "./context/GameSaveContext";
@@ -297,6 +298,8 @@ function AppInner() {
                     <Route path="/club" element={<Club gameSaveId={currentGameSave?.id} />} />
                     <Route path="/finances" element={<Finances gameSaveId={currentGameSave?.id} />} />
                     <Route path="/player/:playerId" element={<PlayerProfile gameSaveId={currentGameSave?.id} />} />
+                    <Route path= "/match" element={<Match gameSaveId={currentGameSave?.id} />} />
+                    <Route path="*" element={<div>404 Not Found</div>} />
                   </Routes>
                 </main>
               </div>

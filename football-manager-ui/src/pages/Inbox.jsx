@@ -1,32 +1,48 @@
 import React, { useEffect, useState } from "react";
 import { Mail, MailOpen, ChevronLeft } from "lucide-react";
 
-const Inbox = () => {
+const Inbox = ({ gameSaveId }) => {
   const [messages, setMessages] = useState([]);
   const [selectedMessage, setSelectedMessage] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   useEffect(() => {
-    fetch("https://localhost:7117/api/inbox")
-      .then((res) => res.json())
-      .then((data) => setMessages(data));
-  }, []);
+    if (!gameSaveId) return;
+
+    const fetchMessages = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch(`/api/inbox?gameSaveId=${gameSaveId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) throw new Error("Failed to fetch messages");
+        const data = await res.json();
+        setMessages(data);
+      } catch (err) {
+        console.error("Error fetching inbox messages:", err);
+      }
+    };
+
+    fetchMessages();
+  }, [gameSaveId]);
 
   const handleSelectMessage = (msg) => {
     setSelectedMessage(msg);
 
     if (!msg.isRead) {
-      fetch(`https://localhost:7117/api/inbox/${msg.id}/read`, {
+      const token = localStorage.getItem("token");
+      fetch(`/api/inbox/${msg.id}/read?gameSaveId=${gameSaveId}`, {
         method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
       }).then(() => {
         setMessages((prev) =>
-          prev.map((m) =>
-            m.id === msg.id ? { ...m, isRead: true } : m
-          )
+          prev.map((m) => (m.id === msg.id ? { ...m, isRead: true } : m))
         );
       });
     }
   };
+
+  if (!gameSaveId) return <div className="p-6 text-gray-500">Зареждане...</div>;
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -57,7 +73,9 @@ const Inbox = () => {
                 <div className="flex justify-between items-center">
                   <span
                     className={`truncate ${
-                      msg.isRead ? "text-gray-500" : "font-semibold text-gray-900"
+                      msg.isRead
+                        ? "text-gray-500"
+                        : "font-semibold text-gray-900"
                     }`}
                   >
                     {msg.subject}

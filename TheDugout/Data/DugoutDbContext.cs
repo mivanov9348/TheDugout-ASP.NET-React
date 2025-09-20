@@ -41,7 +41,7 @@ namespace TheDugout.Data
         public DbSet<Player> Players { get; set; }
         public DbSet<Message> Messages { get; set; }
         public DbSet<MessageTemplate> MessageTemplates { get; set; }
-        public DbSet<MessageTemplatePlaceholder> MessageTemplatePlaceholders { get; set; }
+        public DbSet<MessagePlaceholder> MessageTemplatePlaceholders { get; set; }
         public DbSet<Season> Seasons { get; set; }
         public DbSet<SeasonEvent> SeasonEvents { get; set; }
         public DbSet<PlayerMatchStats> PlayerMatchStats { get; set; }

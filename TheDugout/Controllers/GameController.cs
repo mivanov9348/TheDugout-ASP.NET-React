@@ -2,8 +2,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TheDugout.Data;
-using TheDugout.Data.DtoNewGame;
+using TheDugout.Models.Messages;
 using TheDugout.Services.Game;
+using TheDugout.Services.Message;
 using TheDugout.Services.Template;
 using TheDugout.Services.User;
 
@@ -16,18 +17,21 @@ namespace TheDugout.Controllers
         private readonly ITemplateService _templateService;
         private readonly IGameSaveService _gameSaveService;
         private readonly IUserContextService _userContext;
+        private readonly IMessageService _messageService;
         private readonly DugoutDbContext _context;
 
         public GameController(
             ITemplateService templateService,
             IGameSaveService gameSaveService,
             IUserContextService userContext,
-            DugoutDbContext _context)
+            DugoutDbContext _context,
+            IMessageService messageService)
         {
             _templateService = templateService;
             _gameSaveService = gameSaveService;
             _userContext = userContext;
             this._context = _context;
+            _messageService = messageService;
         }
 
         [HttpGet("teamtemplates")]
@@ -110,6 +114,25 @@ namespace TheDugout.Controllers
 
             save.UserTeamId = team.Id;
             await _context.SaveChangesAsync();
+
+            // User и Team инфо
+            var user = await _context.Users.FirstAsync(u => u.Id == userId.Value);
+            team = save.Teams.First(t => t.Id == teamId);
+
+            // Placeholder-и
+            var placeholders = new Dictionary<string, string>
+                {
+                    { "ManagerName", user.Username }, // или DisplayName ако имаш
+                    { "ClubName", team.Name }
+                };
+
+            // Пращаме Welcome съобщение
+            await _messageService.CreateAndSaveMessageAsync(
+                MessageCategory.Welcome,
+                placeholders,
+                save.Id
+            );
+
 
             var full = await _context.GameSaves
                 .AsSplitQuery()

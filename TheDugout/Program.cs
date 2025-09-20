@@ -15,6 +15,7 @@ using TheDugout.Services.Fixture;
 using TheDugout.Services.Game;
 using TheDugout.Services.Interfaces;
 using TheDugout.Services.League;
+using TheDugout.Services.Message;
 using TheDugout.Services.Players;
 using TheDugout.Services.Season;
 using TheDugout.Services.Staff;
@@ -67,6 +68,7 @@ builder.Services.AddScoped<IEurocupScheduleService, EurocupScheduleService>();
 builder.Services.AddScoped<ITrainingFacilitiesService, TrainingFacilitiesService>();
 builder.Services.AddScoped<IYouthAcademyService, YouthAcademyService>();
 builder.Services.AddScoped<IStadiumService, StadiumService>();
+builder.Services.AddScoped<IMessageService, MessageService>();
 
 
 builder.Services.AddCors(options =>

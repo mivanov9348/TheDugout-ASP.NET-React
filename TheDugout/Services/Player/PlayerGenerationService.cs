@@ -189,7 +189,6 @@ namespace TheDugout.Services.Players
 
             return player;
         }
-
         private void AssignAttributes(Player player, Position position)
         {
             if (player == null)
@@ -207,12 +206,16 @@ namespace TheDugout.Services.Players
             if (weights == null || weights.Count == 0)
                 throw new InvalidOperationException($"No position weights found for position '{position.Code}'.");
 
-            double totalWeight = weights.Sum(w => w.Weight);
-            double weightedSum = 0;
+            int attributeCount = 20; // фиксирано, ако е различно → вземи от DB
+            int maxAttributeValue = 20;
+            int maxSum = attributeCount * maxAttributeValue; // 400 при 20 атрибута
+            double scaleFactor = 200.0 / maxSum; // 0.5 при 20 атрибута
+
+            int sum = 0;
 
             foreach (var w in weights)
             {
-                int value = GenerateWeightedAttribute(w.Weight, totalWeight, age);
+                int value = GenerateWeightedAttribute(w.Weight, weights.Sum(x => x.Weight), age);
 
                 player.Attributes.Add(new PlayerAttribute
                 {
@@ -220,15 +223,13 @@ namespace TheDugout.Services.Players
                     Value = value
                 });
 
-                // за CA ще използваме претегленото средно
-                weightedSum += value * w.Weight;
+                sum += value;
             }
 
-            // CurrentAbility = претеглено средно, скалирано към 200
-            double normalizedCA = (weightedSum / totalWeight) * 10; // (атрибутите са до 20, умножаваме за скала)
-            player.CurrentAbility = (int)Math.Clamp(Math.Round(normalizedCA), 1, 200);
+            // CurrentAbility = сбор, скалиран към 200
+            player.CurrentAbility = (int)Math.Clamp(Math.Round(sum * scaleFactor), 1, 200);
 
-            // PotentialAbility се базира на възраст + развитие
+            // PotentialAbility = CA + възраст + позиционен фактор
             player.PotentialAbility = CalculatePotentialAbility(player, position);
         }
         private int GenerateWeightedAttribute(double weight, double totalWeight, int age)
@@ -252,7 +253,6 @@ namespace TheDugout.Services.Players
             double final = baseValue * importanceFactor * ageFactor;
             return Math.Clamp((int)Math.Round(final), 1, 20);
         }
-
         private int CalculatePotentialAbility(Player player, Position position)
         {
             int growthMargin = player.Age switch
@@ -277,7 +277,6 @@ namespace TheDugout.Services.Players
 
             return Math.Min(potential, 200);
         }
-
         private DateTime RandomBirthDate()
         {
             int age = _rng.Next(18, 36);
@@ -289,38 +288,38 @@ namespace TheDugout.Services.Players
         {
             if (player == null) throw new ArgumentNullException(nameof(player));
 
-            double avgAttribute = player.Attributes.Any()
-                ? player.Attributes.Average(a => a.Value)
-                : 10;
+            double abilityScore = (player.CurrentAbility * 0.7) + (player.PotentialAbility * 0.3);
 
             double ageFactor = player.Age switch
             {
-                < 20 => 0.8,
-                <= 23 => 1.0,
-                <= 28 => 1.3,
-                <= 32 => 1.1,
-                _ => 0.7
+                < 20 => 1.3,   
+                <= 23 => 1.2,
+                <= 28 => 1.0, 
+                <= 32 => 0.8,
+                _ => 0.5      
             };
 
             double positionFactor = player.Position.Code switch
             {
-                "ATT" => 1.5,
-                "MID" => 1.3,
-                "DF" => 1.1,
-                "GK" => 0.9,
+                "ATT" => 1.4,
+                "MID" => 1.2,
+                "DF" => 1.0,
+                "GK" => 0.8,
                 _ => 1.0
             };
 
-            double basePrice = avgAttribute * 2000;
+            double basePrice = (abilityScore / 200.0) * 100_000;
+
             double price = basePrice * ageFactor * positionFactor;
 
-            double variation = 0.85 + (_rng.NextDouble() * 0.3);
+            double variation = 0.9 + (_rng.NextDouble() * 0.2); // 0.9–1.1
             price *= variation;
 
             if (price > 120_000) price = 120_000;
 
             return Math.Round((decimal)price, 0);
         }
+
 
         public string GetRandomAvatarFileName()
         {

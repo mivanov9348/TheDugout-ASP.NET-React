@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TheDugout.Data;
 
@@ -11,9 +12,11 @@ using TheDugout.Data;
 namespace TheDugout.Migrations
 {
     [DbContext(typeof(DugoutDbContext))]
-    partial class DugoutDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250920102857_initial")]
+    partial class initial
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -948,7 +951,7 @@ namespace TheDugout.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTime>("Date")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
@@ -967,8 +970,9 @@ namespace TheDugout.Migrations
                     b.Property<int?>("MessageTemplateId")
                         .HasColumnType("int");
 
-                    b.Property<int>("SenderType")
-                        .HasColumnType("int");
+                    b.Property<string>("Sender")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Subject")
                         .IsRequired()
@@ -1004,7 +1008,12 @@ namespace TheDugout.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<int?>("MessageTemplateId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("MessageTemplateId");
 
                     b.ToTable("MessageTemplatePlaceholders");
                 });
@@ -1025,16 +1034,14 @@ namespace TheDugout.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("SenderType")
-                        .HasColumnType("int");
+                    b.Property<string>("Sender")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("SubjectTemplate")
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
-
-                    b.Property<int>("Weight")
-                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -2167,6 +2174,14 @@ namespace TheDugout.Migrations
                     b.Navigation("MessageTemplate");
                 });
 
+            modelBuilder.Entity("TheDugout.Models.Messages.MessagePlaceholder", b =>
+                {
+                    b.HasOne("TheDugout.Models.Messages.MessageTemplate", null)
+                        .WithMany("Placeholders")
+                        .HasForeignKey("MessageTemplateId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
             modelBuilder.Entity("TheDugout.Models.Players.Player", b =>
                 {
                     b.HasOne("TheDugout.Models.Staff.Agency", "Agency")
@@ -2588,6 +2603,11 @@ namespace TheDugout.Migrations
             modelBuilder.Entity("TheDugout.Models.Game.User", b =>
                 {
                     b.Navigation("GameSaves");
+                });
+
+            modelBuilder.Entity("TheDugout.Models.Messages.MessageTemplate", b =>
+                {
+                    b.Navigation("Placeholders");
                 });
 
             modelBuilder.Entity("TheDugout.Models.Players.Attribute", b =>

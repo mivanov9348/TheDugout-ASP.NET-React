@@ -534,8 +534,12 @@ public static class SeedData
                 ? category
                 : MessageCategory.General;
 
+            var senderParsed = Enum.TryParse<MessageSenderType>(t.Sender, out var sender)
+                ? sender
+                : MessageSenderType.System;
+
             var existing = await db.MessageTemplates.FirstOrDefaultAsync(x =>
-                x.Category == category &&
+                x.Category == categoryParsed &&
                 x.SubjectTemplate == t.SubjectTemplate &&
                 x.BodyTemplate == t.BodyTemplate);
 
@@ -545,19 +549,12 @@ public static class SeedData
                 {
                     Category = categoryParsed,
                     SubjectTemplate = t.SubjectTemplate,
-                    BodyTemplate = t.BodyTemplate,
-                    PlaceholdersJson = JsonSerializer.Serialize(t.Placeholders),
-                    Weight = t.Weight,
-                    IsActive = t.IsActive,
-                    Language = t.Language
+                    BodyTemplate = t.BodyTemplate                    
                 });
             }
             else
             {
-                existing.Weight = t.Weight;
-                existing.IsActive = t.IsActive;
-                existing.Language = t.Language;
-                existing.PlaceholdersJson = JsonSerializer.Serialize(t.Placeholders);
+                
             }
         }
 

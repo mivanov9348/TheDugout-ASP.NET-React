@@ -44,12 +44,10 @@ namespace TheDugout.Data.Seed
 
         public record MessageTemplateDto(
     string Category,
+    string Sender,
     string SubjectTemplate,
     string BodyTemplate,
-    string[] Placeholders,
-    int Weight,
-    bool IsActive,
-    string Language
+    string[] Placeholders
 );
 
         public record TacticDto(

@@ -8,35 +8,35 @@ namespace TheDugout.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<Message> builder)
         {
-            builder.HasKey(e => e.Id);
+            builder.HasKey(m => m.Id);
 
-            builder.Property(e => e.Subject)
-                   .IsRequired()
-                   .HasMaxLength(100);
+            builder.Property(m => m.Subject)
+                .IsRequired()
+                .HasMaxLength(200);
 
-            builder.Property(e => e.Body)
-                   .IsRequired();
+            builder.Property(m => m.Body)
+                .IsRequired();
 
-            builder.Property(e => e.IsRead)
-                   .HasDefaultValue(false);
+            builder.Property(m => m.IsRead)
+                .IsRequired()
+                .HasDefaultValue(false);
 
-            builder.Property(e => e.Date)
-                   .HasDefaultValueSql("GETUTCDATE()");
+            builder.Property(m => m.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            builder.Property(m => m.Category)
+                .HasConversion<string>() 
+                .IsRequired();
 
             builder.HasOne(m => m.GameSave)
-                   .WithMany(gs => gs.Messages)
-                   .HasForeignKey(m => m.GameSaveId)
-                   .OnDelete(DeleteBehavior.Cascade)
-                   .IsRequired(false);
+                .WithMany()
+                .HasForeignKey(m => m.GameSaveId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasOne(m => m.MessageTemplate)
-                   .WithMany(mt => mt.Messages)
-                   .HasForeignKey(m => m.MessageTemplateId)
-                   .OnDelete(DeleteBehavior.SetNull)
-                   .IsRequired(false);
-
-            builder.HasIndex(m => new { m.GameSaveId, m.Date });
-            builder.HasIndex(m => m.IsRead);
+                .WithMany()
+                .HasForeignKey(m => m.MessageTemplateId)
+                .OnDelete(DeleteBehavior.SetNull);
         }
     }
 }
