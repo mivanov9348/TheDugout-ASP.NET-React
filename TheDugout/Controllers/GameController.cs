@@ -18,6 +18,7 @@ namespace TheDugout.Controllers
         private readonly IGameSaveService _gameSaveService;
         private readonly IUserContextService _userContext;
         private readonly IMessageService _messageService;
+        private readonly IMessageOrchestrator _messageOrchestrator;
         private readonly DugoutDbContext _context;
 
         public GameController(
@@ -25,13 +26,15 @@ namespace TheDugout.Controllers
             IGameSaveService gameSaveService,
             IUserContextService userContext,
             DugoutDbContext _context,
-            IMessageService messageService)
+            IMessageService messageService,
+            IMessageOrchestrator messageOrchestrator)
         {
             _templateService = templateService;
             _gameSaveService = gameSaveService;
             _userContext = userContext;
             this._context = _context;
             _messageService = messageService;
+            _messageOrchestrator = messageOrchestrator;
         }
 
         [HttpGet("teamtemplates")]
@@ -119,20 +122,11 @@ namespace TheDugout.Controllers
             var user = await _context.Users.FirstAsync(u => u.Id == userId.Value);
             team = save.Teams.First(t => t.Id == teamId);
 
-            // Placeholder-и
-            var placeholders = new Dictionary<string, string>
-                {
-                    { "ManagerName", user.Username }, // или DisplayName ако имаш
-                    { "ClubName", team.Name }
-                };
-
-            // Пращаме Welcome съобщение
-            await _messageService.CreateAndSaveMessageAsync(
-                MessageCategory.Welcome,
-                placeholders,
-                save.Id
-            );
-
+            await _messageOrchestrator.SendMessageAsync(
+           MessageCategory.Welcome,
+            save.Id,
+         (user, team)
+        );
 
             var full = await _context.GameSaves
                 .AsSplitQuery()
@@ -158,7 +152,7 @@ namespace TheDugout.Controllers
                 .Include(gs => gs.UserTeam).ThenInclude(t => t.Country)
                 .Include(gs => gs.Leagues).ThenInclude(l => l.Country)
                 .Include(gs => gs.Leagues).ThenInclude(l => l.Template)
-                .Include(gs => gs.Leagues).ThenInclude(l => l.Teams).ThenInclude(t => t.Country) 
+                .Include(gs => gs.Leagues).ThenInclude(l => l.Teams).ThenInclude(t => t.Country)
                 .Include(gs => gs.Seasons)
                 .FirstOrDefaultAsync(gs => gs.Id == saveId && gs.UserId == userId.Value);
 

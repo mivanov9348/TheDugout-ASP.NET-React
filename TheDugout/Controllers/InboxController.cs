@@ -63,6 +63,22 @@ namespace TheDugout.Controllers
 
             return Ok(new { message = "Message marked as read" });
         }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteMessage(int id, [FromQuery] int gameSaveId)
+        {
+            var message = await _context.Messages
+                .FirstOrDefaultAsync(m => m.Id == id && m.GameSaveId == gameSaveId);
+
+            if (message == null)
+                return NotFound("Message not found.");
+
+            _context.Messages.Remove(message);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Message deleted" });
+        }
+
     }
 
 }

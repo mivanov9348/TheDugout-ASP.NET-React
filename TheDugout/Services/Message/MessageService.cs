@@ -34,6 +34,11 @@ namespace TheDugout.Services.Message
 
             var subject = ReplacePlaceholders(template.SubjectTemplate, placeholders, strict);
             var body = ReplacePlaceholders(template.BodyTemplate, placeholders, strict);
+            var gameSave= gameSaveId.HasValue
+                ? await _context.GameSaves.FindAsync(gameSaveId.Value)
+                : null;
+            var season = gameSave?.Seasons
+                .LastOrDefault();
 
             return new Models.Messages.Message
             {
@@ -42,7 +47,7 @@ namespace TheDugout.Services.Message
                 Body = body,
                 Category = category,
                 SenderType = template.SenderType,
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = season.CurrentDate,
                 IsRead = false,
                 MessageTemplateId = template.Id,
                 MessageTemplate = template

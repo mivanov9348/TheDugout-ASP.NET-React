@@ -1,8 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TheDugout.Data;
 using TheDugout.Models.Finance;
+using TheDugout.Models.Messages;
 using TheDugout.Models.Seasons;
 using TheDugout.Services.Finance;
+using TheDugout.Services.Message;
 
 namespace TheDugout.Services.Transfer
 {
@@ -10,11 +12,13 @@ namespace TheDugout.Services.Transfer
     {
         private readonly DugoutDbContext _context;
         private readonly IFinanceService _financeService;
+        private readonly IMessageOrchestrator _messageOrchestrator;
 
-        public TransferService(DugoutDbContext context, IFinanceService _financeService)
+        public TransferService(DugoutDbContext context, IFinanceService _financeService, IMessageOrchestrator messageOrchestrator)
         {
             _context = context;
             this._financeService = _financeService;
+            _messageOrchestrator = messageOrchestrator;
         }
 
         public async Task<object> GetPlayersAsync(
@@ -247,6 +251,12 @@ namespace TheDugout.Services.Transfer
             player.TeamId = team.Id;
 
             await _context.SaveChangesAsync();
+
+            await _messageOrchestrator.SendMessageAsync(
+    MessageCategory.Transfer,
+    gameSaveId,
+    transfer 
+);
 
             return (true, "");
         }

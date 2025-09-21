@@ -35,7 +35,7 @@ namespace TheDugout.Models.Messages
         public string Body { get; set; } = string.Empty;
         public MessageCategory Category { get; set; }
         public MessageSenderType SenderType { get; set; } = MessageSenderType.System;
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; set; }
         public bool IsRead { get; set; } = false;
         public int? GameSaveId { get; set; }
         public GameSave? GameSave { get; set; }
