@@ -71,6 +71,7 @@ builder.Services.AddScoped<IStadiumService, StadiumService>();
 builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddScoped<IMessageOrchestrator, MessageOrchestrator>();
 builder.Services.AddScoped<IGameDayService, GameDayService>();
+builder.Services.AddScoped<ISeasonEventService, SeasonEventService>();
 
 builder.Services.AddCors(options =>
 {

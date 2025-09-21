@@ -39,7 +39,6 @@ namespace TheDugout.Services.Season
 
         private SeasonEventType GetEventType(DateTime date, DateTime seasonStart)
         {
-            // първите 7 дни от сезона са трансферен прозорец
             if (date >= seasonStart && date < seasonStart.AddDays(7))
                 return SeasonEventType.TransferWindow;
 

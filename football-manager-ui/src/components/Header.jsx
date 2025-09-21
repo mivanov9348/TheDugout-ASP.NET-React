@@ -1,9 +1,8 @@
-// src/components/Header.jsx
 import { Link } from "react-router-dom";
 import { useGameSave } from "../context/GameSaveContext";
 
 function Header({ username }) {
-  const { currentGameSave } = useGameSave();
+  const { currentGameSave, setCurrentGameSave } = useGameSave();
 
   if (!currentGameSave) {
     return (
@@ -23,6 +22,23 @@ function Header({ username }) {
       month: "short",
       year: "numeric",
     });
+  };
+
+  const handleNextDay = async () => {
+    try {
+      const res = await fetch("/api/games/current/next-day", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  credentials: "include",
+});
+
+      if (res.ok) {
+        const updatedSave = await res.json();
+        setCurrentGameSave(updatedSave);
+      }
+    } catch (err) {
+      console.error("Next Day failed:", err);
+    }
   };
 
   return (
@@ -49,7 +65,10 @@ function Header({ username }) {
         <span className="font-semibold text-green-400">
           {team ? `€${team.balance.toLocaleString()}` : "€0"}
         </span>
-        <button className="bg-sky-600 hover:bg-sky-700 px-4 py-2 rounded-lg font-medium">
+        <button
+          onClick={handleNextDay}
+          className="bg-sky-600 hover:bg-sky-700 px-4 py-2 rounded-lg font-medium"
+        >
           Next Day →
         </button>
       </div>

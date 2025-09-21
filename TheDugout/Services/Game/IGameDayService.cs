@@ -2,7 +2,6 @@
 {
     public interface IGameDayService
     {
-        void ProcessNextDayAsync(int saveId);
-
+        Task ProcessNextDayAsync(int saveId);
     }
 }

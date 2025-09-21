@@ -19,6 +19,7 @@ namespace TheDugout.Controllers
         private readonly IUserContextService _userContext;
         private readonly IMessageService _messageService;
         private readonly IMessageOrchestrator _messageOrchestrator;
+        private readonly IGameDayService _gameDayService;
         private readonly DugoutDbContext _context;
 
         public GameController(
@@ -27,7 +28,8 @@ namespace TheDugout.Controllers
             IUserContextService userContext,
             DugoutDbContext _context,
             IMessageService messageService,
-            IMessageOrchestrator messageOrchestrator)
+            IMessageOrchestrator messageOrchestrator,
+            IGameDayService gameDayService)
         {
             _templateService = templateService;
             _gameSaveService = gameSaveService;
@@ -35,6 +37,36 @@ namespace TheDugout.Controllers
             this._context = _context;
             _messageService = messageService;
             _messageOrchestrator = messageOrchestrator;
+            _gameDayService = gameDayService;
+        }
+
+        [Authorize]
+        [HttpPost("current/next-day")]
+        public async Task<IActionResult> NextDay()
+        {
+            var userId = _userContext.GetUserId(User);
+            if (userId == null) return Unauthorized();
+
+            var user = await _context.Users
+                .Include(u => u.CurrentSave)
+                .FirstOrDefaultAsync(u => u.Id == userId.Value);
+
+            if (user?.CurrentSave == null)
+                return BadRequest(new { message = "No current save selected." });
+
+            await _gameDayService.ProcessNextDayAsync(user.CurrentSave.Id);
+
+            var updatedSave = await _context.GameSaves
+                .AsSplitQuery()
+                .Include(gs => gs.UserTeam).ThenInclude(t => t.Country)
+                .Include(gs => gs.Leagues).ThenInclude(l => l.Country)
+                .Include(gs => gs.Leagues).ThenInclude(l => l.Template)
+                .Include(gs => gs.Leagues).ThenInclude(l => l.Teams).ThenInclude(t => t.Country)
+                .Include(gs => gs.Seasons).ThenInclude(s => s.Events)
+                .Include(gs => gs.Seasons).ThenInclude(s => s.Fixtures)
+                .FirstAsync(gs => gs.Id == user.CurrentSave.Id);
+
+            return Ok(updatedSave.ToDto());
         }
 
         [HttpGet("teamtemplates")]

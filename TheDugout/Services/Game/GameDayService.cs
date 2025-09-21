@@ -1,42 +1,33 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using TheDugout.Data;
+using TheDugout.Services.Season;
 
 namespace TheDugout.Services.Game
 {
     public class GameDayService : IGameDayService
     {
-        public GameDayService()
+        private readonly DugoutDbContext _context;
+        private readonly ISeasonEventService _seasonEventService;
+
+        public GameDayService(DugoutDbContext context, ISeasonEventService seasonEventService)
         {
+            _context = context;
+            _seasonEventService = seasonEventService;
         }
-
-        public async void ProcessNextDayAsync(int saveId)
+        public async Task ProcessNextDayAsync(int saveId)
         {
-            //// 1. Зареждаме сейва
-            //var save = await _context.GameSaves
-            //    .Include(gs => gs.Seasons)
-            //    .FirstOrDefaultAsync(gs => gs.Id == saveId);
+            var save = await _context.GameSaves
+                .Include(s => s.Seasons)
+                .FirstOrDefaultAsync(s => s.Id == saveId);
 
-            //if (save == null)
-            //    throw new InvalidOperationException("Game save not found");
+            if (save == null) throw new Exception($"GameSave {saveId} not found.");
 
-            //// 2. Смяна на дата
-            //save.CurrentDate = save.CurrentDate.AddDays(1);
+            var season = save.Seasons.OrderByDescending(s => s.StartDate).FirstOrDefault();
+            if (season == null) throw new Exception("No active season found.");
 
-            //var result = new GameDayResult
-            //{
-            //    NewDate = save.CurrentDate
-            //};
+            season.CurrentDate = season.CurrentDate.AddDays(1);
 
-            //// TODO: по-късно добавяме тук извиквания към:
-            //// - мачове
-            //// - тренировки
-            //// - трансфери
-            //// - финанси
-            //// - съобщения и т.н.
-
-            //// Пример: result.Events.Add("No matches today.");
-
-            //await _context.SaveChangesAsync();
-            //return result;
+            await _context.SaveChangesAsync();
         }
     }
 }
