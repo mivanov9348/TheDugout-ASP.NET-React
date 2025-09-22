@@ -135,9 +135,9 @@ export default function SearchPlayers({ gameSaveId }) {
   const showAgencyColumn = players.some((p) => p.agency);
 
   return (
-    <div className="mt-6 p-6 border rounded-xl bg-white shadow-lg max-w-[1600px] mx-auto overflow-hidden">
+    <div className="flex flex-col h-[calc(100vh-220px)] bg-gray-50">
       {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
+      <div className="flex items-center gap-3 mb-4">
         <button
           onClick={() => navigate(-1)}
           className="p-2 rounded-full hover:bg-sky-100 text-sky-600 transition"
@@ -148,7 +148,7 @@ export default function SearchPlayers({ gameSaveId }) {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-3 mb-6 items-center">
+      <div className="flex flex-wrap gap-3 mb-4 items-center">
         <input
           type="text"
           className="border p-2 rounded-lg flex-1 shadow-sm focus:ring-2 focus:ring-sky-400"
@@ -239,154 +239,144 @@ export default function SearchPlayers({ gameSaveId }) {
         </label>
       </div>
 
-      {/* Table */}
-      <div className="overflow-x-auto rounded-lg border max-w-full scrollbar-thin">
-        <table className="w-full border-collapse text-sm table-fixed">
-          <thead className="bg-sky-50 text-sky-700 sticky top-0">
-            <tr>
-              <th className="p-3 border min-w-[200px]">Name</th>
-              <th className="p-3 border min-w-[160px]">Team</th>
-              <th className="p-3 border min-w-[140px]">Country</th>
-              <th className="p-3 border min-w-[120px]">Position</th>
-              {showInfo && (
-                <>
-                  <th className="p-3 border min-w-[80px]">Age</th>
-                  <th className="p-3 border min-w-[140px]">Price</th>
-                </>
-              )}
-              {showAttributes &&
-                allAttributeNames.map((attr) => (
-                  <th key={attr} className="p-3 border min-w-[100px]">
-                    {attr}
-                  </th>
-                ))}
-              {showStats && (
-                <th className="p-3 border min-w-[250px]">Season Stats</th>
-              )}
-              {showAgencyColumn && (
-                <th className="p-3 border min-w-[150px]">Agency</th>
-              )}
-              <th className="p-3 border min-w-[120px]">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {players.map((p) => (
-              <tr
-                key={p.id}
-                className="text-center hover:bg-sky-50 transition-colors"
-              >
-                <td
-                  className="p-3 border font-medium cursor-pointer break-words whitespace-normal"
-                  title={p.name}
-                  onClick={() => navigate(`/player/${p.id}`)}
-                >
-                  {p.name}
-                </td>
-                <td className="p-3 border break-words whitespace-normal" title={p.team}>
-                  {p.team || "—"}
-                </td>
-                <td className="p-3 border break-words whitespace-normal" title={p.country}>
-                  {p.country}
-                </td>
-                <td className="p-3 border break-words whitespace-normal" title={p.position}>
-                  {p.position}
-                </td>
-                {showInfo && (
-                  <>
-                    <td className="p-3 border">{p.age}</td>
-                    <td className="p-3 border">{formatPrice(p.price)}</td>
-                  </>
-                )}
-                {showAttributes &&
-                  allAttributeNames.map((attr) => {
-                    const attribute = p.attributes?.find((a) => a.name === attr);
-                    return (
-                      <td key={attr} className="p-3 border">
-                        {attribute ? attribute.value : "-"}
-                      </td>
-                    );
-                  })}
-                {showStats && (
-                  <td className="p-3 border text-left">
-                    {p.seasonStats && p.seasonStats.length > 0 ? (
-                      <ul className="list-disc list-inside">
-                        {p.seasonStats.map((s, i) => (
-                          <li key={i}>
-                            Season {s.seasonId}: {s.goals}G / {s.assists}A / {s.matchesPlayed}M
-                          </li>
-                        ))}
-                      </ul>
-                    ) : (
-                      "-"
-                    )}
-                  </td>
-                )}
-                {showAgencyColumn && (
-                  <td className="p-3 border break-words whitespace-normal">
-                    {p.agency ? (
-                      <div className="flex flex-col items-center gap-1">
-                        <img
-                          src={`/agenciesLogos/${p.agency.logo}` || "/default-logo.png"}
-                          alt="Agency Logo"
-                          className="w-8 h-8 rounded-full object-cover border"
-                          onError={(e) => {
-                            e.target.src = "/default-logo.png";
-                          }}
-                        />
-                        <div className="text-xs text-gray-600">{p.agency.name}</div>
-                        <div className="text-xs bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded-full">
-                          ★ {p.agency.popularity}
-                        </div>
-                      </div>
-                    ) : (
-                      "—"
-                    )}
-                  </td>
-                )}
-                <td className="p-3 border">
-                  {!p.team ? (
-                    <button
-                      onClick={() => openBuyModal(p)}
-                      className="px-3 py-1 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm"
-                    >
-                      Buy
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() =>
-                        Swal.fire({
-                          icon: "info",
-                          title: "Not active yet",
-                          text: "Sending offers will be available in a future update.",
-                        })
-                      }
-                      disabled
-                      className="px-3 py-1 bg-gray-400 text-white rounded-lg text-sm cursor-not-allowed"
-                    >
-                      Send Offer
-                    </button>
+      {/* Scrollable table */}
+      <div className="flex-1 border rounded-lg bg-white shadow">
+        <div className="max-h-[60vh] overflow-y-auto overflow-x-auto w-full">
+          <div className="min-w-full inline-block align-top">
+            <table className="min-w-full border-collapse text-sm table-fixed">
+              <thead className="bg-sky-50 text-sky-700 sticky top-0 z-10">
+                <tr>
+                  <th className="p-3 border w-48">Name</th>
+                  <th className="p-3 border w-32">Team</th>
+                  <th className="p-3 border w-24">Country</th>
+                  <th className="p-3 border w-28">Position</th>
+                  {showInfo && (
+                    <>
+                      <th className="p-3 border w-16">Age</th>
+                      <th className="p-3 border w-24">Price</th>
+                    </>
                   )}
-                </td>
-              </tr>
-            ))}
-            {players.length === 0 && (
-              <tr>
-                <td
-                  colSpan={
-                    9 + allAttributeNames.length + (showAgencyColumn ? 1 : 0)
-                  }
-                  className="text-center py-6 text-gray-500"
-                >
-                  No players found.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+                  {showAttributes &&
+                    allAttributeNames.map((attr) => (
+                      <th key={attr} className="p-3 border w-12">
+                        {attr}
+                      </th>
+                    ))}
+                  {showStats && <th className="p-3 border w-40">Season Stats</th>}
+                  {showAgencyColumn && <th className="p-3 border w-28">Agency</th>}
+                  <th className="p-3 border w-24">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {players.map((p) => (
+                  <tr
+                    key={p.id}
+                    className="text-center hover:bg-sky-50 transition-colors"
+                  >
+                    <td
+                      className="p-3 border font-medium cursor-pointer truncate"
+                      title={p.name}
+                      onClick={() => navigate(`/player/${p.id}`)}
+                    >
+                      {p.name}
+                    </td>
+                    <td className="p-3 border truncate">{p.team || "—"}</td>
+                    <td className="p-3 border truncate">{p.country}</td>
+                    <td className="p-3 border truncate">{p.position}</td>
+                    {showInfo && (
+                      <>
+                        <td className="p-3 border truncate">{p.age}</td>
+                        <td className="p-3 border truncate">{formatPrice(p.price)}</td>
+                      </>
+                    )}
+                    {showAttributes &&
+                      allAttributeNames.map((attr) => {
+                        const attribute = p.attributes?.find(
+                          (a) => a.name === attr
+                        );
+                        return (
+                          <td key={attr} className="p-3 border truncate">
+                            {attribute ? attribute.value : "-"}
+                          </td>
+                        );
+                      })}
+                    {showStats && (
+                      <td className="p-3 border text-left truncate">
+                        {p.seasonStats?.length ? (
+                          <ul className="list-disc list-inside">
+                            {p.seasonStats.map((s, i) => (
+                              <li key={i} className="truncate">
+                                Season {s.seasonId}: {s.goals}G / {s.assists}A /{" "}
+                                {s.matchesPlayed}M
+                              </li>
+                            ))}
+                          </ul>
+                        ) : (
+                          "-"
+                        )}
+                      </td>
+                    )}
+                    {showAgencyColumn && (
+                      <td className="p-3 border">
+                        {p.agency ? (
+                          <div className="flex flex-col items-center gap-1">
+                            <img
+                              src={
+                                `/agenciesLogos/${p.agency.logo}` ||
+                                "/default-logo.png"
+                              }
+                              alt="Agency Logo"
+                              className="w-8 h-8 rounded-full object-cover border"
+                              onError={(e) => {
+                                e.target.src = "/default-logo.png";
+                              }}
+                            />
+                            <div className="text-xs text-gray-600 truncate">
+                              {p.agency.name}
+                            </div>
+                            <div className="text-xs bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded-full">
+                              ★ {p.agency.popularity}
+                            </div>
+                          </div>
+                        ) : (
+                          "—"
+                        )}
+                      </td>
+                    )}
+                    <td className="p-3 border">
+                      {!p.team ? (
+                        <button
+                          onClick={() => openBuyModal(p)}
+                          className="px-3 py-1 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm whitespace-nowrap"
+                        >
+                          Buy
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() =>
+                            Swal.fire({
+                              icon: "info",
+                              title: "Not active yet",
+                              text: "Sending offers will be available in a future update.",
+                            })
+                          }
+                          disabled
+                          className="px-3 py-1 bg-gray-400 text-white rounded-lg text-sm cursor-not-allowed"
+                        >
+                          Send Offer
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
 
       {/* Pagination */}
-      <div className="flex justify-between items-center mt-6">
+      <div className="flex justify-between items-center mt-4">
         <button
           className="px-4 py-2 bg-sky-100 hover:bg-sky-200 text-sky-700 rounded-lg disabled:opacity-50 transition"
           disabled={currentPage === 1}
@@ -409,35 +399,54 @@ export default function SearchPlayers({ gameSaveId }) {
       {/* Modal */}
       {isModalOpen && selectedPlayer && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white p-6 rounded-xl shadow-xl max-w-md w-full">
-            <h3 className="text-lg font-bold mb-4 text-sky-700">Confirm Buy</h3>
-            <p className="mb-2">
-              Do you want to sign{" "}
-              <span className="font-semibold">{selectedPlayer.name}</span>?
-            </p>
-            <p className="mb-4 text-gray-600">
-              Age: {selectedPlayer.age} | Position: {selectedPlayer.position} | Price:{" "}
-              {formatPrice(selectedPlayer.price)}
-            </p>
-            {selectedPlayer.agency && (
-              <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-                <div className="flex items-center gap-2">
-                  <img
-                    src={`/agenciesLogos/${selectedPlayer.agency.logo}` || "/default-logo.png"}
-                    alt="Agency"
-                    className="w-6 h-6 rounded-full object-cover"
-                    onError={(e) => {
-                      e.target.src = "/default-logo.png";
-                    }}
-                  />
-                  <span className="text-sm">
-                    Represented by <strong>{selectedPlayer.agency.regionName}</strong> agency (★
-                    {selectedPlayer.agency.popularity})
-                  </span>
+          <div className="bg-white rounded-xl shadow-xl max-w-[90vw] max-h-[90vh] w-full md:w-auto flex flex-col">
+            {/* Modal header */}
+            <div className="p-4 border-b flex justify-between items-center">
+              <h3 className="text-lg font-bold text-sky-700">Confirm Buy</h3>
+              <button
+                onClick={closeBuyModal}
+                className="text-gray-500 hover:text-black"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Modal content */}
+            <div className="p-6 overflow-y-auto">
+              <p className="mb-2">
+                Do you want to sign{" "}
+                <span className="font-semibold">{selectedPlayer.name}</span>?
+              </p>
+              <p className="mb-4 text-gray-600">
+                Age: {selectedPlayer.age} | Position: {selectedPlayer.position} | Price:{" "}
+                {formatPrice(selectedPlayer.price)}
+              </p>
+              {selectedPlayer.agency && (
+                <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <img
+                      src={
+                        `/agenciesLogos/${selectedPlayer.agency.logo}` ||
+                        "/default-logo.png"
+                      }
+                      alt="Agency"
+                      className="w-6 h-6 rounded-full object-cover"
+                      onError={(e) => {
+                        e.target.src = "/default-logo.png";
+                      }}
+                    />
+                    <span className="text-sm">
+                      Represented by{" "}
+                      <strong>{selectedPlayer.agency.regionName}</strong> agency (★
+                      {selectedPlayer.agency.popularity})
+                    </span>
+                  </div>
                 </div>
-              </div>
-            )}
-            <div className="flex justify-end gap-3">
+              )}
+            </div>
+
+            {/* Modal actions */}
+            <div className="flex justify-end gap-3 p-4 border-t">
               <button
                 onClick={closeBuyModal}
                 className="px-4 py-2 rounded-lg border hover:bg-gray-100"

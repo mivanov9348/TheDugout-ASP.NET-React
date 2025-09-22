@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link } from "react-router-dom"; 
 import { useGameSave } from "../context/GameSaveContext";
 
 function Header({ username }) {
@@ -27,10 +27,10 @@ function Header({ username }) {
   const handleNextDay = async () => {
     try {
       const res = await fetch("/api/games/current/next-day", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  credentials: "include",
-});
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      });
 
       if (res.ok) {
         const updatedSave = await res.json();
@@ -38,6 +38,29 @@ function Header({ username }) {
       }
     } catch (err) {
       console.error("Next Day failed:", err);
+    }
+  };
+
+  const getNextDayButtonText = (season) => {
+    if (!season) return "Next Day →";
+
+    const today = new Date(season.currentDate).toDateString();
+
+    const todaysEvent = season.events?.find(
+      (e) => new Date(e.date).toDateString() === today
+    );
+
+    if (!todaysEvent) return "Next Day →";
+
+    switch (todaysEvent.type) {
+      case "CupMatch":
+        return "Cup Day →";
+      case "ChampionshipMatch":
+        return "League Day →";
+      case "EuropeanMatch":
+        return "European Cup Day →";
+      default:
+        return "Next Day →";
     }
   };
 
@@ -69,7 +92,7 @@ function Header({ username }) {
           onClick={handleNextDay}
           className="bg-sky-600 hover:bg-sky-700 px-4 py-2 rounded-lg font-medium"
         >
-          Next Day →
+          {getNextDayButtonText(season)}
         </button>
       </div>
     </header>

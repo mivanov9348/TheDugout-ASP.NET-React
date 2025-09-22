@@ -3,30 +3,42 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const Calendar = ({ gameSaveId }) => {
   const daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-  const [currentDate, setCurrentDate] = useState(new Date(2025, 6, 1)); 
+  const [currentDate, setCurrentDate] = useState(new Date(2025, 6, 1));
   const [events, setEvents] = useState([]);
+  const [seasonCurrentDate, setSeasonCurrentDate] = useState(null);
 
-  // 🟢 Зареждаме евентите от бекенда
-  useEffect(() => {
-    const fetchEvents = async () => {
-      if (!gameSaveId) return;
-      try {
-        const res = await fetch(`/api/calendar?gameSaveId=${gameSaveId}`, {
-          credentials: "include",
-        });
-        if (!res.ok) throw new Error("Грешка при зареждане на календара");
-        const seasons = await res.json();
+  // helper за нормализация на датите
+  const normalize = (dateStr) => {
+    const d = new Date(dateStr);
+    return d.toISOString().slice(0, 10); // винаги YYYY-MM-DD
+  };
 
-        if (seasons.length > 0) {
-          setEvents(seasons[0].events || []);
-        }
-      } catch (err) {
-        console.error(err);
+  // Зареждане от бекенда
+useEffect(() => {
+  const fetchEvents = async () => {
+    if (!gameSaveId) return;
+    try {
+      const res = await fetch(`/api/calendar?gameSaveId=${gameSaveId}`, {
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Грешка при зареждане на календара");
+      const seasons = await res.json();
+
+      console.log("📅 API response:", seasons); // 👉 виж какво идва
+
+      if (seasons.length > 0) {
+        console.log("📅 Events loaded:", seasons[0].events);
+        setEvents(seasons[0].events || []);
+        setSeasonCurrentDate(seasons[0].currentDate);
       }
-    };
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
-    fetchEvents();
-  }, [gameSaveId]);
+  fetchEvents();
+}, [gameSaveId]);
+
 
   const daysInMonth = new Date(
     currentDate.getFullYear(),
@@ -48,7 +60,7 @@ const Calendar = ({ gameSaveId }) => {
       {/* Header */}
       <div className="flex items-center justify-between mb-6 text-gray-700">
         <button
-          className="p-2 rounded-full hover:bg-gray-300"
+          className="p-2 rounded-full hover:bg-gray-200"
           onClick={() =>
             setCurrentDate(
               new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1)
@@ -62,7 +74,7 @@ const Calendar = ({ gameSaveId }) => {
           {currentDate.getFullYear()}
         </h2>
         <button
-          className="p-2 rounded-full hover:bg-gray-300"
+          className="p-2 rounded-full hover:bg-gray-200"
           onClick={() =>
             setCurrentDate(
               new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1)
@@ -74,7 +86,7 @@ const Calendar = ({ gameSaveId }) => {
       </div>
 
       {/* Legend */}
-      <div className="flex gap-4 mb-4 text-sm">
+      <div className="flex gap-4 mb-4 text-sm flex-wrap text-gray-700">
         <span className="flex items-center gap-1">
           <span className="w-3 h-3 bg-yellow-500 inline-block rounded"></span>{" "}
           Transfer
@@ -116,14 +128,20 @@ const Calendar = ({ gameSaveId }) => {
             currentDate.getMonth() + 1
           ).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 
-          const dayEvents = events.filter((e) => e.date.slice(0, 10) === isoDay);
+          const dayEvents = events.filter(
+            (e) => normalize(e.date) === isoDay
+          );
+
+          const isCurrentDay =
+            seasonCurrentDate && normalize(seasonCurrentDate) === isoDay;
 
           return (
             <div
               key={idx}
-              className={`h-32 rounded-xl shadow-md flex flex-col items-start p-2 text-gray-200 ${
-                dayEvents.length > 0 ? "bg-gray-800" : "bg-gray-700"
-              }`}
+              className={`h-32 rounded-xl shadow-md flex flex-col items-start p-2 text-gray-200
+                ${dayEvents.length > 0 ? "bg-gray-800" : "bg-gray-700"}
+                ${isCurrentDay ? "border-4 border-red-500" : ""}
+              `}
             >
               {/* Денят */}
               <div className="w-full flex justify-between items-center mb-1">
