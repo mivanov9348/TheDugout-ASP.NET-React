@@ -166,4 +166,45 @@ public class TrainingService : ITrainingService
         return results;
     }
 
+    public async Task RunDailyCpuTrainingAsync(int gameSaveId, int seasonId, DateTime date, int humanTeamId)
+    {
+        var teams = await _context.Teams
+            .Where(t => t.GameSaveId == gameSaveId && t.Id != humanTeamId)
+            .ToListAsync();
+
+        foreach (var team in teams)
+        {
+            try
+            {
+                var autoAssignments = await AutoAssignAttributesAsync(team.Id, gameSaveId);
+
+                var assignments = autoAssignments.Select(a => new PlayerTrainingAssignmentDto
+                {
+                    PlayerId = a.PlayerId,
+                    AttributeId = a.AttributeId
+                }).ToList();
+
+                if (!assignments.Any())
+                {
+                    _logger.LogWarning("⚠️ Отбор {TeamId} няма играчи за тренировка", team.Id);
+                    continue;
+                }
+
+                var results = await RunTrainingSessionAsync(
+                    gameSaveId,
+                    team.Id,
+                    seasonId,
+                    date,
+                    assignments);
+
+                _logger.LogInformation("✅ Отбор {TeamId} проведе тренировка с {Count} играчи",
+                    team.Id, results.Count);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "❌ Проблем с тренировка на отбор {TeamId}", team.Id);
+            }
+        }
+    }
+
 }

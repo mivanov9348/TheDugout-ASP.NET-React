@@ -13,6 +13,7 @@ namespace TheDugout.Services.Transfer
         private readonly DugoutDbContext _context;
         private readonly IFinanceService _financeService;
         private readonly IMessageOrchestrator _messageOrchestrator;
+        private readonly ILogger<TransferService> _logger = null!;
 
         public TransferService(DugoutDbContext context, IFinanceService _financeService, IMessageOrchestrator messageOrchestrator)
         {
@@ -261,6 +262,64 @@ namespace TheDugout.Services.Transfer
             return (true, "");
         }
 
+        public async Task RunCpuTransfersAsync(int gameSaveId, int seasonId, DateTime date, int humanTeamId)
+        {
+            var teams = await _context.Teams
+                .Where(t => t.GameSaveId == gameSaveId && t.Id != humanTeamId)
+                .ToListAsync();
+
+            foreach (var team in teams)
+            {
+                try
+                {
+                    // 1. Провери дали е трансферен прозорец
+                    var season = await _context.Seasons
+                        .Include(s => s.Events)
+                        .FirstOrDefaultAsync(s => s.GameSaveId == gameSaveId && s.Id == seasonId);
+
+                    bool inTransferWindow = season.Events.Any(e =>
+                        e.Type == SeasonEventType.TransferWindow &&
+                        e.Date.Date == date.Date);
+
+                    if (!inTransferWindow) continue;
+
+                    //// 2. Логика за нужди на отбора
+                    //var needs = await AnalyzeTeamNeedsAsync(team.Id, gameSaveId);
+                    //if (!needs.Any()) continue;
+
+                    //foreach (var need in needs)
+                    //{
+                    //    // 3. Избор на играч – свободен агент или от друг отбор
+                    //    var candidate = await _context.Players
+                    //        .Include(p => p.Position)
+                    //        .Where(p => p.GameSaveId == gameSaveId &&
+                    //                    p.TeamId == null && // свободен агент за начало
+                    //                    p.PositionId == need.PositionId)
+                    //        .OrderBy(p => p.Price) // по-евтините първо
+                    //        .FirstOrDefaultAsync();
+
+                    //    if (candidate == null) continue;
+
+                    //    // 4. Опит за трансфер
+                    //    var result = await BuyPlayerAsync(gameSaveId, team.Id, candidate.Id);
+
+                    //    if (result.Success)
+                    //    {
+                    //        _logger.LogInformation("✅ CPU отбор {Team} купи {Player}", team.Name, candidate.FirstName + " " + candidate.LastName);
+                    //        break; // купиха един играч и спират за този ден
+                    //    }
+                    //    else
+                    //    {
+                    //        _logger.LogWarning("❌ CPU трансфер fail за {Team}: {Error}", team.Name, result.ErrorMessage);
+                    //    }
+                    //}
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "❌ Проблем с трансфери на отбор {TeamId}", team.Id);
+                }
+            }
+        }
 
     }
 }

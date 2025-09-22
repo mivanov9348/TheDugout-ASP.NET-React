@@ -1,13 +1,10 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 
-
 const Transfers = () => {
-
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
   return (
     <div className="space-y-6">
-
       <div className="bg-white shadow rounded-2xl p-4 border border-slate-200">
         <h1 className="text-3xl font-bold text-slate-800">Transfers</h1>
         <p className="text-slate-500 text-sm mt-1">
@@ -40,8 +37,8 @@ const Transfers = () => {
           ))}
         </nav>
 
-        {/* Подстраници */}
-        <div className="p-6">
+        {/* Content area */}
+        <div className="p-6 h-[calc(100vh-220px)] overflow-hidden flex flex-col">
           <Outlet />
         </div>
       </div>

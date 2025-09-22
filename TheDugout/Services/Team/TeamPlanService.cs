@@ -138,5 +138,54 @@ namespace TheDugout.Services.Team
             await _context.SaveChangesAsync();
         }
 
+        public async Task<TeamTactic> AutoPickTacticAsync(int teamId, int gameSaveId)
+        {
+            var team = await _context.Teams
+                .Include(t => t.Players)
+                    .ThenInclude(p => p.Attributes)
+                .Include(t => t.TeamTactic)
+                .FirstOrDefaultAsync(t => t.Id == teamId && t.GameSaveId == gameSaveId);
+
+            if (team == null)
+                throw new Exception("Team not found");
+
+            // 1. Избор на тактика – засега винаги 4-4-2
+            var tactic = await _context.Tactics.FirstOrDefaultAsync(t =>
+                t.Defenders == 4 && t.Midfielders == 4 && t.Forwards == 2);
+            if (tactic == null)
+                throw new Exception("Missing default 4-4-2 tactic");
+
+            // 2. Подреждане на играчите по позиции (тук е basic – по най-висока сума от атрибути)
+            var gk = team.Players.Where(p => p.Position.Code == "GK")
+                .OrderByDescending(p => p.Attributes.Sum(a => a.Value))
+                .Take(1).ToList();
+
+            var df = team.Players.Where(p => p.Position.Code == "DF")
+                .OrderByDescending(p => p.Attributes.Sum(a => a.Value))
+                .Take(4).ToList();
+
+            var mid = team.Players.Where(p => p.Position.Code == "MID")
+                .OrderByDescending(p => p.Attributes.Sum(a => a.Value))
+                .Take(4).ToList();
+
+            var att = team.Players.Where(p => p.Position.Code == "ATT")
+                .OrderByDescending(p => p.Attributes.Sum(a => a.Value))
+                .Take(2).ToList();
+
+            var lineup = new Dictionary<string, string?>();
+            int index = 1;
+            foreach (var p in gk) lineup.Add($"GK{index++}", p.Id.ToString());
+            index = 1;
+            foreach (var p in df) lineup.Add($"DF{index++}", p.Id.ToString());
+            index = 1;
+            foreach (var p in mid) lineup.Add($"MID{index++}", p.Id.ToString());
+            index = 1;
+            foreach (var p in att) lineup.Add($"ATT{index++}", p.Id.ToString());
+
+            // 3. Сетваме тактиката през вече съществуващия метод
+            return await SetTeamTacticAsync(team.Id, tactic.Id, "CPU Auto 4-4-2", lineup);
+        }
+
+
     }
 }

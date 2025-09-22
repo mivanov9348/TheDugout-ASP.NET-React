@@ -53,40 +53,50 @@ export default function SearchPlayers({ gameSaveId }) {
     return Array.from(names);
   }, [players]);
 
-  useEffect(() => {
-    if (!gameSaveId) return;
+useEffect(() => {
+  if (!gameSaveId) return;
+  const controller = new AbortController();
 
-    const queryParams = new URLSearchParams({
-      gameSaveId,
-      search: debouncedSearch,
-      sortBy,
-      sortOrder,
-      page: currentPage,
-      pageSize: playersPerPage,
-      team: filterTeam,
-      country: filterCountry,
-      position: filterPosition,
-      freeAgent: filterFreeAgents,
-    });
-
-    fetch(`/api/transfers/players?${queryParams}`)
-      .then((res) => res.json())
-      .then((data) => {
-        setPlayers(data.players || []);
-        setTotalCount(data.totalCount || 0);
-      })
-      .catch((err) => console.error("Failed to load players:", err));
-  }, [
+  const queryParams = new URLSearchParams({
     gameSaveId,
-    debouncedSearch,
+    search: debouncedSearch,
     sortBy,
     sortOrder,
-    currentPage,
-    filterTeam,
-    filterCountry,
-    filterPosition,
-    filterFreeAgents,
-  ]);
+    page: currentPage,
+    pageSize: playersPerPage,
+    team: filterTeam,
+    country: filterCountry,
+    position: filterPosition,
+    freeAgent: filterFreeAgents,
+  });
+
+  fetch(`/api/transfers/players?${queryParams}`, {
+    signal: controller.signal,
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      setPlayers(data.players || []);
+      setTotalCount(data.totalCount || 0);
+    })
+    .catch((err) => {
+      if (err.name !== "AbortError") {
+        console.error("Failed to load players:", err);
+      }
+    });
+
+  return () => controller.abort();
+}, [
+  gameSaveId,
+  debouncedSearch,
+  sortBy,
+  sortOrder,
+  currentPage,
+  filterTeam,
+  filterCountry,
+  filterPosition,
+  filterFreeAgents,
+]);
+
 
   const totalPages = Math.ceil(totalCount / playersPerPage);
 
@@ -135,9 +145,9 @@ export default function SearchPlayers({ gameSaveId }) {
   const showAgencyColumn = players.some((p) => p.agency);
 
   return (
-    <div className="flex flex-col h-[calc(100vh-220px)] bg-gray-50">
+  <div className="flex flex-col h-full bg-gray-50">
       {/* Header */}
-      <div className="flex items-center gap-3 mb-4">
+    <div className="flex items-center gap-3 mb-4 flex-shrink-0">
         <button
           onClick={() => navigate(-1)}
           className="p-2 rounded-full hover:bg-sky-100 text-sky-600 transition"
@@ -148,7 +158,7 @@ export default function SearchPlayers({ gameSaveId }) {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-3 mb-4 items-center">
+      <div className="flex flex-wrap gap-3 mb-4 items-center flex-shrink-0">
         <input
           type="text"
           className="border p-2 rounded-lg flex-1 shadow-sm focus:ring-2 focus:ring-sky-400"
@@ -212,7 +222,7 @@ export default function SearchPlayers({ gameSaveId }) {
       </div>
 
       {/* Section toggles */}
-      <div className="flex gap-6 mb-4">
+      <div className="flex gap-6 mb-4 flex-shrink-0">
         <label className="flex items-center gap-2">
           <input
             type="checkbox"
@@ -240,10 +250,10 @@ export default function SearchPlayers({ gameSaveId }) {
       </div>
 
       {/* Scrollable table */}
-      <div className="flex-1 border rounded-lg bg-white shadow">
-        <div className="max-h-[60vh] overflow-y-auto overflow-x-auto w-full">
+    <div className="flex-1 border rounded-lg bg-white shadow overflow-hidden">
+      <div className="h-full overflow-y-auto overflow-x-auto">
           <div className="min-w-full inline-block align-top">
-            <table className="min-w-full border-collapse text-sm table-fixed">
+        <table className="min-w-full border-collapse text-sm table-fixed">
               <thead className="bg-sky-50 text-sky-700 sticky top-0 z-10">
                 <tr>
                   <th className="p-3 border w-48">Name</th>
@@ -376,7 +386,7 @@ export default function SearchPlayers({ gameSaveId }) {
       </div>
 
       {/* Pagination */}
-      <div className="flex justify-between items-center mt-4">
+    <div className="flex justify-between items-center mt-4 flex-shrink-0">
         <button
           className="px-4 py-2 bg-sky-100 hover:bg-sky-200 text-sky-700 rounded-lg disabled:opacity-50 transition"
           disabled={currentPage === 1}

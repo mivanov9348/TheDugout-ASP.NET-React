@@ -14,6 +14,7 @@ const Calendar = ({ gameSaveId }) => {
   };
 
   // Зареждане от бекенда
+// Зареждане от бекенда
 useEffect(() => {
   const fetchEvents = async () => {
     if (!gameSaveId) return;
@@ -22,14 +23,14 @@ useEffect(() => {
         credentials: "include",
       });
       if (!res.ok) throw new Error("Грешка при зареждане на календара");
-      const seasons = await res.json();
 
-      console.log("📅 API response:", seasons); // 👉 виж какво идва
+      const season = await res.json();
+      console.log("📅 API response:", season);
 
-      if (seasons.length > 0) {
-        console.log("📅 Events loaded:", seasons[0].events);
-        setEvents(seasons[0].events || []);
-        setSeasonCurrentDate(seasons[0].currentDate);
+      if (season && season.events) {
+        console.log("📅 Events loaded:", season.events);
+        setEvents(season.events || []);
+        setSeasonCurrentDate(season.currentDate);
       }
     } catch (err) {
       console.error(err);
@@ -38,6 +39,7 @@ useEffect(() => {
 
   fetchEvents();
 }, [gameSaveId]);
+
 
 
   const daysInMonth = new Date(
@@ -148,31 +150,41 @@ useEffect(() => {
                 <span className="font-bold">{day}</span>
               </div>
 
-              {/* Събитията за деня */}
-              <div className="flex-1 w-full overflow-y-auto space-y-1 text-xs">
-                {dayEvents.length > 0 ? (
-                  dayEvents.map((ev, i) => (
-                    <div
-                      key={i}
-                      className={`px-1 py-0.5 rounded truncate ${
-                        ev.type === "TransferWindow"
-                          ? "bg-yellow-500 text-black font-bold"
-                          : ev.type === "ChampionshipMatch"
-                          ? "bg-blue-600"
-                          : ev.type === "EuropeanMatch"
-                          ? "bg-purple-600"
-                          : ev.type === "CupMatch"
-                          ? "bg-green-600"
-                          : "bg-gray-600"
-                      }`}
-                    >
-                      {ev.description}
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-gray-400 italic">Free day</div>
-                )}
-              </div>
+             {/* Събитията за деня */}
+<div className="flex-1 w-full overflow-y-auto space-y-1 text-xs">
+  {dayEvents.length > 0 ? (
+    dayEvents.map((ev, i) => {
+      // разделяме description на части по запетая
+      const parts = ev.description.split(",").map((p) => p.trim());
+
+      return (
+        <div key={i} className="space-y-0.5">
+          {parts.map((part, j) => (
+            <div
+              key={j}
+              className={`px-1 py-0.5 rounded truncate ${
+                ev.type === "TransferWindow"
+                  ? "bg-yellow-500 text-black font-bold"
+                  : ev.type === "ChampionshipMatch"
+                  ? "bg-blue-600"
+                  : ev.type === "EuropeanMatch"
+                  ? "bg-purple-600"
+                  : ev.type === "CupMatch"
+                  ? "bg-green-600"
+                  : "bg-gray-600"
+              }`}
+            >
+              {part}
+            </div>
+          ))}
+        </div>
+      );
+    })
+  ) : (
+    <div className="text-gray-400 italic">Free day</div>
+  )}
+</div>
+
 
               {/* Бутон за TransferWindow */}
               {dayEvents.some((ev) => ev.type === "TransferWindow") && (

@@ -13,5 +13,7 @@ namespace TheDugout.Services.Training
         );
 
         Task<List<AutoAssignResultDto>> AutoAssignAttributesAsync(int teamId, int gameSaveId);
+
+        Task RunDailyCpuTrainingAsync(int gameSaveId, int seasonId, DateTime date, int humanTeamId);
     }
 }

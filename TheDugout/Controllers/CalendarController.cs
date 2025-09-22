@@ -27,7 +27,6 @@ public class CalendarController : ControllerBase
         return null;
     }
 
-    // 🔹 GET api/calendar?gameSaveId=1
     [Authorize]
     [HttpGet]
     public async Task<IActionResult> GetCalendar([FromQuery] int gameSaveId)
@@ -35,90 +34,121 @@ public class CalendarController : ControllerBase
         var userId = GetUserIdFromClaims();
         if (userId == null) return Unauthorized();
 
-        var save = await _context.GameSaves
-            .Include(gs => gs.Seasons)
-                .ThenInclude(s => s.Events)
-            .Include(gs => gs.Seasons)
-                .ThenInclude(s => s.Fixtures)
-                    .ThenInclude(f => f.CupRound)
-                        .ThenInclude(cr => cr.Cup)
-                            .ThenInclude(c => c.Template)
-            .Include(gs => gs.Seasons)
-            //    .ThenInclude(s => s.Fixtures)
-            //        .ThenInclude(f => f.LeagueSeason)
-            //            .ThenInclude(ls => ls.League)
-            //.Include(gs => gs.Seasons)
-            //    .ThenInclude(s => s.Fixtures)
-            //        .ThenInclude(f => f.EuropeanRound)
-            //            .ThenInclude(er => er.Competition)
-            .FirstOrDefaultAsync(gs => gs.Id == gameSaveId && gs.UserId == userId);
+        var season = await _context.Seasons
+            .Where(s => s.GameSaveId == gameSaveId && s.GameSave.UserId == userId)
+            .Select(s => new
+            {
+                seasonId = s.Id,
+                startDate = s.StartDate,
+                endDate = s.EndDate,
+                currentDate = s.CurrentDate,
+                userTeamId = s.GameSave.UserTeamId,
+                fixtures = s.Fixtures
+                    .Select(f => new
+                    {
+                        f.Id,
+                        f.Date,
+                        f.CompetitionType,
+                        HomeTeam = f.HomeTeam.Name,
+                        AwayTeam = f.AwayTeam.Name,
+                        f.HomeTeamId,
+                        f.AwayTeamId
+                    })
+                    .ToList(),
+                seasonEvents = s.Events // 🟢 взимаме и съществуващи евенти (transfer windows и т.н.)
+                    .Select(e => new
+                    {
+                        e.Id,
+                        e.Date,
+                        e.Type,
+                        e.Description,
+                        e.IsOccupied
+                    })
+                    .ToList()
+            })
+            .FirstOrDefaultAsync();
 
-        if (save == null) return NotFound("Game save not found");
+        if (season == null)
+            return NotFound("Game save not found");
 
-        var seasons = save.Seasons.Select(season => new
+        if (season.userTeamId == null)
+            return BadRequest("User team not set for this save");
+
+        // 🟢 филтрираме само мачовете на потребителския отбор
+        var myFixtures = season.fixtures
+            .Where(f => f.HomeTeamId == season.userTeamId || f.AwayTeamId == season.userTeamId)
+            .OrderBy(f => f.Date)
+            .ToList();
+
+        var fixtureEvents = myFixtures.Select(f =>
         {
-            seasonId = season.Id,
-            startDate = season.StartDate,
-            endDate = season.EndDate,
-            currentDate = season.CurrentDate,
-            events = season.Events
-                .OrderBy(e => e.Date)
-                .Select(e =>
-                {
-                    string description = e.Description;
+            bool isHome = f.HomeTeamId == season.userTeamId;
+            string opponent = isHome ? f.AwayTeam : f.HomeTeam;
+            string ha = isHome ? "(H)" : "(A)";
 
-                    switch (e.Type)
-                    {
-                        case SeasonEventType.CupMatch:
-                            var cupFixtures = season.Fixtures
-                                .Where(f => f.Date.Date == e.Date.Date && f.CompetitionType == CompetitionType.DomesticCup)
-                                .ToList();
-                            if (cupFixtures.Any())
-                                description = string.Join(", ",
-                                    cupFixtures.Select(f => f.CupRound!.Cup.Template.Name).Distinct());
-                            break;
+            string competition = f.CompetitionType.ToString();
+            string description = $"{competition}, {opponent} {ha}";
 
-                        //case SeasonEventType.ChampionshipMatch:
-                        //    var leagueFixtures = season.Fixtures
-                        //        .Where(f => f.Date.Date == e.Date.Date && f.CompetitionType == CompetitionType.League)
-                        //        .ToList();
-                        //    if (leagueFixtures.Any())
-                        //        description = string.Join(", ",
-                        //            leagueFixtures.Select(f => f.LeagueSeason!.League.Name).Distinct());
-                        //    break;
+            SeasonEventType type = f.CompetitionType switch
+            {
+                CompetitionType.League => SeasonEventType.ChampionshipMatch,
+                CompetitionType.DomesticCup => SeasonEventType.CupMatch,
+                CompetitionType.EuropeanCup => SeasonEventType.EuropeanMatch,
+                _ => SeasonEventType.Other
+            };
 
-                        //case SeasonEventType.EuropeanMatch:
-                        //    var euroFixtures = season.Fixtures
-                        //        .Where(f => f.Date.Date == e.Date.Date && f.CompetitionType == CompetitionType.European)
-                        //        .ToList();
-                        //    if (euroFixtures.Any())
-                        //        description = string.Join(", ",
-                        //            euroFixtures.Select(f => f.EuropeanRound!.Competition.Name).Distinct());
-                        //    break;
+            return new
+            {
+                id = f.Id,
+                date = f.Date,
+                type = type.ToString(),
+                description,
+                isOccupied = true
+            };
+        }).ToList();
 
-                        case SeasonEventType.TransferWindow:
-                            description = "Transfer window";
-                            break;
+        // 🟢 други евенти от базата (напр. TransferWindow, Board meeting и т.н.)
+        var otherEvents = season.seasonEvents.Select(e => new
+        {
+            id = e.Id,
+            date = e.Date,
+            type = e.Type.ToString(),
+            description = string.IsNullOrWhiteSpace(e.Description) ? e.Type.ToString() : e.Description,
+            isOccupied = e.IsOccupied
+        }).ToList();
 
-                        default:
-                            if (string.IsNullOrWhiteSpace(description))
-                                description = "Free day";
-                            break;
-                    }
+        // 🟢 комбинираме ги
+        var allEvents = fixtureEvents.Concat(otherEvents).ToList();
 
-                    return new
-                    {
-                        id = e.Id,
-                        date = e.Date,
-                        type = e.Type.ToString(),
-                        description,
-                        isOccupied = e.IsOccupied
-                    };
-                })
-        });
+        // 🟢 слагаме "Free day" за празните
+        var allDates = Enumerable.Range(0, (season.endDate - season.startDate).Days + 1)
+            .Select(offset => season.startDate.AddDays(offset).Date);
 
-        return Ok(seasons);
+        var occupiedDates = allEvents.Select(e => e.date.Date).ToHashSet();
+
+        var freeDayEvents = allDates
+            .Where(d => !occupiedDates.Contains(d))
+            .Select(d => new
+            {
+                id = 0,
+                date = d,
+                type = SeasonEventType.Other.ToString(),
+                description = "Free day",
+                isOccupied = false
+            });
+
+        var result = new
+        {
+            season.seasonId,
+            season.startDate,
+            season.endDate,
+            season.currentDate,
+            events = allEvents.Concat(freeDayEvents).OrderBy(e => e.date)
+        };
+
+        return Ok(result);
     }
+
 
 
 }

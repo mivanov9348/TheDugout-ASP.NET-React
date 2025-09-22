@@ -23,22 +23,21 @@ namespace TheDugout.Controllers
         public async Task<ActionResult<DashboardDto>> GetDashboard(int gameSaveId)
         {
             var gameSave = await _context.GameSaves
-    .Include(gs => gs.UserTeam)
-        .ThenInclude(t => t.TransactionsFrom)
-    .Include(gs => gs.UserTeam)
-        .ThenInclude(t => t.TransactionsTo)
-    .Include(gs => gs.Seasons)
-        .ThenInclude(s => s.Fixtures)
-            .ThenInclude(f => f.HomeTeam)
-    .Include(gs => gs.Seasons)
-        .ThenInclude(s => s.Fixtures)
-            .ThenInclude(f => f.AwayTeam)
-    .Include(gs => gs.Seasons)
-        .ThenInclude(s => s.Fixtures)
-            .ThenInclude(f => f.League)
-                .ThenInclude(l => l.Template)
-    .FirstOrDefaultAsync(gs => gs.Id == gameSaveId);
-
+                .Include(gs => gs.UserTeam)
+                    .ThenInclude(t => t.TransactionsFrom)
+                .Include(gs => gs.UserTeam)
+                    .ThenInclude(t => t.TransactionsTo)
+                .Include(gs => gs.Seasons)
+                    .ThenInclude(s => s.Fixtures)
+                        .ThenInclude(f => f.HomeTeam)
+                .Include(gs => gs.Seasons)
+                    .ThenInclude(s => s.Fixtures)
+                        .ThenInclude(f => f.AwayTeam)
+                .Include(gs => gs.Seasons)
+                    .ThenInclude(s => s.Fixtures)
+                        .ThenInclude(f => f.League)
+                            .ThenInclude(l => l.Template)
+                .FirstOrDefaultAsync(gs => gs.Id == gameSaveId);
 
             if (gameSave == null || gameSave.UserTeam == null)
                 return NotFound("GameSave или UserTeam не е намерен.");
@@ -63,11 +62,66 @@ namespace TheDugout.Controllers
             // Трансфери
             var transfers = await _transferService.GetTransferHistoryAsync(gameSaveId, true);
 
+            // Текуща дата на сезона
+            var season = gameSave.Seasons
+                .OrderByDescending(s => s.CurrentDate)
+                .FirstOrDefault();
+
+            var currentDate = season?.CurrentDate ?? DateTime.UtcNow;
+
             // Следващ мач
             var nextMatch = gameSave.Seasons
                 .SelectMany(s => s.Fixtures)
-                                .OrderBy(f => f.Date)
+                .Where(f => f.Date > currentDate &&
+                            (f.HomeTeamId == team.Id || f.AwayTeamId == team.Id))
+                .OrderBy(f => f.Date)
                 .FirstOrDefault();
+
+            // Последни 5 мача
+            var lastFixtures = gameSave.Seasons
+                .SelectMany(s => s.Fixtures)
+                .Where(f => f.Date < currentDate &&
+                            (f.HomeTeamId == team.Id || f.AwayTeamId == team.Id))
+                .OrderByDescending(f => f.Date)
+                .Take(5)
+                .Select(f => new LastFixtureDto
+                {
+                    Date = f.Date,
+                    HomeTeam = f.HomeTeam?.Name ?? "Unknown",
+                    AwayTeam = f.AwayTeam?.Name ?? "Unknown",
+                    Competition = f.League?.Template.Name ?? "Unknown",
+                    HomeGoals = f.HomeTeamGoals,
+                    AwayGoals = f.AwayTeamGoals
+                })
+                .ToList();
+
+            // Standings само за UserTeam
+            var standing = await _context.LeagueStandings
+                .Include(ls => ls.League)
+                    .ThenInclude(l => l.Template)
+                .Where(ls => ls.GameSaveId == gameSaveId && ls.TeamId == team.Id)
+                .OrderByDescending(ls => ls.Season.CurrentDate)
+                .FirstOrDefaultAsync();
+
+            StandingDto? standingDto = null;
+
+            if (standing != null)
+            {
+                standingDto = new StandingDto
+                {
+                    League = standing.League.Template.Name,
+                    Ranking = standing.Ranking,
+                    Matches = standing.Matches,
+                    Wins = standing.Wins,
+                    Draws = standing.Draws,
+                    Losses = standing.Losses,
+                    GoalsFor = standing.GoalsFor,
+                    GoalsAgainst = standing.GoalsAgainst,
+                    GoalDifference = standing.GoalDifference,
+                    Points = standing.Points
+                };
+            }
+
 
             var dto = new DashboardDto
             {
@@ -93,10 +147,15 @@ namespace TheDugout.Controllers
                     HomeTeam = nextMatch.HomeTeam?.Name ?? "Unknown",
                     AwayTeam = nextMatch.AwayTeam?.Name ?? "Unknown",
                     Competition = nextMatch.League?.Template.Name ?? "Unknown"
-                }
-            };
+                },
+                LastFixtures = lastFixtures,
+                Standing = standingDto   // 👈 връщаме само UserTeam standings
+            };  
 
             return Ok(dto);
         }
+
+
+
     }
 }
