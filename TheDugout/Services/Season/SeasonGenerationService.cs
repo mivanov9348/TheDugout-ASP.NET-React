@@ -24,8 +24,8 @@ namespace TheDugout.Services.Season
                 {
                     Season = season,
                     Date = currentDate,
-                    Type = GetEventType(currentDate, season.StartDate),
-                    Description = GetDescription(currentDate, season.StartDate),
+                    Type = GetEventType(currentDate, season.StartDate, season.EndDate),
+                    Description = GetDescription(currentDate, season.StartDate, season.EndDate),
                     IsOccupied = false
                 };
 
@@ -37,29 +37,36 @@ namespace TheDugout.Services.Season
             return season;
         }
 
-        private SeasonEventType GetEventType(DateTime date, DateTime seasonStart)
+        private SeasonEventType GetEventType(DateTime date, DateTime seasonStart, DateTime seasonEnd)
         {
+            // първите 7 дни трансферен прозорец
             if (date >= seasonStart && date < seasonStart.AddDays(7))
                 return SeasonEventType.TransferWindow;
 
+            // средата на сезона = 7 дни трансферен прозорец
+            var midSeason = seasonStart.AddDays((seasonEnd - seasonStart).Days / 2);
+            if (date >= midSeason && date < midSeason.AddDays(7))
+                return SeasonEventType.TransferWindow;
+
+            // седмични събития
             return date.DayOfWeek switch
             {
-                DayOfWeek.Saturday => SeasonEventType.ChampionshipMatch,
-                DayOfWeek.Thursday => SeasonEventType.CupMatch,
                 DayOfWeek.Tuesday => SeasonEventType.EuropeanMatch,
-                _ => SeasonEventType.Other
+                DayOfWeek.Thursday => SeasonEventType.CupMatch,
+                DayOfWeek.Saturday => SeasonEventType.ChampionshipMatch,
+                _ => SeasonEventType.TrainingDay
             };
         }
 
-        private string GetDescription(DateTime date, DateTime seasonStart) =>
-            GetEventType(date, seasonStart) switch
+        private string GetDescription(DateTime date, DateTime seasonStart, DateTime seasonEnd) =>
+            GetEventType(date, seasonStart, seasonEnd) switch
             {
                 SeasonEventType.TransferWindow => "Transfer Window",
                 SeasonEventType.ChampionshipMatch => "League Matchday",
                 SeasonEventType.CupMatch => "Cup Match",
                 SeasonEventType.EuropeanMatch => "European Match",
-                _ => "Free day"
+                SeasonEventType.TrainingDay => "Training Day",
+                _ => "Other"
             };
-
     }
 }

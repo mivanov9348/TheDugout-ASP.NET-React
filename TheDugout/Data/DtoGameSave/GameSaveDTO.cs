@@ -9,10 +9,14 @@
         public int? UserTeamId { get; set; }
         public string? UserTeamName { get; set; }
 
-        public TeamHeaderDto? UserTeam { get; set; }   // 🔹 ново свойство
+        public TeamHeaderDto? UserTeam { get; set; }
 
         public IEnumerable<LeagueDto> Leagues { get; set; } = new List<LeagueDto>();
         public IEnumerable<SeasonDto> Seasons { get; set; } = new List<SeasonDto>();
+
+        // 🔹 Новите полета
+        public string? NextDayActionKey { get; set; }
+        public string? NextDayActionLabel { get; set; }
     }
 
     public class TeamHeaderDto
@@ -41,7 +45,6 @@
         public IEnumerable<TeamDto> Teams { get; set; } = new List<TeamDto>();
     }
 
-
     public class TeamDto
     {
         public int Id { get; set; }
@@ -57,5 +60,15 @@
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public DateTime CurrentDate { get; set; }
+
+        public IEnumerable<EventDto> Events { get; set; } = new List<EventDto>();
+    }
+
+    public class EventDto
+    {
+        public int Id { get; set; }
+        public DateTime Date { get; set; }
+        public string Type { get; set; } = null!; // CupMatch, ChampionshipMatch, EuropeanMatch
+        public string Description { get; set; } = null!;
     }
 }

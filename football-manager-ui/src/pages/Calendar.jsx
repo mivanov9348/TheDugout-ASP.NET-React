@@ -1,46 +1,35 @@
 import React, { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useGameSave } from "../context/GameSaveContext";
 
 const Calendar = ({ gameSaveId }) => {
-  const daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const { currentGameSave } = useGameSave();
   const [currentDate, setCurrentDate] = useState(new Date(2025, 6, 1));
   const [events, setEvents] = useState([]);
-  const [seasonCurrentDate, setSeasonCurrentDate] = useState(null);
 
-  // helper за нормализация на датите
-  const normalize = (dateStr) => {
-    const d = new Date(dateStr);
-    return d.toISOString().slice(0, 10); // винаги YYYY-MM-DD
-  };
+  // Взимаме директно от контекста
+  const season = currentGameSave?.seasons?.[0];
+  const seasonCurrentDate = season?.currentDate; // 🔥 винаги актуално
 
-  // Зареждане от бекенда
-// Зареждане от бекенда
-useEffect(() => {
-  const fetchEvents = async () => {
-    if (!gameSaveId) return;
-    try {
-      const res = await fetch(`/api/calendar?gameSaveId=${gameSaveId}`, {
-        credentials: "include",
-      });
-      if (!res.ok) throw new Error("Грешка при зареждане на календара");
+  // Зареждане на събитията от бекенда
+  useEffect(() => {
+    const fetchEvents = async () => {
+      if (!gameSaveId) return;
+      try {
+        const res = await fetch(`/api/calendar?gameSaveId=${gameSaveId}`, {
+          credentials: "include",
+        });
+        if (!res.ok) throw new Error("Грешка при зареждане на календара");
 
-      const season = await res.json();
-      console.log("📅 API response:", season);
-
-      if (season && season.events) {
-        console.log("📅 Events loaded:", season.events);
-        setEvents(season.events || []);
-        setSeasonCurrentDate(season.currentDate);
+        const seasonData = await res.json();
+        setEvents(seasonData.events || []);
+      } catch (err) {
+        console.error(err);
       }
-    } catch (err) {
-      console.error(err);
-    }
-  };
+    };
 
-  fetchEvents();
-}, [gameSaveId]);
-
-
+    fetchEvents();
+  }, [gameSaveId]);
 
   const daysInMonth = new Date(
     currentDate.getFullYear(),
@@ -54,7 +43,6 @@ useEffect(() => {
     1
   ).getDay();
 
-  // shift така че понеделник да е първи
   const offset = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1;
 
   return (
@@ -106,14 +94,14 @@ useEffect(() => {
           Cup
         </span>
         <span className="flex items-center gap-1">
-          <span className="w-3 h-3 bg-gray-500 inline-block rounded"></span>{" "}
-          Free day
+          <span className="w-3 h-3 bg-gray-600 inline-block rounded"></span>{" "}
+          Training
         </span>
       </div>
 
       {/* Days of week */}
       <div className="grid grid-cols-7 gap-2 text-center font-medium text-gray-700 mb-2">
-        {daysOfWeek.map((day, idx) => (
+        {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day, idx) => (
           <div key={idx}>{day}</div>
         ))}
       </div>
@@ -130,12 +118,9 @@ useEffect(() => {
             currentDate.getMonth() + 1
           ).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 
-          const dayEvents = events.filter(
-            (e) => normalize(e.date) === isoDay
-          );
-
+          const dayEvents = events.filter((e) => e.date === isoDay);
           const isCurrentDay =
-            seasonCurrentDate && normalize(seasonCurrentDate) === isoDay;
+            seasonCurrentDate && seasonCurrentDate === isoDay;
 
           return (
             <div
@@ -150,41 +135,43 @@ useEffect(() => {
                 <span className="font-bold">{day}</span>
               </div>
 
-             {/* Събитията за деня */}
-<div className="flex-1 w-full overflow-y-auto space-y-1 text-xs">
-  {dayEvents.length > 0 ? (
-    dayEvents.map((ev, i) => {
-      // разделяме description на части по запетая
-      const parts = ev.description.split(",").map((p) => p.trim());
+              {/* Събития */}
+              <div className="flex-1 w-full overflow-y-auto space-y-1 text-xs">
+                {dayEvents.length > 0 ? (
+                  dayEvents.map((ev, i) => {
+                    const parts = ev.description
+                      .split(",")
+                      .map((p) => p.trim());
 
-      return (
-        <div key={i} className="space-y-0.5">
-          {parts.map((part, j) => (
-            <div
-              key={j}
-              className={`px-1 py-0.5 rounded truncate ${
-                ev.type === "TransferWindow"
-                  ? "bg-yellow-500 text-black font-bold"
-                  : ev.type === "ChampionshipMatch"
-                  ? "bg-blue-600"
-                  : ev.type === "EuropeanMatch"
-                  ? "bg-purple-600"
-                  : ev.type === "CupMatch"
-                  ? "bg-green-600"
-                  : "bg-gray-600"
-              }`}
-            >
-              {part}
-            </div>
-          ))}
-        </div>
-      );
-    })
-  ) : (
-    <div className="text-gray-400 italic">Free day</div>
-  )}
-</div>
-
+                    return (
+                      <div key={i} className="space-y-0.5">
+                        {parts.map((part, j) => (
+                          <div
+                            key={j}
+                            className={`px-1 py-0.5 rounded truncate ${
+                              ev.type === "TransferWindow"
+                                ? "bg-yellow-500 text-black font-bold"
+                                : ev.type === "ChampionshipMatch"
+                                ? "bg-blue-600"
+                                : ev.type === "EuropeanMatch"
+                                ? "bg-purple-600"
+                                : ev.type === "CupMatch"
+                                ? "bg-green-600"
+                                : ev.type === "TrainingDay"
+                                ? "bg-gray-600"
+                                : "bg-gray-700"
+                            }`}
+                          >
+                            {part}
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="text-gray-400 italic">Training</div>
+                )}
+              </div>
 
               {/* Бутон за TransferWindow */}
               {dayEvents.some((ev) => ev.type === "TransferWindow") && (

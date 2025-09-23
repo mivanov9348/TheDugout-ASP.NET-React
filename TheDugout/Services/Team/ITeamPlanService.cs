@@ -9,7 +9,7 @@ namespace TheDugout.Services.Team
         Task<TeamTactic?> GetTeamTacticAsync(int teamId, int gameSaveId);
         Task<TeamTactic> SetTeamTacticAsync(int teamId, int tacticId, string? customName, Dictionary<string, string?> lineup);
         Task InitializeDefaultTacticsAsync(GameSave gameSave);
-
+        Task<TeamTactic> AutoPickTacticAsync(int teamId, int gameSaveId);
     }
 
 

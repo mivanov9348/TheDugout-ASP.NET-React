@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using TheDugout.Data;
 using TheDugout.Services;
+using TheDugout.Services.CPUManager;
 using TheDugout.Services.Cup;
 using TheDugout.Services.EuropeanCup;
 using TheDugout.Services.Facilities;
@@ -72,6 +73,8 @@ builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddScoped<IMessageOrchestrator, MessageOrchestrator>();
 builder.Services.AddScoped<IGameDayService, GameDayService>();
 builder.Services.AddScoped<ISeasonEventService, SeasonEventService>();
+builder.Services.AddScoped<ICPUManagerService, CpuManagerService>();
+
 
 builder.Services.AddCors(options =>
 {

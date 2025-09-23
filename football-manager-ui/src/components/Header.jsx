@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom"; 
+import { Link } from "react-router-dom";
 import { useGameSave } from "../context/GameSaveContext";
 
 function Header({ username }) {
@@ -41,28 +41,8 @@ function Header({ username }) {
     }
   };
 
-  const getNextDayButtonText = (season) => {
-    if (!season) return "Next Day →";
-
-    const today = new Date(season.currentDate).toDateString();
-
-    const todaysEvent = season.events?.find(
-      (e) => new Date(e.date).toDateString() === today
-    );
-
-    if (!todaysEvent) return "Next Day →";
-
-    switch (todaysEvent.type) {
-      case "CupMatch":
-        return "Cup Day →";
-      case "ChampionshipMatch":
-        return "League Day →";
-      case "EuropeanMatch":
-        return "European Cup Day →";
-      default:
-        return "Next Day →";
-    }
-  };
+  // 🔹 използваме това, което идва от бекенда
+  const nextDayLabel = currentGameSave?.nextDayActionLabel ?? "Next Day →";
 
   return (
     <header className="flex justify-between items-center px-6 py-3 bg-slate-800 text-white shadow-md">
@@ -92,7 +72,7 @@ function Header({ username }) {
           onClick={handleNextDay}
           className="bg-sky-600 hover:bg-sky-700 px-4 py-2 rounded-lg font-medium"
         >
-          {getNextDayButtonText(season)}
+          {nextDayLabel}
         </button>
       </div>
     </header>

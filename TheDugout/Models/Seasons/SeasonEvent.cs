@@ -8,6 +8,7 @@
         EuropeanMatch,
         FriendlyMatch,
         TransferWindow,
+        TrainingDay,
         Other
     }
     public class SeasonEvent

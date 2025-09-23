@@ -17,5 +17,7 @@
             int pageSize);
 
         Task<IEnumerable<object>> GetTransferHistoryAsync(int gameSaveId, bool onlyMine);
-    }
+
+        Task RunCpuTransfersAsync(int gameSaveId, int seasonId, DateTime date, int teamId);
+            }
 }

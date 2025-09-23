@@ -43,8 +43,8 @@ public static class GameSaveExtensions
                     Abbreviation = t.Abbreviation ?? "N/A",
                     CountryId = t.CountryId,
                     CountryName = t.Country?.Name ?? "Unknown"
-                })?.ToList() ?? new List<TeamDto>()
-            })?.ToList() ?? new List<LeagueDto>(),
+                }).ToList() ?? new List<TeamDto>()
+            }).ToList() ?? new List<LeagueDto>(),
 
             Seasons = gs.Seasons?.Select(s => new SeasonDto
             {
@@ -52,7 +52,7 @@ public static class GameSaveExtensions
                 StartDate = s.StartDate,
                 EndDate = s.EndDate,
                 CurrentDate = s.CurrentDate
-            })?.ToList() ?? new List<SeasonDto>()
+            }).ToList() ?? new List<SeasonDto>()
         };
     }
 }
