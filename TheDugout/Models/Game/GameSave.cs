@@ -26,6 +26,8 @@ namespace TheDugout.Models.Game
         public int BankId { get; set; }
         public Bank Bank { get; set; } = null!;
 
+        public string NextDayActionLabel { get; set; } = "Next Day →";
+
         public ICollection<League> Leagues { get; set; } = new List<League>();
         public ICollection<Team> Teams { get; set; } = new List<Team>();
         public ICollection<Message> Messages { get; set; } = new List<Message>();

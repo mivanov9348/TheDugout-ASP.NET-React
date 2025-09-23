@@ -122,7 +122,6 @@ namespace TheDugout.Controllers
                 };
             }
 
-
             var dto = new DashboardDto
             {
                 Finance = new FinanceDto

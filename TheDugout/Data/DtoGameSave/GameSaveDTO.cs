@@ -14,9 +14,9 @@
         public IEnumerable<LeagueDto> Leagues { get; set; } = new List<LeagueDto>();
         public IEnumerable<SeasonDto> Seasons { get; set; } = new List<SeasonDto>();
 
-        // 🔹 Новите полета
         public string? NextDayActionKey { get; set; }
-        public string? NextDayActionLabel { get; set; }
+        public string NextDayActionLabel { get; set; } = "Next Day →";
+
     }
 
     public class TeamHeaderDto
