@@ -123,5 +123,60 @@ namespace TheDugout.Controllers
             }
         }
 
+        [Authorize]
+        [HttpGet("{fixtureId}/match")]
+        public async Task<IActionResult> Match(int fixtureId)
+        {
+            var fixture = await _context.Fixtures
+                .Include(f => f.HomeTeam).ThenInclude(t => t.Players).ThenInclude(p => p.Position)
+                .Include(f => f.AwayTeam).ThenInclude(t => t.Players).ThenInclude(p => p.Position)
+                .FirstOrDefaultAsync(f => f.Id == fixtureId);
+
+            if (fixture == null) return NotFound();
+
+            var result = new
+            {
+                FixtureId = fixture.Id,
+                HomeTeam = new
+                {
+                    Name = fixture.HomeTeam.Name,
+                    Players = fixture.HomeTeam.Players.Select(p => new
+                    {
+                        Number = p.KitNumber,
+                        Position = p.Position != null ? p.Position.Code : "N/A",
+                        Name = $"{p.FirstName} {p.LastName}",
+                        Stats = new
+                        {
+                            Goals = 0,   
+                            Passes = 0
+                        }
+                    })
+                },
+                AwayTeam = new
+                {
+                    Name = fixture.AwayTeam.Name,
+                    Players = fixture.AwayTeam.Players.Select(p => new
+                    {
+                        Number = p.KitNumber,
+                        Position = p.Position != null ? p.Position.Code : "N/A",
+                        Name = $"{p.FirstName} {p.LastName}",
+                        Stats = new
+                        {
+                            Goals = 0,
+                            Passes = 0
+                        }
+                    })
+                },
+                Status = fixture.Status.ToString(),
+                Score = new
+                {
+                    Home = fixture.HomeTeamGoals ?? 0,
+                    Away = fixture.AwayTeamGoals ?? 0
+                }
+            };
+
+            return Ok(result);
+        }
+
     }
 }

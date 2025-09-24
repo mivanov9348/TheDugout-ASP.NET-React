@@ -1,18 +1,21 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 export default function MatchPreview() {
   const { fixtureId } = useParams();
   const [match, setMatch] = useState(null);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!fixtureId) return;
     fetch(`/api/matches/${fixtureId}/preview`, {
       headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
     })
-      .then(res => res.json())
+      .then((res) => res.json())
       .then(setMatch)
-      .catch(err => console.error("Error loading match preview", err));
+      .catch((err) => console.error("Error loading match preview", err));
   }, [fixtureId]);
 
   if (!match) {
@@ -23,143 +26,86 @@ export default function MatchPreview() {
     );
   }
 
-  const { competition, home, away, minute, status } = match;
+  const handleStartMatch = () => {
+    fetch(`/api/matches/${fixtureId}/match`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    })
+      .then((res) => res.json())
+      .then(() => {
+        navigate(`/match/${fixtureId}`);
+      })
+      .catch((err) => console.error("Error starting match", err));
+  };
+
+  const { home, away } = match;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
-      <div className="max-w-6xl mx-auto space-y-8">
-        {/* Header */}
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">
-            {competition}
-          </h1>
-          <p className="text-gray-600">Fixture #{fixtureId}</p>
-        </div>
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-white p-4 flex flex-col">
+      {/* Start Match Button */}
+      <div className="flex justify-center mb-4">
+        <button
+          onClick={handleStartMatch}
+          className="px-4 py-2 text-sm bg-green-600 hover:bg-green-700 text-white font-semibold rounded-full shadow-md transition-colors"
+        >
+          Start Match
+        </button>
+      </div>
 
-        {/* Scoreboard */}
-        <div className="bg-gradient-to-r from-blue-600 to-purple-700 rounded-3xl shadow-2xl p-8 text-white transform hover:scale-[1.02] transition-transform duration-300">
-          <div className="flex items-center justify-between">
-            {/* Home Team */}
-            <div className="text-center flex-1">
-              <h2 className="text-2xl font-bold mb-2">{home.name}</h2>
-              <div className="text-5xl font-black text-yellow-300">
-                {home.score}
-              </div>
-            </div>
+      {/* Scoreboard */}
+      <div className="w-full flex justify-between items-center bg-gray-800 rounded-2xl shadow-lg p-4 text-2xl font-bold">
+        <span>{home.name}</span>
+        <span className="text-4xl">
+          {home.score} : {away.score}
+        </span>
+        <span>{away.name}</span>
+      </div>
 
-            {/* Match Info */}
-            <div className="flex flex-col items-center mx-8">
-              <div className="text-6xl font-black mb-2">
-                {home.score} - {away.score}
-              </div>
-              <div className="flex items-center space-x-2">
-                <span className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></span>
-                <span className="text-lg font-semibold">
-                  {status} • {minute}'
-                </span>
-              </div>
-            </div>
-
-            {/* Away Team */}
-            <div className="text-center flex-1">
-              <h2 className="text-2xl font-bold mb-2">{away.name}</h2>
-              <div className="text-5xl font-black text-yellow-300">
-                {away.score}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Lineups */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Home Team Lineup */}
-          <div className="bg-white rounded-2xl shadow-xl p-6 transform hover:scale-[1.01] transition-transform duration-300">
-            <div className="flex items-center space-x-3 mb-6">
-              <div className="w-3 h-8 bg-blue-600 rounded-full"></div>
-              <h3 className="text-2xl font-bold text-gray-800">
-                {home.name} Lineup
-              </h3>
-            </div>
-            <div className="space-y-3">
-              {home.lineup.map((player, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-center justify-between bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-xl border border-blue-100 hover:shadow-md transition-shadow"
-                >
-                  <div className="flex items-center space-x-4">
-                    <span className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold">
-                      {player.number}
-                    </span>
-                    <span className="font-semibold text-gray-800">
-                      {player.name}
-                    </span>
-                  </div>
-                  <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
-                    {player.position}
-                  </span>
-                </div>
+      {/* Main Content */}
+      <div className="flex flex-1 mt-4 gap-4">
+        {/* Home Team */}
+        <div className="w-1/2 bg-gray-800 rounded-xl p-3 overflow-y-auto shadow-lg">
+          <h2 className="text-center font-bold mb-2">{home.name}</h2>
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-gray-400 border-b border-gray-700">
+                <th>#</th>
+                <th>Pos</th>
+                <th>Name</th>
+              </tr>
+            </thead>
+            <tbody>
+              {home.lineup.map((p, idx) => (
+                <tr key={idx} className="border-b border-gray-700">
+                  <td>{p.number}</td>
+                  <td>{p.position}</td>
+                  <td>{p.name}</td>
+                </tr>
               ))}
-            </div>
-          </div>
-
-          {/* Away Team Lineup */}
-          <div className="bg-white rounded-2xl shadow-xl p-6 transform hover:scale-[1.01] transition-transform duration-300">
-            <div className="flex items-center space-x-3 mb-6">
-              <div className="w-3 h-8 bg-red-600 rounded-full"></div>
-              <h3 className="text-2xl font-bold text-gray-800">
-                {away.name} Lineup
-              </h3>
-            </div>
-            <div className="space-y-3">
-              {away.lineup.map((player, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-center justify-between bg-gradient-to-r from-red-50 to-pink-50 p-4 rounded-xl border border-red-100 hover:shadow-md transition-shadow"
-                >
-                  <div className="flex items-center space-x-4">
-                    <span className="w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center font-bold">
-                      {player.number}
-                    </span>
-                    <span className="font-semibold text-gray-800">
-                      {player.name}
-                    </span>
-                  </div>
-                  <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm font-medium">
-                    {player.position}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
+            </tbody>
+          </table>
         </div>
 
-        {/* Additional Match Info */}
-        <div className="bg-white rounded-2xl shadow-xl p-6">
-          <h3 className="text-xl font-bold text-gray-800 mb-4">
-            Match Details
-          </h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-            <div className="p-4 bg-green-50 rounded-lg">
-              <div className="text-2xl font-bold text-green-600">{minute}'</div>
-              <div className="text-sm text-gray-600">Current Minute</div>
-            </div>
-            <div className="p-4 bg-blue-50 rounded-lg">
-              <div className="text-2xl font-bold text-blue-600">
-                {home.score + away.score}
-              </div>
-              <div className="text-sm text-gray-600">Total Goals</div>
-            </div>
-            <div className="p-4 bg-orange-50 rounded-lg">
-              <div className="text-2xl font-bold text-orange-600">
-                {home.score}-{away.score}
-              </div>
-              <div className="text-sm text-gray-600">Scoreline</div>
-            </div>
-            <div className="p-4 bg-purple-50 rounded-lg">
-              <div className="text-2xl font-bold text-purple-600">{status}</div>
-              <div className="text-sm text-gray-600">Status</div>
-            </div>
-          </div>
+        {/* Away Team */}
+        <div className="w-1/2 bg-gray-800 rounded-xl p-3 overflow-y-auto shadow-lg">
+          <h2 className="text-center font-bold mb-2">{away.name}</h2>
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-gray-400 border-b border-gray-700">
+                <th>#</th>
+                <th>Pos</th>
+                <th>Name</th>
+              </tr>
+            </thead>
+            <tbody>
+              {away.lineup.map((p, idx) => (
+                <tr key={idx} className="border-b border-gray-700">
+                  <td>{p.number}</td>
+                  <td>{p.position}</td>
+                  <td>{p.name}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>

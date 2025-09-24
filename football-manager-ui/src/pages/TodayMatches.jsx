@@ -70,9 +70,6 @@ export default function TodayMatches() {
         </button>
       </div>
 
-      <h1 className="text-4xl font-extrabold text-center text-sky-700 drop-shadow-sm">
-        ⚽ Today's Matches
-      </h1>
 
       {matches.length === 0 && (
         <p className="text-center text-gray-500 italic text-lg">

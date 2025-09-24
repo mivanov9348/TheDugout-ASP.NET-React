@@ -391,6 +391,8 @@ function AppInner() {
                     />
 
                     <Route path="/live-match/:fixtureId" element={<MatchPreview />} />
+                    <Route path="/match/:fixtureId" element={<Match />} />
+
 
                     <Route path="*" element={<div>404 Not Found</div>} />
                   </Routes>
