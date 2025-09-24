@@ -26,9 +26,11 @@ import SearchPlayers from "./pages/SearchPlayers";
 import Negotiations from "./pages/Negotiations";
 import TransferHistory from "./pages/TransferHistory";
 import Fixtures from "./pages/Fixtures";
-import PlayerProfile from "./pages/PlayerProfile"; 
+import PlayerProfile from "./pages/PlayerProfile";
 import Facilities from "./pages/Facilities";
 import Match from "./pages/Match";
+import TodayMatches from "./pages/TodayMatches";
+import MatchPreview from "./pages/MatchPreview";
 
 // 👉 Context
 import { GameSaveProvider, useGameSave } from "./context/GameSaveContext";
@@ -68,7 +70,9 @@ function AppInner() {
           setIsAuthenticated(true);
           setUsername(user.username);
 
-          const resSave = await fetch("/api/games/current", { credentials: "include" });
+          const resSave = await fetch("/api/games/current", {
+            credentials: "include",
+          });
           if (resSave.ok) {
             const fullSave = await resSave.json();
             if (fullSave) setCurrentGameSave(fullSave);
@@ -121,7 +125,8 @@ function AppInner() {
         credentials: "include",
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Грешка при създаване на сейф");
+      if (!res.ok)
+        throw new Error(data.message || "Грешка при създаване на сейф");
 
       setStepMessage("Избор на отбор...");
       setPendingSaveId(data.id);
@@ -135,12 +140,19 @@ function AppInner() {
     setCurrentGameSave(fullSave);
     setShowTeamSelection(false);
     setPendingSaveId(null);
-    Swal.fire("Старт! 🎉", `Избра ${fullSave.userTeamName || "твоя отбор"}. Успех!`, "success");
+    Swal.fire(
+      "Старт! 🎉",
+      `Избра ${fullSave.userTeamName || "твоя отбор"}. Успех!`,
+      "success"
+    );
   };
 
   const handleDeleteSave = async (saveId) => {
     try {
-      const res = await fetch(`/api/games/${saveId}`, { method: "DELETE", credentials: "include" });
+      const res = await fetch(`/api/games/${saveId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
       if (!res.ok) {
         const data = await res.json();
         throw new Error(data.message || "Грешка при изтриване на сейф");
@@ -176,7 +188,11 @@ function AppInner() {
 
   // ---- Render ----
   if (loading) {
-    return <div className="flex items-center justify-center h-screen text-white">Loading...</div>;
+    return (
+      <div className="flex items-center justify-center h-screen text-white">
+        Loading...
+      </div>
+    );
   }
 
   return (
@@ -244,10 +260,21 @@ function AppInner() {
                 <Header username={username} />
                 <main className="flex-1 overflow-y-auto p-4">
                   <Routes>
-                    <Route path="/" element={<Home gameSaveId={currentGameSave?.id} />} />
-                    <Route path="/competitions/*" element={<Competitions gameSaveId={currentGameSave?.id} />}>
+                    <Route
+                      path="/"
+                      element={<Home gameSaveId={currentGameSave?.id} />}
+                    />
+                    <Route
+                      path="/competitions/*"
+                      element={
+                        <Competitions gameSaveId={currentGameSave?.id} />
+                      }
+                    >
                       <Route index element={<Navigate to="league" replace />} />
-                      <Route path="league" element={<League gameSaveId={currentGameSave?.id} />} />
+                      <Route
+                        path="league"
+                        element={<League gameSaveId={currentGameSave?.id} />}
+                      />
                       <Route
                         path="cup"
                         element={
@@ -268,37 +295,103 @@ function AppInner() {
                       />
                     </Route>
 
-                    <Route path="/inbox" element={<Inbox gameSaveId={currentGameSave?.id} />} />
-                    <Route path="/calendar" element={<Calendar gameSaveId={currentGameSave?.id} />} />
-                    <Route path="/squad" element={<Squad gameSaveId={currentGameSave?.id} />} />
+                    <Route
+                      path="/inbox"
+                      element={<Inbox gameSaveId={currentGameSave?.id} />}
+                    />
+                    <Route
+                      path="/calendar"
+                      element={<Calendar gameSaveId={currentGameSave?.id} />}
+                    />
+                    <Route
+                      path="/squad"
+                      element={<Squad gameSaveId={currentGameSave?.id} />}
+                    />
                     <Route
                       path="/tactics"
-                      element={<Tactics gameSaveId={currentGameSave?.id} teamId={currentGameSave?.userTeamId} />}
+                      element={
+                        <Tactics
+                          gameSaveId={currentGameSave?.id}
+                          teamId={currentGameSave?.userTeamId}
+                        />
+                      }
                     />
                     <Route
                       path="/training"
-                      element={<Training gameSaveId={currentGameSave?.id} teamId={currentGameSave?.userTeamId} />}
+                      element={
+                        <Training
+                          gameSaveId={currentGameSave?.id}
+                          teamId={currentGameSave?.userTeamId}
+                        />
+                      }
                     />
                     <Route
                       path="/fixtures"
-                      element={<Fixtures gameSaveId={currentGameSave?.id} seasonId={currentGameSave?.seasons?.[0]?.id} />}
+                      element={
+                        <Fixtures
+                          gameSaveId={currentGameSave?.id}
+                          seasonId={currentGameSave?.seasons?.[0]?.id}
+                        />
+                      }
                     />
-                    <Route path="/transfers" element={<Transfers gameSaveId={currentGameSave?.id} />}>
+                    <Route
+                      path="/transfers"
+                      element={<Transfers gameSaveId={currentGameSave?.id} />}
+                    >
                       <Route index element={<Navigate to="search" replace />} />
-                      <Route path="search" element={<SearchPlayers gameSaveId={currentGameSave?.id} />} />
-                      <Route path="negotiations" element={<Negotiations gameSaveId={currentGameSave?.id} />} />
-                      <Route path="history" element={<TransferHistory gameSaveId={currentGameSave?.id} />} />
+                      <Route
+                        path="search"
+                        element={
+                          <SearchPlayers gameSaveId={currentGameSave?.id} />
+                        }
+                      />
+                      <Route
+                        path="negotiations"
+                        element={
+                          <Negotiations gameSaveId={currentGameSave?.id} />
+                        }
+                      />
+                      <Route
+                        path="history"
+                        element={
+                          <TransferHistory gameSaveId={currentGameSave?.id} />
+                        }
+                      />
                     </Route>
-<Route path="/facilities" element={
-  <Facilities 
-    gameSaveId={currentGameSave?.id} 
-    teamId={currentGameSave?.userTeamId} 
-  />
-} />
-                    <Route path="/club" element={<Club gameSaveId={currentGameSave?.id} />} />
-                    <Route path="/finances" element={<Finances gameSaveId={currentGameSave?.id} />} />
-                    <Route path="/player/:playerId" element={<PlayerProfile gameSaveId={currentGameSave?.id} />} />
-                    <Route path= "/match" element={<Match gameSaveId={currentGameSave?.id} />} />
+                    <Route
+                      path="/facilities"
+                      element={
+                        <Facilities
+                          gameSaveId={currentGameSave?.id}
+                          teamId={currentGameSave?.userTeamId}
+                        />
+                      }
+                    />
+                    <Route
+                      path="/club"
+                      element={<Club gameSaveId={currentGameSave?.id} />}
+                    />
+                    <Route
+                      path="/finances"
+                      element={<Finances gameSaveId={currentGameSave?.id} />}
+                    />
+                    <Route
+                      path="/player/:playerId"
+                      element={
+                        <PlayerProfile gameSaveId={currentGameSave?.id} />
+                      }
+                    />
+                    <Route
+                      path="/match"
+                      element={<Match gameSaveId={currentGameSave?.id} />}
+                    />
+                    <Route
+                      path="/today-matches/:gameSaveId"
+                      element={<TodayMatches />}
+                    />
+
+                    <Route path="/live-match/:fixtureId" element={<MatchPreview />} />
+
                     <Route path="*" element={<div>404 Not Found</div>} />
                   </Routes>
                 </main>

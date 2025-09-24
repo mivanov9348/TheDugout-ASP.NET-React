@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TheDugout.Data;
+using TheDugout.Models.Matches;
 using TheDugout.Models.Messages;
 using TheDugout.Services.Game;
 using TheDugout.Services.Message;
@@ -66,7 +67,22 @@ namespace TheDugout.Controllers
                 .Include(gs => gs.Seasons).ThenInclude(s => s.Fixtures)
                 .FirstAsync(gs => gs.Id == user.CurrentSave.Id);
 
-            return Ok(updatedSave.ToDto());
+            var today = updatedSave.Seasons.First().CurrentDate.Date;
+
+            var todaysFixtures = updatedSave.Seasons
+                .SelectMany(s => s.Fixtures)
+                .Where(f => f.Date.Date == today)
+                .ToList();
+
+            var hasMatchesToday = todaysFixtures.Any();
+            var hasUnplayedMatchesToday = todaysFixtures.Any(f => f.Status != MatchStatus.Played);
+
+            return Ok(new
+            {
+                GameSave = updatedSave.ToDto(),
+                HasMatchesToday = hasMatchesToday,
+                HasUnplayedMatchesToday = hasUnplayedMatchesToday
+            });
         }
 
         [HttpGet("teamtemplates")]

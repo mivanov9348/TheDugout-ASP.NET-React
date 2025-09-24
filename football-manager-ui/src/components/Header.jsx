@@ -1,8 +1,12 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useGameSave } from "../context/GameSaveContext";
+import { useState } from "react";
 
 function Header({ username }) {
   const { currentGameSave, setCurrentGameSave } = useGameSave();
+  const [hasUnplayed, setHasUnplayed] = useState(false);
+
+  const navigate = useNavigate();
 
   if (!currentGameSave) {
     return (
@@ -25,6 +29,8 @@ function Header({ username }) {
   };
 
   const handleNextDay = async () => {
+    if (hasUnplayed) return; // 🚫 защитна проверка — не минаваш напред
+
     try {
       const res = await fetch("/api/games/current/next-day", {
         method: "POST",
@@ -33,16 +39,34 @@ function Header({ username }) {
       });
 
       if (res.ok) {
-        const updatedSave = await res.json();
+        const data = await res.json();
+        const updatedSave = data.gameSave;
+
         setCurrentGameSave(updatedSave);
+        setHasUnplayed(data.hasUnplayedMatchesToday);
+
+        if (data.hasMatchesToday) {
+          const matchesRes = await fetch(
+            `/api/matches/today/${updatedSave.id}`,
+            { credentials: "include" }
+          );
+
+          if (matchesRes.ok) {
+            const matches = await matchesRes.json();
+            navigate(`/today-matches/${updatedSave.id}`, {
+              state: { matches },
+            });
+          }
+        }
       }
     } catch (err) {
       console.error("Next Day failed:", err);
     }
   };
 
-  // 🔹 използваме това, което идва от бекенда
-  const nextDayLabel = currentGameSave?.nextDayActionLabel ?? "Next Day →";
+  const nextDayLabel = hasUnplayed
+    ? "Match Day"
+    : currentGameSave?.nextDayActionLabel ?? "Next Day →";
 
   return (
     <header className="flex justify-between items-center px-6 py-3 bg-slate-800 text-white shadow-md">
@@ -70,7 +94,12 @@ function Header({ username }) {
         </span>
         <button
           onClick={handleNextDay}
-          className="bg-sky-600 hover:bg-sky-700 px-4 py-2 rounded-lg font-medium"
+          disabled={hasUnplayed} // 🚫 блокираме бутона
+          className={`px-4 py-2 rounded-lg font-medium transition ${
+            hasUnplayed
+              ? "bg-red-600 cursor-not-allowed"
+              : "bg-sky-600 hover:bg-sky-700"
+          }`}
         >
           {nextDayLabel}
         </button>

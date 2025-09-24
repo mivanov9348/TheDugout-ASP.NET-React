@@ -39,6 +39,5 @@ namespace TheDugout.Models.Game
         public ICollection<Cup> Cups { get; set; } = new List<Cup>();
         public ICollection<Agency> Agencies { get; set; } = new List<Agency>();
 
-
     }
 }
