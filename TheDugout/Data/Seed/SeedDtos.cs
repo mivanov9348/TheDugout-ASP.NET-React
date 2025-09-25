@@ -67,6 +67,23 @@ namespace TheDugout.Data.Seed
     bool IsActive
 );
 
+        public record EventTypeDto(
+           string Code,
+           string Name,
+           int BaseSuccessRate
+       );
 
+        public record EventOutcomeDto(
+            string Name,
+            string EventTypeCode,
+            bool ChangesPossession,
+            int Weight
+        );
+
+        public record CommentaryTemplateDto(
+            string EventTypeCode,
+            string OutcomeName,
+            string Template
+        );
     }
 }

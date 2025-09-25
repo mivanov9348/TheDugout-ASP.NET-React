@@ -1,8 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 using TheDugout.Data;
+using TheDugout.Data.Seed;
 using TheDugout.Models.Common;
 using TheDugout.Models.Competitions;
+using TheDugout.Models.Matches;
 using TheDugout.Models.Messages;
 using TheDugout.Models.Players;
 using TheDugout.Models.Staff;
@@ -316,6 +318,116 @@ public static class SeedData
             }
         }
 
+        await db.SaveChangesAsync();
+        // 11) EventTypes
+        var eventTypesFile = Path.Combine(seedDir, "eventTypes.json");
+        var eventTypes = await ReadJsonAsync<List<SeedDtos.EventTypeDto>>(eventTypesFile);
+        var dbEventTypes = await db.EventTypes.ToListAsync();
+
+        foreach (var et in eventTypes)
+        {
+            var existing = dbEventTypes.FirstOrDefault(x => x.Code == et.Code);
+            if (existing == null)
+            {
+                db.EventTypes.Add(new EventType
+                {
+                    Code = et.Code,
+                    Name = et.Name,
+                    BaseSuccessRate = et.BaseSuccessRate
+                });
+            }
+            else
+            {
+                if (existing.Name != et.Name || existing.BaseSuccessRate != et.BaseSuccessRate)
+                {
+                    existing.Name = et.Name;
+                    existing.BaseSuccessRate = et.BaseSuccessRate;
+                    db.EventTypes.Update(existing);
+                }
+            }
+        }
+        await db.SaveChangesAsync();
+
+        // 12) EventOutcomes
+        var outcomesFile = Path.Combine(seedDir, "eventOutcomes.json");
+        var eventOutcomes = await ReadJsonAsync<List<SeedDtos.EventOutcomeDto>>(outcomesFile);
+        var dbOutcomes = await db.EventOutcomes.Include(o => o.EventType).ToListAsync();
+        var typesByCode = await db.EventTypes.ToDictionaryAsync(x => x.Code);
+
+        foreach (var eo in eventOutcomes)
+        {
+            if (!typesByCode.TryGetValue(eo.EventTypeCode, out var type))
+            {
+                logger.LogWarning("Unknown EventTypeCode '{EventTypeCode}' for outcome '{Name}'", eo.EventTypeCode, eo.Name);
+                continue;
+            }
+
+            var existing = dbOutcomes.FirstOrDefault(x => x.Name == eo.Name && x.EventTypeId == type.Id);
+            if (existing == null)
+            {
+                db.EventOutcomes.Add(new EventOutcome
+                {
+                    Name = eo.Name,
+                    EventTypeId = type.Id,
+                    EventTypeCode = eo.EventTypeCode,
+                    ChangesPossession = eo.ChangesPossession,
+                    Weight = eo.Weight
+                });
+            }
+            else
+            {
+                bool needsUpdate = false;
+
+                if (existing.Weight != eo.Weight) { existing.Weight = eo.Weight; needsUpdate = true; }
+                if (existing.ChangesPossession != eo.ChangesPossession) { existing.ChangesPossession = eo.ChangesPossession; needsUpdate = true; }
+
+                if (needsUpdate)
+                    db.EventOutcomes.Update(existing);
+            }
+        }
+
+        await db.SaveChangesAsync();
+
+        // 13) CommentaryTemplates
+        var commentaryFile = Path.Combine(seedDir, "commentaryTemplates.json");
+        var commentaryTemplates = await ReadJsonAsync<List<SeedDtos.CommentaryTemplateDto>>(commentaryFile);
+
+        var dbOutcomesByKey = await db.EventOutcomes
+            .ToDictionaryAsync(x => (x.EventTypeCode, x.Name)); // ключ по код + име
+
+        var dbCommentary = await db.CommentaryTemplates.ToListAsync();
+
+        foreach (var ct in commentaryTemplates)
+        {
+            if (!dbOutcomesByKey.TryGetValue((ct.EventTypeCode, ct.OutcomeName), out var outcome))
+            {
+                logger.LogWarning("Unknown outcome '{Outcome}' for EventType '{Code}'", ct.OutcomeName, ct.EventTypeCode);
+                continue;
+            }
+
+            var existing = dbCommentary.FirstOrDefault(x =>
+                x.EventOutcomeId == outcome.Id &&
+                x.Template == ct.Template);
+
+            if (existing == null)
+            {
+                db.CommentaryTemplates.Add(new CommentaryTemplate
+                {
+                    EventTypeCode = ct.EventTypeCode,
+                    OutcomeName = ct.OutcomeName,
+                    Template = ct.Template,
+                    EventOutcomeId = outcome.Id
+                });
+            }
+            else
+            {
+                if (existing.Template != ct.Template)
+                {
+                    existing.Template = ct.Template;
+                    db.CommentaryTemplates.Update(existing);
+                }
+            }
+        }
         await db.SaveChangesAsync();
 
         // 10) Teams
