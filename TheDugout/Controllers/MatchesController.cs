@@ -111,7 +111,7 @@ namespace TheDugout.Controllers
                             Position = p.Position?.Code ?? "N/A"
                         })
                     },
-                    Minute = fixture.Status == MatchStatus.Played ? 90 : 0,
+                    Minute = fixture.Status == FixtureStatus.Played ? 90 : 0,
                     Status = fixture.Status.ToString()
                 };
 

@@ -36,7 +36,7 @@ namespace TheDugout.Services.Fixture
                 AwayTeamId = awayTeamId,
                 Date = date,
                 Round = round,
-                Status = MatchStatus.Scheduled
+                Status = FixtureStatus.Scheduled
             };
         }
 

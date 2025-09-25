@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace TheDugout.Migrations
 {
     /// <inheritdoc />
-    public partial class initial : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -76,15 +76,31 @@ namespace TheDugout.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "EventTypes",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Code = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    BaseSuccessRate = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_EventTypes", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "MessageTemplates",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Category = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Sender = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     SubjectTemplate = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    BodyTemplate = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    BodyTemplate = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    SenderType = table.Column<int>(type: "int", nullable: false),
+                    Weight = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -160,22 +176,24 @@ namespace TheDugout.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "MessageTemplatePlaceholders",
+                name: "EventOutcomes",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Key = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
-                    MessageTemplateId = table.Column<int>(type: "int", nullable: true)
+                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    EventTypeCode = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ChangesPossession = table.Column<bool>(type: "bit", nullable: false),
+                    Weight = table.Column<int>(type: "int", nullable: false, defaultValue: 1),
+                    EventTypeId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_MessageTemplatePlaceholders", x => x.Id);
+                    table.PrimaryKey("PK_EventOutcomes", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_MessageTemplatePlaceholders_MessageTemplates_MessageTemplateId",
-                        column: x => x.MessageTemplateId,
-                        principalTable: "MessageTemplates",
+                        name: "FK_EventOutcomes_EventTypes_EventTypeId",
+                        column: x => x.EventTypeId,
+                        principalTable: "EventTypes",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -266,6 +284,27 @@ namespace TheDugout.Migrations
                         principalTable: "Regions",
                         principalColumn: "Code",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "CommentaryTemplates",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    EventTypeCode = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    OutcomeName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Template = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    EventOutcomeId = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CommentaryTemplates", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_CommentaryTemplates_EventOutcomes_EventOutcomeId",
+                        column: x => x.EventOutcomeId,
+                        principalTable: "EventOutcomes",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -617,11 +656,40 @@ namespace TheDugout.Migrations
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     UserTeamId = table.Column<int>(type: "int", nullable: true),
-                    BankId = table.Column<int>(type: "int", nullable: false)
+                    BankId = table.Column<int>(type: "int", nullable: false),
+                    NextDayActionLabel = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_GameSaves", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Matches",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    GameSaveId = table.Column<int>(type: "int", nullable: false),
+                    FixtureId = table.Column<int>(type: "int", nullable: false),
+                    CurrentMinute = table.Column<int>(type: "int", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Matches", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Matches_Fixtures_FixtureId",
+                        column: x => x.FixtureId,
+                        principalTable: "Fixtures",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Matches_GameSaves_GameSaveId",
+                        column: x => x.GameSaveId,
+                        principalTable: "GameSaves",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -632,10 +700,10 @@ namespace TheDugout.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Subject = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
                     Body = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    IsRead = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    Date = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
                     Category = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Sender = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    SenderType = table.Column<int>(type: "int", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
+                    IsRead = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     GameSaveId = table.Column<int>(type: "int", nullable: true),
                     MessageTemplateId = table.Column<int>(type: "int", nullable: true),
                     GameSaveId1 = table.Column<int>(type: "int", nullable: true)
@@ -1051,6 +1119,55 @@ namespace TheDugout.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "MatchEvents",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    MatchId = table.Column<int>(type: "int", nullable: false),
+                    Minute = table.Column<int>(type: "int", nullable: false),
+                    TeamId = table.Column<int>(type: "int", nullable: false),
+                    PlayerId = table.Column<int>(type: "int", nullable: false),
+                    EventTypeId = table.Column<int>(type: "int", nullable: false),
+                    OutcomeId = table.Column<int>(type: "int", nullable: false),
+                    Commentary = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MatchEvents", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_MatchEvents_EventOutcomes_OutcomeId",
+                        column: x => x.OutcomeId,
+                        principalTable: "EventOutcomes",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_MatchEvents_EventTypes_EventTypeId",
+                        column: x => x.EventTypeId,
+                        principalTable: "EventTypes",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_MatchEvents_Matches_MatchId",
+                        column: x => x.MatchId,
+                        principalTable: "Matches",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_MatchEvents_Players_PlayerId",
+                        column: x => x.PlayerId,
+                        principalTable: "Players",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_MatchEvents_Teams_TeamId",
+                        column: x => x.TeamId,
+                        principalTable: "Teams",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "PlayerAttributes",
                 columns: table => new
                 {
@@ -1246,6 +1363,11 @@ namespace TheDugout.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_CommentaryTemplates_EventOutcomeId",
+                table: "CommentaryTemplates",
+                column: "EventOutcomeId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Countries_Code",
                 table: "Countries",
                 column: "Code",
@@ -1353,6 +1475,17 @@ namespace TheDugout.Migrations
                 name: "IX_EuropeanCupTeams_TeamId",
                 table: "EuropeanCupTeams",
                 column: "TeamId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_EventOutcomes_EventTypeId",
+                table: "EventOutcomes",
+                column: "EventTypeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_EventTypes_Code",
+                table: "EventTypes",
+                column: "Code",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_FinancialTransactions_BankId",
@@ -1486,6 +1619,41 @@ namespace TheDugout.Migrations
                 column: "CountryId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Matches_FixtureId",
+                table: "Matches",
+                column: "FixtureId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Matches_GameSaveId",
+                table: "Matches",
+                column: "GameSaveId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MatchEvents_EventTypeId",
+                table: "MatchEvents",
+                column: "EventTypeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MatchEvents_MatchId",
+                table: "MatchEvents",
+                column: "MatchId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MatchEvents_OutcomeId",
+                table: "MatchEvents",
+                column: "OutcomeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MatchEvents_PlayerId",
+                table: "MatchEvents",
+                column: "PlayerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MatchEvents_TeamId",
+                table: "MatchEvents",
+                column: "TeamId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Messages_GameSaveId",
                 table: "Messages",
                 column: "GameSaveId");
@@ -1498,11 +1666,6 @@ namespace TheDugout.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Messages_MessageTemplateId",
                 table: "Messages",
-                column: "MessageTemplateId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_MessageTemplatePlaceholders_MessageTemplateId",
-                table: "MessageTemplatePlaceholders",
                 column: "MessageTemplateId");
 
             migrationBuilder.CreateIndex(
@@ -1897,6 +2060,9 @@ namespace TheDugout.Migrations
                 table: "Users");
 
             migrationBuilder.DropTable(
+                name: "CommentaryTemplates");
+
+            migrationBuilder.DropTable(
                 name: "CupTeams");
 
             migrationBuilder.DropTable(
@@ -1912,19 +2078,16 @@ namespace TheDugout.Migrations
                 name: "FirstNames");
 
             migrationBuilder.DropTable(
-                name: "Fixtures");
-
-            migrationBuilder.DropTable(
                 name: "LastNames");
 
             migrationBuilder.DropTable(
                 name: "LeagueStandings");
 
             migrationBuilder.DropTable(
-                name: "Messages");
+                name: "MatchEvents");
 
             migrationBuilder.DropTable(
-                name: "MessageTemplatePlaceholders");
+                name: "Messages");
 
             migrationBuilder.DropTable(
                 name: "PlayerAttributes");
@@ -1963,10 +2126,10 @@ namespace TheDugout.Migrations
                 name: "Banks");
 
             migrationBuilder.DropTable(
-                name: "CupRounds");
+                name: "EventOutcomes");
 
             migrationBuilder.DropTable(
-                name: "EuropeanCupPhases");
+                name: "Matches");
 
             migrationBuilder.DropTable(
                 name: "MessageTemplates");
@@ -1984,6 +2147,27 @@ namespace TheDugout.Migrations
                 name: "Players");
 
             migrationBuilder.DropTable(
+                name: "EventTypes");
+
+            migrationBuilder.DropTable(
+                name: "Fixtures");
+
+            migrationBuilder.DropTable(
+                name: "Agencies");
+
+            migrationBuilder.DropTable(
+                name: "Positions");
+
+            migrationBuilder.DropTable(
+                name: "CupRounds");
+
+            migrationBuilder.DropTable(
+                name: "EuropeanCupPhases");
+
+            migrationBuilder.DropTable(
+                name: "AgencyTemplates");
+
+            migrationBuilder.DropTable(
                 name: "Cups");
 
             migrationBuilder.DropTable(
@@ -1993,19 +2177,10 @@ namespace TheDugout.Migrations
                 name: "EuropeanCups");
 
             migrationBuilder.DropTable(
-                name: "Agencies");
-
-            migrationBuilder.DropTable(
-                name: "Positions");
-
-            migrationBuilder.DropTable(
                 name: "CupTemplates");
 
             migrationBuilder.DropTable(
                 name: "EuropeanCupTemplates");
-
-            migrationBuilder.DropTable(
-                name: "AgencyTemplates");
 
             migrationBuilder.DropTable(
                 name: "GameSaves");

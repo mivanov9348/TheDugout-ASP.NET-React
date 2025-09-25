@@ -66,6 +66,11 @@ namespace TheDugout.Data
         public DbSet<Stadium> Stadiums { get; set; }
         public DbSet<TrainingFacility> TrainingFacilities { get; set; }
         public DbSet<YouthAcademy> YouthAcademies { get; set; }
+        public DbSet<Match> Matches { get; set; }
+        public DbSet<MatchEvent> MatchEvents { get; set; }
+        public DbSet<EventType> EventTypes { get; set; }
+        public DbSet<EventOutcome> EventOutcomes { get; set; }
+        public DbSet<CommentaryTemplate> CommentaryTemplates { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

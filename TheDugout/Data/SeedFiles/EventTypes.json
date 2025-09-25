@@ -1,0 +1,12 @@
+[
+  { "Code": "PAS", "Name": "Pass", "BaseSuccessRate": 70 },
+  { "Code": "SHT", "Name": "Shot", "BaseSuccessRate": 60 },
+  { "Code": "GOL", "Name": "Goal", "BaseSuccessRate": 100 },
+  { "Code": "SAV", "Name": "Save", "BaseSuccessRate": 65 },
+  { "Code": "FOU", "Name": "Foul", "BaseSuccessRate": 50 },
+  { "Code": "COR", "Name": "Corner", "BaseSuccessRate": 55 },
+  { "Code": "OUT", "Name": "Throw-in", "BaseSuccessRate": 90 },
+  { "Code": "TAC", "Name": "Tackle", "BaseSuccessRate": 50 },
+  { "Code": "OFF", "Name": "Offside", "BaseSuccessRate": 100 },
+  { "Code": "DRI", "Name": "Dribble", "BaseSuccessRate": 60 }
+]

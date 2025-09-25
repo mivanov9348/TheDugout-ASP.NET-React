@@ -12,8 +12,8 @@ using TheDugout.Data;
 namespace TheDugout.Migrations
 {
     [DbContext(typeof(DugoutDbContext))]
-    [Migration("20250920143836_fixmessage")]
-    partial class fixmessage
+    [Migration("20250925080030_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -817,6 +817,10 @@ namespace TheDugout.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("NextDayActionLabel")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
@@ -862,6 +866,103 @@ namespace TheDugout.Migrations
                     b.HasIndex("CurrentSaveId");
 
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("TheDugout.Models.Matches.CommentaryTemplate", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("EventOutcomeId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("EventTypeCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("OutcomeName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Template")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EventOutcomeId");
+
+                    b.ToTable("CommentaryTemplates");
+                });
+
+            modelBuilder.Entity("TheDugout.Models.Matches.EventOutcome", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("ChangesPossession")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("EventTypeCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("EventTypeId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("Weight")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(1);
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EventTypeId");
+
+                    b.ToTable("EventOutcomes");
+                });
+
+            modelBuilder.Entity("TheDugout.Models.Matches.EventType", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BaseSuccessRate")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("EventTypes");
                 });
 
             modelBuilder.Entity("TheDugout.Models.Matches.Fixture", b =>
@@ -935,6 +1036,80 @@ namespace TheDugout.Migrations
                     b.ToTable("Fixtures");
                 });
 
+            modelBuilder.Entity("TheDugout.Models.Matches.Match", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CurrentMinute")
+                        .HasColumnType("int");
+
+                    b.Property<int>("FixtureId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("GameSaveId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FixtureId");
+
+                    b.HasIndex("GameSaveId");
+
+                    b.ToTable("Matches");
+                });
+
+            modelBuilder.Entity("TheDugout.Models.Matches.MatchEvent", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Commentary")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("EventTypeId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MatchId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Minute")
+                        .HasColumnType("int");
+
+                    b.Property<int>("OutcomeId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PlayerId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TeamId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EventTypeId");
+
+                    b.HasIndex("MatchId");
+
+                    b.HasIndex("OutcomeId");
+
+                    b.HasIndex("PlayerId");
+
+                    b.HasIndex("TeamId");
+
+                    b.ToTable("MatchEvents");
+                });
+
             modelBuilder.Entity("TheDugout.Models.Messages.Message", b =>
                 {
                     b.Property<int>("Id")
@@ -987,29 +1162,6 @@ namespace TheDugout.Migrations
                     b.HasIndex("MessageTemplateId");
 
                     b.ToTable("Messages");
-                });
-
-            modelBuilder.Entity("TheDugout.Models.Messages.MessagePlaceholder", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("Key")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("MessageTemplatePlaceholders");
                 });
 
             modelBuilder.Entity("TheDugout.Models.Messages.MessageTemplate", b =>
@@ -2086,6 +2238,24 @@ namespace TheDugout.Migrations
                     b.Navigation("CurrentSave");
                 });
 
+            modelBuilder.Entity("TheDugout.Models.Matches.CommentaryTemplate", b =>
+                {
+                    b.HasOne("TheDugout.Models.Matches.EventOutcome", null)
+                        .WithMany("CommentaryTemplates")
+                        .HasForeignKey("EventOutcomeId");
+                });
+
+            modelBuilder.Entity("TheDugout.Models.Matches.EventOutcome", b =>
+                {
+                    b.HasOne("TheDugout.Models.Matches.EventType", "EventType")
+                        .WithMany("Outcomes")
+                        .HasForeignKey("EventTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("EventType");
+                });
+
             modelBuilder.Entity("TheDugout.Models.Matches.Fixture", b =>
                 {
                     b.HasOne("TheDugout.Models.Teams.Team", "AwayTeam")
@@ -2147,6 +2317,68 @@ namespace TheDugout.Migrations
                     b.Navigation("Season");
 
                     b.Navigation("WinnerTeam");
+                });
+
+            modelBuilder.Entity("TheDugout.Models.Matches.Match", b =>
+                {
+                    b.HasOne("TheDugout.Models.Matches.Fixture", "Fixture")
+                        .WithMany("Matches")
+                        .HasForeignKey("FixtureId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TheDugout.Models.Game.GameSave", "GameSave")
+                        .WithMany("Matches")
+                        .HasForeignKey("GameSaveId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Fixture");
+
+                    b.Navigation("GameSave");
+                });
+
+            modelBuilder.Entity("TheDugout.Models.Matches.MatchEvent", b =>
+                {
+                    b.HasOne("TheDugout.Models.Matches.EventType", "EventType")
+                        .WithMany("Events")
+                        .HasForeignKey("EventTypeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TheDugout.Models.Matches.Match", "Match")
+                        .WithMany("Events")
+                        .HasForeignKey("MatchId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TheDugout.Models.Matches.EventOutcome", "Outcome")
+                        .WithMany("MatchEvents")
+                        .HasForeignKey("OutcomeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TheDugout.Models.Players.Player", "Player")
+                        .WithMany("MatchEvents")
+                        .HasForeignKey("PlayerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TheDugout.Models.Teams.Team", "Team")
+                        .WithMany("MatchEvents")
+                        .HasForeignKey("TeamId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("EventType");
+
+                    b.Navigation("Match");
+
+                    b.Navigation("Outcome");
+
+                    b.Navigation("Player");
+
+                    b.Navigation("Team");
                 });
 
             modelBuilder.Entity("TheDugout.Models.Messages.Message", b =>
@@ -2577,6 +2809,8 @@ namespace TheDugout.Migrations
 
                     b.Navigation("Leagues");
 
+                    b.Navigation("Matches");
+
                     b.Navigation("Messages");
 
                     b.Navigation("Players");
@@ -2593,6 +2827,30 @@ namespace TheDugout.Migrations
                     b.Navigation("GameSaves");
                 });
 
+            modelBuilder.Entity("TheDugout.Models.Matches.EventOutcome", b =>
+                {
+                    b.Navigation("CommentaryTemplates");
+
+                    b.Navigation("MatchEvents");
+                });
+
+            modelBuilder.Entity("TheDugout.Models.Matches.EventType", b =>
+                {
+                    b.Navigation("Events");
+
+                    b.Navigation("Outcomes");
+                });
+
+            modelBuilder.Entity("TheDugout.Models.Matches.Fixture", b =>
+                {
+                    b.Navigation("Matches");
+                });
+
+            modelBuilder.Entity("TheDugout.Models.Matches.Match", b =>
+                {
+                    b.Navigation("Events");
+                });
+
             modelBuilder.Entity("TheDugout.Models.Players.Attribute", b =>
                 {
                     b.Navigation("PlayerAttributes");
@@ -2603,6 +2861,8 @@ namespace TheDugout.Migrations
             modelBuilder.Entity("TheDugout.Models.Players.Player", b =>
                 {
                     b.Navigation("Attributes");
+
+                    b.Navigation("MatchEvents");
 
                     b.Navigation("MatchStats");
 
@@ -2662,6 +2922,8 @@ namespace TheDugout.Migrations
                     b.Navigation("HomeFixtures");
 
                     b.Navigation("LeagueStandings");
+
+                    b.Navigation("MatchEvents");
 
                     b.Navigation("Players");
 

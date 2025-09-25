@@ -12,7 +12,7 @@ namespace TheDugout.Models.Matches
         EuropeanCup = 2
     }
 
-    public enum MatchStatus
+    public enum FixtureStatus
     {
         Scheduled = 0,
         Played = 1,
@@ -56,6 +56,8 @@ namespace TheDugout.Models.Matches
 
         public int Round { get; set; }
 
-        public MatchStatus Status { get; set; } = MatchStatus.Scheduled;
+        public FixtureStatus Status { get; set; } = FixtureStatus.Scheduled;
+        public ICollection<Match> Matches { get; set; } = new List<Match>();
+
     }
 }

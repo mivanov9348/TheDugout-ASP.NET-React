@@ -51,6 +51,8 @@ namespace TheDugout.Models.Teams
 
         public ICollection<TrainingSession> TrainingSessions { get; set; } = new List<TrainingSession>();
 
+        public ICollection<MatchEvent> MatchEvents { get; set; } = new List<MatchEvent>();
+
         public TeamTactic? TeamTactic { get; set; }
     }
 }

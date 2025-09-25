@@ -1,0 +1,30 @@
+[
+  { "Name": "Success", "ChangesPossession": false, "Weight": 80, "EventTypeCode": "PAS" },
+  { "Name": "Fail", "ChangesPossession": true, "Weight": 20, "EventTypeCode": "PAS" },
+
+  { "Name": "Goal", "ChangesPossession": false, "Weight": 30, "EventTypeCode": "SHT" },
+  { "Name": "Saved", "ChangesPossession": true, "Weight": 25, "EventTypeCode": "SHT" },
+  { "Name": "Out", "ChangesPossession": true, "Weight": 25, "EventTypeCode": "SHT" },
+  { "Name": "Blocked", "ChangesPossession": true, "Weight": 20, "EventTypeCode": "SHT" },
+
+  { "Name": "Success", "ChangesPossession": false, "Weight": 100, "EventTypeCode": "GOL" },
+
+  { "Name": "Success", "ChangesPossession": true, "Weight": 70, "EventTypeCode": "SAV" },
+  { "Name": "Fail", "ChangesPossession": false, "Weight": 30, "EventTypeCode": "SAV" },
+
+  { "Name": "Success", "ChangesPossession": true, "Weight": 60, "EventTypeCode": "FOU" },
+  { "Name": "Fail", "ChangesPossession": false, "Weight": 40, "EventTypeCode": "FOU" },
+
+  { "Name": "Success", "ChangesPossession": false, "Weight": 65, "EventTypeCode": "COR" },
+  { "Name": "Fail", "ChangesPossession": true, "Weight": 35, "EventTypeCode": "COR" },
+
+  { "Name": "Success", "ChangesPossession": true, "Weight": 100, "EventTypeCode": "OUT" },
+
+  { "Name": "Success", "ChangesPossession": true, "Weight": 55, "EventTypeCode": "TAC" },
+  { "Name": "Fail", "ChangesPossession": false, "Weight": 45, "EventTypeCode": "TAC" },
+
+  { "Name": "Success", "ChangesPossession": true, "Weight": 100, "EventTypeCode": "OFF" },
+
+  { "Name": "Success", "ChangesPossession": false, "Weight": 65, "EventTypeCode": "DRI" },
+  { "Name": "Fail", "ChangesPossession": true, "Weight": 35, "EventTypeCode": "DRI" }
+]

@@ -159,12 +159,12 @@ namespace TheDugout.Services.EuropeanCup
                                    .FirstOrDefaultAsync(f => f.Id == fixtureId, ct)
                            ?? throw new InvalidOperationException($"Fixture {fixtureId} not found.");
 
-            if (fixture.Status == MatchStatus.Played)
+            if (fixture.Status == FixtureStatus.Played)
                 throw new InvalidOperationException("Fixture already played.");
 
             fixture.HomeTeamGoals = homeGoals;
             fixture.AwayTeamGoals = awayGoals;
-            fixture.Status = MatchStatus.Played;
+            fixture.Status = FixtureStatus.Played;
             _context.Update(fixture);
             await _context.SaveChangesAsync(ct);
 
@@ -250,7 +250,7 @@ namespace TheDugout.Services.EuropeanCup
 
             // get all played fixtures for that cup's league-phase(s) (only league-phase fixtures affect league standings)
             var fixtures = await _context.Set<Models.Matches.Fixture>()
-                                    .Where(f => f.EuropeanCupPhaseId == europeanCupPhaseId && f.Status == MatchStatus.Played)
+                                    .Where(f => f.EuropeanCupPhaseId == europeanCupPhaseId && f.Status == FixtureStatus.Played)
                                     .ToListAsync(ct);
 
             foreach (var f in fixtures)
@@ -324,7 +324,7 @@ namespace TheDugout.Services.EuropeanCup
 
             // check if any scheduled/unplayed fixture exists
             var anyUnplayed = await _context.Set<Models.Matches.Fixture>()
-                                       .AnyAsync(f => f.EuropeanCupPhaseId == leaguePhase.Id && f.Status != MatchStatus.Played, ct);
+                                       .AnyAsync(f => f.EuropeanCupPhaseId == leaguePhase.Id && f.Status != FixtureStatus.Played, ct);
 
             if (anyUnplayed) return; // not ready
 
@@ -355,7 +355,7 @@ namespace TheDugout.Services.EuropeanCup
 
             // if two-legged combine pairs by matching unordered pair
             var fixtures = await _context.Set<Models.Matches.Fixture>()
-                                    .Where(f => f.EuropeanCupPhaseId == europeanCupPhaseId && f.Status == MatchStatus.Played)
+                                    .Where(f => f.EuropeanCupPhaseId == europeanCupPhaseId && f.Status == FixtureStatus.Played)
                                     .ToListAsync(ct);
 
             var winners = new List<int>();
@@ -485,7 +485,7 @@ namespace TheDugout.Services.EuropeanCup
                         AwayTeamId = b,
                         Date = DateTime.UtcNow.AddDays(7 + i),
                         Round = 1,
-                        Status = MatchStatus.Scheduled,
+                        Status = FixtureStatus.Scheduled,
                         GameSaveId = cup.GameSaveId
                     });
                     newFixtures.Add(new Models.Matches.Fixture
@@ -496,7 +496,7 @@ namespace TheDugout.Services.EuropeanCup
                         AwayTeamId = a,
                         Date = DateTime.UtcNow.AddDays(14 + i),
                         Round = 2,
-                        Status = MatchStatus.Scheduled,
+                        Status = FixtureStatus.Scheduled,
                         GameSaveId = cup.GameSaveId
                     });
                 }
@@ -510,7 +510,7 @@ namespace TheDugout.Services.EuropeanCup
                         AwayTeamId = b,
                         Date = DateTime.UtcNow.AddDays(7 + i),
                         Round = 1,
-                        Status = MatchStatus.Scheduled,
+                        Status = FixtureStatus.Scheduled,
                         GameSaveId = cup.GameSaveId
                     });
                 }

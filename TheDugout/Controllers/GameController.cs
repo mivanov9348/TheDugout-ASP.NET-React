@@ -75,7 +75,7 @@ namespace TheDugout.Controllers
                 .ToList();
 
             var hasMatchesToday = todaysFixtures.Any();
-            var hasUnplayedMatchesToday = todaysFixtures.Any(f => f.Status != MatchStatus.Played);
+            var hasUnplayedMatchesToday = todaysFixtures.Any(f => f.Status != FixtureStatus.Played);
 
             return Ok(new
             {

@@ -1,5 +1,6 @@
 ﻿using TheDugout.Models.Common;
 using TheDugout.Models.Game;
+using TheDugout.Models.Matches;
 using TheDugout.Models.Staff;
 using TheDugout.Models.Teams;
 
@@ -49,5 +50,7 @@ namespace TheDugout.Models.Players
         public ICollection<PlayerAttribute> Attributes { get; set; } = new List<PlayerAttribute>();
         public ICollection<PlayerMatchStats> MatchStats { get; set; } = new List<PlayerMatchStats>();
         public ICollection<PlayerSeasonStats> SeasonStats { get; set; } = new List<PlayerSeasonStats>();
+        public ICollection<MatchEvent> MatchEvents { get; set; } = new List<MatchEvent>();
+
     }
 }

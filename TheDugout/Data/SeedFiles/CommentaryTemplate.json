@@ -1,0 +1,21 @@
+[
+  { "Id": 1, "EventTypeCode": "PAS", "OutcomeName": "Success", "Template": "{PlayerName} finds {TeammateName} with a clean pass" },
+  { "Id": 2, "EventTypeCode": "PAS", "OutcomeName": "Fail", "Template": "{PlayerName}'s pass is intercepted by {OpponentName}" },
+  { "Id": 3, "EventTypeCode": "SHT", "OutcomeName": "Goal", "Template": "GOAL! {PlayerName} scores with a brilliant strike!" },
+  { "Id": 4, "EventTypeCode": "SHT", "OutcomeName": "Saved", "Template": "{OpponentName} makes a fine save to deny {PlayerName}" },
+  { "Id": 5, "EventTypeCode": "SHT", "OutcomeName": "Out", "Template": "{PlayerName} misses the target, the shot goes wide" },
+  { "Id": 6, "EventTypeCode": "SHT", "OutcomeName": "Blocked", "Template": "{OpponentName} blocks the shot from {PlayerName}" },
+  { "Id": 7, "EventTypeCode": "GOL", "OutcomeName": "Success", "Template": "The referee confirms the goal stands!" },
+  { "Id": 8, "EventTypeCode": "SAV", "OutcomeName": "Success", "Template": "{PlayerName} makes a crucial save, keeping the ball out" },
+  { "Id": 9, "EventTypeCode": "SAV", "OutcomeName": "Fail", "Template": "{PlayerName} can't stop it, the ball goes past!" },
+  { "Id": 10, "EventTypeCode": "FOU", "OutcomeName": "Success", "Template": "{PlayerName} brings down {OpponentName}, foul given" },
+  { "Id": 11, "EventTypeCode": "FOU", "OutcomeName": "Fail", "Template": "{PlayerName} appeals for a foul, but the referee waves play on" },
+  { "Id": 12, "EventTypeCode": "COR", "OutcomeName": "Success", "Template": "{PlayerName} delivers a dangerous corner into the box" },
+  { "Id": 13, "EventTypeCode": "COR", "OutcomeName": "Fail", "Template": "Poor corner by {PlayerName}, easily cleared" },
+  { "Id": 14, "EventTypeCode": "OUT", "OutcomeName": "Success", "Template": "{PlayerName} takes the throw-in quickly to {TeammateName}" },
+  { "Id": 15, "EventTypeCode": "TAC", "OutcomeName": "Success", "Template": "{PlayerName} wins the ball back with a strong tackle" },
+  { "Id": 16, "EventTypeCode": "TAC", "OutcomeName": "Fail", "Template": "{PlayerName} mistimes the tackle and misses {OpponentName}" },
+  { "Id": 17, "EventTypeCode": "OFF", "OutcomeName": "Success", "Template": "{PlayerName} is caught offside, flag is up" },
+  { "Id": 18, "EventTypeCode": "DRI", "OutcomeName": "Success", "Template": "{PlayerName} dribbles past {OpponentName} with ease" },
+  { "Id": 19, "EventTypeCode": "DRI", "OutcomeName": "Fail", "Template": "{PlayerName} loses the ball trying to dribble past {OpponentName}" }
+]

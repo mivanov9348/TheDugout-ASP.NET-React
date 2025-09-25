@@ -38,6 +38,8 @@ namespace TheDugout.Models.Game
         public ICollection<LeagueStanding> LeagueStandings { get; set; } = new List<LeagueStanding>();
         public ICollection<Cup> Cups { get; set; } = new List<Cup>();
         public ICollection<Agency> Agencies { get; set; } = new List<Agency>();
+        public ICollection<Match> Matches { get; set; } = new List<Match>();
+
 
     }
 }
