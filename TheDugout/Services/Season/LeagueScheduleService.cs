@@ -1,5 +1,4 @@
-﻿
-using TheDugout.Models.Seasons;
+﻿using TheDugout.Models.Seasons;
 
 namespace TheDugout.Services.Season
 {
@@ -9,7 +8,7 @@ namespace TheDugout.Services.Season
         {
         }
 
-        public void AssignLeagueFixtures(List<Models.Matches.Fixture> fixtures, Models.Seasons.Season season)
+        public void AssignLeagueFixtures(List<Models.Fixtures.Fixture> fixtures, Models.Seasons.Season season)
         {
             var totalRounds = fixtures.Max(f => f.Round);
 

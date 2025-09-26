@@ -1,6 +1,6 @@
 ﻿using TheDugout.Models.Common;
+using TheDugout.Models.Fixtures;
 using TheDugout.Models.Game;
-using TheDugout.Models.Matches;
 using TheDugout.Models.Seasons;
 using TheDugout.Models.Teams;
 

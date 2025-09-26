@@ -1,6 +1,6 @@
 ﻿using TheDugout.Models.Competitions;
+using TheDugout.Models.Fixtures;
 using TheDugout.Models.Game;
-using TheDugout.Models.Matches;
 using TheDugout.Models.Players;
 using TheDugout.Models.Training;
 

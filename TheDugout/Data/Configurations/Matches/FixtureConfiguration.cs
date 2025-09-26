@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using TheDugout.Models.Matches;
+using TheDugout.Models.Fixtures;
 
 namespace TheDugout.Data.Configurations
 {

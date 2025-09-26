@@ -14,5 +14,7 @@ namespace TheDugout.DTOs.Team
         public int TacticId { get; set; }
         public string? CustomName { get; set; }
         public Dictionary<string, string?> Lineup { get; set; } = new();
+        public Dictionary<string, string?>? Substitutes { get; set; }
+
     }
 }

@@ -2,7 +2,7 @@
 {
     public interface ILeagueScheduleService
     {
-        void AssignLeagueFixtures(List<Models.Matches.Fixture> fixtures, Models.Seasons.Season season);
+        void AssignLeagueFixtures(List<Models.Fixtures.Fixture> fixtures, Models.Seasons.Season season);
 
     }
 }

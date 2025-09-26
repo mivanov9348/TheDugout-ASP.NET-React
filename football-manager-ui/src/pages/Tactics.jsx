@@ -6,6 +6,7 @@ const Tactics = ({ gameSaveId, teamId }) => {
   const [players, setPlayers] = useState([]);
   const [selectedFormation, setSelectedFormation] = useState("");
   const [lineup, setLineup] = useState({});
+  const [substitutes, setSubstitutes] = useState({});
   const [loading, setLoading] = useState(true);
   const [allAttributes, setAllAttributes] = useState([]);
 
@@ -107,6 +108,15 @@ const Tactics = ({ gameSaveId, teamId }) => {
             console.warn("Invalid lineupJson:", data.lineupJson);
           }
         }
+
+        if (data.substitutesJson) {
+          try {
+            const parsedSubs = JSON.parse(data.substitutesJson);
+            setSubstitutes(parsedSubs);
+          } catch {
+            console.warn("Invalid substitutesJson:", data.substitutesJson);
+          }
+        }
       } catch (err) {
         console.error("Грешка при зареждане на тактиката:", err);
       }
@@ -133,6 +143,7 @@ const Tactics = ({ gameSaveId, teamId }) => {
           tacticId,
           customName: selectedFormation,
           lineup,
+          substitutes,
         }),
       });
 
@@ -156,7 +167,10 @@ const Tactics = ({ gameSaveId, teamId }) => {
     }
   };
 
-  const handleReset = () => setLineup({});
+  const handleReset = () => {
+    setLineup({});
+    setSubstitutes({});
+  };
 
   const getPositionSlots = () => {
     if (!selectedFormation) return { GK: 1, DF: 0, MID: 0, ATT: 0 };
@@ -171,7 +185,10 @@ const Tactics = ({ gameSaveId, teamId }) => {
   };
   const slots = getPositionSlots();
 
-  const getSelectedPlayerIds = () => Object.values(lineup).filter(Boolean);
+  const getSelectedPlayerIds = () => [
+    ...Object.values(lineup),
+    ...Object.values(substitutes),
+  ].filter(Boolean);
 
   const renderSlots = (position, count, availablePlayers) => {
     const slotsArray = [];
@@ -210,6 +227,42 @@ const Tactics = ({ gameSaveId, teamId }) => {
     return slotsArray;
   };
 
+  const renderSubstitutes = () => {
+    const slots = ["SUB1", "SUB2", "SUB3", "SUB4", "SUB5"];
+    const selectedIds = getSelectedPlayerIds();
+
+    return slots.map((slotKey) => (
+      <tr key={slotKey}>
+        <td className="px-6 py-4 text-sm font-medium text-gray-900">{slotKey}</td>
+        <td className="px-6 py-4">
+          <select
+            className="block w-full px-3 py-2 border border-gray-300 bg-white rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+            value={substitutes[slotKey] || ""}
+            onChange={(e) =>
+              setSubstitutes((prev) => ({
+                ...prev,
+                [slotKey]: e.target.value,
+              }))
+            }
+          >
+            <option value="">Select Player</option>
+            {players
+              .filter(
+                (p) =>
+                  !selectedIds.includes(p.id.toString()) ||
+                  substitutes[slotKey] === p.id.toString()
+              )
+              .map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+          </select>
+        </td>
+      </tr>
+    ));
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -240,6 +293,7 @@ const Tactics = ({ gameSaveId, teamId }) => {
             onChange={(e) => {
               setSelectedFormation(e.target.value);
               setLineup({});
+              setSubstitutes({});
             }}
           >
             <option value="">Choose a formation</option>
@@ -285,7 +339,9 @@ const Tactics = ({ gameSaveId, teamId }) => {
                     {players.map((p) => (
                       <tr
                         key={p.id}
-                        className={`${getRowClass(p.position)} hover:bg-gray-100 transition`}
+                        className={`${getRowClass(
+                          p.position
+                        )} hover:bg-gray-100 transition`}
                       >
                         <td className="px-4 py-2 font-medium">{p.name}</td>
                         <td className="px-4 py-2">{p.position}</td>
@@ -307,12 +363,12 @@ const Tactics = ({ gameSaveId, teamId }) => {
               </div>
             </div>
 
-            {/* Lineup */}
+            {/* Lineup + Subs */}
             <div className="bg-white shadow-lg rounded-xl p-4">
               <h2 className="text-2xl font-semibold mb-4 text-indigo-600">
                 Starting Lineup
               </h2>
-              <div className="overflow-auto rounded-lg">
+              <div className="overflow-auto rounded-lg mb-6">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50 sticky top-0">
                     <tr>
@@ -348,6 +404,26 @@ const Tactics = ({ gameSaveId, teamId }) => {
                   </tbody>
                 </table>
               </div>
+
+              <h2 className="text-2xl font-semibold mb-4 text-indigo-600">
+                Substitutes
+              </h2>
+              <div className="overflow-auto rounded-lg">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
+                        Slot
+                      </th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
+                        Player
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>{renderSubstitutes()}</tbody>
+                </table>
+              </div>
+
               <div className="mt-6 flex space-x-3">
                 <button
                   onClick={handleSave}

@@ -1,4 +1,5 @@
-﻿using TheDugout.Models.Game;
+﻿using TheDugout.Models.Fixtures;
+using TheDugout.Models.Game;
 
 namespace TheDugout.Models.Matches
 {

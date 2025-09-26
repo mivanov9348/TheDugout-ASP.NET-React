@@ -1,4 +1,4 @@
-﻿using TheDugout.Models.Matches;
+﻿using TheDugout.Models.Fixtures;
 
 namespace TheDugout.Models.Competitions
 {

@@ -1,9 +1,10 @@
 ﻿using TheDugout.Models.Competitions;
 using TheDugout.Models.Game;
+using TheDugout.Models.Matches;
 using TheDugout.Models.Seasons;
 using TheDugout.Models.Teams;
 
-namespace TheDugout.Models.Matches
+namespace TheDugout.Models.Fixtures
 {
     public enum CompetitionType
     {

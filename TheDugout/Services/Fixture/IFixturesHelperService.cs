@@ -1,11 +1,11 @@
 ﻿using TheDugout.Models.Competitions;
-using TheDugout.Models.Matches;
+using TheDugout.Models.Fixtures;
 
 namespace TheDugout.Services.Fixture
 {
     public interface IFixturesHelperService
     {
-        Models.Matches.Fixture CreateFixture(
+        Models.Fixtures.Fixture CreateFixture(
             int gameSaveId,
             int seasonId,
             int homeTeamId,

@@ -5,8 +5,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using TheDugout.Data;
 using TheDugout.Models.Competitions;
+using TheDugout.Models.Fixtures;
 using TheDugout.Models.Game;
-using TheDugout.Models.Matches;
 using TheDugout.Models.Seasons;
 using TheDugout.Models.Teams;
 using TheDugout.Services.Season;
@@ -42,7 +42,7 @@ namespace TheDugout.Services.Fixture
 
             if (season == null) return;
 
-            var allFixtures = new List<Models.Matches.Fixture>();
+            var allFixtures = new List<Models.Fixtures.Fixture>();
 
             // 1) Подготвяме и разбъркваме отборите за всеки cup
             var cupTeamsMap = new Dictionary<int, List<TheDugout.Models.Teams.Team>>();
@@ -95,14 +95,14 @@ namespace TheDugout.Services.Fixture
                 await _context.SaveChangesAsync();
             }
         }
-        private List<Models.Matches.Fixture> GenerateFixturesForCup(
+        private List<Models.Fixtures.Fixture> GenerateFixturesForCup(
  Models.Competitions.Cup cup,
  List<TheDugout.Models.Teams.Team> teams,
  int gameSaveId,
  int seasonId,
  bool globalNeedsPrelim)
         {
-            var fixtures = new List<Models.Matches.Fixture>();
+            var fixtures = new List<Models.Fixtures.Fixture>();
             bool needsPrelim = NeedsPreliminaryRound(teams.Count);
             int prelimTeamsCount = GetTeamsInPrelimRound(teams.Count);
 

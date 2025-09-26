@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TheDugout.Data;
 using TheDugout.Models.Competitions;
-using TheDugout.Models.Matches;
+using TheDugout.Models.Fixtures;
 using TheDugout.Services.Fixture;
 
 
@@ -153,7 +153,7 @@ namespace TheDugout.Services.EuropeanCup
         }
         public async Task RecordFixtureResultAsync(int fixtureId, int homeGoals, int awayGoals, CancellationToken ct = default)
         {
-            var fixture = await _context.Set<Models.Matches.Fixture>()
+            var fixture = await _context.Set<Models.Fixtures.Fixture>()
                                    .Include(f => f.HomeTeam)
                                    .Include(f => f.AwayTeam)
                                    .FirstOrDefaultAsync(f => f.Id == fixtureId, ct)
@@ -175,7 +175,7 @@ namespace TheDugout.Services.EuropeanCup
             }
         }
 
-        private async Task UpdateStandingsAfterFixtureAsync(Models.Matches.Fixture fixture, CancellationToken ct = default)
+        private async Task UpdateStandingsAfterFixtureAsync(Models.Fixtures.Fixture fixture, CancellationToken ct = default)
         {
             // Called after saving fixture
             var cupPhase = fixture.EuropeanCupPhaseId.HasValue ? fixture.EuropeanCupPhaseId.Value : 0;
@@ -249,7 +249,7 @@ namespace TheDugout.Services.EuropeanCup
             await _context.SaveChangesAsync(ct);
 
             // get all played fixtures for that cup's league-phase(s) (only league-phase fixtures affect league standings)
-            var fixtures = await _context.Set<Models.Matches.Fixture>()
+            var fixtures = await _context.Set<Models.Fixtures.Fixture>()
                                     .Where(f => f.EuropeanCupPhaseId == europeanCupPhaseId && f.Status == FixtureStatus.Played)
                                     .ToListAsync(ct);
 
@@ -323,7 +323,7 @@ namespace TheDugout.Services.EuropeanCup
                               ?? throw new InvalidOperationException("No league phase.");
 
             // check if any scheduled/unplayed fixture exists
-            var anyUnplayed = await _context.Set<Models.Matches.Fixture>()
+            var anyUnplayed = await _context.Set<Models.Fixtures.Fixture>()
                                        .AnyAsync(f => f.EuropeanCupPhaseId == leaguePhase.Id && f.Status != FixtureStatus.Played, ct);
 
             if (anyUnplayed) return; // not ready
@@ -354,7 +354,7 @@ namespace TheDugout.Services.EuropeanCup
             if (!phase.PhaseTemplate.IsKnockout) throw new InvalidOperationException("Phase is not knockout.");
 
             // if two-legged combine pairs by matching unordered pair
-            var fixtures = await _context.Set<Models.Matches.Fixture>()
+            var fixtures = await _context.Set<Models.Fixtures.Fixture>()
                                     .Where(f => f.EuropeanCupPhaseId == europeanCupPhaseId && f.Status == FixtureStatus.Played)
                                     .ToListAsync(ct);
 
@@ -469,7 +469,7 @@ namespace TheDugout.Services.EuropeanCup
 
             // Generate fixtures in next phase using winners (random pairings)
             var winnersShuf = winners.OrderBy(_ => _rng.Next()).ToList();
-            var newFixtures = new List<Models.Matches.Fixture>();
+            var newFixtures = new List<Models.Fixtures.Fixture>();
             for (int i = 0; i < winnersShuf.Count; i += 2)
             {
                 if (i + 1 >= winnersShuf.Count) break; // odd leftover (shouldn't happen in standard bracket)

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TheDugout.Data;
+using TheDugout.Models.Fixtures;
 using TheDugout.Models.Matches;
 using TheDugout.Services.Match;
 
@@ -148,4 +149,19 @@ public class MatchesController : ControllerBase
 
         return Ok(view);
     }
+
+    [Authorize]
+    [HttpGet("active/{gameSaveId}")]
+    public async Task<IActionResult> GetActiveMatch(int gameSaveId)
+    {
+        var match = await _context.Matches
+            .Where(m => m.GameSaveId == gameSaveId && m.Status == MatchStatus.Live)
+            .OrderByDescending(m => m.Id)
+            .FirstOrDefaultAsync();
+
+        if (match == null) return Ok(null);
+
+        return Ok(new { match.Id, match.FixtureId });
+    }
+
 }

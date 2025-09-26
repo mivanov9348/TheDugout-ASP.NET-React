@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using TheDugout.Data;
 using TheDugout.Models.Competitions;
-using TheDugout.Models.Matches;
+using TheDugout.Models.Fixtures;
 using TheDugout.Services.Season;
 
 namespace TheDugout.Services.Fixture
@@ -50,7 +50,7 @@ namespace TheDugout.Services.Fixture
             var teamIds = cup.Teams.Select(t => t.TeamId).ToList();
 
             var existingPairs = new HashSet<string>();
-            var existing = await _context.Set<Models.Matches.Fixture>()
+            var existing = await _context.Set<Models.Fixtures.Fixture>()
                 .Where(f => f.EuropeanCupPhaseId == leaguePhase.Id)
                 .ToListAsync(ct);
 
@@ -58,7 +58,7 @@ namespace TheDugout.Services.Fixture
                 existingPairs.Add(_fixturesHelperService.PairKey(f.HomeTeamId, f.AwayTeamId));
 
             var homeCount = teamIds.ToDictionary(id => id, _ => 0);
-            var fixturesToAdd = new List<Models.Matches.Fixture>();
+            var fixturesToAdd = new List<Models.Fixtures.Fixture>();
 
             // Взимаме равномерно разпределени дати от календара
             var roundDates = _eurocupScheduleService.AssignEuropeanFixtures(season, rounds);
@@ -118,7 +118,7 @@ namespace TheDugout.Services.Fixture
                 throw new InvalidOperationException($"Expect 16 teams to generate knockout, got {top16.Count}.");
 
             var shuffled = top16.OrderBy(_ => _random.Next()).ToList();
-            var fixturesToAdd = new List<Models.Matches.Fixture>();
+            var fixturesToAdd = new List<Models.Fixtures.Fixture>();
 
             int gameSaveId = await _context.Set<Models.Competitions.EuropeanCup>()
                 .Where(c => c.Id == europeanCupId)

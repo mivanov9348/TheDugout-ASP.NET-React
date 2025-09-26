@@ -8,10 +8,8 @@ namespace TheDugout.Models.Players
 
         public int PlayerId { get; set; }
         public Player Player { get; set; }
-
         public int SeasonId { get; set; }
         public Season Season { get; set; }
-
         public int MatchesPlayed { get; set; }
         public int Goals { get; set; }
         public int Assists { get; set; }

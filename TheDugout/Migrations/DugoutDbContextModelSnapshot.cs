@@ -1687,6 +1687,10 @@ namespace TheDugout.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("SubstitutesJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("TacticId")
                         .HasColumnType("int");
 

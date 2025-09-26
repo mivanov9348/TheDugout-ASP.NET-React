@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TheDugout.Data;
-using TheDugout.Models.Matches;
+using TheDugout.Models.Fixtures;
 using TheDugout.Models.Messages;
 using TheDugout.Services.Game;
 using TheDugout.Services.Message;

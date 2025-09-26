@@ -2,6 +2,6 @@
 {
     public interface ICupScheduleService
     {
-        void AssignCupFixtures(List<Models.Matches.Fixture> fixtures, Models.Seasons.Season season);
+        void AssignCupFixtures(List<Models.Fixtures.Fixture> fixtures, Models.Seasons.Season season);
     }
 }

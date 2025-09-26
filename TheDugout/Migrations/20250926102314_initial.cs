@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace TheDugout.Migrations
 {
     /// <inheritdoc />
-    public partial class Initial : Migration
+    public partial class initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -295,7 +295,7 @@ namespace TheDugout.Migrations
                     EventTypeCode = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     OutcomeName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Template = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
-                    EventOutcomeId = table.Column<int>(type: "int", nullable: true)
+                    EventOutcomeId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -304,7 +304,8 @@ namespace TheDugout.Migrations
                         name: "FK_CommentaryTemplates_EventOutcomes_EventOutcomeId",
                         column: x => x.EventOutcomeId,
                         principalTable: "EventOutcomes",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -1024,6 +1025,7 @@ namespace TheDugout.Migrations
                     TeamId = table.Column<int>(type: "int", nullable: false),
                     TacticId = table.Column<int>(type: "int", nullable: false),
                     LineupJson = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    SubstitutesJson = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CustomName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false)
                 },
                 constraints: table =>

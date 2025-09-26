@@ -1,7 +1,7 @@
 ﻿
 using Microsoft.EntityFrameworkCore;
 using TheDugout.Data;
-using TheDugout.Models.Matches;
+using TheDugout.Models.Fixtures;
 using TheDugout.Models.Seasons;
 using TheDugout.Services.Season;
 
@@ -49,7 +49,7 @@ namespace TheDugout.Services.Fixture
             await _context.SaveChangesAsync();
         }
 
-        private List<Models.Matches.Fixture> GenerateLeagueFixturesCore(
+        private List<Models.Fixtures.Fixture> GenerateLeagueFixturesCore(
     int gameSaveId,
     int seasonId,
     int leagueId,
@@ -63,7 +63,7 @@ namespace TheDugout.Services.Fixture
             int rounds = teamCount - 1;
             int matchesPerRound = teamCount / 2;
 
-            var fixtures = new List<Models.Matches.Fixture>();
+            var fixtures = new List<Models.Fixtures.Fixture>();
 
             // --- First leg ---
             var rotation = new List<Models.Teams.Team>(teams);

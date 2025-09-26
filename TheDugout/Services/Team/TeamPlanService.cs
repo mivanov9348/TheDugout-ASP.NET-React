@@ -37,7 +37,8 @@ namespace TheDugout.Services.Team
             int teamId,
             int tacticId,
             string? customName,
-            Dictionary<string, string?> lineup)
+            Dictionary<string, string?> lineup,
+            Dictionary<string, string?>? substitutes = null)
         {
             var team = await _context.Teams
                 .Include(t => t.TeamTactic)
@@ -64,12 +65,15 @@ namespace TheDugout.Services.Team
             if (att < tactic.Forwards)
                 throw new InvalidOperationException($"Липсват нападатели ({att}/{tactic.Forwards}).");
 
-            // Ако има TeamTactic → ъпдейтваме
+            var lineupJson = System.Text.Json.JsonSerializer.Serialize(lineup);
+            var subsJson = System.Text.Json.JsonSerializer.Serialize(substitutes ?? new Dictionary<string, string?>());
+
             if (team.TeamTactic != null)
             {
                 team.TeamTactic.TacticId = tacticId;
                 team.TeamTactic.CustomName = customName ?? team.TeamTactic.CustomName;
-                team.TeamTactic.LineupJson = System.Text.Json.JsonSerializer.Serialize(lineup);
+                team.TeamTactic.LineupJson = lineupJson;
+                team.TeamTactic.SubstitutesJson = subsJson;
             }
             else
             {
@@ -78,7 +82,8 @@ namespace TheDugout.Services.Team
                     TeamId = teamId,
                     TacticId = tacticId,
                     CustomName = customName ?? "Default Tactic",
-                    LineupJson = System.Text.Json.JsonSerializer.Serialize(lineup)
+                    LineupJson = lineupJson,
+                    SubstitutesJson = subsJson
                 };
                 _context.TeamTactics.Add(newTactic);
                 team.TeamTactic = newTactic;
@@ -124,12 +129,26 @@ namespace TheDugout.Services.Team
                 index = 1;
                 foreach (var p in att) lineup.Add($"ATT{index++}", p.Id.ToString());
 
+                // Резерви като Dictionary със SUB ключове
+                var startersIds = gk.Concat(df).Concat(mid).Concat(att).Select(p => p.Id).ToHashSet();
+                var subsList = players.Where(p => !startersIds.Contains(p.Id))
+                                      .Select(p => p.Id.ToString())
+                                      .ToList();
+
+                var subsDict = new Dictionary<string, string?>();
+                int subIndex = 1;
+                foreach (var s in subsList)
+                {
+                    subsDict.Add($"SUB{subIndex++}", s);
+                }
+
                 var tactic = new TeamTactic
                 {
                     TeamId = team.Id,
                     TacticId = defaultTactic.Id,
                     CustomName = "Default 4-4-2",
-                    LineupJson = System.Text.Json.JsonSerializer.Serialize(lineup)
+                    LineupJson = System.Text.Json.JsonSerializer.Serialize(lineup),
+                    SubstitutesJson = System.Text.Json.JsonSerializer.Serialize(subsDict)
                 };
 
                 _context.TeamTactics.Add(tactic);
@@ -149,13 +168,11 @@ namespace TheDugout.Services.Team
             if (team == null)
                 throw new Exception("Team not found");
 
-            // 1. Избор на тактика – засега винаги 4-4-2
             var tactic = await _context.Tactics.FirstOrDefaultAsync(t =>
                 t.Defenders == 4 && t.Midfielders == 4 && t.Forwards == 2);
             if (tactic == null)
                 throw new Exception("Missing default 4-4-2 tactic");
 
-            // 2. Подреждане на играчите по позиции (тук е basic – по най-висока сума от атрибути)
             var gk = team.Players.Where(p => p.Position.Code == "GK")
                 .OrderByDescending(p => p.Attributes.Sum(a => a.Value))
                 .Take(1).ToList();
@@ -182,10 +199,27 @@ namespace TheDugout.Services.Team
             index = 1;
             foreach (var p in att) lineup.Add($"ATT{index++}", p.Id.ToString());
 
-            // 3. Сетваме тактиката през вече съществуващия метод
-            return await SetTeamTacticAsync(team.Id, tactic.Id, "CPU Auto 4-4-2", lineup);
+            var startersIds = gk.Concat(df).Concat(mid).Concat(att).Select(p => p.Id).ToHashSet();
+            var subsList = team.Players
+                .Where(p => !startersIds.Contains(p.Id))
+                .OrderByDescending(p => p.Attributes.Sum(a => a.Value))
+                .Select(p => p.Id.ToString())
+                .ToList();
+
+            var subsDict = new Dictionary<string, string?>();
+            int subIndex = 1;
+            foreach (var s in subsList)
+            {
+                subsDict.Add($"SUB{subIndex++}", s);
+            }
+
+            return await SetTeamTacticAsync(
+                team.Id,
+                tactic.Id,
+                "CPU Auto 4-4-2",
+                lineup,
+                subsDict
+            );
         }
-
-
     }
 }

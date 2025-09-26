@@ -12,8 +12,8 @@ using TheDugout.Data;
 namespace TheDugout.Migrations
 {
     [DbContext(typeof(DugoutDbContext))]
-    [Migration("20250925080030_Initial")]
-    partial class Initial
+    [Migration("20250926102314_initial")]
+    partial class initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -876,7 +876,7 @@ namespace TheDugout.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("EventOutcomeId")
+                    b.Property<int>("EventOutcomeId")
                         .HasColumnType("int");
 
                     b.Property<string>("EventTypeCode")
@@ -1690,6 +1690,10 @@ namespace TheDugout.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("SubstitutesJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("TacticId")
                         .HasColumnType("int");
 
@@ -2240,9 +2244,13 @@ namespace TheDugout.Migrations
 
             modelBuilder.Entity("TheDugout.Models.Matches.CommentaryTemplate", b =>
                 {
-                    b.HasOne("TheDugout.Models.Matches.EventOutcome", null)
+                    b.HasOne("TheDugout.Models.Matches.EventOutcome", "EventOutcome")
                         .WithMany("CommentaryTemplates")
-                        .HasForeignKey("EventOutcomeId");
+                        .HasForeignKey("EventOutcomeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("EventOutcome");
                 });
 
             modelBuilder.Entity("TheDugout.Models.Matches.EventOutcome", b =>

@@ -50,29 +50,30 @@ export default function Match() {
   const { home, away, minute, status } = match;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-white p-4 flex flex-col">
-      <div className="text-center mb-2 text-gray-400 italic">
-        {status} - {minute}&apos;
-      </div>
-
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-white p-6 flex flex-col">
       {/* Scoreboard */}
-      <div className="w-full flex justify-between items-center bg-gray-800 rounded-2xl shadow-lg p-4 text-2xl font-bold">
-        <span>{home.name}</span>
-        <span className="text-4xl">
-          {home.score} : {away.score}
-        </span>
-        <span>{away.name}</span>
+      <div className="w-full flex flex-col items-center bg-gray-800 rounded-2xl shadow-lg p-4 border border-gray-700">
+        <div className="w-full flex justify-between items-center text-2xl font-bold">
+          <span className="truncate">{home.name}</span>
+          <span className="text-4xl text-sky-400 drop-shadow-lg">
+            {home.score} : {away.score}
+          </span>
+          <span className="truncate">{away.name}</span>
+        </div>
+        <div className="text-sm text-gray-400 mt-1 italic">
+          {status} - {minute}&apos;
+        </div>
       </div>
 
       {/* Content */}
-      <div className="flex flex-1 mt-4 gap-4">
+      <div className="flex flex-1 mt-6 gap-6">
         <TeamStats team={home} />
-        <div className="w-2/4 bg-gray-900 rounded-xl p-4 flex flex-col shadow-inner">
-          <h2 className="text-center font-bold text-xl mb-2">
+        <div className="w-2/4 bg-gray-900 rounded-xl p-4 flex flex-col shadow-inner border border-gray-700">
+          <h2 className="text-center font-bold text-xl mb-3 text-sky-300">
             Live Commentary
           </h2>
-          <div className="flex-1 overflow-y-auto space-y-2 text-gray-400">
-            <p>No events yet...</p>
+          <div className="flex-1 overflow-y-auto space-y-2 text-gray-300">
+            <p className="italic text-gray-500">No events yet...</p>
           </div>
         </div>
         <TeamStats team={away} />
@@ -83,17 +84,19 @@ export default function Match() {
 
 function TeamStats({ team }) {
   return (
-    <div className="w-1/4 bg-gray-800 rounded-xl p-3 overflow-y-auto shadow-lg">
-      <h2 className="text-center font-bold mb-2">{team.name}</h2>
+    <div className="w-1/4 bg-gray-800 rounded-xl p-3 overflow-y-auto shadow-lg border border-gray-700">
+      <h2 className="text-center font-bold text-lg mb-3 text-sky-400">
+        {team.name}
+      </h2>
 
       {/* Starters */}
-      <h3 className="text-green-400 text-sm font-semibold mt-2 mb-1">
+      <h3 className="text-green-400 text-sm font-semibold mt-2 mb-1 uppercase tracking-wide">
         Starters
       </h3>
       <PlayerTable players={team.starters} />
 
       {/* Subs */}
-      <h3 className="text-yellow-400 text-sm font-semibold mt-4 mb-1">
+      <h3 className="text-yellow-400 text-sm font-semibold mt-4 mb-1 uppercase tracking-wide">
         Substitutes
       </h3>
       <PlayerTable players={team.subs} />
@@ -103,20 +106,33 @@ function TeamStats({ team }) {
 
 function PlayerTable({ players }) {
   return (
-    <table className="w-full text-sm mb-2">
+    <table className="w-full text-xs md:text-sm mb-2 border-collapse">
       <thead>
-        <tr className="text-gray-400 border-b border-gray-700">
-          <th>#</th>
-          <th>Pos</th>
-          <th>Name</th>
+        <tr className="text-gray-400 border-b border-gray-700 text-left">
+          {players.some((p) => p.slot) && <th className="py-1 px-2">Slot</th>}
+          <th className="py-1 px-2">#</th>
+          <th className="py-1 px-2">Pos</th>
+          <th className="py-1 px-2">Name</th>
+          <th className="py-1 px-2 text-center">G</th>
+          <th className="py-1 px-2 text-center">P</th>
+          <th className="py-1 px-2 text-center">A</th>
         </tr>
       </thead>
       <tbody>
         {players.map((p, i) => (
-          <tr key={i} className="border-b border-gray-700">
-            <td>{p.number}</td>
-            <td>{p.position}</td>
-            <td>{p.name}</td>
+          <tr
+            key={i}
+            className={`border-b border-gray-700 hover:bg-gray-700/40 transition ${
+              i % 2 === 0 ? "bg-gray-800/40" : "bg-gray-900/40"
+            }`}
+          >
+            {p.slot && <td className="py-1 px-2">{p.slot}</td>}
+            <td className="py-1 px-2">{p.number}</td>
+            <td className="py-1 px-2">{p.position}</td>
+            <td className="py-1 px-2">{p.name}</td>
+            <td className="py-1 px-2 text-center">{p.goals ?? 0}</td>
+            <td className="py-1 px-2 text-center">{p.passes ?? 0}</td>
+            <td className="py-1 px-2 text-center">{p.assists ?? 0}</td>
           </tr>
         ))}
       </tbody>

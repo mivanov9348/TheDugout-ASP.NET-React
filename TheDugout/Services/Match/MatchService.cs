@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TheDugout;
 using TheDugout.Data;
+using TheDugout.Models.Fixtures;
 using TheDugout.Models.Game;
 using TheDugout.Models.Matches;
 using TheDugout.Models.Teams;
@@ -15,7 +16,7 @@ public class MatchService : IMatchService
         _context = context;
     }
 
-    public async Task<TheDugout.Models.Matches.Match> CreateMatchFromFixtureAsync(Fixture fixture, GameSave gameSave)
+    public async Task<Match> CreateMatchFromFixtureAsync(Fixture fixture, GameSave gameSave)
     {
         if (fixture == null) throw new ArgumentNullException(nameof(fixture));
         if (gameSave == null) throw new ArgumentNullException(nameof(gameSave));
@@ -54,20 +55,20 @@ public class MatchService : IMatchService
         return BuildMatchView(match, fixture);
     }
 
-    public async Task<object?> GetMatchViewByIdAsync(int matchId)
-    {
-        var match = await _context.Matches
-                   .Include(m => m.Fixture).ThenInclude(f => f.HomeTeam).ThenInclude(t => t.Players).ThenInclude(p => p.Position)
-                   .Include(m => m.Fixture).ThenInclude(f => f.HomeTeam).ThenInclude(t => t.TeamTactic)
-                   .Include(m => m.Fixture).ThenInclude(f => f.AwayTeam).ThenInclude(t => t.Players).ThenInclude(p => p.Position)
-                   .Include(m => m.Fixture).ThenInclude(f => f.AwayTeam).ThenInclude(t => t.TeamTactic)
-                   .FirstOrDefaultAsync(m => m.Id == matchId);
+        public async Task<object?> GetMatchViewByIdAsync(int matchId)
+        {
+            var match = await _context.Matches
+                       .Include(m => m.Fixture).ThenInclude(f => f.HomeTeam).ThenInclude(t => t.Players).ThenInclude(p => p.Position)
+                       .Include(m => m.Fixture).ThenInclude(f => f.HomeTeam).ThenInclude(t => t.TeamTactic)
+                       .Include(m => m.Fixture).ThenInclude(f => f.AwayTeam).ThenInclude(t => t.Players).ThenInclude(p => p.Position)
+                       .Include(m => m.Fixture).ThenInclude(f => f.AwayTeam).ThenInclude(t => t.TeamTactic)
+                       .FirstOrDefaultAsync(m => m.Id == matchId);
 
 
-        if (match == null) return null;
+            if (match == null) return null;
 
-        return BuildMatchView(match, match.Fixture);
-    }
+            return BuildMatchView(match, match.Fixture);
+        }
 
     public async Task CompleteMatchAndSaveResultAsync(Match match, int homeGoals, int awayGoals)
     {
@@ -101,24 +102,64 @@ public class MatchService : IMatchService
     {
         object BuildTeamView(Team team)
         {
-            var tactic = team.TeamTactic; 
+            var tactic = team.TeamTactic;
             var lineupIds = new HashSet<int>();
+            var subsList = new List<object>();
 
-            if (tactic != null && !string.IsNullOrWhiteSpace(tactic.LineupJson))
+            if (tactic != null)
             {
-                try
+                // lineup
+                if (!string.IsNullOrWhiteSpace(tactic.LineupJson))
                 {
-                    var dict = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(tactic.LineupJson);
-                    if (dict != null)
+                    try
                     {
-                        foreach (var val in dict.Values)
+                        var dict = System.Text.Json.JsonSerializer
+                            .Deserialize<Dictionary<string, string>>(tactic.LineupJson);
+                        if (dict != null)
                         {
-                            if (int.TryParse(val, out var id))
-                                lineupIds.Add(id);
+                            foreach (var val in dict.Values)
+                            {
+                                if (int.TryParse(val, out var id))
+                                    lineupIds.Add(id);
+                            }
                         }
                     }
+                    catch { /* ignore */ }
                 }
-                catch { /* ignore parse errors */ }
+
+                // substitutes
+                if (!string.IsNullOrWhiteSpace(tactic.SubstitutesJson))
+                {
+                    try
+                    {
+                        var subsDict = System.Text.Json.JsonSerializer
+                            .Deserialize<Dictionary<string, string>>(tactic.SubstitutesJson);
+
+                        if (subsDict != null)
+                        {
+                            foreach (var kv in subsDict.OrderBy(k => k.Key)) // SUB1, SUB2, SUB3…
+                            {
+                                if (int.TryParse(kv.Value, out var playerId))
+                                {
+                                    var p = team.Players.FirstOrDefault(x => x.Id == playerId);
+                                    if (p != null)
+                                    {
+                                        subsList.Add(new
+                                        {
+                                            slot = kv.Key,
+                                            id = p.Id,
+                                            number = p.KitNumber,
+                                            position = p.Position?.Code ?? "N/A",
+                                            name = $"{p.FirstName} {p.LastName}",
+                                            stats = new { goals = 0, passes = 0 }
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    catch { /* ignore */ }
+                }
             }
 
             var starters = team.Players
@@ -132,22 +173,11 @@ public class MatchService : IMatchService
                     stats = new { goals = 0, passes = 0 }
                 });
 
-            var substitutes = team.Players
-                .Where(p => !lineupIds.Contains(p.Id))
-                .Select(p => new
-                {
-                    id = p.Id,
-                    number = p.KitNumber,
-                    position = p.Position?.Code ?? "N/A",
-                    name = $"{p.FirstName} {p.LastName}",
-                    stats = new { goals = 0, passes = 0 }
-                });
-
             return new
             {
                 name = team.Name,
                 starters,
-                substitutes
+                subs = subsList
             };
         }
 

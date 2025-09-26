@@ -61,14 +61,17 @@ public class TacticsController : ControllerBase
             teamId,
             request.TacticId,
             request.CustomName,
-            request.Lineup
+            request.Lineup,
+            request.Substitutes
         );
 
         return Ok(new
         {
             tactic.TacticId,
             tactic.CustomName,
-            tactic.LineupJson
+            tactic.LineupJson,
+            tactic.SubstitutesJson
         });
     }
+
 }
