@@ -31,8 +31,8 @@ export default function MatchPreview() {
       headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
     })
       .then((res) => res.json())
-      .then(() => {
-        navigate(`/match/${fixtureId}`);
+      .then((data) => {
+        navigate(`/match/${data.matchId}`); 
       })
       .catch((err) => console.error("Error starting match", err));
   };

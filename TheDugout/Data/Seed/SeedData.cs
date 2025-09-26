@@ -393,7 +393,7 @@ public static class SeedData
         var commentaryTemplates = await ReadJsonAsync<List<SeedDtos.CommentaryTemplateDto>>(commentaryFile);
 
         var dbOutcomesByKey = await db.EventOutcomes
-            .ToDictionaryAsync(x => (x.EventTypeCode, x.Name)); // ключ по код + име
+            .ToDictionaryAsync(x => (x.EventTypeCode, x.Name)); 
 
         var dbCommentary = await db.CommentaryTemplates.ToListAsync();
 

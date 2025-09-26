@@ -16,6 +16,7 @@ using TheDugout.Services.Fixture;
 using TheDugout.Services.Game;
 using TheDugout.Services.Interfaces;
 using TheDugout.Services.League;
+using TheDugout.Services.Match;
 using TheDugout.Services.Message;
 using TheDugout.Services.Players;
 using TheDugout.Services.Season;
@@ -74,7 +75,7 @@ builder.Services.AddScoped<IMessageOrchestrator, MessageOrchestrator>();
 builder.Services.AddScoped<IGameDayService, GameDayService>();
 builder.Services.AddScoped<ISeasonEventService, SeasonEventService>();
 builder.Services.AddScoped<ICPUManagerService, CpuManagerService>();
-
+builder.Services.AddScoped<IMatchService, MatchService>();
 
 builder.Services.AddCors(options =>
 {
