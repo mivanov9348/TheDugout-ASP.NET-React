@@ -78,6 +78,7 @@ builder.Services.AddScoped<ISeasonEventService, SeasonEventService>();
 builder.Services.AddScoped<ICPUManagerService, CpuManagerService>();
 builder.Services.AddScoped<IMatchService, MatchService>();
 builder.Services.AddScoped<IMatchEngine, MatchEngine>();
+builder.Services.AddScoped<IMatchEventService, MatchEventService>();
 
 builder.Services.AddCors(options =>
 {

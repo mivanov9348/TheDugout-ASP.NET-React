@@ -10,6 +10,13 @@ namespace TheDugout.Models.Matches
         Played = 2,
         Cancelled = 3
     }
+
+    public enum MatchTurn
+    {
+        Home = 1,
+        Away = 2
+    }
+
     public class Match
     {
         public int Id { get; set; }
@@ -21,10 +28,11 @@ namespace TheDugout.Models.Matches
         public Fixture Fixture { get; set; } = null!;
 
         public int CurrentMinute { get; set; } = 0;
-        public MatchStatus Status { get; set; } = MatchStatus.Live;
+
+        public MatchStatus Status { get; set; } = MatchStatus.Scheduled;
+
+        public MatchTurn CurrentTurn { get; set; } = MatchTurn.Home;
 
         public ICollection<MatchEvent> Events { get; set; } = new List<MatchEvent>();
     }
-
-
 }

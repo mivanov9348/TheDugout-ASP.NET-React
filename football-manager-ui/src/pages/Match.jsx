@@ -47,10 +47,17 @@ export default function Match() {
     );
   }
 
-  const { home, away, minute, status } = match;
+  const { home, away, minute } = match;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-white p-6 flex flex-col">
+      {/* Start Button */}
+      <div className="w-full flex justify-center mb-4">
+        <button className="px-6 py-2 bg-sky-600 hover:bg-sky-500 rounded-xl shadow-md text-lg font-bold transition">
+          Start
+        </button>
+      </div>
+
       {/* Scoreboard */}
       <div className="w-full flex flex-col items-center bg-gray-800 rounded-2xl shadow-lg p-4 border border-gray-700">
         <div className="w-full flex justify-between items-center text-2xl font-bold">
@@ -60,8 +67,10 @@ export default function Match() {
           </span>
           <span className="truncate">{away.name}</span>
         </div>
-        <div className="text-sm text-gray-400 mt-1 italic">
-          {status} - {minute}&apos;
+        <div className="text-sm mt-2">
+          <span className="px-3 py-1 rounded-full bg-gray-700 text-sky-300 font-semibold shadow-sm">
+            {minute}&apos;
+          </span>
         </div>
       </div>
 
