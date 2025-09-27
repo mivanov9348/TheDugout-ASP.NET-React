@@ -24,7 +24,7 @@ namespace TheDugout.Services.Fixture
           int? europeanCupPhaseId = null
       )
         {
-            return new Models.Matches.Fixture
+            return new Models.Fixtures.Fixture
             {
                 GameSaveId = gameSaveId,
                 SeasonId = seasonId,

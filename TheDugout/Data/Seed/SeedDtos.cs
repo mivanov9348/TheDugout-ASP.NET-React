@@ -77,7 +77,9 @@ namespace TheDugout.Data.Seed
             string Name,
             string EventTypeCode,
             bool ChangesPossession,
-            int Weight
+            int Weight,
+            int RangeMin,
+            int RangeMax
         );
 
         public record CommentaryTemplateDto(
@@ -85,5 +87,18 @@ namespace TheDugout.Data.Seed
             string OutcomeName,
             string Template
         );
+
+        public class EventAttributeWeightDto
+        {
+            public string EventTypeCode { get; set; } = string.Empty;
+            public List<AttributeWeightDto> Attributes { get; set; } = new();
+        }
+
+        public class AttributeWeightDto
+        {
+            public string AttributeCode { get; set; } = string.Empty;
+            public double Weight { get; set; }
+        }
+
     }
 }

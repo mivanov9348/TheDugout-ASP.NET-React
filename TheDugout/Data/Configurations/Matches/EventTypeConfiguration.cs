@@ -19,6 +19,11 @@ namespace TheDugout.Data.Configurations.Matches
             builder.Property(et => et.Name)
                 .IsRequired()
                 .HasMaxLength(100);
+
+            builder.HasMany(et => et.AttributeWeights)
+                .WithOne(eaw => eaw.EventType)
+                .HasForeignKey(eaw => eaw.EventTypeCode)
+                .HasPrincipalKey(et => et.Code);
         }
     }
 

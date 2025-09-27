@@ -1,0 +1,78 @@
+[
+  {
+    "EventTypeCode": "PAS",
+    "Attributes": [
+      { "AttributeCode": "PAS", "Weight": 0.5 },
+      { "AttributeCode": "VIS", "Weight": 0.3 },
+      { "AttributeCode": "DEC", "Weight": 0.2 }
+    ]
+  },
+  {
+    "EventTypeCode": "SHT",
+    "Attributes": [
+      { "AttributeCode": "FIN", "Weight": 0.5 },
+      { "AttributeCode": "COM", "Weight": 0.2 },
+      { "AttributeCode": "POS", "Weight": 0.2 },
+      { "AttributeCode": "STR", "Weight": 0.1 }
+    ]
+  },
+  {
+    "EventTypeCode": "DRI",
+    "Attributes": [
+      { "AttributeCode": "DRI", "Weight": 0.5 },
+      { "AttributeCode": "AGI", "Weight": 0.2 },
+      { "AttributeCode": "PAC", "Weight": 0.2 },
+      { "AttributeCode": "COM", "Weight": 0.1 }
+    ]
+  },
+  {
+    "EventTypeCode": "TAC",
+    "Attributes": [
+      { "AttributeCode": "TAC", "Weight": 0.5 },
+      { "AttributeCode": "ANT", "Weight": 0.3 },
+      { "AttributeCode": "STR", "Weight": 0.2 }
+    ]
+  },
+  {
+    "EventTypeCode": "COR",
+    "Attributes": [
+      { "AttributeCode": "CRS", "Weight": 0.5 },
+      { "AttributeCode": "VIS", "Weight": 0.2 },
+      { "AttributeCode": "DEC", "Weight": 0.2 },
+      { "AttributeCode": "COM", "Weight": 0.1 }
+    ]
+  },
+  {
+    "EventTypeCode": "SAV",
+    "Attributes": [
+      { "AttributeCode": "REF", "Weight": 0.6 },
+      { "AttributeCode": "HAN", "Weight": 0.3 },
+      { "AttributeCode": "AGI", "Weight": 0.1 }
+    ]
+  },
+  {
+    "EventTypeCode": "FOU",
+    "Attributes": [
+      { "AttributeCode": "TAC", "Weight": 0.4 },
+      { "AttributeCode": "DEC", "Weight": 0.3 },
+      { "AttributeCode": "AGI", "Weight": 0.2 },
+      { "AttributeCode": "STR", "Weight": 0.1 }
+    ]
+  },
+  {
+    "EventTypeCode": "OUT",
+    "Attributes": [
+      { "AttributeCode": "DEC", "Weight": 0.4 },
+      { "AttributeCode": "PAS", "Weight": 0.3 },
+      { "AttributeCode": "VIS", "Weight": 0.3 }
+    ]
+  },
+  {
+    "EventTypeCode": "OFF",
+    "Attributes": [
+      { "AttributeCode": "ANT", "Weight": 0.5 },
+      { "AttributeCode": "POS", "Weight": 0.3 },
+      { "AttributeCode": "DEC", "Weight": 0.2 }
+    ]
+  }
+]

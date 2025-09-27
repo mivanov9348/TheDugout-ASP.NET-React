@@ -19,8 +19,6 @@ namespace TheDugout.Data.Configurations.Matches
                 .IsRequired()
                 .HasMaxLength(100);
 
-            builder.Property(eo => eo.Weight)
-                .HasDefaultValue(1);
         }
     }
 

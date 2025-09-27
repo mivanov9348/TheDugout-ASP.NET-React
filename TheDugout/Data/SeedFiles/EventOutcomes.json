@@ -1,30 +1,144 @@
 [
-  { "Name": "Success", "ChangesPossession": false, "Weight": 80, "EventTypeCode": "PAS" },
-  { "Name": "Fail", "ChangesPossession": true, "Weight": 20, "EventTypeCode": "PAS" },
+  {
+    "Name": "Success",
+    "RangeMin": 61,
+    "RangeMax": 100,
+    "ChangesPossession": false,
+    "EventTypeCode": "PAS"
+  },
+  {
+    "Name": "Fail",
+    "RangeMin": 0,
+    "RangeMax": 60,
+    "ChangesPossession": true,
+    "EventTypeCode": "PAS"
+  },
 
-  { "Name": "Goal", "ChangesPossession": false, "Weight": 30, "EventTypeCode": "SHT" },
-  { "Name": "Saved", "ChangesPossession": true, "Weight": 25, "EventTypeCode": "SHT" },
-  { "Name": "Out", "ChangesPossession": true, "Weight": 25, "EventTypeCode": "SHT" },
-  { "Name": "Blocked", "ChangesPossession": true, "Weight": 20, "EventTypeCode": "SHT" },
+  {
+    "Name": "Goal",
+    "RangeMin": 91,
+    "RangeMax": 100,
+    "ChangesPossession": false,
+    "EventTypeCode": "SHT"
+  },
+  {
+    "Name": "Saved",
+    "RangeMin": 61,
+    "RangeMax": 90,
+    "ChangesPossession": true,
+    "EventTypeCode": "SHT"
+  },
+  {
+    "Name": "Blocked",
+    "RangeMin": 41,
+    "RangeMax": 60,
+    "ChangesPossession": true,
+    "EventTypeCode": "SHT"
+  },
+  {
+    "Name": "Out",
+    "RangeMin": 0,
+    "RangeMax": 40,
+    "ChangesPossession": true,
+    "EventTypeCode": "SHT"
+  },
 
-  { "Name": "Success", "ChangesPossession": false, "Weight": 100, "EventTypeCode": "GOL" },
+  {
+    "Name": "Success",
+    "RangeMin": 0,
+    "RangeMax": 100,
+    "ChangesPossession": false,
+    "EventTypeCode": "GOL"
+  },
 
-  { "Name": "Success", "ChangesPossession": true, "Weight": 70, "EventTypeCode": "SAV" },
-  { "Name": "Fail", "ChangesPossession": false, "Weight": 30, "EventTypeCode": "SAV" },
+  {
+    "Name": "Success",
+    "RangeMin": 51,
+    "RangeMax": 100,
+    "ChangesPossession": true,
+    "EventTypeCode": "SAV"
+  },
+  {
+    "Name": "Fail",
+    "RangeMin": 0,
+    "RangeMax": 50,
+    "ChangesPossession": false,
+    "EventTypeCode": "SAV"
+  },
 
-  { "Name": "Success", "ChangesPossession": true, "Weight": 60, "EventTypeCode": "FOU" },
-  { "Name": "Fail", "ChangesPossession": false, "Weight": 40, "EventTypeCode": "FOU" },
+  {
+    "Name": "Success",
+    "RangeMin": 41,
+    "RangeMax": 100,
+    "ChangesPossession": true,
+    "EventTypeCode": "FOU"
+  },
+  {
+    "Name": "Fail",
+    "RangeMin": 0,
+    "RangeMax": 40,
+    "ChangesPossession": false,
+    "EventTypeCode": "FOU"
+  },
 
-  { "Name": "Success", "ChangesPossession": false, "Weight": 65, "EventTypeCode": "COR" },
-  { "Name": "Fail", "ChangesPossession": true, "Weight": 35, "EventTypeCode": "COR" },
+  {
+    "Name": "Success",
+    "RangeMin": 66,
+    "RangeMax": 100,
+    "ChangesPossession": false,
+    "EventTypeCode": "COR"
+  },
+  {
+    "Name": "Fail",
+    "RangeMin": 0,
+    "RangeMax": 65,
+    "ChangesPossession": true,
+    "EventTypeCode": "COR"
+  },
 
-  { "Name": "Success", "ChangesPossession": true, "Weight": 100, "EventTypeCode": "OUT" },
+  {
+    "Name": "Success",
+    "RangeMin": 0,
+    "RangeMax": 100,
+    "ChangesPossession": true,
+    "EventTypeCode": "OUT"
+  },
 
-  { "Name": "Success", "ChangesPossession": true, "Weight": 55, "EventTypeCode": "TAC" },
-  { "Name": "Fail", "ChangesPossession": false, "Weight": 45, "EventTypeCode": "TAC" },
+  {
+    "Name": "Success",
+    "RangeMin": 56,
+    "RangeMax": 100,
+    "ChangesPossession": true,
+    "EventTypeCode": "TAC"
+  },
+  {
+    "Name": "Fail",
+    "RangeMin": 0,
+    "RangeMax": 55,
+    "ChangesPossession": false,
+    "EventTypeCode": "TAC"
+  },
 
-  { "Name": "Success", "ChangesPossession": true, "Weight": 100, "EventTypeCode": "OFF" },
+  {
+    "Name": "Success",
+    "RangeMin": 0,
+    "RangeMax": 100,
+    "ChangesPossession": true,
+    "EventTypeCode": "OFF"
+  },
 
-  { "Name": "Success", "ChangesPossession": false, "Weight": 65, "EventTypeCode": "DRI" },
-  { "Name": "Fail", "ChangesPossession": true, "Weight": 35, "EventTypeCode": "DRI" }
+  {
+    "Name": "Success",
+    "RangeMin": 66,
+    "RangeMax": 100,
+    "ChangesPossession": false,
+    "EventTypeCode": "DRI"
+  },
+  {
+    "Name": "Fail",
+    "RangeMin": 0,
+    "RangeMax": 65,
+    "ChangesPossession": true,
+    "EventTypeCode": "DRI"
+  }
 ]

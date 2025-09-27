@@ -332,20 +332,63 @@ public static class SeedData
                 db.EventTypes.Add(new EventType
                 {
                     Code = et.Code,
-                    Name = et.Name,
-                    BaseSuccessRate = et.BaseSuccessRate
+                    Name = et.Name
                 });
             }
             else
             {
-                if (existing.Name != et.Name || existing.BaseSuccessRate != et.BaseSuccessRate)
+                if (existing.Name != et.Name)
                 {
                     existing.Name = et.Name;
-                    existing.BaseSuccessRate = et.BaseSuccessRate;
                     db.EventTypes.Update(existing);
                 }
             }
         }
+        await db.SaveChangesAsync();
+
+        // 12) EventAttributeWeights
+        var eventWeightsFile = Path.Combine(seedDir, "matchEventWeights.json");
+        var eventWeights = await ReadJsonAsync<List<SeedDtos.EventAttributeWeightDto>>(eventWeightsFile);
+
+        var dbEventTypesWithAttrs = await db.EventTypes
+            .Include(et => et.AttributeWeights)
+            .ToListAsync();
+
+        var dbAttributes = await db.PlayerAttributes.ToListAsync();
+
+        foreach (var ew in eventWeights)
+        {
+            var eventType = dbEventTypesWithAttrs.FirstOrDefault(x => x.Code == ew.EventTypeCode);
+            if (eventType == null) continue;
+
+            foreach (var attr in ew.Attributes)
+            {
+                var existing = eventType.AttributeWeights.FirstOrDefault(x => x.AttributeCode == attr.AttributeCode);
+                if (existing == null)
+                {
+                    var playerAttr = dbAttributes.FirstOrDefault(a => a.Attribute.Code == attr.AttributeCode);
+                    if (playerAttr == null) continue;
+
+                    db.EventAttributeWeights.Add(new EventAttributeWeight
+                    {
+                        EventTypeCode = ew.EventTypeCode,
+                        EventType = eventType,
+                        AttributeCode = attr.AttributeCode,
+                        Attribute = playerAttr,
+                        Weight = attr.Weight
+                    });
+                }
+                else
+                {
+                    if (Math.Abs(existing.Weight - attr.Weight) > 0.0001)
+                    {
+                        existing.Weight = attr.Weight;
+                        db.EventAttributeWeights.Update(existing);
+                    }
+                }
+            }
+        }
+
         await db.SaveChangesAsync();
 
         // 12) EventOutcomes
@@ -371,14 +414,16 @@ public static class SeedData
                     EventTypeId = type.Id,
                     EventTypeCode = eo.EventTypeCode,
                     ChangesPossession = eo.ChangesPossession,
-                    Weight = eo.Weight
+                    RangeMin = eo.RangeMin,
+                    RangeMax = eo.RangeMax
                 });
             }
             else
             {
                 bool needsUpdate = false;
 
-                if (existing.Weight != eo.Weight) { existing.Weight = eo.Weight; needsUpdate = true; }
+                if (existing.RangeMin != eo.RangeMin) { existing.RangeMin = eo.RangeMin; needsUpdate = true; }
+                if (existing.RangeMax != eo.RangeMax) { existing.RangeMax = eo.RangeMax; needsUpdate = true; }
                 if (existing.ChangesPossession != eo.ChangesPossession) { existing.ChangesPossession = eo.ChangesPossession; needsUpdate = true; }
 
                 if (needsUpdate)

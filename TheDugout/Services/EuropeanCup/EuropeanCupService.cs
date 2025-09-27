@@ -477,7 +477,7 @@ namespace TheDugout.Services.EuropeanCup
                 int b = winnersShuf[i + 1];
                 if (nextTemplate.IsTwoLegged)
                 {
-                    newFixtures.Add(new Models.Matches.Fixture
+                    newFixtures.Add(new Models.Fixtures.Fixture
                     {
                         CompetitionType = CompetitionType.EuropeanCup,
                         EuropeanCupPhaseId = nextPhase.Id,
@@ -488,7 +488,7 @@ namespace TheDugout.Services.EuropeanCup
                         Status = FixtureStatus.Scheduled,
                         GameSaveId = cup.GameSaveId
                     });
-                    newFixtures.Add(new Models.Matches.Fixture
+                    newFixtures.Add(new Models.Fixtures.Fixture
                     {
                         CompetitionType = CompetitionType.EuropeanCup,
                         EuropeanCupPhaseId = nextPhase.Id,
@@ -502,7 +502,7 @@ namespace TheDugout.Services.EuropeanCup
                 }
                 else
                 {
-                    newFixtures.Add(new Models.Matches.Fixture
+                    newFixtures.Add(new Models.Fixtures.Fixture
                     {
                         CompetitionType = CompetitionType.EuropeanCup,
                         EuropeanCupPhaseId = nextPhase.Id,
