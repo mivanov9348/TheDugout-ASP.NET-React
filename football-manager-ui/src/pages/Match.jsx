@@ -55,6 +55,13 @@ export default function Match() {
       setMatch((prev) => {
         if (!prev) return prev;
 
+        const newComment = data.matchEvent
+          ? {
+              minute: data.matchEvent.minute,
+              text: data.matchEvent.description,
+            }
+          : null;
+
         return {
           ...prev,
           home: {
@@ -67,10 +74,9 @@ export default function Match() {
           },
           minute: data.minute,
           status: data.matchStatus,
-          commentary: [
-            ...(prev.commentary || []),
-            data.matchEvent ? data.matchEvent.description : "—",
-          ],
+          commentary: newComment
+            ? [...(prev.commentary || []), newComment]
+            : prev.commentary,
         };
       });
 
@@ -162,7 +168,8 @@ export default function Match() {
             {commentary?.length ? (
               commentary.map((c, i) => (
                 <p key={i} className="text-sm">
-                  {c}
+                  <span className="text-sky-400 font-bold">{c.minute}'</span>{" "}
+                  {c.text}
                 </p>
               ))
             ) : (

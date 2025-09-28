@@ -101,9 +101,5 @@ namespace TheDugout.Services.Player
                     break;
             }
         }
-
-
-
-
     }
 }

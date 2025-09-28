@@ -119,9 +119,7 @@ namespace TheDugout.Services.MatchEngine
             return matchEvent;
         }
 
-        /// <summary>
-        /// Пълна симулация (ако искаш да изплюеш мача наведнъж)
-        /// </summary>
+
         public async Task RunMatch(Models.Matches.Match match)
         {
             StartMatch(match);

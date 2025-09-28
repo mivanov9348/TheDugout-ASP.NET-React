@@ -227,11 +227,19 @@ namespace TheDugout.Services.Team
 
         public async Task<List<Models.Players.Player>> GetStartingLineupAsync(Models.Teams.Team team)
         {
-            if (team.TeamTactic == null || string.IsNullOrWhiteSpace(team.TeamTactic.LineupJson))
+            var teamTactic = await _context.TeamTactics
+                .FirstOrDefaultAsync(t => t.TeamId == team.Id);
+
+            if (teamTactic == null || string.IsNullOrWhiteSpace(teamTactic.LineupJson))
                 return new List<Models.Players.Player>();
 
-            var lineupIds = JsonConvert.DeserializeObject<List<int>>(team.TeamTactic.LineupJson)
-                            ?? new List<int>();
+            var lineupDict = JsonConvert.DeserializeObject<Dictionary<string, string>>(teamTactic.LineupJson)
+                             ?? new Dictionary<string, string>();
+
+            var lineupIds = lineupDict.Values
+                                      .Select(v => int.TryParse(v, out var id) ? id : 0)
+                                      .Where(id => id > 0)
+                                      .ToList();
 
             var startingPlayers = await _context.Players
                 .Include(p => p.Position)
@@ -242,6 +250,8 @@ namespace TheDugout.Services.Team
 
             return startingPlayers;
         }
+
+
 
     }
 }

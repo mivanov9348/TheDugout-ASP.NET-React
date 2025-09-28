@@ -6,6 +6,7 @@ using TheDugout.Models.Fixtures;
 using TheDugout.Models.Matches;
 using TheDugout.Services.Match;
 using TheDugout.Services.MatchEngine;
+using TheDugout.Services.Player;
 
 [ApiController]
 [Route("api/matches")]
@@ -14,12 +15,14 @@ public class MatchesController : ControllerBase
     private readonly DugoutDbContext _context;
     private readonly IMatchService _matchService;
     private readonly IMatchEngine _matchEngine;
+    private readonly IPlayerStatsService _playerStatsService;
 
-    public MatchesController(DugoutDbContext context, IMatchService matchService, IMatchEngine matchEngine)
+    public MatchesController(DugoutDbContext context, IMatchService matchService, IMatchEngine matchEngine, IPlayerStatsService playerStatsService)
     {
         _context = context;
         _matchService = matchService;
         _matchEngine = matchEngine;
+        _playerStatsService = playerStatsService;
     }
 
     [Authorize]
@@ -172,11 +175,24 @@ public class MatchesController : ControllerBase
     {
         var match = await _context.Matches
             .Include(m => m.Fixture)
+                .ThenInclude(f => f.HomeTeam)
+                    .ThenInclude(t => t.Players)
+            .Include(m => m.Fixture)
+                .ThenInclude(f => f.AwayTeam)
+                    .ThenInclude(t => t.Players)
             .Include(m => m.PlayerStats)
             .FirstOrDefaultAsync(m => m.Id == id);
 
         if (match == null)
             return NotFound();
+
+        if (match.PlayerStats == null || !match.PlayerStats.Any())
+        {
+            var stats = _playerStatsService.InitializeMatchStats(match);
+            match.PlayerStats = stats;
+            _context.PlayerMatchStats.AddRange(stats);
+            await _context.SaveChangesAsync();
+        }
 
         var matchEvent = await _matchEngine.PlayStep(match);
 
@@ -185,11 +201,17 @@ public class MatchesController : ControllerBase
         return Ok(new
         {
             finished = matchEvent == null,
-            matchEvent,
+            matchEvent = matchEvent == null ? null : new
+            {
+                matchEvent.Id,
+                matchEvent.Minute,
+                Description = matchEvent.Commentary,
+                HomeScore = match.Fixture.HomeTeamGoals,
+                AwayScore = match.Fixture.AwayTeamGoals
+            },
             matchStatus = match.Status,
             minute = match.CurrentMinute
         });
+
     }
-
-
 }

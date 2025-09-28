@@ -13,10 +13,13 @@ namespace TheDugout.Services.Match
         {
             _context = context;
         }
-
         public EventType GetRandomEvent()
         {
-            var events = _context.EventTypes.ToList();
+            var events = _context.EventTypes
+                .Include(e => e.Outcomes)
+                .Include(e => e.AttributeWeights)
+                    .ThenInclude(w => w.Attribute)
+                .ToList();
 
             if (events.Count == 0)
                 throw new InvalidOperationException("No event types found in database.");
@@ -24,6 +27,7 @@ namespace TheDugout.Services.Match
             int index = _random.Next(events.Count);
             return events[index];
         }
+
         public EventOutcome GetEventOutcome(Models.Players.Player player, EventType eventType)
         {
             if (eventType.AttributeWeights == null || !eventType.AttributeWeights.Any())
@@ -69,19 +73,24 @@ namespace TheDugout.Services.Match
 
             return outcome;
         }
-
         public string GetRandomCommentary(EventOutcome outcome, Models.Players.Player player)
         {
-            if (outcome.CommentaryTemplates == null || !outcome.CommentaryTemplates.Any())
+            var templates = _context.CommentaryTemplates
+                .Where(c => c.EventOutcomeId == outcome.Id)
+                .ToList();
+
+            if (templates == null || templates.Count == 0)
                 throw new InvalidOperationException($"No commentary templates found for outcome {outcome.Name}");
 
-            int index = _random.Next(outcome.CommentaryTemplates.Count);
-            var template = outcome.CommentaryTemplates.ElementAt(index);
+            int index = _random.Next(templates.Count);
+            var template = templates[index];
 
-            string rendered = template.Template.Replace("{PlayerName}", $"{player.FirstName} {player.LastName}");
+            string rendered = template.Template
+                .Replace("{PlayerName}", $"{player.FirstName} {player.LastName}");
 
             return rendered;
         }
+
         public MatchEvent CreateMatchEvent(int matchId, int minute, Models.Teams.Team team, Models.Players.Player player, EventType eventType, EventOutcome outcome, string commentary)
         {
             var matchEvent = new MatchEvent
