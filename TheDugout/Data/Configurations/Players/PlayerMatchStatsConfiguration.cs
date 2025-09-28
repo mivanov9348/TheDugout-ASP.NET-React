@@ -13,7 +13,14 @@ namespace TheDugout.Data.Configurations
             builder.HasOne(e => e.Player)
                    .WithMany(p => p.MatchStats)
                    .HasForeignKey(e => e.PlayerId)
+                   .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasOne(e => e.Match)
+                   .WithMany(m => m.PlayerStats)
+                   .HasForeignKey(e => e.MatchId)
                    .OnDelete(DeleteBehavior.Cascade);
+
         }
+
     }
 }

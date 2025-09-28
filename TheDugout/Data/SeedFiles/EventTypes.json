@@ -8,32 +8,8 @@
     "Name": "Shot"
   },
   {
-    "Code": "GOL",
-    "Name": "Goal"
-  },
-  {
-    "Code": "SAV",
-    "Name": "Save"
-  },
-  {
-    "Code": "FOU",
-    "Name": "Foul"
-  },
-  {
-    "Code": "COR",
-    "Name": "Corner"
-  },
-  {
-    "Code": "OUT",
-    "Name": "Throw-in"
-  },
-  {
     "Code": "TAC",
     "Name": "Tackle"
-  },
-  {
-    "Code": "OFF",
-    "Name": "Offside"
   },
   {
     "Code": "DRI",

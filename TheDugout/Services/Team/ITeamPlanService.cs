@@ -1,5 +1,6 @@
 ﻿using TheDugout.DTOs.Player;
 using TheDugout.Models.Game;
+using TheDugout.Models.Players;
 using TheDugout.Models.Teams;
 
 namespace TheDugout.Services.Team
@@ -17,8 +18,7 @@ namespace TheDugout.Services.Team
         Task InitializeDefaultTacticsAsync(GameSave gameSave);
         Task<TeamTactic> AutoPickTacticAsync(int teamId, int gameSaveId);
 
-        Task<List<PlayerDto>> GetStartingLineupAsync(Models.Teams.Team team);
-
+        Task<List<Models.Players.Player>> GetStartingLineupAsync(Models.Teams.Team team);
     }
 
 

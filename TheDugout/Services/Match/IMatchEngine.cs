@@ -1,4 +1,6 @@
-﻿namespace TheDugout.Services.MatchEngine
+﻿using TheDugout.Models.Matches;
+
+namespace TheDugout.Services.MatchEngine
 {
     public interface IMatchEngine
     {
@@ -7,6 +9,7 @@
         void PlayNextMinute(Models.Matches.Match match);
         void ChangeTurn(Models.Matches.Match match);
         bool IsMatchFinished(Models.Matches.Match match);
+        Task<MatchEvent?> PlayStep(Models.Matches.Match match);
         Task RunMatch(Models.Matches.Match match);
     }
 

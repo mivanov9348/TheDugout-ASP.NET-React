@@ -1,10 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
 
 export default function Match() {
   const { matchId } = useParams();
   const [match, setMatch] = useState(null);
+  const [isRunning, setIsRunning] = useState(false);
+  const intervalRef = useRef(null);
 
+  // Load match initially
   useEffect(() => {
     fetch(`/api/matches/${matchId}`, {
       headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
@@ -17,8 +20,6 @@ export default function Match() {
         return res.json();
       })
       .then((data) => {
-        console.log("Match data:", data);
-
         setMatch({
           home: {
             name: data.homeTeam.name,
@@ -34,10 +35,64 @@ export default function Match() {
           },
           minute: data.minute,
           status: data.status,
+          commentary: [], // ще пълним тук
         });
       })
       .catch((err) => console.error("Error loading match", err));
   }, [matchId]);
+
+  // Step function
+  const playStep = async () => {
+    try {
+      const res = await fetch(`/api/matches/${matchId}/step`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      const data = await res.json();
+
+      setMatch((prev) => {
+        if (!prev) return prev;
+
+        return {
+          ...prev,
+          home: {
+            ...prev.home,
+            score: data.matchEvent?.homeScore ?? prev.home.score,
+          },
+          away: {
+            ...prev.away,
+            score: data.matchEvent?.awayScore ?? prev.away.score,
+          },
+          minute: data.minute,
+          status: data.matchStatus,
+          commentary: [
+            ...(prev.commentary || []),
+            data.matchEvent ? data.matchEvent.description : "—",
+          ],
+        };
+      });
+
+      // Ако е свършил мача → стоп
+      if (data.finished) {
+        clearInterval(intervalRef.current);
+        setIsRunning(false);
+      }
+    } catch (err) {
+      console.error("Step error:", err);
+      clearInterval(intervalRef.current);
+      setIsRunning(false);
+    }
+  };
+
+  // Start button logic
+  const handleStart = () => {
+    if (!isRunning) {
+      setIsRunning(true);
+      intervalRef.current = setInterval(playStep, 5000); // 5 сек на стъпка
+    }
+  };
 
   if (!match) {
     return (
@@ -47,14 +102,36 @@ export default function Match() {
     );
   }
 
-  const { home, away, minute } = match;
+  const { home, away, minute, commentary } = match;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-white p-6 flex flex-col">
-      {/* Start Button */}
-      <div className="w-full flex justify-center mb-4">
-        <button className="px-6 py-2 bg-sky-600 hover:bg-sky-500 rounded-xl shadow-md text-lg font-bold transition">
-          Start
+      {/* Control Buttons */}
+      <div className="w-full flex justify-center gap-4 mb-4">
+        {/* Start button */}
+        <button
+          onClick={handleStart}
+          disabled={isRunning}
+          className={`px-6 py-2 rounded-xl shadow-md text-lg font-bold transition ${
+            isRunning
+              ? "bg-gray-600 cursor-not-allowed"
+              : "bg-sky-600 hover:bg-sky-500"
+          }`}
+        >
+          {isRunning ? "Running..." : "Start"}
+        </button>
+
+        {/* Next Step button */}
+        <button
+          onClick={playStep}
+          disabled={isRunning} // деактивиран ако тече автоматичен режим
+          className={`px-6 py-2 rounded-xl shadow-md text-lg font-bold transition ${
+            isRunning
+              ? "bg-gray-600 cursor-not-allowed"
+              : "bg-emerald-600 hover:bg-emerald-500"
+          }`}
+        >
+          Next Step
         </button>
       </div>
 
@@ -82,7 +159,15 @@ export default function Match() {
             Live Commentary
           </h2>
           <div className="flex-1 overflow-y-auto space-y-2 text-gray-300">
-            <p className="italic text-gray-500">No events yet...</p>
+            {commentary?.length ? (
+              commentary.map((c, i) => (
+                <p key={i} className="text-sm">
+                  {c}
+                </p>
+              ))
+            ) : (
+              <p className="italic text-gray-500">No events yet...</p>
+            )}
           </div>
         </div>
         <TeamStats team={away} />
@@ -97,14 +182,10 @@ function TeamStats({ team }) {
       <h2 className="text-center font-bold text-lg mb-3 text-sky-400">
         {team.name}
       </h2>
-
-      {/* Starters */}
       <h3 className="text-green-400 text-sm font-semibold mt-2 mb-1 uppercase tracking-wide">
         Starters
       </h3>
       <PlayerTable players={team.starters} />
-
-      {/* Subs */}
       <h3 className="text-yellow-400 text-sm font-semibold mt-4 mb-1 uppercase tracking-wide">
         Substitutes
       </h3>

@@ -19,6 +19,7 @@ using TheDugout.Services.League;
 using TheDugout.Services.Match;
 using TheDugout.Services.MatchEngine;
 using TheDugout.Services.Message;
+using TheDugout.Services.Player;
 using TheDugout.Services.Players;
 using TheDugout.Services.Season;
 using TheDugout.Services.Staff;
@@ -79,6 +80,7 @@ builder.Services.AddScoped<ICPUManagerService, CpuManagerService>();
 builder.Services.AddScoped<IMatchService, MatchService>();
 builder.Services.AddScoped<IMatchEngine, MatchEngine>();
 builder.Services.AddScoped<IMatchEventService, MatchEventService>();
+builder.Services.AddScoped<IPlayerStatsService, PlayerStatsService>();
 
 builder.Services.AddCors(options =>
 {

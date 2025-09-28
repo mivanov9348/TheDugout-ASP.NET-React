@@ -45,67 +45,6 @@
 
   {
     "Name": "Success",
-    "RangeMin": 0,
-    "RangeMax": 100,
-    "ChangesPossession": false,
-    "EventTypeCode": "GOL"
-  },
-
-  {
-    "Name": "Success",
-    "RangeMin": 51,
-    "RangeMax": 100,
-    "ChangesPossession": true,
-    "EventTypeCode": "SAV"
-  },
-  {
-    "Name": "Fail",
-    "RangeMin": 0,
-    "RangeMax": 50,
-    "ChangesPossession": false,
-    "EventTypeCode": "SAV"
-  },
-
-  {
-    "Name": "Success",
-    "RangeMin": 41,
-    "RangeMax": 100,
-    "ChangesPossession": true,
-    "EventTypeCode": "FOU"
-  },
-  {
-    "Name": "Fail",
-    "RangeMin": 0,
-    "RangeMax": 40,
-    "ChangesPossession": false,
-    "EventTypeCode": "FOU"
-  },
-
-  {
-    "Name": "Success",
-    "RangeMin": 66,
-    "RangeMax": 100,
-    "ChangesPossession": false,
-    "EventTypeCode": "COR"
-  },
-  {
-    "Name": "Fail",
-    "RangeMin": 0,
-    "RangeMax": 65,
-    "ChangesPossession": true,
-    "EventTypeCode": "COR"
-  },
-
-  {
-    "Name": "Success",
-    "RangeMin": 0,
-    "RangeMax": 100,
-    "ChangesPossession": true,
-    "EventTypeCode": "OUT"
-  },
-
-  {
-    "Name": "Success",
     "RangeMin": 56,
     "RangeMax": 100,
     "ChangesPossession": true,
@@ -117,14 +56,6 @@
     "RangeMax": 55,
     "ChangesPossession": false,
     "EventTypeCode": "TAC"
-  },
-
-  {
-    "Name": "Success",
-    "RangeMin": 0,
-    "RangeMax": 100,
-    "ChangesPossession": true,
-    "EventTypeCode": "OFF"
   },
 
   {

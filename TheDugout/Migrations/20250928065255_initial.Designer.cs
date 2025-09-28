@@ -12,7 +12,7 @@ using TheDugout.Data;
 namespace TheDugout.Migrations
 {
     [DbContext(typeof(DugoutDbContext))]
-    [Migration("20250927152352_initial")]
+    [Migration("20250928065255_initial")]
     partial class initial
     {
         /// <inheritdoc />
@@ -1373,25 +1373,18 @@ namespace TheDugout.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("Assists")
-                        .HasColumnType("int");
-
                     b.Property<int>("Goals")
                         .HasColumnType("int");
 
-                    b.Property<int>("MinutesPlayed")
+                    b.Property<int>("MatchId")
                         .HasColumnType("int");
 
                     b.Property<int>("PlayerId")
                         .HasColumnType("int");
 
-                    b.Property<int>("RedCards")
-                        .HasColumnType("int");
-
-                    b.Property<int>("YellowCards")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
+
+                    b.HasIndex("MatchId");
 
                     b.HasIndex("PlayerId");
 
@@ -2525,11 +2518,19 @@ namespace TheDugout.Migrations
 
             modelBuilder.Entity("TheDugout.Models.Players.PlayerMatchStats", b =>
                 {
+                    b.HasOne("TheDugout.Models.Matches.Match", "Match")
+                        .WithMany("PlayerStats")
+                        .HasForeignKey("MatchId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("TheDugout.Models.Players.Player", "Player")
                         .WithMany("MatchStats")
                         .HasForeignKey("PlayerId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("Match");
 
                     b.Navigation("Player");
                 });
@@ -2913,6 +2914,8 @@ namespace TheDugout.Migrations
             modelBuilder.Entity("TheDugout.Models.Matches.Match", b =>
                 {
                     b.Navigation("Events");
+
+                    b.Navigation("PlayerStats");
                 });
 
             modelBuilder.Entity("TheDugout.Models.Players.Attribute", b =>

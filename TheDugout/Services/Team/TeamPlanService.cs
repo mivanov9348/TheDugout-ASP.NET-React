@@ -1,9 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using TheDugout.Data;
 using TheDugout.DTOs.Player;
 using TheDugout.Models.Game;
+using TheDugout.Models.Players;
 using TheDugout.Models.Teams;
-using Newtonsoft.Json;
 
 namespace TheDugout.Services.Team
 {
@@ -224,49 +225,22 @@ namespace TheDugout.Services.Team
             );
         }
 
-
-        public async Task<List<PlayerDto>> GetStartingLineupAsync(Models.Teams.Team team)
+        public async Task<List<Models.Players.Player>> GetStartingLineupAsync(Models.Teams.Team team)
         {
             if (team.TeamTactic == null || string.IsNullOrWhiteSpace(team.TeamTactic.LineupJson))
-                return new List<PlayerDto>();
+                return new List<Models.Players.Player>();
 
             var lineupIds = JsonConvert.DeserializeObject<List<int>>(team.TeamTactic.LineupJson)
                             ?? new List<int>();
 
-            var startingPlayers = team.Players
-                .Where(p => lineupIds.Contains(p.Id))
-                .Select(p => new PlayerDto
-                {
-                    Id = p.Id,
-                    FullName = p.FirstName + " " + p.LastName,
-                    Position = p.Position.Name,
-                    PositionCode = p.Position.Code,
-                    PositionId = p.PositionId,
-                    KitNumber = p.KitNumber,
-                    Age = p.Age,
-                    Country = p.Country?.Name ?? "",
-                    HeightCm = p.HeightCm,
-                    WeightKg = p.WeightKg,
-                    Price = p.Price,
-                    TeamName = team.Name,
-                    AvatarFileName = p.AvatarFileName,
-                    Attributes = p.Attributes.Select(a => new PlayerAttributeDto
-                    {
-                        AttributeId = a.AttributeId,
-                        Name = a.Attribute.Name,
-                        Value = a.Value
-                    }).ToList(),
-                    SeasonStats = p.SeasonStats.Select(s => new PlayerSeasonStatsDto
-                    {
-                        SeasonId = s.SeasonId,
-                        MatchesPlayed = s.MatchesPlayed,
-                        Goals = s.Goals,
-                        Assists = s.Assists
-                    }).ToList()
-                })
-                .ToList();
+            var startingPlayers = await _context.Players
+                .Include(p => p.Position)
+                .Include(p => p.Attributes).ThenInclude(a => a.Attribute)
+                .Include(p => p.SeasonStats)
+                .Where(p => lineupIds.Contains(p.Id) && p.TeamId == team.Id)
+                .ToListAsync();
 
-            return await Task.FromResult(startingPlayers);
+            return startingPlayers;
         }
 
     }

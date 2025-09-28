@@ -1,21 +1,287 @@
 [
-  { "Id": 1, "EventTypeCode": "PAS", "OutcomeName": "Success", "Template": "{PlayerName} finds {TeammateName} with a clean pass" },
-  { "Id": 2, "EventTypeCode": "PAS", "OutcomeName": "Fail", "Template": "{PlayerName}'s pass is intercepted by {OpponentName}" },
-  { "Id": 3, "EventTypeCode": "SHT", "OutcomeName": "Goal", "Template": "GOAL! {PlayerName} scores with a brilliant strike!" },
-  { "Id": 4, "EventTypeCode": "SHT", "OutcomeName": "Saved", "Template": "{OpponentName} makes a fine save to deny {PlayerName}" },
-  { "Id": 5, "EventTypeCode": "SHT", "OutcomeName": "Out", "Template": "{PlayerName} misses the target, the shot goes wide" },
-  { "Id": 6, "EventTypeCode": "SHT", "OutcomeName": "Blocked", "Template": "{OpponentName} blocks the shot from {PlayerName}" },
-  { "Id": 7, "EventTypeCode": "GOL", "OutcomeName": "Success", "Template": "The referee confirms the goal stands!" },
-  { "Id": 8, "EventTypeCode": "SAV", "OutcomeName": "Success", "Template": "{PlayerName} makes a crucial save, keeping the ball out" },
-  { "Id": 9, "EventTypeCode": "SAV", "OutcomeName": "Fail", "Template": "{PlayerName} can't stop it, the ball goes past!" },
-  { "Id": 10, "EventTypeCode": "FOU", "OutcomeName": "Success", "Template": "{PlayerName} brings down {OpponentName}, foul given" },
-  { "Id": 11, "EventTypeCode": "FOU", "OutcomeName": "Fail", "Template": "{PlayerName} appeals for a foul, but the referee waves play on" },
-  { "Id": 12, "EventTypeCode": "COR", "OutcomeName": "Success", "Template": "{PlayerName} delivers a dangerous corner into the box" },
-  { "Id": 13, "EventTypeCode": "COR", "OutcomeName": "Fail", "Template": "Poor corner by {PlayerName}, easily cleared" },
-  { "Id": 14, "EventTypeCode": "OUT", "OutcomeName": "Success", "Template": "{PlayerName} takes the throw-in quickly to {TeammateName}" },
-  { "Id": 15, "EventTypeCode": "TAC", "OutcomeName": "Success", "Template": "{PlayerName} wins the ball back with a strong tackle" },
-  { "Id": 16, "EventTypeCode": "TAC", "OutcomeName": "Fail", "Template": "{PlayerName} mistimes the tackle and misses {OpponentName}" },
-  { "Id": 17, "EventTypeCode": "OFF", "OutcomeName": "Success", "Template": "{PlayerName} is caught offside, flag is up" },
-  { "Id": 18, "EventTypeCode": "DRI", "OutcomeName": "Success", "Template": "{PlayerName} dribbles past {OpponentName} with ease" },
-  { "Id": 19, "EventTypeCode": "DRI", "OutcomeName": "Fail", "Template": "{PlayerName} loses the ball trying to dribble past {OpponentName}" }
+  {
+    "EventTypeCode": "PAS",
+    "OutcomeName": "Success",
+    "Template": "{PlayerName} threads a beauty of a pass!"
+  },
+  {
+    "EventTypeCode": "PAS",
+    "OutcomeName": "Success",
+    "Template": "{PlayerName} zips the ball to a teammate with style!"
+  },
+  {
+    "EventTypeCode": "PAS",
+    "OutcomeName": "Success",
+    "Template": "{PlayerName} splits the defense with a pinpoint pass!"
+  },
+  {
+    "EventTypeCode": "PAS",
+    "OutcomeName": "Fail",
+    "Template": "{PlayerName}'s pass goes on a wild adventure to nowhere!"
+  },
+  {
+    "EventTypeCode": "PAS",
+    "OutcomeName": "Fail",
+    "Template": "{PlayerName} gifts the ball to the opposition!"
+  },
+  {
+    "EventTypeCode": "PAS",
+    "OutcomeName": "Fail",
+    "Template": "{PlayerName}'s pass takes a detour out of bounds!"
+  },
+  {
+    "EventTypeCode": "SHT",
+    "OutcomeName": "Goal",
+    "Template": "GOAL! {PlayerName} unleashes a rocket into the net!"
+  },
+  {
+    "EventTypeCode": "SHT",
+    "OutcomeName": "Goal",
+    "Template": "{PlayerName} dances through and buries it!"
+  },
+  {
+    "EventTypeCode": "SHT",
+    "OutcomeName": "Goal",
+    "Template": "{PlayerName} smacks it home with flair!"
+  },
+  {
+    "EventTypeCode": "SHT",
+    "OutcomeName": "Saved",
+    "Template": "{PlayerName}'s shot meets a keeper with cat-like reflexes!"
+  },
+  {
+    "EventTypeCode": "SHT",
+    "OutcomeName": "Saved",
+    "Template": "{PlayerName}'s effort is swatted away by the goalie!"
+  },
+  {
+    "EventTypeCode": "SHT",
+    "OutcomeName": "Saved",
+    "Template": "What a stop! {PlayerName}'s shot is denied in style!"
+  },
+  {
+    "EventTypeCode": "SHT",
+    "OutcomeName": "Out",
+    "Template": "{PlayerName}'s shot is heading for the stands!"
+  },
+  {
+    "EventTypeCode": "SHT",
+    "OutcomeName": "Out",
+    "Template": "{PlayerName} launches one into the next postcode!"
+  },
+  {
+    "EventTypeCode": "SHT",
+    "OutcomeName": "Out",
+    "Template": "{PlayerName}'s strike flies way off the mark!"
+  },
+  {
+    "EventTypeCode": "SHT",
+    "OutcomeName": "Blocked",
+    "Template": "{PlayerName}'s shot hits a defensive wall!"
+  },
+  {
+    "EventTypeCode": "SHT",
+    "OutcomeName": "Blocked",
+    "Template": "{PlayerName}'s effort gets a defender in the way!"
+  },
+  {
+    "EventTypeCode": "SHT",
+    "OutcomeName": "Blocked",
+    "Template": "{PlayerName}'s shot is bravely blocked!"
+  },
+  {
+    "EventTypeCode": "GOL",
+    "OutcomeName": "Success",
+    "Template": "It's in! {PlayerName}'s goal lights up the scoreboard!"
+  },
+  {
+    "EventTypeCode": "GOL",
+    "OutcomeName": "Success",
+    "Template": "Goal! {PlayerName}'s strike gets the crowd roaring!"
+  },
+  {
+    "EventTypeCode": "GOL",
+    "OutcomeName": "Success",
+    "Template": "{PlayerName}'s goal is a green light from the ref!"
+  },
+  {
+    "EventTypeCode": "SAV",
+    "OutcomeName": "Success",
+    "Template": "{PlayerName} pulls off a save for the highlight reel!"
+  },
+  {
+    "EventTypeCode": "SAV",
+    "OutcomeName": "Success",
+    "Template": "{PlayerName} dives like a superhero to stop the shot!"
+  },
+  {
+    "EventTypeCode": "SAV",
+    "OutcomeName": "Success",
+    "Template": "{PlayerName} says 'not today' with a brilliant save!"
+  },
+  {
+    "EventTypeCode": "SAV",
+    "OutcomeName": "Fail",
+    "Template": "{PlayerName} watches helplessly as the ball sneaks by!"
+  },
+  {
+    "EventTypeCode": "SAV",
+    "OutcomeName": "Fail",
+    "Template": "{PlayerName}'s hands can't stop that screamer!"
+  },
+  {
+    "EventTypeCode": "SAV",
+    "OutcomeName": "Fail",
+    "Template": "{PlayerName} gets a touch, but the ball slips through!"
+  },
+  {
+    "EventTypeCode": "FOU",
+    "OutcomeName": "Success",
+    "Template": "{PlayerName} trips up the play with a cheeky foul!"
+  },
+  {
+    "EventTypeCode": "FOU",
+    "OutcomeName": "Success",
+    "Template": "{PlayerName} gets too cozy with the opponent—foul!"
+  },
+  {
+    "EventTypeCode": "FOU",
+    "OutcomeName": "Success",
+    "Template": "{PlayerName} halts the action with a sneaky tackle!"
+  },
+  {
+    "EventTypeCode": "FOU",
+    "OutcomeName": "Fail",
+    "Template": "{PlayerName} begs for a foul, but the ref's not buying it!"
+  },
+  {
+    "EventTypeCode": "FOU",
+    "OutcomeName": "Fail",
+    "Template": "{PlayerName}'s dramatic dive gets no whistle!"
+  },
+  {
+    "EventTypeCode": "FOU",
+    "OutcomeName": "Fail",
+    "Template": "{PlayerName} pleads for a call, but the game rolls on!"
+  },
+  {
+    "EventTypeCode": "COR",
+    "OutcomeName": "Success",
+    "Template": "{PlayerName} whips in a corner that spells trouble!"
+  },
+  {
+    "EventTypeCode": "COR",
+    "OutcomeName": "Success",
+    "Template": "{PlayerName}'s corner has the defense scrambling!"
+  },
+  {
+    "EventTypeCode": "COR",
+    "OutcomeName": "Success",
+    "Template": "{PlayerName} curls in a wicked corner!"
+  },
+  {
+    "EventTypeCode": "COR",
+    "OutcomeName": "Fail",
+    "Template": "{PlayerName}'s corner barely leaves the ground—cleared!"
+  },
+  {
+    "EventTypeCode": "COR",
+    "OutcomeName": "Fail",
+    "Template": "{PlayerName}'s corner is a gift to the keeper!"
+  },
+  {
+    "EventTypeCode": "COR",
+    "OutcomeName": "Fail",
+    "Template": "{PlayerName}'s corner sails straight to the stands!"
+  },
+  {
+    "EventTypeCode": "OUT",
+    "OutcomeName": "Success",
+    "Template": "{PlayerName} hurls the throw-in like a missile!"
+  },
+  {
+    "EventTypeCode": "OUT",
+    "OutcomeName": "Success",
+    "Template": "{PlayerName} slings a quick throw-in to keep the tempo!"
+  },
+  {
+    "EventTypeCode": "OUT",
+    "OutcomeName": "Success",
+    "Template": "{PlayerName} fires the throw-in with pinpoint accuracy!"
+  },
+  {
+    "EventTypeCode": "TAC",
+    "OutcomeName": "Success",
+    "Template": "{PlayerName} swoops in with a tackle to steal the show!"
+  },
+  {
+    "EventTypeCode": "TAC",
+    "OutcomeName": "Success",
+    "Template": "{PlayerName} nails a tackle to snatch the ball!"
+  },
+  {
+    "EventTypeCode": "TAC",
+    "OutcomeName": "Success",
+    "Template": "{PlayerName} powers through with a textbook tackle!"
+  },
+  {
+    "EventTypeCode": "TAC",
+    "OutcomeName": "Fail",
+    "Template": "{PlayerName}'s tackle attempt is a swing and a miss!"
+  },
+  {
+    "EventTypeCode": "TAC",
+    "OutcomeName": "Fail",
+    "Template": "{PlayerName} lunges but the ball slips away!"
+  },
+  {
+    "EventTypeCode": "TAC",
+    "OutcomeName": "Fail",
+    "Template": "{PlayerName}'s tackle goes wrong, and the ball is gone!"
+  },
+  {
+    "EventTypeCode": "OFF",
+    "OutcomeName": "Success",
+    "Template": "{PlayerName} sneaks offside—flag up, nice try!"
+  },
+  {
+    "EventTypeCode": "OFF",
+    "OutcomeName": "Success",
+    "Template": "{PlayerName} gets caught napping offside!"
+  },
+  {
+    "EventTypeCode": "OFF",
+    "OutcomeName": "Success",
+    "Template": "{PlayerName}'s offside adventure ends with a whistle!"
+  },
+  {
+    "EventTypeCode": "DRI",
+    "OutcomeName": "Success",
+    "Template": "{PlayerName} dances past the defender with flair!"
+  },
+  {
+    "EventTypeCode": "DRI",
+    "OutcomeName": "Success",
+    "Template": "{PlayerName} jukes the defender out of their boots!"
+  },
+  {
+    "EventTypeCode": "DRI",
+    "OutcomeName": "Success",
+    "Template": "{PlayerName} weaves through like a magician!"
+  },
+  {
+    "EventTypeCode": "DRI",
+    "OutcomeName": "Fail",
+    "Template": "{PlayerName}'s fancy footwork ends in a fumble!"
+  },
+  {
+    "EventTypeCode": "DRI",
+    "OutcomeName": "Fail",
+    "Template": "{PlayerName} trips over their own tricks!"
+  },
+  {
+    "EventTypeCode": "DRI",
+    "OutcomeName": "Fail",
+    "Template": "{PlayerName}'s dribble gets snuffed out!"
+  }
 ]

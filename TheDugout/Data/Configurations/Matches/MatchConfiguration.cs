@@ -13,15 +13,24 @@ namespace TheDugout.Data.Configurations.Matches
             builder.HasOne(m => m.GameSave)
                 .WithMany(gs => gs.Matches)
                 .HasForeignKey(m => m.GameSaveId)
-                .OnDelete(DeleteBehavior.Cascade); 
+                .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasOne(m => m.Fixture)
                 .WithMany(f => f.Matches)
                 .HasForeignKey(m => m.FixtureId)
-                .OnDelete(DeleteBehavior.Restrict); 
+                .OnDelete(DeleteBehavior.Restrict);
 
             builder.Property(m => m.Status)
                 .HasConversion<int>();
+
+            builder.Property(m => m.CurrentTurn)
+                .HasConversion<int>();
+
+            builder.HasMany(m => m.PlayerStats)
+                .WithOne(ps => ps.Match)
+                .HasForeignKey(ps => ps.MatchId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
+
     }
 }

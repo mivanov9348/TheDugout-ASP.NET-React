@@ -6,8 +6,9 @@ namespace TheDugout.Services.Match
     public interface IMatchEventService
     {
         EventType GetRandomEvent();
-        EventOutcome GetEventOutcome(Player player, EventType eventType);
-        CommentaryTemplate GetRandomCommentary(EventOutcome outcome);
-    }
+        EventOutcome GetEventOutcome(Models.Players.Player player, EventType eventType);
+        string GetRandomCommentary(EventOutcome outcome, Models.Players.Player player);
+        MatchEvent CreateMatchEvent(int matchId, int minute, Models.Teams.Team team, Models.Players.Player player, EventType eventType, EventOutcome outcome, string commentary);
+    };
 
 }

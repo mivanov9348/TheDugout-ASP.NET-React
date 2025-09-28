@@ -24,12 +24,11 @@ namespace TheDugout.Services.Match
             int index = _random.Next(events.Count);
             return events[index];
         }
-        public EventOutcome GetEventOutcome(Player player, EventType eventType)
+        public EventOutcome GetEventOutcome(Models.Players.Player player, EventType eventType)
         {
             if (eventType.AttributeWeights == null || !eventType.AttributeWeights.Any())
                 throw new InvalidOperationException($"No attribute weights found for event type {eventType.Code}");
 
-            // 1. Calculate weighted attribute sum (normalized between 0 and 1)
             double weightedSum = 0;
             double totalWeight = eventType.AttributeWeights.Sum(w => w.Weight);
 
@@ -38,17 +37,14 @@ namespace TheDugout.Services.Match
                 var playerAttr = player.Attributes.FirstOrDefault(a => a.Attribute.Code == weight.AttributeCode);
                 if (playerAttr != null)
                 {
-                    // Attribute.Value is expected to be 1–100
                     weightedSum += (playerAttr.Value / 100.0) * weight.Weight;
                 }
             }
 
             double normalized = weightedSum / totalWeight;
 
-            // 2. Base score (0–100 scale)
             double baseScore = normalized * 100.0;
 
-            // 3. Calculate random offset range depending on age
             double Rbase = 6.0;
             int ageRef = 27;
             int ageSpan = 12;
@@ -59,14 +55,11 @@ namespace TheDugout.Services.Match
             double R = Rbase * ageFactor;
             R = Math.Max(Rmin, Math.Min(Rmax, R));
 
-            // 4. Apply random offset
-            double offset = (_random.NextDouble() * 2 - 1) * R; // range [-R, +R]
+            double offset = (_random.NextDouble() * 2 - 1) * R; 
             double score = baseScore + offset;
 
-            // 5. Clamp between 1 and 100
             int finalScore = Math.Max(1, Math.Min(100, (int)Math.Round(score)));
 
-            // 6. Pick the outcome that matches finalScore
             var outcome = eventType.Outcomes
                 .FirstOrDefault(o => finalScore >= o.RangeMin && finalScore <= o.RangeMax);
 
@@ -77,13 +70,39 @@ namespace TheDugout.Services.Match
             return outcome;
         }
 
-        public CommentaryTemplate GetRandomCommentary(EventOutcome outcome)
+        public string GetRandomCommentary(EventOutcome outcome, Models.Players.Player player)
         {
             if (outcome.CommentaryTemplates == null || !outcome.CommentaryTemplates.Any())
                 throw new InvalidOperationException($"No commentary templates found for outcome {outcome.Name}");
 
             int index = _random.Next(outcome.CommentaryTemplates.Count);
-            return outcome.CommentaryTemplates.ElementAt(index);
+            var template = outcome.CommentaryTemplates.ElementAt(index);
+
+            string rendered = template.Template.Replace("{PlayerName}", $"{player.FirstName} {player.LastName}");
+
+            return rendered;
+        }
+        public MatchEvent CreateMatchEvent(int matchId, int minute, Models.Teams.Team team, Models.Players.Player player, EventType eventType, EventOutcome outcome, string commentary)
+        {
+            var matchEvent = new MatchEvent
+            {
+                MatchId = matchId,
+                Minute = minute,
+                TeamId = team.Id,
+                Team = team,
+                PlayerId = player.Id,
+                Player = player,
+                EventTypeId = eventType.Id,
+                EventType = eventType,
+                OutcomeId = outcome.Id,
+                Outcome = outcome,
+                Commentary = commentary
+            };
+
+            _context.MatchEvents.Add(matchEvent);
+            _context.SaveChanges();
+
+            return matchEvent;
         }
 
 

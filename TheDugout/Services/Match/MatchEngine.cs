@@ -2,6 +2,7 @@
 using TheDugout.Models.Fixtures;
 using TheDugout.Models.Matches;
 using TheDugout.Services.Match;
+using TheDugout.Services.Player;
 using TheDugout.Services.Team;
 
 namespace TheDugout.Services.MatchEngine
@@ -11,11 +12,18 @@ namespace TheDugout.Services.MatchEngine
         private readonly Random _random = new Random();
         private readonly ITeamPlanService _teamPlanService;
         private readonly IMatchEventService _matchEventService;
+        private readonly IPlayerStatsService _playerStatsService;
         private readonly DugoutDbContext _context;
-        public MatchEngine(ITeamPlanService teamPlanService, IMatchEventService matchEventService, DugoutDbContext context)
+
+        public MatchEngine(
+            ITeamPlanService teamPlanService,
+            IMatchEventService matchEventService,
+            IPlayerStatsService playerStatsService,
+            DugoutDbContext context)
         {
             _teamPlanService = teamPlanService;
             _matchEventService = matchEventService;
+            _playerStatsService = playerStatsService;
             _context = context;
         }
 
@@ -23,11 +31,12 @@ namespace TheDugout.Services.MatchEngine
         {
             match.Status = MatchStatus.Live;
             match.CurrentMinute = 0;
-            //match.Fixture.Status = FixtureStatus.Scheduled;
             match.Fixture.HomeTeamGoals = 0;
             match.Fixture.AwayTeamGoals = 0;
-
             match.CurrentTurn = MatchTurn.Home;
+
+            // инициализация на статистиките за играчите
+            match.PlayerStats = _playerStatsService.InitializeMatchStats(match);
         }
 
         public void EndMatch(Models.Matches.Match match)
@@ -45,7 +54,7 @@ namespace TheDugout.Services.MatchEngine
 
         public void PlayNextMinute(Models.Matches.Match match)
         {
-            int increment = _random.Next(1, 11);
+            int increment = _random.Next(1, 6); // по-малки скокове за по-реалистично
             match.CurrentMinute += increment;
         }
 
@@ -61,67 +70,66 @@ namespace TheDugout.Services.MatchEngine
             return match.CurrentMinute >= 90;
         }
 
+        public async Task<MatchEvent?> PlayStep(Models.Matches.Match match)
+        {
+            if (IsMatchFinished(match))
+            {
+                EndMatch(match);
+                return null;
+            }
+
+            // 1. Минутка
+            PlayNextMinute(match);
+
+            // 2. Определи отбора в атака
+            var currentTeamId = match.CurrentTurn == MatchTurn.Home
+                ? match.Fixture.HomeTeamId
+                : match.Fixture.AwayTeamId;
+
+            var currentTeam = _context.Teams.FirstOrDefault(t => t.Id == currentTeamId)
+                ?? throw new InvalidOperationException($"Team {currentTeamId} not found.");
+
+            var lineup = await _teamPlanService.GetStartingLineupAsync(currentTeam);
+            var outfieldPlayers = lineup.Where(p => p.Position.Code != "GK").ToList();
+            if (!outfieldPlayers.Any())
+                throw new InvalidOperationException($"No outfield players found for team {currentTeam.Id}");
+
+            var player = outfieldPlayers[_random.Next(outfieldPlayers.Count)];
+
+            // 3. Евент
+            var eventType = _matchEventService.GetRandomEvent();
+            var outcome = _matchEventService.GetEventOutcome(player, eventType);
+            var commentary = _matchEventService.GetRandomCommentary(outcome, player);
+
+            var matchEvent = _matchEventService.CreateMatchEvent(
+                match.Id, match.CurrentMinute, currentTeam, player, eventType, outcome, commentary);
+
+            // 4. Ъпдейт на статистики
+            var playerStats = match.PlayerStats.FirstOrDefault(s => s.PlayerId == player.Id);
+            if (playerStats != null)
+                _playerStatsService.UpdateStats(matchEvent, playerStats);
+
+            // 5. Смяна на притежание
+            ChangeTurn(match);
+
+            // 6. Ако вече е минало 90' → край
+            if (IsMatchFinished(match))
+                EndMatch(match);
+
+            return matchEvent;
+        }
+
+        /// <summary>
+        /// Пълна симулация (ако искаш да изплюеш мача наведнъж)
+        /// </summary>
         public async Task RunMatch(Models.Matches.Match match)
         {
             StartMatch(match);
-
             while (!IsMatchFinished(match))
-            {
-                // 1. Get match minute
-                PlayNextMinute(match);
-
-                // 2. Determine which team is in possession
-                var currentTeamId = match.CurrentTurn == MatchTurn.Home
-                   ? match.Fixture.HomeTeamId
-                   : match.Fixture.AwayTeamId;
-
-                // 3. Get random player from the team in possession
-                var currentTeam = _context.Teams
-                    .FirstOrDefault(t => t.Id == currentTeamId);
-
-                if (currentTeam == null)
-                    throw new InvalidOperationException($"Team with Id {currentTeamId} not found.");
-
-                var lineup = await _teamPlanService.GetStartingLineupAsync(currentTeam);
-
-                if (lineup == null || !lineup.Any())
-                    throw new InvalidOperationException($"No starting lineup found for team {currentTeam.Id}");
-
-                var outfieldPlayers = lineup.Where(p => p.PositionCode != "GK").ToList();
-
-                if (!outfieldPlayers.Any())
-                    throw new InvalidOperationException($"No outfield players found for team {currentTeam.Id}");
-
-                var player = outfieldPlayers[_random.Next(outfieldPlayers.Count)];
-
-                // 4. Get random event
-                var eventType = _matchEventService.GetRandomEvent();
-
-                // 5. Calculate outcome based on team plan and player stats
-                // TODO: implement outcome calculation
-
-                // 6. Generate commentary
-                // TODO: implement commentary
-
-                // 7. Log event to match events
-                // TODO: implement match event logging
-
-                // 8. Update Stats
-                // TODO: implement stats update
-
-                // 9. Change turn
-                ChangeTurn(match);
-
-                // 10. Check if match is finished
-                if (IsMatchFinished(match))
-                {
-                    EndMatch(match);
-                    break;
-                }
-            }
+                await PlayStep(match);
 
             EndMatch(match);
         }
-
     }
+
 }

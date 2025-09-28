@@ -7,8 +7,8 @@ namespace TheDugout.Services.Players
     public interface IPlayerGenerationService
     {
 
-        List<Player> GenerateTeamPlayers(GameSave save, Models.Teams.Team team);
-        public Player? GenerateFreeAgent(GameSave save, Agency? agency = null);
+        List<Models.Players.Player> GenerateTeamPlayers(GameSave save, Models.Teams.Team team);
+        public Models.Players.Player? GenerateFreeAgent(GameSave save, Agency? agency = null);
         string GetRandomAvatarFileName();
 
     }

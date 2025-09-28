@@ -5,6 +5,7 @@ using TheDugout.Data;
 using TheDugout.Models.Fixtures;
 using TheDugout.Models.Matches;
 using TheDugout.Services.Match;
+using TheDugout.Services.MatchEngine;
 
 [ApiController]
 [Route("api/matches")]
@@ -12,11 +13,13 @@ public class MatchesController : ControllerBase
 {
     private readonly DugoutDbContext _context;
     private readonly IMatchService _matchService;
+    private readonly IMatchEngine _matchEngine;
 
-    public MatchesController(DugoutDbContext context, IMatchService matchService)
+    public MatchesController(DugoutDbContext context, IMatchService matchService, IMatchEngine matchEngine)
     {
         _context = context;
         _matchService = matchService;
+        _matchEngine = matchEngine;
     }
 
     [Authorize]
@@ -163,5 +166,30 @@ public class MatchesController : ControllerBase
 
         return Ok(new { match.Id, match.FixtureId });
     }
+
+    [HttpPost("{id}/step")]
+    public async Task<IActionResult> StepMatch(int id)
+    {
+        var match = await _context.Matches
+            .Include(m => m.Fixture)
+            .Include(m => m.PlayerStats)
+            .FirstOrDefaultAsync(m => m.Id == id);
+
+        if (match == null)
+            return NotFound();
+
+        var matchEvent = await _matchEngine.PlayStep(match);
+
+        await _context.SaveChangesAsync();
+
+        return Ok(new
+        {
+            finished = matchEvent == null,
+            matchEvent,
+            matchStatus = match.Status,
+            minute = match.CurrentMinute
+        });
+    }
+
 
 }
