@@ -12,7 +12,6 @@ namespace TheDugout.Services.Fixture
     {
         private readonly DugoutDbContext _context;
         private readonly IFixturesHelperService _fixturesHelperService;
-        //private readonly ISeasonCalendarService _seasonCalendarService;
         private readonly IEurocupScheduleService _eurocupScheduleService;
         private readonly ILogger<EurocupFixturesService> _logger;
         private readonly Random _random = new();
@@ -21,7 +20,6 @@ namespace TheDugout.Services.Fixture
         {
             _context = context;
             _fixturesHelperService = fixturesHelperService;
-            //_seasonCalendarService = seasonCalendarService;
             _eurocupScheduleService = eurocupScheduleService;
             _logger = logger;
         }

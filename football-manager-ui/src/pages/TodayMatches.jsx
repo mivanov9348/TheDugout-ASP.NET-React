@@ -60,16 +60,25 @@ export default function TodayMatches() {
   return (
     <div className="p-6 sm:p-8 space-y-10 max-w-5xl mx-auto">
       {/* Simulate / To Match button */}
-      <div className="flex justify-center mb-6">
+      <div className="flex justify-center gap-4 mb-6">
+        {userFixtureId && (
+          <button
+            onClick={handleToMatch}
+            className="flex items-center gap-2 bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800 text-white px-6 py-3 rounded-2xl shadow-md font-semibold transition transform hover:scale-105"
+          >
+            <Play className="w-5 h-5" />
+            To Match
+          </button>
+        )}
+
         <button
-          onClick={userFixtureId ? handleToMatch : handleSimulate}
+          onClick={handleSimulate}
           className="flex items-center gap-2 bg-gradient-to-r from-sky-600 to-blue-700 hover:from-sky-700 hover:to-blue-800 text-white px-6 py-3 rounded-2xl shadow-md font-semibold transition transform hover:scale-105"
         >
           <Play className="w-5 h-5" />
-          {userFixtureId ? "To Match" : "Simulate Matches"}
+          Simulate Matches
         </button>
       </div>
-
 
       {matches.length === 0 && (
         <p className="text-center text-gray-500 italic text-lg">

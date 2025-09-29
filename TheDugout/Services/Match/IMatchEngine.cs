@@ -1,4 +1,5 @@
-﻿using TheDugout.Models.Matches;
+﻿using TheDugout.Models.Game;
+using TheDugout.Models.Matches;
 
 namespace TheDugout.Services.MatchEngine
 {
@@ -10,6 +11,7 @@ namespace TheDugout.Services.MatchEngine
         void ChangeTurn(Models.Matches.Match match);
         bool IsMatchFinished(Models.Matches.Match match);
         Task<MatchEvent?> PlayStep(Models.Matches.Match match);
+        Task<Models.Matches.Match> SimulateMatchAsync(Models.Fixtures.Fixture fixture, GameSave gameSave);
         Task RunMatch(Models.Matches.Match match);
     }
 

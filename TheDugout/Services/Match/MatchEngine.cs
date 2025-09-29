@@ -1,5 +1,6 @@
 ﻿using TheDugout.Data;
 using TheDugout.Models.Fixtures;
+using TheDugout.Models.Game;
 using TheDugout.Models.Matches;
 using TheDugout.Services.League;
 using TheDugout.Services.Match;
@@ -12,6 +13,7 @@ namespace TheDugout.Services.MatchEngine
     {
         private readonly Random _random = new Random();
         private readonly ITeamPlanService _teamPlanService;
+        private readonly IMatchService _matchService;
         private readonly IMatchEventService _matchEventService;
         private readonly IPlayerStatsService _playerStatsService;
         private readonly ILeagueStandingsService _leagueStandingsService;
@@ -22,15 +24,16 @@ namespace TheDugout.Services.MatchEngine
             IMatchEventService matchEventService,
             IPlayerStatsService playerStatsService,
             ILeagueStandingsService leagueStandingsService,
+            IMatchService matchService,
             DugoutDbContext context)
         {
             _teamPlanService = teamPlanService;
             _matchEventService = matchEventService;
             _playerStatsService = playerStatsService;
             _leagueStandingsService = leagueStandingsService;
+            _matchService = matchService;
             _context = context;
         }
-
         public void StartMatch(Models.Matches.Match match)
         {
             match.Status = MatchStatus.Live;
@@ -42,7 +45,6 @@ namespace TheDugout.Services.MatchEngine
             // инициализация на статистиките за играчите
             match.PlayerStats = _playerStatsService.InitializeMatchStats(match);
         }
-
         public void EndMatch(Models.Matches.Match match)
         {
             match.Status = MatchStatus.Played;
@@ -66,26 +68,21 @@ namespace TheDugout.Services.MatchEngine
                 fixture.WinnerTeamId = null;
             }
         }
-
-
         public void PlayNextMinute(Models.Matches.Match match)
         {
             int increment = _random.Next(1, 6); // по-малки скокове за по-реалистично
             match.CurrentMinute += increment;
         }
-
         public void ChangeTurn(Models.Matches.Match match)
         {
             match.CurrentTurn = match.CurrentTurn == MatchTurn.Home
                 ? MatchTurn.Away
                 : MatchTurn.Home;
         }
-
         public bool IsMatchFinished(Models.Matches.Match match)
         {
             return match.CurrentMinute >= 90;
         }
-
         public async Task<MatchEvent?> PlayStep(Models.Matches.Match match)
         {
             if (IsMatchFinished(match))
@@ -139,7 +136,73 @@ namespace TheDugout.Services.MatchEngine
 
             return matchEvent;
         }
+        public async Task<Models.Matches.Match> SimulateMatchAsync(Models.Fixtures.Fixture fixture, GameSave gameSave)
+        {
+            if (fixture == null) throw new ArgumentNullException(nameof(fixture));
+            if (gameSave == null) throw new ArgumentNullException(nameof(gameSave));
 
+            // 1. Създай мач от фикстура
+            var match = await _matchService.CreateMatchFromFixtureAsync(fixture, gameSave);
+
+            // 2. Върти докато не свърши
+            while (!IsMatchFinished(match))
+            {
+                // 2.1 Минутка
+                PlayNextMinute(match);
+
+                // 2.2 Определи кой отбор е на ход
+                var currentTeamId = match.CurrentTurn == MatchTurn.Home
+                    ? match.Fixture.HomeTeamId
+                    : match.Fixture.AwayTeamId;
+
+                var currentTeam = _context.Teams.FirstOrDefault(t => t.Id == currentTeamId)
+                    ?? throw new InvalidOperationException($"Team {currentTeamId} not found.");
+
+                var lineup = await _teamPlanService.GetStartingLineupAsync(currentTeam);
+                var outfieldPlayers = lineup.Where(p => p.Position.Code != "GK").ToList();
+                if (!outfieldPlayers.Any())
+                    throw new InvalidOperationException($"No outfield players found for team {currentTeam.Id}");
+
+                var player = outfieldPlayers[_random.Next(outfieldPlayers.Count)];
+
+                // 2.3 Евент + изход (но без да създаваме MatchEvent)
+                var eventType = _matchEventService.GetRandomEvent();
+                var outcome = _matchEventService.GetEventOutcome(player, eventType);
+
+                // 2.4 Update на статистики + резултат
+                if (eventType.Code == "SHT" && outcome.Name == "Goal")
+                {
+                    UpdateFixtureScore(match, new Models.Matches.MatchEvent
+                    {
+                        Minute = match.CurrentMinute,
+                        Player = player,
+                        Team = currentTeam,
+                        EventType = eventType,
+                        Outcome = outcome
+                    });
+                }
+
+                var playerStats = match.PlayerStats.FirstOrDefault(s => s.PlayerId == player.Id);
+                if (playerStats != null)
+                    _playerStatsService.UpdateStats(new Models.Matches.MatchEvent
+                    {
+                        Minute = match.CurrentMinute,
+                        Player = player,
+                        Team = currentTeam,
+                        EventType = eventType,
+                        Outcome = outcome
+                    }, playerStats);
+
+                // 2.5 Смяна на притежание
+                ChangeTurn(match);
+            }
+
+            // 3. Край на мача
+            EndMatch(match);
+            await _leagueStandingsService.UpdateStandingsAfterMatchAsync(match.Fixture);
+
+            return match;
+        }
         private void UpdateFixtureScore(Models.Matches.Match match, MatchEvent matchEvent)
         {
             if (matchEvent.EventType.Code == "SHT" && matchEvent.Outcome.Name == "Goal")
@@ -154,9 +217,6 @@ namespace TheDugout.Services.MatchEngine
                 }
             }
         }
-
-
-
         public async Task RunMatch(Models.Matches.Match match)
         {
             StartMatch(match);
@@ -166,5 +226,4 @@ namespace TheDugout.Services.MatchEngine
             EndMatch(match);
         }
     }
-
 }

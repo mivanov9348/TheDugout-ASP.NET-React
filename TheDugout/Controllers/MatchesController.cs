@@ -66,6 +66,41 @@ public class MatchesController : ControllerBase
         return Ok(new { Matches = matches, save.UserTeamId });
     }
 
+    [HttpPost("simulate/{gameSaveId}")]
+    public async Task<IActionResult> SimulateMatches(int gameSaveId)
+    {
+        // 1. Взимаме save-а
+        var gameSave = await _context.GameSaves
+            .Include(gs => gs.Fixtures)
+            .FirstOrDefaultAsync(gs => gs.Id == gameSaveId);
+
+        if (gameSave == null)
+            return NotFound($"GameSave {gameSaveId} not found.");
+
+        // 2. Взимаме всички fixtures за днес (без user мача)
+        var today = DateTime.UtcNow.Date;
+        var fixtures = gameSave.Fixtures
+            .Where(f => f.Date.Date == today &&
+                    f.HomeTeamId != gameSave.UserTeamId &&
+                    f.AwayTeamId != gameSave.UserTeamId)
+                    .ToList();
+
+        if (!fixtures.Any())
+            return Ok(new { message = "No fixtures to simulate." });
+
+        // 3. Въртим симулация за всяко
+        foreach (var fixture in fixtures)
+        {
+            await _matchEngine.SimulateMatchAsync(fixture, gameSave);
+        }
+
+        // 4. Записваме резултатите
+        await _context.SaveChangesAsync();
+
+        return Ok(new { message = $"{fixtures.Count} matches simulated." });
+    }
+
+
     [Authorize]
     [HttpGet("{fixtureId}/preview")]
     public async Task<IActionResult> GetMatchPreview(int fixtureId)
@@ -157,7 +192,7 @@ public class MatchesController : ControllerBase
             .OrderByDescending(e => e.Minute)
             .Select(e => new
             {
-                e.Minute,   
+                e.Minute,
                 Text = e.Commentary,
                 Team = e.Team.Name,
                 Player = e.Player.FirstName + " " + e.Player.LastName,
@@ -183,35 +218,55 @@ public class MatchesController : ControllerBase
         return Ok(new { match.Id, match.FixtureId });
     }
 
-        [HttpPost("{id}/step")]
-        public async Task<IActionResult> StepMatch(int id)
+    [HttpPost("{id}/step")]
+    public async Task<IActionResult> StepMatch(int id)
+    {
+        var match = await _context.Matches
+            .Include(m => m.Fixture)
+            .ThenInclude(f => f.HomeTeam)
+            .ThenInclude(t => t.Players)
+            .Include(m => m.Fixture)
+            .ThenInclude(f => f.AwayTeam)
+            .ThenInclude(t => t.Players)
+            .Include(m => m.PlayerStats)
+            .FirstOrDefaultAsync(m => m.Id == id);
+
+        if (match == null)
+            return NotFound();
+
+        if (match.PlayerStats == null || !match.PlayerStats.Any())
         {
-            var match = await _context.Matches
-                .Include(m => m.Fixture)
-                    .ThenInclude(f => f.HomeTeam)
-                        .ThenInclude(t => t.Players)
-                .Include(m => m.Fixture)
-                    .ThenInclude(f => f.AwayTeam)
-                        .ThenInclude(t => t.Players)
-                .Include(m => m.PlayerStats)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var stats = _playerStatsService.InitializeMatchStats(match);
+            match.PlayerStats = stats;
+            _context.PlayerMatchStats.AddRange(stats);
+            await _context.SaveChangesAsync();
+        }
 
-            if (match == null)
-                return NotFound();
+        var matchEvent = await _matchEngine.PlayStep(match);
+        await _context.SaveChangesAsync();
 
-            if (match.PlayerStats == null || !match.PlayerStats.Any())
-            {
-                var stats = _playerStatsService.InitializeMatchStats(match);
-                match.PlayerStats = stats;
-                _context.PlayerMatchStats.AddRange(stats);
-                await _context.SaveChangesAsync();
-            }
+        // ако мачът свърши и е user мач → симулирай останалите
+        if (match.Status == MatchStatus.Played &&
+            (match.Fixture.HomeTeamId == match.Fixture.GameSave.UserTeamId ||
+             match.Fixture.AwayTeamId == match.Fixture.GameSave.UserTeamId))
+        {
+            var gameSave = await _context.GameSaves
+                .Include(gs => gs.Fixtures)
+                .FirstOrDefaultAsync(gs => gs.Id == match.GameSaveId);
 
-            var matchEvent = await _matchEngine.PlayStep(match);
+            var today = gameSave.Seasons.First().CurrentDate.Date;
+            var fixtures = gameSave.Fixtures
+                .Where(f => f.Date.Date == today &&
+                       f.Id != match.FixtureId) 
+                .ToList();
+
+            foreach (var f in fixtures)
+                await _matchEngine.SimulateMatchAsync(f, gameSave);
 
             await _context.SaveChangesAsync();
+        }
 
-            var events = await _context.MatchEvents
+        var events = await _context.MatchEvents
             .Where(e => e.MatchId == match.Id)
             .OrderByDescending(e => e.Minute)
             .ThenByDescending(e => e.Id)
@@ -229,24 +284,24 @@ public class MatchesController : ControllerBase
             })
             .ToListAsync();
 
-            return Ok(new
+        return Ok(new
+        {
+            finished = matchEvent == null,
+            matchStatus = match.Status,
+            minute = match.CurrentMinute,
+            HomeScore = match.Fixture.HomeTeamGoals,
+            AwayScore = match.Fixture.AwayTeamGoals,
+            matchEvent = matchEvent == null ? null : new
             {
-                finished = matchEvent == null,
-                matchStatus = match.Status,
-                minute = match.CurrentMinute,
-                HomeScore = match.Fixture.HomeTeamGoals,
-                AwayScore = match.Fixture.AwayTeamGoals,
-                matchEvent = matchEvent == null ? null : new
-                {
-                    matchEvent.Id,
-                    matchEvent.Minute,
-                    Description = matchEvent.Commentary,
-                    TeamId = matchEvent.TeamId,
-                    PlayerId = matchEvent.PlayerId,
-                    PlayerName = matchEvent.Player.FirstName + " " + matchEvent.Player.LastName,
-                },
-                events
-            });
+                matchEvent.Id,
+                matchEvent.Minute,
+                Description = matchEvent.Commentary,
+                TeamId = matchEvent.TeamId,
+                PlayerId = matchEvent.PlayerId,
+                PlayerName = matchEvent.Player.FirstName + " " + matchEvent.Player.LastName,
+            },
+            events
+        });
+    }
 
-        }
 }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TheDugout.Data;
+using TheDugout.Models.Fixtures;
 using TheDugout.Models.Seasons;
 using TheDugout.Services.CPUManager;
 using TheDugout.Services.Season;
@@ -65,6 +66,34 @@ namespace TheDugout.Services.Game
             }
 
             await _context.SaveChangesAsync();
+        }
+        public async Task<object> ProcessNextDayAndGetResultAsync(int saveId)
+        {
+            await ProcessNextDayAsync(saveId);
+
+            var updatedSave = await _context.GameSaves
+                .AsSplitQuery()
+                .Include(gs => gs.UserTeam).ThenInclude(t => t.Country)
+                .Include(gs => gs.Leagues).ThenInclude(l => l.Country)
+                .Include(gs => gs.Leagues).ThenInclude(l => l.Template)
+                .Include(gs => gs.Leagues).ThenInclude(l => l.Teams).ThenInclude(t => t.Country)
+                .Include(gs => gs.Seasons).ThenInclude(s => s.Events)
+                .Include(gs => gs.Seasons).ThenInclude(s => s.Fixtures)
+                .FirstAsync(gs => gs.Id == saveId);
+
+            var today = updatedSave.Seasons.First().CurrentDate.Date;
+
+            var todaysFixtures = updatedSave.Seasons
+                .SelectMany(s => s.Fixtures)
+                .Where(f => f.Date.Date == today)
+                .ToList();
+
+            return new
+            {
+                GameSave = updatedSave.ToDto(),
+                HasMatchesToday = todaysFixtures.Any(),
+                HasUnplayedMatchesToday = todaysFixtures.Any(f => f.Status != FixtureStatus.Played)
+            };
         }
 
     }

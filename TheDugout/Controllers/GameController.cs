@@ -55,35 +55,12 @@ namespace TheDugout.Controllers
             if (user?.CurrentSave == null)
                 return BadRequest(new { message = "No current save selected." });
 
-            await _gameDayService.ProcessNextDayAsync(user.CurrentSave.Id);
+            // 👉 целият процес вече е в GameDayService
+            var result = await _gameDayService.ProcessNextDayAndGetResultAsync(user.CurrentSave.Id);
 
-            var updatedSave = await _context.GameSaves
-                .AsSplitQuery()
-                .Include(gs => gs.UserTeam).ThenInclude(t => t.Country)
-                .Include(gs => gs.Leagues).ThenInclude(l => l.Country)
-                .Include(gs => gs.Leagues).ThenInclude(l => l.Template)
-                .Include(gs => gs.Leagues).ThenInclude(l => l.Teams).ThenInclude(t => t.Country)
-                .Include(gs => gs.Seasons).ThenInclude(s => s.Events)
-                .Include(gs => gs.Seasons).ThenInclude(s => s.Fixtures)
-                .FirstAsync(gs => gs.Id == user.CurrentSave.Id);
-
-            var today = updatedSave.Seasons.First().CurrentDate.Date;
-
-            var todaysFixtures = updatedSave.Seasons
-                .SelectMany(s => s.Fixtures)
-                .Where(f => f.Date.Date == today)
-                .ToList();
-
-            var hasMatchesToday = todaysFixtures.Any();
-            var hasUnplayedMatchesToday = todaysFixtures.Any(f => f.Status != FixtureStatus.Played);
-
-            return Ok(new
-            {
-                GameSave = updatedSave.ToDto(),
-                HasMatchesToday = hasMatchesToday,
-                HasUnplayedMatchesToday = hasUnplayedMatchesToday
-            });
+            return Ok(result);
         }
+
 
         [HttpGet("teamtemplates")]
         public async Task<IActionResult> GetTeamTemplates()

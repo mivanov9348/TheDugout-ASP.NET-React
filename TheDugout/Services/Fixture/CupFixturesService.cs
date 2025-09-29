@@ -191,13 +191,10 @@ namespace TheDugout.Services.Fixture
 
             return fixtures;
         }
-
-
         private static bool NeedsPreliminaryRound(int teamCount)
         {
             return teamCount > 0 && (teamCount & (teamCount - 1)) != 0;
         }
-
         private static int GetTeamsInPrelimRound(int teamCount)
         {
             if (!NeedsPreliminaryRound(teamCount))
