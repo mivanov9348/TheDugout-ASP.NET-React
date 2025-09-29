@@ -1,6 +1,7 @@
 ﻿using TheDugout.Data;
 using TheDugout.Models.Fixtures;
 using TheDugout.Models.Matches;
+using TheDugout.Services.League;
 using TheDugout.Services.Match;
 using TheDugout.Services.Player;
 using TheDugout.Services.Team;
@@ -13,17 +14,20 @@ namespace TheDugout.Services.MatchEngine
         private readonly ITeamPlanService _teamPlanService;
         private readonly IMatchEventService _matchEventService;
         private readonly IPlayerStatsService _playerStatsService;
+        private readonly ILeagueStandingsService _leagueStandingsService;
         private readonly DugoutDbContext _context;
 
         public MatchEngine(
             ITeamPlanService teamPlanService,
             IMatchEventService matchEventService,
             IPlayerStatsService playerStatsService,
+            ILeagueStandingsService leagueStandingsService,
             DugoutDbContext context)
         {
             _teamPlanService = teamPlanService;
             _matchEventService = matchEventService;
             _playerStatsService = playerStatsService;
+            _leagueStandingsService = leagueStandingsService;
             _context = context;
         }
 
@@ -42,15 +46,27 @@ namespace TheDugout.Services.MatchEngine
         public void EndMatch(Models.Matches.Match match)
         {
             match.Status = MatchStatus.Played;
-            match.Fixture.Status = FixtureStatus.Played;
 
-            if (match.Fixture.HomeTeamGoals > match.Fixture.AwayTeamGoals)
-                match.Fixture.WinnerTeamId = match.Fixture.HomeTeamId;
-            else if (match.Fixture.AwayTeamGoals > match.Fixture.HomeTeamGoals)
-                match.Fixture.WinnerTeamId = match.Fixture.AwayTeamId;
+            var fixture = match.Fixture;
+            fixture.Status = FixtureStatus.Played;
+
+            int homeGoals = fixture.HomeTeamGoals ?? 0;
+            int awayGoals = fixture.AwayTeamGoals ?? 0;
+
+            if (homeGoals > awayGoals)
+            {
+                fixture.WinnerTeamId = fixture.HomeTeamId;
+            }
+            else if (awayGoals > homeGoals)
+            {
+                fixture.WinnerTeamId = fixture.AwayTeamId;
+            }
             else
-                match.Fixture.WinnerTeamId = null;
+            {
+                fixture.WinnerTeamId = null;
+            }
         }
+
 
         public void PlayNextMinute(Models.Matches.Match match)
         {
@@ -104,6 +120,8 @@ namespace TheDugout.Services.MatchEngine
             var matchEvent = _matchEventService.CreateMatchEvent(
                 match.Id, match.CurrentMinute, currentTeam, player, eventType, outcome, commentary);
 
+            UpdateFixtureScore(match, matchEvent);
+
             // 4. Ъпдейт на статистики
             var playerStats = match.PlayerStats.FirstOrDefault(s => s.PlayerId == player.Id);
             if (playerStats != null)
@@ -114,10 +132,29 @@ namespace TheDugout.Services.MatchEngine
 
             // 6. Ако вече е минало 90' → край
             if (IsMatchFinished(match))
+            {
                 EndMatch(match);
+                await _leagueStandingsService.UpdateStandingsAfterMatchAsync(match.Fixture);
+            }
 
             return matchEvent;
         }
+
+        private void UpdateFixtureScore(Models.Matches.Match match, MatchEvent matchEvent)
+        {
+            if (matchEvent.EventType.Code == "SHT" && matchEvent.Outcome.Name == "Goal")
+            {
+                if (matchEvent.TeamId == match.Fixture.HomeTeamId)
+                {
+                    match.Fixture.HomeTeamGoals = (match.Fixture.HomeTeamGoals ?? 0) + 1;
+                }
+                else if (matchEvent.TeamId == match.Fixture.AwayTeamId)
+                {
+                    match.Fixture.AwayTeamGoals = (match.Fixture.AwayTeamGoals ?? 0) + 1;
+                }
+            }
+        }
+
 
 
         public async Task RunMatch(Models.Matches.Match match)

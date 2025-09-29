@@ -1,7 +1,7 @@
 [
   {
     "Name": "Success",
-    "RangeMin": 61,
+    "RangeMin": 41,
     "RangeMax": 100,
     "ChangesPossession": false,
     "EventTypeCode": "PAS"
@@ -9,58 +9,58 @@
   {
     "Name": "Fail",
     "RangeMin": 0,
-    "RangeMax": 60,
+    "RangeMax": 40,
     "ChangesPossession": true,
     "EventTypeCode": "PAS"
   },
 
   {
     "Name": "Goal",
-    "RangeMin": 91,
+    "RangeMin": 51,
     "RangeMax": 100,
-    "ChangesPossession": false,
+    "ChangesPossession": true,
     "EventTypeCode": "SHT"
   },
   {
     "Name": "Saved",
-    "RangeMin": 61,
-    "RangeMax": 90,
+    "RangeMin": 36,
+    "RangeMax": 50,
     "ChangesPossession": true,
     "EventTypeCode": "SHT"
   },
   {
     "Name": "Blocked",
-    "RangeMin": 41,
-    "RangeMax": 60,
+    "RangeMin": 26,
+    "RangeMax": 35,
     "ChangesPossession": true,
     "EventTypeCode": "SHT"
   },
   {
     "Name": "Out",
     "RangeMin": 0,
-    "RangeMax": 40,
+    "RangeMax": 25,
     "ChangesPossession": true,
     "EventTypeCode": "SHT"
   },
 
   {
     "Name": "Success",
-    "RangeMin": 56,
+    "RangeMin": 41,
     "RangeMax": 100,
-    "ChangesPossession": true,
+    "ChangesPossession": false,
     "EventTypeCode": "TAC"
   },
   {
     "Name": "Fail",
     "RangeMin": 0,
-    "RangeMax": 55,
-    "ChangesPossession": false,
+    "RangeMax": 40,
+    "ChangesPossession": true,
     "EventTypeCode": "TAC"
   },
 
   {
     "Name": "Success",
-    "RangeMin": 66,
+    "RangeMin": 41,
     "RangeMax": 100,
     "ChangesPossession": false,
     "EventTypeCode": "DRI"
@@ -68,7 +68,7 @@
   {
     "Name": "Fail",
     "RangeMin": 0,
-    "RangeMax": 65,
+    "RangeMax": 40,
     "ChangesPossession": true,
     "EventTypeCode": "DRI"
   }

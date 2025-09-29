@@ -147,13 +147,26 @@ public class MatchesController : ControllerBase
     [Authorize]
     [HttpGet("{matchId}")]
     public async Task<IActionResult> GetMatch(int matchId)
-
     {
         var view = await _matchService.GetMatchViewByIdAsync(matchId);
         if (view == null)
             return NotFound(new { error = "Match not found" });
 
-        return Ok(view);
+        var events = await _context.MatchEvents
+            .Where(e => e.MatchId == matchId)
+            .OrderByDescending(e => e.Minute)
+            .Select(e => new
+            {
+                e.Minute,   
+                Text = e.Commentary,
+                Team = e.Team.Name,
+                Player = e.Player.FirstName + " " + e.Player.LastName,
+                EventType = e.EventType.Name,
+                Outcome = e.Outcome.Name
+            })
+            .ToListAsync();
+
+        return Ok(new { view, events });
     }
 
     [Authorize]
@@ -170,48 +183,70 @@ public class MatchesController : ControllerBase
         return Ok(new { match.Id, match.FixtureId });
     }
 
-    [HttpPost("{id}/step")]
-    public async Task<IActionResult> StepMatch(int id)
-    {
-        var match = await _context.Matches
-            .Include(m => m.Fixture)
-                .ThenInclude(f => f.HomeTeam)
-                    .ThenInclude(t => t.Players)
-            .Include(m => m.Fixture)
-                .ThenInclude(f => f.AwayTeam)
-                    .ThenInclude(t => t.Players)
-            .Include(m => m.PlayerStats)
-            .FirstOrDefaultAsync(m => m.Id == id);
-
-        if (match == null)
-            return NotFound();
-
-        if (match.PlayerStats == null || !match.PlayerStats.Any())
+        [HttpPost("{id}/step")]
+        public async Task<IActionResult> StepMatch(int id)
         {
-            var stats = _playerStatsService.InitializeMatchStats(match);
-            match.PlayerStats = stats;
-            _context.PlayerMatchStats.AddRange(stats);
-            await _context.SaveChangesAsync();
-        }
+            var match = await _context.Matches
+                .Include(m => m.Fixture)
+                    .ThenInclude(f => f.HomeTeam)
+                        .ThenInclude(t => t.Players)
+                .Include(m => m.Fixture)
+                    .ThenInclude(f => f.AwayTeam)
+                        .ThenInclude(t => t.Players)
+                .Include(m => m.PlayerStats)
+                .FirstOrDefaultAsync(m => m.Id == id);
 
-        var matchEvent = await _matchEngine.PlayStep(match);
+            if (match == null)
+                return NotFound();
 
-        await _context.SaveChangesAsync();
-
-        return Ok(new
-        {
-            finished = matchEvent == null,
-            matchEvent = matchEvent == null ? null : new
+            if (match.PlayerStats == null || !match.PlayerStats.Any())
             {
-                matchEvent.Id,
-                matchEvent.Minute,
-                Description = matchEvent.Commentary,
-                HomeScore = match.Fixture.HomeTeamGoals,
-                AwayScore = match.Fixture.AwayTeamGoals
-            },
-            matchStatus = match.Status,
-            minute = match.CurrentMinute
-        });
+                var stats = _playerStatsService.InitializeMatchStats(match);
+                match.PlayerStats = stats;
+                _context.PlayerMatchStats.AddRange(stats);
+                await _context.SaveChangesAsync();
+            }
 
-    }
+            var matchEvent = await _matchEngine.PlayStep(match);
+
+            await _context.SaveChangesAsync();
+
+            var events = await _context.MatchEvents
+            .Where(e => e.MatchId == match.Id)
+            .OrderByDescending(e => e.Minute)
+            .ThenByDescending(e => e.Id)
+            .Select(e => new
+            {
+                e.Id,
+                e.Minute,
+                Description = e.Commentary,
+                TeamId = e.TeamId,
+                Team = e.Team.Name,
+                PlayerId = e.PlayerId,
+                PlayerName = e.Player.FirstName + " " + e.Player.LastName,
+                EventType = e.EventType.Name,
+                Outcome = e.Outcome.Name
+            })
+            .ToListAsync();
+
+            return Ok(new
+            {
+                finished = matchEvent == null,
+                matchStatus = match.Status,
+                minute = match.CurrentMinute,
+                HomeScore = match.Fixture.HomeTeamGoals,
+                AwayScore = match.Fixture.AwayTeamGoals,
+                matchEvent = matchEvent == null ? null : new
+                {
+                    matchEvent.Id,
+                    matchEvent.Minute,
+                    Description = matchEvent.Commentary,
+                    TeamId = matchEvent.TeamId,
+                    PlayerId = matchEvent.PlayerId,
+                    PlayerName = matchEvent.Player.FirstName + " " + matchEvent.Player.LastName,
+                },
+                events
+            });
+
+        }
 }

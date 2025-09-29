@@ -36,40 +36,58 @@ namespace TheDugout.Services.Match
             double weightedSum = 0;
             double totalWeight = eventType.AttributeWeights.Sum(w => w.Weight);
 
+            Console.WriteLine($"--- Calculating outcome for {player.FirstName} {player.LastName} (Age {player.Age}), Event {eventType.Code} ---");
+            Console.WriteLine("Attributes used:");
+
             foreach (var weight in eventType.AttributeWeights)
             {
                 var playerAttr = player.Attributes.FirstOrDefault(a => a.Attribute.Code == weight.AttributeCode);
                 if (playerAttr != null)
                 {
-                    weightedSum += (playerAttr.Value / 100.0) * weight.Weight;
+                    double contrib = playerAttr.Value * weight.Weight;
+                    Console.WriteLine($" - {weight.AttributeCode}: Value={playerAttr.Value}, Weight={weight.Weight}, Contrib={contrib:F2}");
+                    weightedSum += contrib;
+                }
+                else
+                {
+                    Console.WriteLine($" - {weight.AttributeCode}: NOT FOUND in player attributes!");
                 }
             }
 
-            double normalized = weightedSum / totalWeight;
+            // 1. Нормализиран атрибутен скор (1-20) → преобразуван в 0-100 чрез нелинейна (степенна) функция
+            double attrScore = weightedSum / totalWeight; // средно между 1 и 20
+            double baseScore = Math.Pow(attrScore / 20.0, 0.7) * 100.0; // нелинейна скала – по-високи стойности за средни/добри атрибути
 
-            double baseScore = normalized * 100.0;
-
-            double Rbase = 6.0;
+            // 2. Възрастов фактор – пик около 27г, но по-мек penalty
             int ageRef = 27;
-            int ageSpan = 12;
-            double Rmin = 2.0;
-            double Rmax = 12.0;
+            int ageSpan = 10;
+            double ageFactor = 1.0 - (Math.Abs(player.Age - ageRef) / (double)ageSpan) * 0.06; // намален ефект
+            ageFactor = Math.Max(0.8, ageFactor); // минимум 80% (вместо 60%)
 
-            double ageFactor = 1.0 + (ageRef - player.Age) / (double)ageSpan;
-            double R = Rbase * ageFactor;
-            R = Math.Max(Rmin, Math.Min(Rmax, R));
+            double ageAdjusted = baseScore * ageFactor;
 
-            double offset = (_random.NextDouble() * 2 - 1) * R; 
-            double score = baseScore + offset;
+            // 3. Рандом вариация – по-малка и по-стабилна
+            double variability = 4 + (Math.Abs(player.Age - ageRef) * 0.3); // намалена база и възрастов ефект
+            double randomOffset = (_random.NextDouble() * 2 - 1) * variability;
 
-            int finalScore = Math.Max(1, Math.Min(100, (int)Math.Round(score)));
+            // 4. Финален скор
+            double finalScore = ageAdjusted + randomOffset;
+            int score = Math.Clamp((int)Math.Round(finalScore), 1, 100);
+
+            Console.WriteLine($"WeightedSum={weightedSum:F2}, TotalWeight={totalWeight:F2}");
+            Console.WriteLine($"AttrScore (1-20)={attrScore:F2}, BaseScore (0-100)={baseScore:F2}");
+            Console.WriteLine($"AgeFactor={ageFactor:F2}, AfterAge={ageAdjusted:F2}");
+            Console.WriteLine($"RandomOffset={randomOffset:F2}, FinalScore={finalScore:F2}, FinalScore Clamped={score}");
 
             var outcome = eventType.Outcomes
-                .FirstOrDefault(o => finalScore >= o.RangeMin && finalScore <= o.RangeMax);
+                .FirstOrDefault(o => score >= o.RangeMin && score <= o.RangeMax);
 
             if (outcome == null)
                 throw new InvalidOperationException(
-                    $"No outcome found for score {finalScore} in event type {eventType.Code}");
+                    $"No outcome found for score {score} in event type {eventType.Code}");
+
+            Console.WriteLine($"Outcome={outcome.Name}");
+            Console.WriteLine("--------------------------------------------------------------");
 
             return outcome;
         }
@@ -85,8 +103,13 @@ namespace TheDugout.Services.Match
             int index = _random.Next(templates.Count);
             var template = templates[index];
 
+            // Взимаме отбора на играча
+            var team = player.Team
+                ?? throw new InvalidOperationException($"Player {player.Id} has no team assigned.");
+
             string rendered = template.Template
-                .Replace("{PlayerName}", $"{player.FirstName} {player.LastName}");
+                .Replace("{PlayerName}", $"{player.FirstName} {player.LastName}")
+                .Replace("{TeamAbbr}", team.Abbreviation ?? team.Name); 
 
             return rendered;
         }

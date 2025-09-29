@@ -2,286 +2,286 @@
   {
     "EventTypeCode": "PAS",
     "OutcomeName": "Success",
-    "Template": "{PlayerName} threads a beauty of a pass!"
+    "Template": "{PlayerName} ({TeamAbbr}) threads a beauty of a pass!"
   },
   {
     "EventTypeCode": "PAS",
     "OutcomeName": "Success",
-    "Template": "{PlayerName} zips the ball to a teammate with style!"
+    "Template": "{PlayerName} ({TeamAbbr}) zips the ball to a teammate with style!"
   },
   {
     "EventTypeCode": "PAS",
     "OutcomeName": "Success",
-    "Template": "{PlayerName} splits the defense with a pinpoint pass!"
+    "Template": "{PlayerName} ({TeamAbbr}) splits the defense with a pinpoint pass!"
   },
   {
     "EventTypeCode": "PAS",
     "OutcomeName": "Fail",
-    "Template": "{PlayerName}'s pass goes on a wild adventure to nowhere!"
+    "Template": "{PlayerName} ({TeamAbbr})'s pass goes on a wild adventure to nowhere!"
   },
   {
     "EventTypeCode": "PAS",
     "OutcomeName": "Fail",
-    "Template": "{PlayerName} gifts the ball to the opposition!"
+    "Template": "{PlayerName} ({TeamAbbr}) gifts the ball to the opposition!"
   },
   {
     "EventTypeCode": "PAS",
     "OutcomeName": "Fail",
-    "Template": "{PlayerName}'s pass takes a detour out of bounds!"
+    "Template": "{PlayerName} ({TeamAbbr})'s pass takes a detour out of bounds!"
   },
   {
     "EventTypeCode": "SHT",
     "OutcomeName": "Goal",
-    "Template": "GOAL! {PlayerName} unleashes a rocket into the net!"
+    "Template": "GOAL! {PlayerName} ({TeamAbbr}) unleashes a rocket into the net!"
   },
   {
     "EventTypeCode": "SHT",
     "OutcomeName": "Goal",
-    "Template": "{PlayerName} dances through and buries it!"
+    "Template": "{PlayerName} ({TeamAbbr}) dances through and buries it!"
   },
   {
     "EventTypeCode": "SHT",
     "OutcomeName": "Goal",
-    "Template": "{PlayerName} smacks it home with flair!"
+    "Template": "{PlayerName} ({TeamAbbr}) smacks it home with flair!"
   },
   {
     "EventTypeCode": "SHT",
     "OutcomeName": "Saved",
-    "Template": "{PlayerName}'s shot meets a keeper with cat-like reflexes!"
+    "Template": "{PlayerName} ({TeamAbbr})'s shot meets a keeper with cat-like reflexes!"
   },
   {
     "EventTypeCode": "SHT",
     "OutcomeName": "Saved",
-    "Template": "{PlayerName}'s effort is swatted away by the goalie!"
+    "Template": "{PlayerName} ({TeamAbbr})'s effort is swatted away by the goalie!"
   },
   {
     "EventTypeCode": "SHT",
     "OutcomeName": "Saved",
-    "Template": "What a stop! {PlayerName}'s shot is denied in style!"
+    "Template": "What a stop! {PlayerName} ({TeamAbbr})'s shot is denied in style!"
   },
   {
     "EventTypeCode": "SHT",
     "OutcomeName": "Out",
-    "Template": "{PlayerName}'s shot is heading for the stands!"
+    "Template": "{PlayerName} ({TeamAbbr})'s shot is heading for the stands!"
   },
   {
     "EventTypeCode": "SHT",
     "OutcomeName": "Out",
-    "Template": "{PlayerName} launches one into the next postcode!"
+    "Template": "{PlayerName} ({TeamAbbr}) launches one into the next postcode!"
   },
   {
     "EventTypeCode": "SHT",
     "OutcomeName": "Out",
-    "Template": "{PlayerName}'s strike flies way off the mark!"
+    "Template": "{PlayerName} ({TeamAbbr})'s strike flies way off the mark!"
   },
   {
     "EventTypeCode": "SHT",
     "OutcomeName": "Blocked",
-    "Template": "{PlayerName}'s shot hits a defensive wall!"
+    "Template": "{PlayerName} ({TeamAbbr})'s shot hits a defensive wall!"
   },
   {
     "EventTypeCode": "SHT",
     "OutcomeName": "Blocked",
-    "Template": "{PlayerName}'s effort gets a defender in the way!"
+    "Template": "{PlayerName} ({TeamAbbr})'s effort gets a defender in the way!"
   },
   {
     "EventTypeCode": "SHT",
     "OutcomeName": "Blocked",
-    "Template": "{PlayerName}'s shot is bravely blocked!"
+    "Template": "{PlayerName} ({TeamAbbr})'s shot is bravely blocked!"
   },
   {
     "EventTypeCode": "GOL",
     "OutcomeName": "Success",
-    "Template": "It's in! {PlayerName}'s goal lights up the scoreboard!"
+    "Template": "It's in! {PlayerName} ({TeamAbbr})'s goal lights up the scoreboard!"
   },
   {
     "EventTypeCode": "GOL",
     "OutcomeName": "Success",
-    "Template": "Goal! {PlayerName}'s strike gets the crowd roaring!"
+    "Template": "Goal! {PlayerName} ({TeamAbbr})'s strike gets the crowd roaring!"
   },
   {
     "EventTypeCode": "GOL",
     "OutcomeName": "Success",
-    "Template": "{PlayerName}'s goal is a green light from the ref!"
+    "Template": "{PlayerName} ({TeamAbbr})'s goal is a green light from the ref!"
   },
   {
     "EventTypeCode": "SAV",
     "OutcomeName": "Success",
-    "Template": "{PlayerName} pulls off a save for the highlight reel!"
+    "Template": "{PlayerName} ({TeamAbbr}) pulls off a save for the highlight reel!"
   },
   {
     "EventTypeCode": "SAV",
     "OutcomeName": "Success",
-    "Template": "{PlayerName} dives like a superhero to stop the shot!"
+    "Template": "{PlayerName} ({TeamAbbr}) dives like a superhero to stop the shot!"
   },
   {
     "EventTypeCode": "SAV",
     "OutcomeName": "Success",
-    "Template": "{PlayerName} says 'not today' with a brilliant save!"
+    "Template": "{PlayerName} ({TeamAbbr}) says 'not today' with a brilliant save!"
   },
   {
     "EventTypeCode": "SAV",
     "OutcomeName": "Fail",
-    "Template": "{PlayerName} watches helplessly as the ball sneaks by!"
+    "Template": "{PlayerName} ({TeamAbbr}) watches helplessly as the ball sneaks by!"
   },
   {
     "EventTypeCode": "SAV",
     "OutcomeName": "Fail",
-    "Template": "{PlayerName}'s hands can't stop that screamer!"
+    "Template": "{PlayerName} ({TeamAbbr})'s hands can't stop that screamer!"
   },
   {
     "EventTypeCode": "SAV",
     "OutcomeName": "Fail",
-    "Template": "{PlayerName} gets a touch, but the ball slips through!"
+    "Template": "{PlayerName} ({TeamAbbr}) gets a touch, but the ball slips through!"
   },
   {
     "EventTypeCode": "FOU",
     "OutcomeName": "Success",
-    "Template": "{PlayerName} trips up the play with a cheeky foul!"
+    "Template": "{PlayerName} ({TeamAbbr}) trips up the play with a cheeky foul!"
   },
   {
     "EventTypeCode": "FOU",
     "OutcomeName": "Success",
-    "Template": "{PlayerName} gets too cozy with the opponent—foul!"
+    "Template": "{PlayerName} ({TeamAbbr}) gets too cozy with the opponent—foul!"
   },
   {
     "EventTypeCode": "FOU",
     "OutcomeName": "Success",
-    "Template": "{PlayerName} halts the action with a sneaky tackle!"
+    "Template": "{PlayerName} ({TeamAbbr}) halts the action with a sneaky tackle!"
   },
   {
     "EventTypeCode": "FOU",
     "OutcomeName": "Fail",
-    "Template": "{PlayerName} begs for a foul, but the ref's not buying it!"
+    "Template": "{PlayerName} ({TeamAbbr}) begs for a foul, but the ref's not buying it!"
   },
   {
     "EventTypeCode": "FOU",
     "OutcomeName": "Fail",
-    "Template": "{PlayerName}'s dramatic dive gets no whistle!"
+    "Template": "{PlayerName} ({TeamAbbr})'s dramatic dive gets no whistle!"
   },
   {
     "EventTypeCode": "FOU",
     "OutcomeName": "Fail",
-    "Template": "{PlayerName} pleads for a call, but the game rolls on!"
+    "Template": "{PlayerName} ({TeamAbbr}) pleads for a call, but the game rolls on!"
   },
   {
     "EventTypeCode": "COR",
     "OutcomeName": "Success",
-    "Template": "{PlayerName} whips in a corner that spells trouble!"
+    "Template": "{PlayerName} ({TeamAbbr}) whips in a corner that spells trouble!"
   },
   {
     "EventTypeCode": "COR",
     "OutcomeName": "Success",
-    "Template": "{PlayerName}'s corner has the defense scrambling!"
+    "Template": "{PlayerName} ({TeamAbbr})'s corner has the defense scrambling!"
   },
   {
     "EventTypeCode": "COR",
     "OutcomeName": "Success",
-    "Template": "{PlayerName} curls in a wicked corner!"
+    "Template": "{PlayerName} ({TeamAbbr}) curls in a wicked corner!"
   },
   {
     "EventTypeCode": "COR",
     "OutcomeName": "Fail",
-    "Template": "{PlayerName}'s corner barely leaves the ground—cleared!"
+    "Template": "{PlayerName} ({TeamAbbr})'s corner barely leaves the ground—cleared!"
   },
   {
     "EventTypeCode": "COR",
     "OutcomeName": "Fail",
-    "Template": "{PlayerName}'s corner is a gift to the keeper!"
+    "Template": "{PlayerName} ({TeamAbbr})'s corner is a gift to the keeper!"
   },
   {
     "EventTypeCode": "COR",
     "OutcomeName": "Fail",
-    "Template": "{PlayerName}'s corner sails straight to the stands!"
+    "Template": "{PlayerName} ({TeamAbbr})'s corner sails straight to the stands!"
   },
   {
     "EventTypeCode": "OUT",
     "OutcomeName": "Success",
-    "Template": "{PlayerName} hurls the throw-in like a missile!"
+    "Template": "{PlayerName} ({TeamAbbr}) hurls the throw-in like a missile!"
   },
   {
     "EventTypeCode": "OUT",
     "OutcomeName": "Success",
-    "Template": "{PlayerName} slings a quick throw-in to keep the tempo!"
+    "Template": "{PlayerName} ({TeamAbbr}) slings a quick throw-in to keep the tempo!"
   },
   {
     "EventTypeCode": "OUT",
     "OutcomeName": "Success",
-    "Template": "{PlayerName} fires the throw-in with pinpoint accuracy!"
+    "Template": "{PlayerName} ({TeamAbbr}) fires the throw-in with pinpoint accuracy!"
   },
   {
     "EventTypeCode": "TAC",
     "OutcomeName": "Success",
-    "Template": "{PlayerName} swoops in with a tackle to steal the show!"
+    "Template": "{PlayerName} ({TeamAbbr}) swoops in with a tackle to steal the show!"
   },
   {
     "EventTypeCode": "TAC",
     "OutcomeName": "Success",
-    "Template": "{PlayerName} nails a tackle to snatch the ball!"
+    "Template": "{PlayerName} ({TeamAbbr}) nails a tackle to snatch the ball!"
   },
   {
     "EventTypeCode": "TAC",
     "OutcomeName": "Success",
-    "Template": "{PlayerName} powers through with a textbook tackle!"
+    "Template": "{PlayerName} ({TeamAbbr}) powers through with a textbook tackle!"
   },
   {
     "EventTypeCode": "TAC",
     "OutcomeName": "Fail",
-    "Template": "{PlayerName}'s tackle attempt is a swing and a miss!"
+    "Template": "{PlayerName} ({TeamAbbr})'s tackle attempt is a swing and a miss!"
   },
   {
     "EventTypeCode": "TAC",
     "OutcomeName": "Fail",
-    "Template": "{PlayerName} lunges but the ball slips away!"
+    "Template": "{PlayerName} ({TeamAbbr}) lunges but the ball slips away!"
   },
   {
     "EventTypeCode": "TAC",
     "OutcomeName": "Fail",
-    "Template": "{PlayerName}'s tackle goes wrong, and the ball is gone!"
+    "Template": "{PlayerName} ({TeamAbbr})'s tackle goes wrong, and the ball is gone!"
   },
   {
     "EventTypeCode": "OFF",
     "OutcomeName": "Success",
-    "Template": "{PlayerName} sneaks offside—flag up, nice try!"
+    "Template": "{PlayerName} ({TeamAbbr}) sneaks offside—flag up, nice try!"
   },
   {
     "EventTypeCode": "OFF",
     "OutcomeName": "Success",
-    "Template": "{PlayerName} gets caught napping offside!"
+    "Template": "{PlayerName} ({TeamAbbr}) gets caught napping offside!"
   },
   {
     "EventTypeCode": "OFF",
     "OutcomeName": "Success",
-    "Template": "{PlayerName}'s offside adventure ends with a whistle!"
+    "Template": "{PlayerName} ({TeamAbbr})'s offside adventure ends with a whistle!"
   },
   {
     "EventTypeCode": "DRI",
     "OutcomeName": "Success",
-    "Template": "{PlayerName} dances past the defender with flair!"
+    "Template": "{PlayerName} ({TeamAbbr}) dances past the defender with flair!"
   },
   {
     "EventTypeCode": "DRI",
     "OutcomeName": "Success",
-    "Template": "{PlayerName} jukes the defender out of their boots!"
+    "Template": "{PlayerName} ({TeamAbbr}) jukes the defender out of their boots!"
   },
   {
     "EventTypeCode": "DRI",
     "OutcomeName": "Success",
-    "Template": "{PlayerName} weaves through like a magician!"
+    "Template": "{PlayerName} ({TeamAbbr}) weaves through like a magician!"
   },
   {
     "EventTypeCode": "DRI",
     "OutcomeName": "Fail",
-    "Template": "{PlayerName}'s fancy footwork ends in a fumble!"
+    "Template": "{PlayerName} ({TeamAbbr})'s fancy footwork ends in a fumble!"
   },
   {
     "EventTypeCode": "DRI",
     "OutcomeName": "Fail",
-    "Template": "{PlayerName} trips over their own tricks!"
+    "Template": "{PlayerName} ({TeamAbbr}) trips over their own tricks!"
   },
   {
     "EventTypeCode": "DRI",
     "OutcomeName": "Fail",
-    "Template": "{PlayerName}'s dribble gets snuffed out!"
+    "Template": "{PlayerName} ({TeamAbbr})'s dribble gets snuffed out!"
   }
 ]

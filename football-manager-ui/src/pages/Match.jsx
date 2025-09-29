@@ -20,24 +20,35 @@ export default function Match() {
         return res.json();
       })
       .then((data) => {
+        const matchData = data.view;
+
         setMatch({
           home: {
-            name: data.homeTeam.name,
-            score: data.score.home,
-            starters: data.homeTeam.starters || [],
-            subs: data.homeTeam.subs || [],
+            name: matchData.homeTeam?.name ?? "Unknown",
+            score: matchData.score?.home ?? 0,
+            starters: matchData.homeTeam?.starters || [],
+            subs: matchData.homeTeam?.subs || [],
           },
           away: {
-            name: data.awayTeam.name,
-            score: data.score.away,
-            starters: data.awayTeam.starters || [],
-            subs: data.awayTeam.subs || [],
+            name: matchData.awayTeam?.name ?? "Unknown",
+            score: matchData.score?.away ?? 0,
+            starters: matchData.awayTeam?.starters || [],
+            subs: matchData.awayTeam?.subs || [],
           },
-          minute: data.minute,
-          status: data.status,
-          commentary: [], // ще пълним тук
+          minute: matchData.minute ?? 0,
+          status: matchData.status ?? "Unknown",
+          commentary:
+            data.events?.map((e) => ({
+              minute: e.minute,
+              text: e.text,
+              team: e.team,
+              player: e.player,
+              type: e.eventType,
+              outcome: e.outcome,
+            })) || [],
         });
       })
+
       .catch((err) => console.error("Error loading match", err));
   }, [matchId]);
 
@@ -66,7 +77,7 @@ export default function Match() {
           ...prev,
           home: {
             ...prev.home,
-            score: data.matchEvent?.homeScore ?? prev.home.score,
+            score: data.HomeScore ?? prev.home.score,
           },
           away: {
             ...prev.away,
@@ -74,9 +85,11 @@ export default function Match() {
           },
           minute: data.minute,
           status: data.matchStatus,
-          commentary: newComment
-            ? [...(prev.commentary || []), newComment]
-            : prev.commentary,
+          currentPlayerId: data.matchEvent?.playerId ?? null,
+          commentary: data.events.map((e) => ({
+            minute: e.minute,
+            text: e.description,
+          })),
         };
       });
 
@@ -159,31 +172,44 @@ export default function Match() {
 
       {/* Content */}
       <div className="flex flex-1 mt-6 gap-6">
-        <TeamStats team={home} />
+        <TeamStats team={home} currentPlayerId={match.currentPlayerId} />
+
         <div className="w-2/4 bg-gray-900 rounded-xl p-4 flex flex-col shadow-inner border border-gray-700">
           <h2 className="text-center font-bold text-xl mb-3 text-sky-300">
             Live Commentary
           </h2>
-          <div className="flex-1 overflow-y-auto space-y-2 text-gray-300">
+          <div className="flex-1 overflow-y-auto space-y-3">
             {commentary?.length ? (
               commentary.map((c, i) => (
-                <p key={i} className="text-sm">
-                  <span className="text-sky-400 font-bold">{c.minute}'</span>{" "}
-                  {c.text}
-                </p>
+                <div
+                  key={i}
+                  className="flex items-start gap-3 bg-gray-800/50 rounded-lg p-2 hover:bg-gray-800/70 transition"
+                >
+                  <div className="flex-shrink-0">
+                    <span className="flex items-center justify-center w-10 h-10 rounded-full bg-sky-700 text-sky-200 font-bold shadow">
+                      {c.minute}'
+                    </span>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm text-gray-200 leading-snug">
+                      {c.text}
+                    </p>
+                  </div>
+                </div>
               ))
             ) : (
               <p className="italic text-gray-500">No events yet...</p>
             )}
           </div>
         </div>
-        <TeamStats team={away} />
+
+        <TeamStats team={away} currentPlayerId={match.currentPlayerId} />
       </div>
     </div>
   );
 }
 
-function TeamStats({ team }) {
+function TeamStats({ team, currentPlayerId }) {
   return (
     <div className="w-1/4 bg-gray-800 rounded-xl p-3 overflow-y-auto shadow-lg border border-gray-700">
       <h2 className="text-center font-bold text-lg mb-3 text-sky-400">
@@ -192,16 +218,16 @@ function TeamStats({ team }) {
       <h3 className="text-green-400 text-sm font-semibold mt-2 mb-1 uppercase tracking-wide">
         Starters
       </h3>
-      <PlayerTable players={team.starters} />
+      <PlayerTable players={team.starters} currentPlayerId={currentPlayerId} />
       <h3 className="text-yellow-400 text-sm font-semibold mt-4 mb-1 uppercase tracking-wide">
         Substitutes
       </h3>
-      <PlayerTable players={team.subs} />
+      <PlayerTable players={team.subs} currentPlayerId={currentPlayerId} />
     </div>
   );
 }
 
-function PlayerTable({ players }) {
+function PlayerTable({ players, currentPlayerId }) {
   return (
     <table className="w-full text-xs md:text-sm mb-2 border-collapse">
       <thead>
@@ -216,22 +242,27 @@ function PlayerTable({ players }) {
         </tr>
       </thead>
       <tbody>
-        {players.map((p, i) => (
-          <tr
-            key={i}
-            className={`border-b border-gray-700 hover:bg-gray-700/40 transition ${
-              i % 2 === 0 ? "bg-gray-800/40" : "bg-gray-900/40"
-            }`}
-          >
-            {p.slot && <td className="py-1 px-2">{p.slot}</td>}
-            <td className="py-1 px-2">{p.number}</td>
-            <td className="py-1 px-2">{p.position}</td>
-            <td className="py-1 px-2">{p.name}</td>
-            <td className="py-1 px-2 text-center">{p.goals ?? 0}</td>
-            <td className="py-1 px-2 text-center">{p.passes ?? 0}</td>
-            <td className="py-1 px-2 text-center">{p.assists ?? 0}</td>
-          </tr>
-        ))}
+        {players.map((p, i) => {
+          const isActive = p.id === currentPlayerId;
+          return (
+            <tr
+              key={i}
+              className={`border-b border-gray-700 hover:bg-gray-700/40 transition ${
+                i % 2 === 0 ? "bg-gray-800/40" : "bg-gray-900/40"
+              } ${
+                isActive ? "bg-yellow-500/30 font-bold text-yellow-300" : ""
+              }`}
+            >
+              {p.slot && <td className="py-1 px-2">{p.slot}</td>}
+              <td className="py-1 px-2">{p.number}</td>
+              <td className="py-1 px-2">{p.position}</td>
+              <td className="py-1 px-2">{p.name}</td>
+              <td className="py-1 px-2 text-center">{p.goals ?? 0}</td>
+              <td className="py-1 px-2 text-center">{p.passes ?? 0}</td>
+              <td className="py-1 px-2 text-center">{p.assists ?? 0}</td>
+            </tr>
+          );
+        })}
       </tbody>
     </table>
   );

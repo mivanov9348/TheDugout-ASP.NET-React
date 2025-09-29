@@ -81,6 +81,7 @@ builder.Services.AddScoped<IMatchService, MatchService>();
 builder.Services.AddScoped<IMatchEngine, MatchEngine>();
 builder.Services.AddScoped<IMatchEventService, MatchEventService>();
 builder.Services.AddScoped<IPlayerStatsService, PlayerStatsService>();
+builder.Services.AddScoped<ILeagueStandingsService, LeagueStandingsService>();
 
 builder.Services.AddCors(options =>
 {
