@@ -4,6 +4,8 @@ using TheDugout.Data;
 using TheDugout.Data.Seed;
 using TheDugout.Models.Common;
 using TheDugout.Models.Competitions;
+using TheDugout.Models.Cups;
+using TheDugout.Models.Leagues;
 using TheDugout.Models.Matches;
 using TheDugout.Models.Messages;
 using TheDugout.Models.Players;

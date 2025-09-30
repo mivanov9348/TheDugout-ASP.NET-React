@@ -5,7 +5,6 @@ using TheDugout.Models.Game;
 using TheDugout.Services.Cup;
 using TheDugout.Services.EuropeanCup;
 using TheDugout.Services.Finance;
-using TheDugout.Services.Fixture;
 using TheDugout.Services.League;
 using TheDugout.Services.Players;
 using TheDugout.Services.Season;

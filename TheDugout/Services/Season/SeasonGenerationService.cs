@@ -12,7 +12,8 @@ namespace TheDugout.Services.Season
                 GameSave = gameSave,
                 StartDate = startDate,
                 EndDate = startDate.AddYears(1).AddDays(-1),
-                CurrentDate = startDate
+                CurrentDate = startDate,
+                IsActive = true
             };
 
             var events = new List<SeasonEvent>();

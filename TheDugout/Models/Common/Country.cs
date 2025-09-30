@@ -1,5 +1,5 @@
 ﻿using System.Numerics;
-using TheDugout.Models.Competitions;
+using TheDugout.Models.Leagues;
 using TheDugout.Models.Players;
 using TheDugout.Models.Teams;
 

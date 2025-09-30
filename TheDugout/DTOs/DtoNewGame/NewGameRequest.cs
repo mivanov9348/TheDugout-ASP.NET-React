@@ -1,4 +1,4 @@
-﻿namespace TheDugout.Data.DtoNewGame
+﻿namespace TheDugout.DTOs.DtoNewGame
 {
     public class NewGameRequest
     {

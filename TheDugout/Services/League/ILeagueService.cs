@@ -4,7 +4,7 @@ namespace TheDugout.Services.League
 {
     public interface ILeagueService
     {
-        Task<List<Models.Competitions.League>> GenerateLeaguesAsync(GameSave gameSave, Models.Seasons.Season season);
+        Task<List<Models.Leagues.League>> GenerateLeaguesAsync(GameSave gameSave, Models.Seasons.Season season);
         Task InitializeStandingsAsync(GameSave gameSave, Models.Seasons.Season season);
     }
 

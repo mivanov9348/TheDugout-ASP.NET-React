@@ -1,5 +1,7 @@
 ﻿using TheDugout.Models.Competitions;
+using TheDugout.Models.Cups;
 using TheDugout.Models.Game;
+using TheDugout.Models.Leagues;
 using TheDugout.Models.Matches;
 using TheDugout.Models.Seasons;
 using TheDugout.Models.Teams;

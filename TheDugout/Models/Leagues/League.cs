@@ -4,7 +4,7 @@ using TheDugout.Models.Game;
 using TheDugout.Models.Seasons;
 using TheDugout.Models.Teams;
 
-namespace TheDugout.Models.Competitions
+namespace TheDugout.Models.Leagues
     {
         public class League
         {

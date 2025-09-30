@@ -5,13 +5,15 @@ using System.Linq;
 using System.Threading.Tasks;
 using TheDugout.Data;
 using TheDugout.Models.Competitions;
+using TheDugout.Models.Cups;
 using TheDugout.Models.Fixtures;
 using TheDugout.Models.Game;
 using TheDugout.Models.Seasons;
 using TheDugout.Models.Teams;
+using TheDugout.Services.Fixture;
 using TheDugout.Services.Season;
 
-namespace TheDugout.Services.Fixture
+namespace TheDugout.Services.Cup
 {
     public class CupFixturesService : ICupFixturesService
     {
@@ -34,7 +36,7 @@ namespace TheDugout.Services.Fixture
         public async Task GenerateAllCupFixturesAsync(
        int seasonId,
        int gameSaveId,
-       List<Models.Competitions.Cup> cups)
+       List<Models.Cups.Cup> cups)
         {
             var season = await _context.Seasons
                 .Include(s => s.Events)
@@ -90,7 +92,7 @@ namespace TheDugout.Services.Fixture
         }
 
         private List<Models.Fixtures.Fixture> GenerateFixturesForCup(
-        Models.Competitions.Cup cup,
+        Models.Cups.Cup cup,
         List<Models.Teams.Team> teams,
         int gameSaveId,
         int seasonId,
@@ -183,7 +185,7 @@ namespace TheDugout.Services.Fixture
 
         private static bool NeedsPreliminaryRound(int teamCount)
         {
-            return teamCount > 0 && (teamCount & (teamCount - 1)) != 0;
+            return teamCount > 0 && (teamCount & teamCount - 1) != 0;
         }
 
         private static int GetTeamsInPrelimRound(int teamCount)
@@ -218,7 +220,6 @@ namespace TheDugout.Services.Fixture
                 .Select(f => f.WinnerTeamId!.Value)
                 .ToList();
 
-            // маркираме губещите като елиминирани
             var losers = lastRound.Fixtures
                 .SelectMany(f => new[] { f.HomeTeamId, f.AwayTeamId })
                 .Except(winners)

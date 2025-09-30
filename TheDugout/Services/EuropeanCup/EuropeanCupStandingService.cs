@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using TheDugout.Data;
 using TheDugout.Models.Competitions;
 
-namespace TheDugout.Services.Standings
+namespace TheDugout.Services.EuropeanCup
 {
     public class EuropeanCupStandingService : IEuropeanCupStandingService
     {

@@ -1,4 +1,4 @@
-﻿namespace TheDugout.Services.Fixture
+﻿namespace TheDugout.Services.EuropeanCup
 {
     public interface IEurocupFixturesService
     {

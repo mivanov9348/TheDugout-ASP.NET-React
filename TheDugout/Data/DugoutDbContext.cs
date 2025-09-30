@@ -1,10 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TheDugout.Models.Common;
 using TheDugout.Models.Competitions;
+using TheDugout.Models.Cups;
 using TheDugout.Models.Facilities;
 using TheDugout.Models.Finance;
 using TheDugout.Models.Fixtures;
 using TheDugout.Models.Game;
+using TheDugout.Models.Leagues;
 using TheDugout.Models.Matches;
 using TheDugout.Models.Messages;
 using TheDugout.Models.Players;

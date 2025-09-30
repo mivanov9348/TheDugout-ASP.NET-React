@@ -66,8 +66,6 @@ function Header({ username }) {
   };
 
   const handleNextDay = async () => {
-    if (hasUnplayed || activeMatch) return;
-
     try {
       const res = await fetch("/api/games/current/next-day", {
         method: "POST",
@@ -83,17 +81,7 @@ function Header({ username }) {
         setHasUnplayed(data.hasUnplayedMatchesToday);
 
         if (data.hasMatchesToday) {
-          const matchesRes = await fetch(
-            `/api/matches/today/${updatedSave.id}`,
-            { credentials: "include" }
-          );
-
-          if (matchesRes.ok) {
-            const matches = await matchesRes.json();
-            navigate(`/today-matches/${updatedSave.id}`, {
-              state: { matches },
-            });
-          }
+          navigate(`/today-matches/${updatedSave.id}`);
         }
       }
     } catch (err) {
@@ -107,13 +95,22 @@ function Header({ username }) {
     }
   };
 
-  const buttonLabel = activeMatch
-    ? "To Match"
-    : hasUnplayed
-    ? "Match Day"
-    : currentGameSave?.nextDayActionLabel ?? "Next Day →";
+  const handleGoToTodayMatches = () => {
+    if (currentGameSave) {
+      navigate(`/today-matches/${currentGameSave.id}`);
+    }
+  };
 
-  const buttonAction = activeMatch ? handleGoToMatch : handleNextDay;
+  let buttonLabel = "Next Day →";
+  let buttonAction = handleNextDay;
+
+  if (activeMatch) {
+    buttonLabel = "To Match";
+    buttonAction = handleGoToMatch;
+  } else if (hasUnplayed) {
+    buttonLabel = "Match Day";
+    buttonAction = handleGoToTodayMatches;
+  }
 
   return (
     <header className="flex justify-between items-center px-6 py-3 bg-slate-800 text-white shadow-md">
@@ -141,12 +138,11 @@ function Header({ username }) {
         </span>
         <button
           onClick={buttonAction}
-          disabled={!activeMatch && hasUnplayed}
           className={`px-4 py-2 rounded-lg font-medium transition ${
             activeMatch
               ? "bg-green-600 hover:bg-green-700"
               : hasUnplayed
-              ? "bg-red-600 cursor-not-allowed"
+              ? "bg-amber-600 hover:bg-amber-700"
               : "bg-sky-600 hover:bg-sky-700"
           }`}
         >

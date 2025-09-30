@@ -1,5 +1,5 @@
 ﻿using TheDugout.Models.Common;
-using TheDugout.Models.Competitions;
+using TheDugout.Models.Leagues;
 
 namespace TheDugout.Models.Teams
 {

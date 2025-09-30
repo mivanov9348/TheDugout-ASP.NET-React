@@ -38,7 +38,7 @@ namespace TheDugout.Services.Finance
             return bank;
         }
 
-        public async Task InitializeClubFundsAsync(GameSave gameSave, IEnumerable<Models.Competitions.League> leagues)
+        public async Task InitializeClubFundsAsync(GameSave gameSave, IEnumerable<Models.Leagues.League> leagues)
         {
             foreach (var league in leagues)
             {

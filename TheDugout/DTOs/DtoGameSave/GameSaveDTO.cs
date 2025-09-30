@@ -1,4 +1,4 @@
-﻿namespace TheDugout.Data.DtoGameSave
+﻿namespace TheDugout.DTOs.DtoGameSave
 {
     public class GameSaveDto
     {

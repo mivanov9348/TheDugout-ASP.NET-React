@@ -1,5 +1,4 @@
-﻿using TheDugout.Data.DtoNewGame;
-using TheDugout.Models.Game;
+﻿using TheDugout.Models.Game;
 
 namespace TheDugout.Services.Game
 {

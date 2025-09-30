@@ -31,7 +31,7 @@ namespace TheDugout.Services.Team
 
         public async Task<List<Models.Teams.Team>> GenerateTeamsAsync(
         GameSave gameSave,
-        Models.Competitions.League league,
+        Models.Leagues.League league,
         IEnumerable<TeamTemplate> templates)
         {
             var teams = new List<Models.Teams.Team>();

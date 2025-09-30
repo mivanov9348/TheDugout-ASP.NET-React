@@ -16,29 +16,29 @@
 
   {
     "Name": "Goal",
-    "RangeMin": 51,
+    "RangeMin": 21,
     "RangeMax": 100,
     "ChangesPossession": true,
     "EventTypeCode": "SHT"
   },
   {
     "Name": "Saved",
-    "RangeMin": 36,
-    "RangeMax": 50,
+    "RangeMin": 11,
+    "RangeMax": 20,
     "ChangesPossession": true,
     "EventTypeCode": "SHT"
   },
   {
     "Name": "Blocked",
-    "RangeMin": 26,
-    "RangeMax": 35,
+    "RangeMin": 6,
+    "RangeMax": 10,
     "ChangesPossession": true,
     "EventTypeCode": "SHT"
   },
   {
     "Name": "Out",
     "RangeMin": 0,
-    "RangeMax": 25,
+    "RangeMax": 5,
     "ChangesPossession": true,
     "EventTypeCode": "SHT"
   },

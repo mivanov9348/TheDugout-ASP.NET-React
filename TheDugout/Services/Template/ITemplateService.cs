@@ -1,4 +1,4 @@
-﻿using TheDugout.Data.DtoNewGame;
+﻿using TheDugout.DTOs.DtoNewGame;
 
 namespace TheDugout.Services.Template
 {

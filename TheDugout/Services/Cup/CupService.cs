@@ -3,6 +3,7 @@ using System;
 using System.Xml.Linq;
 using TheDugout.Data;
 using TheDugout.Models.Competitions;
+using TheDugout.Models.Cups;
 using TheDugout.Models.Game;
 using TheDugout.Models.Matches;
 using TheDugout.Services.Fixture;
@@ -28,7 +29,7 @@ namespace TheDugout.Services.Cup
                 .Where(ct => ct.IsActive)
                 .ToListAsync();
 
-            var allCups = new List<Models.Competitions.Cup>();
+            var allCups = new List<Models.Cups.Cup>();
 
             foreach (var template in cupTemplates)
             {
@@ -54,7 +55,7 @@ namespace TheDugout.Services.Cup
                 int nextPowerOfTwo = (int)Math.Pow(2, Math.Ceiling(Math.Log2(teamsCount)));
                 int roundsCount = (int)Math.Ceiling(Math.Log2(nextPowerOfTwo));
 
-                var cup = new Models.Competitions.Cup
+                var cup = new Models.Cups.Cup
                 {
                     TemplateId = template.Id,
                     GameSaveId = gameSave.Id,

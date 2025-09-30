@@ -18,10 +18,10 @@ namespace TheDugout.Services.Message
         }
 
         public async Task<Models.Messages.Message> CreateMessageAsync(
-            MessageCategory category,
-            Dictionary<string, string> placeholders,
-            int? gameSaveId = null,
-            bool strict = false)
+    MessageCategory category,
+    Dictionary<string, string> placeholders,
+    int? gameSaveId = null,
+    bool strict = false)
         {
             var templates = await _context.MessageTemplates
                 .Where(t => t.Category == category)
@@ -34,11 +34,15 @@ namespace TheDugout.Services.Message
 
             var subject = ReplacePlaceholders(template.SubjectTemplate, placeholders, strict);
             var body = ReplacePlaceholders(template.BodyTemplate, placeholders, strict);
-            var gameSave= gameSaveId.HasValue
-                ? await _context.GameSaves.FindAsync(gameSaveId.Value)
+
+            var season = gameSaveId.HasValue
+                ? await _context.Seasons
+                    .Where(s => s.GameSaveId == gameSaveId.Value && s.IsActive)
+                    .FirstOrDefaultAsync()
                 : null;
-            var season = gameSave?.Seasons
-                .LastOrDefault();
+
+            if (season == null)
+                throw new InvalidOperationException("No active season found for this game save");
 
             return new Models.Messages.Message
             {
@@ -53,6 +57,7 @@ namespace TheDugout.Services.Message
                 MessageTemplate = template
             };
         }
+
 
         public async Task<Models.Messages.Message> CreateAndSaveMessageAsync(
             MessageCategory category,

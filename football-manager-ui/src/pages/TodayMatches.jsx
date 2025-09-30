@@ -50,6 +50,9 @@ export default function TodayMatches() {
     }
   };
 
+  // има ли неизиграни мачове
+  const hasUnplayedMatches = matches.some((m) => m.status === 0);
+
   // групиране по състезание
   const grouped = matches.reduce((acc, m) => {
     if (!acc[m.competitionName]) acc[m.competitionName] = [];
@@ -59,25 +62,34 @@ export default function TodayMatches() {
 
   return (
     <div className="p-6 sm:p-8 space-y-10 max-w-5xl mx-auto">
-      {/* Simulate / To Match button */}
+      {/* Buttons */}
       <div className="flex justify-center gap-4 mb-6">
-        {userFixtureId && (
-          <button
-            onClick={handleToMatch}
-            className="flex items-center gap-2 bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800 text-white px-6 py-3 rounded-2xl shadow-md font-semibold transition transform hover:scale-105"
-          >
-            <Play className="w-5 h-5" />
-            To Match
-          </button>
-        )}
-
+        {/* To Match */}
         <button
-          onClick={handleSimulate}
-          className="flex items-center gap-2 bg-gradient-to-r from-sky-600 to-blue-700 hover:from-sky-700 hover:to-blue-800 text-white px-6 py-3 rounded-2xl shadow-md font-semibold transition transform hover:scale-105"
+          onClick={handleToMatch}
+          disabled={!userFixtureId}
+          className={`flex items-center gap-2 px-6 py-3 rounded-2xl shadow-md font-semibold transition transform
+            ${
+              userFixtureId
+                ? "bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800 text-white hover:scale-105"
+                : "bg-gray-300 text-gray-500 cursor-not-allowed"
+            }`}
         >
           <Play className="w-5 h-5" />
-          Simulate Matches
+          To Match
         </button>
+
+        {/* Simulate (само ако има неизиграни) */}
+        {!hasUnplayedMatches && (
+          <button
+            onClick={handleSimulate}
+            className="flex items-center gap-2 px-6 py-3 rounded-2xl shadow-md font-semibold transition transform
+              bg-gradient-to-r from-sky-600 to-blue-700 hover:from-sky-700 hover:to-blue-800 text-white hover:scale-105"
+          >
+            <Play className="w-5 h-5" />
+            Simulate Matches
+          </button>
+        )}
       </div>
 
       {matches.length === 0 && (

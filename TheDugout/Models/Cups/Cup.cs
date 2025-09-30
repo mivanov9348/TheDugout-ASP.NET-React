@@ -2,7 +2,7 @@
 using TheDugout.Models.Game;
 using TheDugout.Models.Seasons;
 
-namespace TheDugout.Models.Competitions
+namespace TheDugout.Models.Cups
 {
     public class Cup
     {

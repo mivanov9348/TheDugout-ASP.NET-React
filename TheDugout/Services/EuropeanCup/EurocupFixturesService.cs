@@ -4,9 +4,10 @@ using System;
 using TheDugout.Data;
 using TheDugout.Models.Competitions;
 using TheDugout.Models.Fixtures;
+using TheDugout.Services.Fixture;
 using TheDugout.Services.Season;
 
-namespace TheDugout.Services.Fixture
+namespace TheDugout.Services.EuropeanCup
 {
     public class EurocupFixturesService : IEurocupFixturesService
     {
@@ -131,15 +132,15 @@ namespace TheDugout.Services.Fixture
                 if (phaseTemplate.IsTwoLegged)
                 {
                     fixturesToAdd.Add(_fixturesHelperService.CreateFixture(gameSaveId, seasonId: phase.EuropeanCup.SeasonId, a, b,
-                        DateTime.UtcNow.AddDays(7 + (i / 2) * 14), 1, CompetitionType.EuropeanCup, europeanCupPhaseId: phase.Id));
+                        DateTime.UtcNow.AddDays(7 + i / 2 * 14), 1, CompetitionType.EuropeanCup, europeanCupPhaseId: phase.Id));
 
                     fixturesToAdd.Add(_fixturesHelperService.CreateFixture(gameSaveId, seasonId: phase.EuropeanCup.SeasonId, b, a,
-                        DateTime.UtcNow.AddDays(14 + (i / 2) * 14), 2, CompetitionType.EuropeanCup, europeanCupPhaseId: phase.Id));
+                        DateTime.UtcNow.AddDays(14 + i / 2 * 14), 2, CompetitionType.EuropeanCup, europeanCupPhaseId: phase.Id));
                 }
                 else
                 {
                     fixturesToAdd.Add(_fixturesHelperService.CreateFixture(gameSaveId, seasonId: phase.EuropeanCup.SeasonId, a, b,
-                        DateTime.UtcNow.AddDays(7 + (i / 2) * 7), 1, CompetitionType.EuropeanCup, europeanCupPhaseId: phase.Id));
+                        DateTime.UtcNow.AddDays(7 + i / 2 * 7), 1, CompetitionType.EuropeanCup, europeanCupPhaseId: phase.Id));
                 }
             }
 

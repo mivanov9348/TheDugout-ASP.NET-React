@@ -1,4 +1,4 @@
-﻿namespace TheDugout.Services.Standings
+﻿namespace TheDugout.Services.EuropeanCup
 {
     public interface IEuropeanCupStandingService
     {

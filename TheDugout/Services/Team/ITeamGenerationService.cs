@@ -9,7 +9,7 @@ namespace TheDugout.Services.Team
     {
         Task<List<Models.Teams.Team>> GenerateTeamsAsync(
                 GameSave gameSave,
-                Models.Competitions.League league,
+                Models.Leagues.League league,
                 IEnumerable<TeamTemplate> templates);
         Task<List<Models.Teams.Team>> GenerateIndependentTeamsAsync(GameSave gameSave);
     }

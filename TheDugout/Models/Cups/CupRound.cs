@@ -1,6 +1,6 @@
 ﻿using TheDugout.Models.Fixtures;
 
-namespace TheDugout.Models.Competitions
+namespace TheDugout.Models.Cups
 {    public class CupRound
     {
         public int Id { get; set; }

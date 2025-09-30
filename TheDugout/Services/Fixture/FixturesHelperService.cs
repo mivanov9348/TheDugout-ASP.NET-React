@@ -1,5 +1,5 @@
 ﻿using System;
-using TheDugout.Models.Competitions;
+using TheDugout.Models.Cups;
 using TheDugout.Models.Fixtures;
 
 namespace TheDugout.Services.Fixture

@@ -1,4 +1,4 @@
-﻿using TheDugout.Data.DtoGameSave;
+﻿using TheDugout.DTOs.DtoGameSave;
 using TheDugout.Models.Game;
 
 public static class GameSaveExtensions

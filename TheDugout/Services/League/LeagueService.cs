@@ -1,8 +1,8 @@
 ﻿using Bogus;
 using Microsoft.EntityFrameworkCore;
 using TheDugout.Data;
-using TheDugout.Models.Competitions;
 using TheDugout.Models.Game;
+using TheDugout.Models.Leagues;
 using TheDugout.Services.Team;
 
 namespace TheDugout.Services.League
@@ -17,9 +17,9 @@ namespace TheDugout.Services.League
             _context = context;
             _teamGenerator = teamGenerator;
         }
-        public async Task<List<Models.Competitions.League>> GenerateLeaguesAsync(GameSave gameSave, Models.Seasons.Season season)
+        public async Task<List<Models.Leagues.League>> GenerateLeaguesAsync(GameSave gameSave, Models.Seasons.Season season)
         {
-            var leagues = new List<Models.Competitions.League>();
+            var leagues = new List<Models.Leagues.League>();
 
             var leagueTemplates = await _context.LeagueTemplates
                 .Include(lt => lt.TeamTemplates)
@@ -27,7 +27,7 @@ namespace TheDugout.Services.League
 
             foreach (var lt in leagueTemplates)
             {
-                var league = new Models.Competitions.League
+                var league = new Models.Leagues.League
                 {
                     TemplateId = lt.Id,
                     GameSave = gameSave,

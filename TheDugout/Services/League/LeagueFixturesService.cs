@@ -3,9 +3,10 @@ using Microsoft.EntityFrameworkCore;
 using TheDugout.Data;
 using TheDugout.Models.Fixtures;
 using TheDugout.Models.Seasons;
+using TheDugout.Services.Fixture;
 using TheDugout.Services.Season;
 
-namespace TheDugout.Services.Fixture
+namespace TheDugout.Services.League
 {
     public class LeagueFixturesService : ILeagueFixturesService
     {
@@ -75,7 +76,7 @@ namespace TheDugout.Services.Fixture
                     var away = rotation[teamCount - 1 - match];
                     if (home.Id == -1 || away.Id == -1) continue;
 
-                    bool swap = (round % 2 == 1 && match == 0);
+                    bool swap = round % 2 == 1 && match == 0;
 
                     fixtures.Add(fixturesHelperService.CreateFixture(
                         gameSaveId,

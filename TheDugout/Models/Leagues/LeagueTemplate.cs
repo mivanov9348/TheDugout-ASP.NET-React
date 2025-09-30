@@ -1,7 +1,7 @@
 ﻿using TheDugout.Models.Common;
 using TheDugout.Models.Teams;
 
-namespace TheDugout.Models.Competitions
+namespace TheDugout.Models.Leagues
 {
     public class LeagueTemplate
     {

@@ -38,34 +38,36 @@ public class MatchesController : ControllerBase
         var today = save.Seasons.First().CurrentDate.Date;
 
         var matches = await _context.Fixtures
-            .Include(f => f.HomeTeam)
-            .Include(f => f.AwayTeam)
-            .Include(f => f.League).ThenInclude(l => l.Template)
-            .Include(f => f.CupRound).ThenInclude(cr => cr.Cup).ThenInclude(c => c.Template)
-            .Include(f => f.EuropeanCupPhase).ThenInclude(p => p.EuropeanCup).ThenInclude(ec => ec.Template)
-            .Where(f => f.GameSaveId == gameSaveId && f.Date.Date == today)
-            .Select(f => new
-            {
-                FixtureId = f.Id,
-                CompetitionType = f.CompetitionType.ToString(),
-                CompetitionName =
-                    f.CompetitionType == CompetitionType.League
-                        ? f.League!.Template.Name
-                        : f.CompetitionType == CompetitionType.DomesticCup
-                            ? f.CupRound!.Cup.Template.Name
-                            : f.EuropeanCupPhase!.EuropeanCup.Template.Name,
-                Home = f.HomeTeam.Name,
-                Away = f.AwayTeam.Name,
-                HomeTeamId = f.HomeTeam.Id,
-                AwayTeamId = f.AwayTeam.Id,
-                HomeGoals = f.HomeTeamGoals,
-                AwayGoals = f.AwayTeamGoals,
-                Time = f.Date.ToString("HH:mm"),
-                IsUserTeamMatch = (f.HomeTeamId == save.UserTeamId || f.AwayTeamId == save.UserTeamId)
-            })
-            .ToListAsync();
+    .Include(f => f.HomeTeam)
+    .Include(f => f.AwayTeam)
+    .Include(f => f.League).ThenInclude(l => l.Template)
+    .Include(f => f.CupRound).ThenInclude(cr => cr.Cup).ThenInclude(c => c.Template)
+    .Include(f => f.EuropeanCupPhase).ThenInclude(p => p.EuropeanCup).ThenInclude(ec => ec.Template)
+    .Where(f => f.GameSaveId == gameSaveId && f.Date.Date == today)
+    .Select(f => new
+    {
+        FixtureId = f.Id,
+        CompetitionType = f.CompetitionType.ToString(),
+        CompetitionName =
+            f.CompetitionType == CompetitionType.League
+                ? f.League!.Template.Name
+                : f.CompetitionType == CompetitionType.DomesticCup
+                    ? f.CupRound!.Cup.Template.Name
+                    : f.EuropeanCupPhase!.EuropeanCup.Template.Name,
+        Home = f.HomeTeam.Name,
+        Away = f.AwayTeam.Name,
+        HomeTeamId = f.HomeTeam.Id,
+        AwayTeamId = f.AwayTeam.Id,
+        HomeGoals = f.HomeTeamGoals,
+        AwayGoals = f.AwayTeamGoals,
+        Status = f.Status, 
+        Time = f.Date.ToString("HH:mm"),
+        IsUserTeamMatch = (f.HomeTeamId == save.UserTeamId || f.AwayTeamId == save.UserTeamId)
+    })
+    .ToListAsync();
 
-        return Ok(new { Matches = matches, save.UserTeamId });
+
+        return Ok(new { matches = matches, save.UserTeamId });
     }
 
 
