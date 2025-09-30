@@ -5,6 +5,7 @@ using TheDugout.Models.Matches;
 using TheDugout.Services.League;
 using TheDugout.Services.Match;
 using TheDugout.Services.Player;
+using TheDugout.Services.Standings;
 using TheDugout.Services.Team;
 
 namespace TheDugout.Services.MatchEngine
@@ -17,6 +18,7 @@ namespace TheDugout.Services.MatchEngine
         private readonly IMatchEventService _matchEventService;
         private readonly IPlayerStatsService _playerStatsService;
         private readonly ILeagueStandingsService _leagueStandingsService;
+        private readonly IStandingsDispatcherService _standingsDispatcher;
         private readonly DugoutDbContext _context;
 
         public MatchEngine(
@@ -24,7 +26,8 @@ namespace TheDugout.Services.MatchEngine
             IMatchEventService matchEventService,
             IPlayerStatsService playerStatsService,
             ILeagueStandingsService leagueStandingsService,
-            IMatchService matchService,
+            IStandingsDispatcherService standingsDispatcher,
+        IMatchService matchService,
             DugoutDbContext context)
         {
             _teamPlanService = teamPlanService;
@@ -32,6 +35,7 @@ namespace TheDugout.Services.MatchEngine
             _playerStatsService = playerStatsService;
             _leagueStandingsService = leagueStandingsService;
             _matchService = matchService;
+            _standingsDispatcher = standingsDispatcher;
             _context = context;
         }
         public void StartMatch(Models.Matches.Match match)
@@ -131,7 +135,7 @@ namespace TheDugout.Services.MatchEngine
             if (IsMatchFinished(match))
             {
                 EndMatch(match);
-                await _leagueStandingsService.UpdateStandingsAfterMatchAsync(match.Fixture);
+                await _standingsDispatcher.UpdateAfterMatchAsync(match.Fixture);
             }
 
             return matchEvent;
@@ -199,7 +203,7 @@ namespace TheDugout.Services.MatchEngine
 
             // 3. Край на мача
             EndMatch(match);
-            await _leagueStandingsService.UpdateStandingsAfterMatchAsync(match.Fixture);
+            await _standingsDispatcher.UpdateAfterMatchAsync(match.Fixture);
 
             return match;
         }

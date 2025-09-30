@@ -23,6 +23,7 @@ using TheDugout.Services.Player;
 using TheDugout.Services.Players;
 using TheDugout.Services.Season;
 using TheDugout.Services.Staff;
+using TheDugout.Services.Standings;
 using TheDugout.Services.Team;
 using TheDugout.Services.Template;
 using TheDugout.Services.Training;
@@ -82,6 +83,8 @@ builder.Services.AddScoped<IMatchEngine, MatchEngine>();
 builder.Services.AddScoped<IMatchEventService, MatchEventService>();
 builder.Services.AddScoped<IPlayerStatsService, PlayerStatsService>();
 builder.Services.AddScoped<ILeagueStandingsService, LeagueStandingsService>();
+builder.Services.AddScoped<IStandingsDispatcherService, StandingsDispatcherService>();
+builder.Services.AddScoped<IEuropeanCupStandingService, EuropeanCupStandingService>();
 
 builder.Services.AddCors(options =>
 {

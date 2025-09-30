@@ -11,5 +11,8 @@ namespace TheDugout.Models.Competitions
 
         public int TeamId { get; set; }
         public Team Team { get; set; } = null!;
+
+        public bool IsEliminated { get; set; } = false;
+
     }
 }

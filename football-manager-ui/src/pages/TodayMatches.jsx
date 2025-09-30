@@ -119,8 +119,12 @@ export default function TodayMatches() {
                   />
                 </div>
 
-                {/* VS */}
-                <span className="px-4 text-gray-500 font-medium">vs</span>
+                {/* Result or VS */}
+                <span className="px-4 text-gray-700 font-bold">
+                  {m.homeGoals != null && m.awayGoals != null
+                    ? `${m.homeGoals} : ${m.awayGoals}`
+                    : "vs"}
+                </span>
 
                 {/* Away team */}
                 <div className="flex-1 flex items-center justify-start gap-2">

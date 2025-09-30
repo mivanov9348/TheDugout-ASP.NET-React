@@ -5,10 +5,6 @@ namespace TheDugout.Services.Player
 {
     public class PlayerStatsService : IPlayerStatsService
     {
-        public PlayerStatsService()
-        {
-        }
-
         public List<PlayerMatchStats> InitializeMatchStats(Models.Matches.Match match)
         {
             var stats = new List<PlayerMatchStats>();
@@ -39,7 +35,6 @@ namespace TheDugout.Services.Player
                         MatchId = match.Id,
                         Match = match,
                         Goals = 0
-
                     });
                 }
             }
@@ -51,55 +46,34 @@ namespace TheDugout.Services.Player
         {
             switch (matchEvent.EventType.Code)
             {
-                case "SHT": // Shot
+                case "SHT":
                     if (matchEvent.Outcome.Name == "Goal")
                     {
                         stats.Goals++;
-                        //stats.ShotsOnTarget++;
-                    }
-                    else if (matchEvent.Outcome.Name == "Saved" || matchEvent.Outcome.Name == "Blocked")
-                    {
-                        //stats.ShotsOnTarget++;
-                    }
-                    else if (matchEvent.Outcome.Name == "Out")
-                    {
-                        //stats.ShotsOffTarget++;
                     }
                     break;
-
-                case "PAS": // Pass
-                    if (matchEvent.Outcome.Name == "Success")
-                    {
-                        //stats.PassesCompleted++;
-                    }
-                    else
-                    {
-                        //stats.PassesFailed++;
-                    }
+                case "PAS":
+                    // примерна логика...
                     break;
-
-                case "TAC": // Tackle
-                    if (matchEvent.Outcome.Name == "Success")
-                    {
-                        //stats.TacklesWon++;
-                    }
-                    else
-                    {
-                        //stats.TacklesLost++;
-                    }
+                case "TAC":
+                    // примерна логика...
                     break;
-
-                case "DRI": // Dribble
-                    if (matchEvent.Outcome.Name == "Success")
-                    {
-                        //stats.DribblesCompleted++;
-                    }
-                    else
-                    {
-                        //stats.DribblesFailed++;
-                    }
+                case "DRI":
+                    // примерна логика...
                     break;
             }
+        }
+
+        public List<PlayerMatchStats> EnsureMatchStats(Models.Matches.Match match)
+        {
+            if (match.PlayerStats == null || !match.PlayerStats.Any())
+            {
+                var stats = InitializeMatchStats(match);
+                match.PlayerStats = stats;
+                return stats;
+            }
+
+            return match.PlayerStats.ToList();
         }
     }
 }

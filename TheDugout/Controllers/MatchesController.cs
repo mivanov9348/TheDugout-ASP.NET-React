@@ -58,6 +58,8 @@ public class MatchesController : ControllerBase
                 Away = f.AwayTeam.Name,
                 HomeTeamId = f.HomeTeam.Id,
                 AwayTeamId = f.AwayTeam.Id,
+                HomeGoals = f.HomeTeamGoals,
+                AwayGoals = f.AwayTeamGoals,
                 Time = f.Date.ToString("HH:mm"),
                 IsUserTeamMatch = (f.HomeTeamId == save.UserTeamId || f.AwayTeamId == save.UserTeamId)
             })
@@ -66,35 +68,65 @@ public class MatchesController : ControllerBase
         return Ok(new { Matches = matches, save.UserTeamId });
     }
 
+
     [HttpPost("simulate/{gameSaveId}")]
     public async Task<IActionResult> SimulateMatches(int gameSaveId)
     {
-        // 1. Взимаме save-а
         var gameSave = await _context.GameSaves
             .Include(gs => gs.Fixtures)
+                .ThenInclude(f => f.Matches)
+                    .ThenInclude(m => m.PlayerStats)
+            .Include(gs => gs.Seasons)
+            .Include(gs => gs.Fixtures)
+                .ThenInclude(f => f.HomeTeam)
+                    .ThenInclude(t => t.Players)
+            .Include(gs => gs.Fixtures)
+                .ThenInclude(f => f.AwayTeam)
+                    .ThenInclude(t => t.Players)
             .FirstOrDefaultAsync(gs => gs.Id == gameSaveId);
 
         if (gameSave == null)
             return NotFound($"GameSave {gameSaveId} not found.");
 
-        // 2. Взимаме всички fixtures за днес (без user мача)
-        var today = DateTime.UtcNow.Date;
+        var currentSeason = gameSave.Seasons
+            .OrderByDescending(s => s.StartDate)
+            .FirstOrDefault();
+
+        if (currentSeason == null)
+            return BadRequest("No active season found for this GameSave.");
+
+        var currentDate = currentSeason.CurrentDate.Date;
         var fixtures = gameSave.Fixtures
-            .Where(f => f.Date.Date == today &&
-                    f.HomeTeamId != gameSave.UserTeamId &&
-                    f.AwayTeamId != gameSave.UserTeamId)
-                    .ToList();
+            .Where(f => f.Date.Date == currentDate &&
+                        f.HomeTeamId != gameSave.UserTeamId &&
+                        f.AwayTeamId != gameSave.UserTeamId)
+            .ToList();
 
         if (!fixtures.Any())
             return Ok(new { message = "No fixtures to simulate." });
 
-        // 3. Въртим симулация за всяко
         foreach (var fixture in fixtures)
         {
+            // 1. Getting or Creating Match
+            var match = fixture.Matches.FirstOrDefault();
+            if (match == null)
+            {
+                match = await _matchService.CreateMatchFromFixtureAsync(fixture, gameSave);
+                fixture.Matches.Add(match);
+            }
+
+            // 2. Ensure PlayerStats
+            var stats = _playerStatsService.EnsureMatchStats(match);
+            if (stats.Any())
+            {
+                _context.PlayerMatchStats.AddRange(stats);
+                await _context.SaveChangesAsync();
+            }
+
+            // 3. Simulate Match
             await _matchEngine.SimulateMatchAsync(fixture, gameSave);
         }
 
-        // 4. Записваме резултатите
         await _context.SaveChangesAsync();
 
         return Ok(new { message = $"{fixtures.Count} matches simulated." });
@@ -223,41 +255,45 @@ public class MatchesController : ControllerBase
     {
         var match = await _context.Matches
             .Include(m => m.Fixture)
-            .ThenInclude(f => f.HomeTeam)
-            .ThenInclude(t => t.Players)
+                .ThenInclude(f => f.HomeTeam)
+                    .ThenInclude(t => t.Players)
             .Include(m => m.Fixture)
-            .ThenInclude(f => f.AwayTeam)
-            .ThenInclude(t => t.Players)
+                .ThenInclude(f => f.AwayTeam)
+                    .ThenInclude(t => t.Players)
             .Include(m => m.PlayerStats)
             .FirstOrDefaultAsync(m => m.Id == id);
 
         if (match == null)
             return NotFound();
 
+        // Ensure PlayerStats
         if (match.PlayerStats == null || !match.PlayerStats.Any())
         {
             var stats = _playerStatsService.InitializeMatchStats(match);
+
             match.PlayerStats = stats;
             _context.PlayerMatchStats.AddRange(stats);
+
             await _context.SaveChangesAsync();
         }
 
         var matchEvent = await _matchEngine.PlayStep(match);
         await _context.SaveChangesAsync();
 
-        // ако мачът свърши и е user мач → симулирай останалите
+        // if match finished and user team involved, simulate other matches today
         if (match.Status == MatchStatus.Played &&
             (match.Fixture.HomeTeamId == match.Fixture.GameSave.UserTeamId ||
              match.Fixture.AwayTeamId == match.Fixture.GameSave.UserTeamId))
         {
             var gameSave = await _context.GameSaves
                 .Include(gs => gs.Fixtures)
+                .Include(gs => gs.Seasons)
                 .FirstOrDefaultAsync(gs => gs.Id == match.GameSaveId);
 
             var today = gameSave.Seasons.First().CurrentDate.Date;
             var fixtures = gameSave.Fixtures
                 .Where(f => f.Date.Date == today &&
-                       f.Id != match.FixtureId) 
+                       f.Id != match.FixtureId)
                 .ToList();
 
             foreach (var f in fixtures)

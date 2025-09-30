@@ -32,9 +32,9 @@ namespace TheDugout.Services.Fixture
         }
 
         public async Task GenerateAllCupFixturesAsync(
-            int seasonId,
-            int gameSaveId,
-            List<Models.Competitions.Cup> cups)
+       int seasonId,
+       int gameSaveId,
+       List<Models.Competitions.Cup> cups)
         {
             var season = await _context.Seasons
                 .Include(s => s.Events)
@@ -44,12 +44,13 @@ namespace TheDugout.Services.Fixture
 
             var allFixtures = new List<Models.Fixtures.Fixture>();
 
-            // 1) Подготвяме и разбъркваме отборите за всеки cup
-            var cupTeamsMap = new Dictionary<int, List<TheDugout.Models.Teams.Team>>();
+            var cupTeamsMap = new Dictionary<int, List<Models.Teams.Team>>();
             foreach (var cup in cups)
             {
+                // само отборите, които не са елиминирани
                 var teams = cup.Teams
-                    .Select(ct => new TheDugout.Models.Teams.Team
+                    .Where(ct => !ct.IsEliminated)
+                    .Select(ct => new Models.Teams.Team
                     {
                         Id = ct.TeamId,
                         Name = ct.Team?.Name ?? $"Team {ct.TeamId}"
@@ -63,10 +64,8 @@ namespace TheDugout.Services.Fixture
                 cupTeamsMap[cup.Id] = teams;
             }
 
-            // 2) Проверяваме дали глобално е нужен prelim
             bool anyNeedsPrelim = cupTeamsMap.Values.Any(t => NeedsPreliminaryRound(t.Count));
 
-            // 3) Генерираме fixtures за всеки cup
             foreach (var cup in cups)
             {
                 if (!cupTeamsMap.TryGetValue(cup.Id, out var teams)) continue;
@@ -82,31 +81,25 @@ namespace TheDugout.Services.Fixture
                 allFixtures.AddRange(fixturesForCup);
             }
 
-            // 4) Сортираме/назначаваме дати и запазваме
             if (allFixtures.Any())
             {
-                _cupScheduleService.AssignCupFixtures(
-                    allFixtures,
-                    season
-                    //CompetitionType.DomesticCup
-                );
-
+                _cupScheduleService.AssignCupFixtures(allFixtures, season);
                 await _context.Fixtures.AddRangeAsync(allFixtures);
                 await _context.SaveChangesAsync();
             }
         }
+
         private List<Models.Fixtures.Fixture> GenerateFixturesForCup(
- Models.Competitions.Cup cup,
- List<TheDugout.Models.Teams.Team> teams,
- int gameSaveId,
- int seasonId,
- bool globalNeedsPrelim)
+        Models.Competitions.Cup cup,
+        List<Models.Teams.Team> teams,
+        int gameSaveId,
+        int seasonId,
+        bool globalNeedsPrelim)
         {
             var fixtures = new List<Models.Fixtures.Fixture>();
             bool needsPrelim = NeedsPreliminaryRound(teams.Count);
             int prelimTeamsCount = GetTeamsInPrelimRound(teams.Count);
 
-            // ----------- PRELIMINARY ROUND -----------
             if (needsPrelim && prelimTeamsCount > 0)
             {
                 var prelimTeams = teams.Take(prelimTeamsCount * 2).ToList();
@@ -127,7 +120,7 @@ namespace TheDugout.Services.Fixture
                         seasonId,
                         home.Id,
                         away.Id,
-                        DateTime.MinValue, // дата ще се сложи по-късно
+                        DateTime.MinValue,
                         1,
                         CompetitionType.DomesticCup,
                         prelimRound
@@ -138,19 +131,15 @@ namespace TheDugout.Services.Fixture
                 }
 
                 _context.CupRounds.Add(prelimRound);
-
-                // ВАЖНО: тук приключваме → не теглим Round 1 сега
                 return fixtures;
             }
 
-            // ----------- FIRST ROUND (ако НЯМА прелим никъде) -----------
             if (globalNeedsPrelim)
             {
-                // ако някой друг cup има прелим → този чака
                 return fixtures;
             }
 
-            var teamsForFirstRound = new List<TheDugout.Models.Teams.Team>(teams);
+            var teamsForFirstRound = new List<Models.Teams.Team>(teams);
 
             if (teamsForFirstRound.Count >= 2)
             {
@@ -191,10 +180,12 @@ namespace TheDugout.Services.Fixture
 
             return fixtures;
         }
+
         private static bool NeedsPreliminaryRound(int teamCount)
         {
             return teamCount > 0 && (teamCount & (teamCount - 1)) != 0;
         }
+
         private static int GetTeamsInPrelimRound(int teamCount)
         {
             if (!NeedsPreliminaryRound(teamCount))
@@ -202,6 +193,83 @@ namespace TheDugout.Services.Fixture
 
             int prevPower = (int)Math.Pow(2, Math.Floor(Math.Log(teamCount, 2)));
             return teamCount - prevPower;
+        }
+
+        public async Task GenerateNextRoundAsync(int cupId, int gameSaveId, int seasonId)
+        {
+            var cup = await _context.Cups
+                .Include(c => c.Teams)
+                .Include(c => c.Rounds)
+                    .ThenInclude(r => r.Fixtures)
+                .FirstOrDefaultAsync(c => c.Id == cupId);
+
+            if (cup == null) return;
+
+            var lastRound = cup.Rounds
+                .OrderByDescending(r => r.RoundNumber)
+                .FirstOrDefault();
+
+            if (lastRound == null) return;
+
+            if (lastRound.Fixtures.Any(f => f.WinnerTeamId == null))
+                return;
+
+            var winners = lastRound.Fixtures
+                .Select(f => f.WinnerTeamId!.Value)
+                .ToList();
+
+            // маркираме губещите като елиминирани
+            var losers = lastRound.Fixtures
+                .SelectMany(f => new[] { f.HomeTeamId, f.AwayTeamId })
+                .Except(winners)
+                .ToList();
+
+            foreach (var ct in cup.Teams.Where(t => losers.Contains(t.TeamId)))
+            {
+                ct.IsEliminated = true;
+            }
+
+            await _context.SaveChangesAsync();
+
+            if (winners.Count < 2)
+            {
+                var championId = winners.FirstOrDefault();
+                Console.WriteLine($"🏆 Cup {cup.Id} Champion: {championId}");
+                return;
+            }
+
+            var nextRound = new CupRound
+            {
+                CupId = cup.Id,
+                RoundNumber = lastRound.RoundNumber + 1,
+                Name = $"Round {lastRound.RoundNumber + 1}"
+            };
+
+            winners = winners.OrderBy(_ => Guid.NewGuid()).ToList();
+
+            var fixtures = new List<Models.Fixtures.Fixture>();
+            for (int i = 0; i < winners.Count; i += 2)
+            {
+                var home = winners[i];
+                var away = winners[i + 1];
+
+                var fixture = _fixtureHelperService.CreateFixture(
+                    gameSaveId,
+                    seasonId,
+                    home,
+                    away,
+                    DateTime.MinValue,
+                    1,
+                    CompetitionType.DomesticCup,
+                    nextRound
+                );
+
+                fixtures.Add(fixture);
+            }
+
+            nextRound.Fixtures = fixtures;
+            _context.CupRounds.Add(nextRound);
+            await _context.SaveChangesAsync();
         }
     }
 }

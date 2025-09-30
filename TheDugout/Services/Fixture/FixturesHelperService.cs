@@ -34,6 +34,9 @@ namespace TheDugout.Services.Fixture
                 EuropeanCupPhaseId = europeanCupPhaseId,
                 HomeTeamId = homeTeamId,
                 AwayTeamId = awayTeamId,
+                HomeTeamGoals = 0,
+                AwayTeamGoals = 0,
+            
                 Date = date,
                 Round = round,
                 Status = FixtureStatus.Scheduled
