@@ -6,43 +6,36 @@ function Header({ username }) {
   const { currentGameSave, setCurrentGameSave } = useGameSave();
   const [hasUnplayed, setHasUnplayed] = useState(false);
   const [activeMatch, setActiveMatch] = useState(null);
+  const [hasMatchesToday, setHasMatchesToday] = useState(false);
 
   const navigate = useNavigate();
 
-  // Полинг за активен мач + обновяване на save
+  // Полинг за статус на играта
   useEffect(() => {
     if (!currentGameSave) return;
 
     const fetchStatus = async () => {
       try {
-        // 1) Проверяваме за активен мач
-        const matchRes = await fetch(
-          `/api/matches/active/${currentGameSave.id}`,
-          { credentials: "include" }
-        );
-        if (matchRes.ok) {
-          const matchData = await matchRes.json();
-          setActiveMatch(matchData || null);
-        }
-
-        // 2) Обновяваме save, за да дърпаме balance/дата
-        const saveRes = await fetch(`/api/games/current`, {
+        const res = await fetch(`/api/matches/status/${currentGameSave.id}`, {
           credentials: "include",
         });
-        if (saveRes.ok) {
-          const saveData = await saveRes.json();
-          setCurrentGameSave(saveData);
-          setHasUnplayed(saveData.hasUnplayedMatchesToday);
+
+        if (res.ok) {
+          const data = await res.json();
+          setCurrentGameSave(data.gameSave);
+          setHasUnplayed(data.hasUnplayedMatchesToday);
+          setActiveMatch(data.activeMatch);
+          setHasMatchesToday(data.hasMatchesToday); // 👈 добавяме това
         }
       } catch (err) {
         console.error("Polling failed:", err);
       }
     };
 
-    fetchStatus(); // първоначално
-    const interval = setInterval(fetchStatus, 5000); // на 5 секунди
+    fetchStatus();
+    const interval = setInterval(fetchStatus, 5000);
 
-    return () => clearInterval(interval); // cleanup
+    return () => clearInterval(interval);
   }, [currentGameSave?.id, setCurrentGameSave]);
 
   if (!currentGameSave) {
@@ -66,6 +59,12 @@ function Header({ username }) {
   };
 
   const handleNextDay = async () => {
+    // 👇 Проверка дали има неизиграни мачове
+    if (hasUnplayed) {
+      navigate(`/today-matches/${currentGameSave.id}`);
+      return;
+    }
+
     try {
       const res = await fetch("/api/games/current/next-day", {
         method: "POST",
@@ -101,19 +100,29 @@ function Header({ username }) {
     }
   };
 
+  // 👉 Обновена логика за бутона
   let buttonLabel = "Next Day →";
   let buttonAction = handleNextDay;
+  let buttonDisabled = false;
+  let buttonTitle = "";
 
   if (activeMatch) {
     buttonLabel = "To Match";
     buttonAction = handleGoToMatch;
+    buttonTitle = "Continue active match";
   } else if (hasUnplayed) {
     buttonLabel = "Match Day";
     buttonAction = handleGoToTodayMatches;
+    buttonTitle = "You have unplayed matches today";
+  } else if (!hasMatchesToday) {
+    buttonLabel = "Next Day →";
+    buttonAction = handleNextDay;
+    buttonTitle = "Continue to next day";
   }
 
   return (
     <header className="flex justify-between items-center px-6 py-3 bg-slate-800 text-white shadow-md">
+      {/* Ляво: лого + отбор */}
       <div className="flex items-center gap-3">
         <Link
           to="/"
@@ -130,6 +139,7 @@ function Header({ username }) {
         </div>
       </div>
 
+      {/* Дясно: дата + юзер + баланс + бутон */}
       <div className="flex items-center gap-8 text-sm text-slate-300">
         <span>{season ? formatDate(season.currentDate) : ""}</span>
         <span className="font-semibold">{username}</span>
@@ -138,13 +148,15 @@ function Header({ username }) {
         </span>
         <button
           onClick={buttonAction}
+          title={buttonTitle}
           className={`px-4 py-2 rounded-lg font-medium transition ${
             activeMatch
               ? "bg-green-600 hover:bg-green-700"
               : hasUnplayed
               ? "bg-amber-600 hover:bg-amber-700"
               : "bg-sky-600 hover:bg-sky-700"
-          }`}
+          } ${buttonDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
+          disabled={buttonDisabled}
         >
           {buttonLabel}
         </button>

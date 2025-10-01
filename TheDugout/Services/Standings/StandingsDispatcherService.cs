@@ -28,6 +28,7 @@ namespace TheDugout.Services.Standings
 
         public async Task UpdateAfterMatchAsync(Models.Fixtures.Fixture fixture, CancellationToken ct = default)
         {
+
             switch (fixture.CompetitionType)
             {
                 case CompetitionType.League:
@@ -38,11 +39,22 @@ namespace TheDugout.Services.Standings
                 case CompetitionType.DomesticCup:
                     if (fixture.CupRoundId.HasValue)
                     {
-                        var allFinished = fixture.CupRound.Fixtures.All(f => f.WinnerTeamId != null);
+                        var cupRound = await _context.CupRounds
+                            .Include(cr => cr.Fixtures)
+                            .FirstOrDefaultAsync(cr => cr.Id == fixture.CupRoundId.Value, ct);
+
+                        if (cupRound == null)
+                        {
+                            _logger.LogWarning("CupRound with ID {CupRoundId} not found for fixture {FixtureId}",
+                                fixture.CupRoundId.Value, fixture.Id);
+                            break;
+                        }
+
+                        var allFinished = cupRound.Fixtures.All(f => f.WinnerTeamId != null);
                         if (allFinished)
                         {
                             await _cupFixturesService.GenerateNextRoundAsync(
-                                fixture.CupRound.CupId,
+                                cupRound.CupId,
                                 fixture.GameSaveId,
                                 fixture.SeasonId
                             );

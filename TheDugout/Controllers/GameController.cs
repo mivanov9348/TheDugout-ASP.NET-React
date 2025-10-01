@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TheDugout.Data;
 using TheDugout.Models.Fixtures;
+using TheDugout.Models.Matches;
 using TheDugout.Models.Messages;
 using TheDugout.Services.Game;
 using TheDugout.Services.Message;
@@ -42,6 +43,76 @@ namespace TheDugout.Controllers
         }
 
         [Authorize]
+        [HttpGet("status/{gameSaveId}")]
+        public async Task<IActionResult> GetGameStatus(int gameSaveId)
+        {
+            var save = await _context.GameSaves
+                .Include(gs => gs.Seasons)
+                .Include(gs => gs.UserTeam)
+                    .ThenInclude(ut => ut.League)
+                        .ThenInclude(l => l.Template)
+                .FirstOrDefaultAsync(gs => gs.Id == gameSaveId);
+
+            if (save == null) return NotFound();
+
+            // 👇 Безопасна проверка за сезони
+            var season = save.Seasons?.FirstOrDefault();
+            if (season == null)
+                return Ok(new
+                {
+                    gameSave = new
+                    {
+                        save.Id,
+                        save.UserTeamId,
+                        UserTeam = new
+                        {
+                            save.UserTeam?.Name,
+                            Balance = save.UserTeam?.Balance ?? 0,
+                            LeagueName = save.UserTeam?.League?.Template?.Name ?? "Unknown League"
+                        },
+                        Seasons = Array.Empty<object>()
+                    },
+                    hasUnplayedMatchesToday = false,
+                    hasMatchesToday = false,
+                    activeMatch = (object)null
+                });
+
+            var today = season.CurrentDate.Date;
+
+            var matches = await _context.Fixtures
+                .Include(f => f.HomeTeam)
+                .Include(f => f.AwayTeam)
+                .Where(f => f.GameSaveId == gameSaveId && f.Date.Date == today)
+                .ToListAsync();
+
+            var activeMatch = matches.FirstOrDefault(m => m.Status == 0);
+            var hasUnplayedMatchesToday = matches.Any(m => m.Status == 0);
+            var hasMatchesToday = matches.Any();
+
+            return Ok(new
+            {
+                gameSave = new
+                {
+                    save.Id,
+                    save.UserTeamId,
+                    UserTeam = new
+                    {
+                        save.UserTeam.Name,
+                        save.UserTeam.Balance,
+                        LeagueName = save.UserTeam.League.Template.Name
+                    },
+                    Seasons = save.Seasons.Select(s => new {
+                        s.Id,
+                        s.CurrentDate
+                    }),
+                },
+                hasUnplayedMatchesToday,
+                hasMatchesToday,
+                activeMatch = activeMatch != null ? new { activeMatch.Id } : null
+            });
+        }
+
+        [Authorize]
         [HttpPost("current/next-day")]
         public async Task<IActionResult> NextDay()
         {
@@ -50,10 +121,33 @@ namespace TheDugout.Controllers
 
             var user = await _context.Users
                 .Include(u => u.CurrentSave)
+                    .ThenInclude(s => s.Seasons) // 👈 важно - включваме Seasons
                 .FirstOrDefaultAsync(u => u.Id == userId.Value);
 
             if (user?.CurrentSave == null)
                 return BadRequest(new { message = "No current save selected." });
+
+            // 👇 Безопасна проверка за сезони
+            var season = user.CurrentSave.Seasons?.FirstOrDefault();
+            if (season == null)
+                return BadRequest(new { message = "No season found for current save." });
+
+            var today = season.CurrentDate.Date;
+
+            // 👇 Проверка дали има неизиграни мачове
+            var hasUnplayedMatches = await _context.Fixtures
+                .AnyAsync(f => f.GameSaveId == user.CurrentSave.Id &&
+                              f.Date.Date == today &&
+                              f.Status == 0);
+
+            if (hasUnplayedMatches)
+            {
+                return BadRequest(new
+                {
+                    message = "Cannot advance to next day while there are unplayed matches today.",
+                    redirectTo = $"/today-matches/{user.CurrentSave.Id}"
+                });
+            }
 
             // 👉 целият процес вече е в GameDayService
             var result = await _gameDayService.ProcessNextDayAndGetResultAsync(user.CurrentSave.Id);

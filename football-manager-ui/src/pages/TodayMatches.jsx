@@ -2,26 +2,44 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Trophy, Play } from "lucide-react";
 import TeamLogo from "../components/TeamLogo";
+import { useGameSave } from "../context/GameSaveContext"; // 👈 ИМПОРТИРАЙ КОНТЕКСТА
 
 export default function TodayMatches() {
   const { gameSaveId } = useParams();
   const [matches, setMatches] = useState([]);
   const [userFixtureId, setUserFixtureId] = useState(null);
+  const [hasUnplayed, setHasUnplayed] = useState(false);
+  const [activeMatch, setActiveMatch] = useState(null);
+  
+  // 👇 ДОБАВИ ТОВА ЗА ДОСТЪП ДО ФУНКЦИИТЕ ОТ ХЕДЪРА
+  const { setCurrentGameSave } = useGameSave();
+
   const navigate = useNavigate();
 
-  useEffect(() => {
-    fetch(`/api/matches/today/${gameSaveId}`, { credentials: "include" })
-      .then((res) => res.json())
-      .then((data) => {
-        setMatches(data.matches);
+  // зареждане на мачовете
+  const loadMatches = async () => {
+    try {
+      const res = await fetch(`/api/matches/today/${gameSaveId}`, {
+        credentials: "include",
+      });
+      const data = await res.json();
+      setMatches(data.matches);
+      if (data.activeMatch) setActiveMatch(data.activeMatch);
 
-        // намери потребителския мач
-        const userMatch = data.matches.find((m) => m.isUserTeamMatch);
-        if (userMatch) {
-          setUserFixtureId(userMatch.fixtureId);
-        }
-      })
-      .catch((err) => console.error("Failed to fetch matches", err));
+      // намери потребителския мач
+      const userMatch = data.matches.find((m) => m.isUserTeamMatch);
+      setUserFixtureId(userMatch ? userMatch.fixtureId : null);
+      
+      // 👇 ОБНОВИ hasUnplayed ВЪЗ ОСНОВА НА МАЧОВЕТЕ
+      const hasUnplayedMatchesToday = data.matches.some(m => m.status === 0);
+      setHasUnplayed(hasUnplayedMatchesToday);
+    } catch (err) {
+      console.error("Failed to fetch matches", err);
+    }
+  };
+
+  useEffect(() => {
+    loadMatches();
   }, [gameSaveId]);
 
   const handleToMatch = () => {
@@ -30,27 +48,53 @@ export default function TodayMatches() {
     }
   };
 
+  // 👇 ПРОМЕНЕНА ФУНКЦИЯ ЗА СИМУЛИРАНЕ
   const handleSimulate = async () => {
     try {
       const res = await fetch(`/api/matches/simulate/${gameSaveId}`, {
         method: "POST",
         credentials: "include",
       });
+
       if (!res.ok) {
         alert("Failed to simulate matches");
         return;
       }
-      const updated = await fetch(`/api/matches/today/${gameSaveId}`, {
-        credentials: "include",
-      }).then((r) => r.json());
-      setMatches(updated.matches);
+
+      const data = await res.json();
+
+      // 👇 ОБНОВИ ВСИЧКО ВЕДНАГА
+      if (data.matches) setMatches(data.matches);
+      
+      // 👇 АКО БЕКЕНДЪТ ВРЪЩА gameStatus (според предишния ми съвет)
+      if (data.gameStatus) {
+        setCurrentGameSave(data.gameStatus.gameSave);
+        setHasUnplayed(data.gameStatus.hasUnplayedMatchesToday);
+        setActiveMatch(data.gameStatus.activeMatch);
+      } 
+      // 👇 АКО БЕКЕНДЪТ ВРЪЩА САМО hasUnplayedMatchesToday и activeMatch
+      else {
+        if (typeof data.hasUnplayedMatchesToday === "boolean") {
+          setHasUnplayed(data.hasUnplayedMatchesToday);
+        }
+        if (data.activeMatch) {
+          setActiveMatch(data.activeMatch);
+        } else {
+          setActiveMatch(null);
+        }
+      }
+
+      // 👇 ОБНОВИ userFixtureId СЛЕД СИМУЛИРАНЕ
+      const userMatch = data.matches?.find((m) => m.isUserTeamMatch);
+      setUserFixtureId(userMatch ? userMatch.fixtureId : null);
+
     } catch (err) {
-      console.error(err);
+      console.error("Simulation failed:", err);
       alert("Error simulating matches");
     }
   };
 
-  // има ли неизиграни мачове
+  // 👇 ПРОМЕНЕНА ПРОВЕРКА - ползва локалното състояние
   const hasUnplayedMatches = matches.some((m) => m.status === 0);
 
   // групиране по състезание
@@ -59,6 +103,41 @@ export default function TodayMatches() {
     acc[m.competitionName].push(m);
     return acc;
   }, {});
+
+  const renderStatus = (status) => {
+    switch (status) {
+      case 0:
+        return (
+          <span className="px-2 py-0.5 text-xs rounded-full bg-gray-200 text-gray-600">
+            Scheduled
+          </span>
+        );
+      case 1:
+        return (
+          <span className="px-2 py-0.5 text-xs rounded-full bg-green-200 text-green-700">
+            Played
+          </span>
+        );
+      case 2:
+        return (
+          <span className="px-2 py-0.5 text-xs rounded-full bg-red-200 text-red-700">
+            Cancelled
+          </span>
+        );
+      case 3:
+        return (
+          <span className="px-2 py-0.5 text-xs rounded-full bg-orange-200 text-orange-700 animate-pulse">
+            Live 🔴
+          </span>
+        );
+      default:
+        return (
+          <span className="px-2 py-0.5 text-xs rounded-full bg-gray-100 text-gray-400">
+            Unknown
+          </span>
+        );
+    }
+  };
 
   return (
     <div className="p-6 sm:p-8 space-y-10 max-w-5xl mx-auto">
@@ -79,8 +158,8 @@ export default function TodayMatches() {
           To Match
         </button>
 
-        {/* Simulate (само ако има неизиграни) */}
-        {!hasUnplayedMatches && (
+        {/* Simulate */}
+        {hasUnplayedMatches && (
           <button
             onClick={handleSimulate}
             className="flex items-center gap-2 px-6 py-3 rounded-2xl shadow-md font-semibold transition transform
@@ -131,12 +210,15 @@ export default function TodayMatches() {
                   />
                 </div>
 
-                {/* Result or VS */}
-                <span className="px-4 text-gray-700 font-bold">
-                  {m.homeGoals != null && m.awayGoals != null
-                    ? `${m.homeGoals} : ${m.awayGoals}`
-                    : "vs"}
-                </span>
+                {/* Result + Status */}
+                <div className="flex flex-col items-center px-4">
+                  <span className="text-gray-700 font-bold">
+                    {m.homeGoals != null && m.awayGoals != null
+                      ? `${m.homeGoals} : ${m.awayGoals}`
+                      : "vs"}
+                  </span>
+                  {renderStatus(m.status)}
+                </div>
 
                 {/* Away team */}
                 <div className="flex-1 flex items-center justify-start gap-2">

@@ -121,7 +121,7 @@ namespace TheDugout.Services.MatchEngine
             var matchEvent = _matchEventService.CreateMatchEvent(
                 match.Id, match.CurrentMinute, currentTeam, player, eventType, outcome, commentary);
 
-            UpdateFixtureScore(match, matchEvent);
+            UpdateFixtureScore(match, currentTeam.Id, player, eventType, outcome);
 
             // 4. Ъпдейт на статистики
             var playerStats = match.PlayerStats.FirstOrDefault(s => s.PlayerId == player.Id);
@@ -176,14 +176,7 @@ namespace TheDugout.Services.MatchEngine
                 // 2.4 Update на статистики + резултат
                 if (eventType.Code == "SHT" && outcome.Name == "Goal")
                 {
-                    UpdateFixtureScore(match, new Models.Matches.MatchEvent
-                    {
-                        Minute = match.CurrentMinute,
-                        Player = player,
-                        Team = currentTeam,
-                        EventType = eventType,
-                        Outcome = outcome
-                    });
+                    UpdateFixtureScore(match, currentTeamId, player, eventType, outcome);
                 }
 
                 var playerStats = match.PlayerStats.FirstOrDefault(s => s.PlayerId == player.Id);
@@ -193,6 +186,7 @@ namespace TheDugout.Services.MatchEngine
                         Minute = match.CurrentMinute,
                         Player = player,
                         Team = currentTeam,
+                        TeamId = currentTeamId,
                         EventType = eventType,
                         Outcome = outcome
                     }, playerStats);
@@ -207,17 +201,19 @@ namespace TheDugout.Services.MatchEngine
 
             return match;
         }
-        private void UpdateFixtureScore(Models.Matches.Match match, MatchEvent matchEvent)
+        private void UpdateFixtureScore(Models.Matches.Match match, int? currentTeamId, Models.Players.Player player, EventType eventType, EventOutcome outcome)
         {
-            if (matchEvent.EventType.Code == "SHT" && matchEvent.Outcome.Name == "Goal")
+            if (eventType.Code == "SHT" && outcome.Name == "Goal")
             {
-                if (matchEvent.TeamId == match.Fixture.HomeTeamId)
+                if (currentTeamId == match.Fixture.HomeTeamId)
                 {
                     match.Fixture.HomeTeamGoals = (match.Fixture.HomeTeamGoals ?? 0) + 1;
+                    Console.WriteLine($"GOAL! {match.Fixture.HomeTeam?.Name} scores! {match.Fixture.HomeTeamGoals}-{match.Fixture.AwayTeamGoals}"); // 👈 ДОБАВИ ЛОГ
                 }
-                else if (matchEvent.TeamId == match.Fixture.AwayTeamId)
+                else if (currentTeamId == match.Fixture.AwayTeamId)
                 {
                     match.Fixture.AwayTeamGoals = (match.Fixture.AwayTeamGoals ?? 0) + 1;
+                    Console.WriteLine($"GOAL! {match.Fixture.AwayTeam?.Name} scores! {match.Fixture.HomeTeamGoals}-{match.Fixture.AwayTeamGoals}"); // 👈 ДОБАВИ ЛОГ
                 }
             }
         }
