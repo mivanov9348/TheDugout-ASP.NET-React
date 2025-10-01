@@ -29,7 +29,12 @@ public class CpuManagerService : ICPUManagerService
         _logger = logger;
     }
 
-    public async Task RunDailyCpuLogicAsync(int gameSaveId, int seasonId, DateTime date, int? humanTeamId)
+    public async Task RunDailyCpuLogicAsync(
+        int gameSaveId,
+        int seasonId,
+        DateTime date,
+        int? humanTeamId,
+        Func<string, Task>? progress = null)
     {
         var season = await _context.Seasons
             .Include(s => s.Events)
@@ -41,7 +46,10 @@ public class CpuManagerService : ICPUManagerService
 
         if (!todayEvents.Any())
         {
-            _logger.LogInformation("📅 {Date}: No Special Events → default TrainingDay", date);
+            var msg = $"📅 {date:dd/MM/yyyy}: No Special Events → default TrainingDay";
+            _logger.LogInformation(msg);
+            if (progress != null) await progress(msg);
+
             todayEvents.Add(new SeasonEvent { Type = SeasonEventType.TrainingDay, Date = date });
         }
 
@@ -58,11 +66,14 @@ public class CpuManagerService : ICPUManagerService
                     {
                         try
                         {
+                            if (progress != null) await progress($"🔄 CPU team {team.Name} is checking transfers...");
                             await _transferService.RunCpuTransfersAsync(gameSaveId, seasonId, date, team.Id);
+                            if (progress != null) await progress($"✅ CPU team {team.Name} finished transfer checks");
                         }
                         catch (Exception ex)
                         {
                             _logger.LogError(ex, "❌ CPU transfer logic error for team {TeamId}", team.Id);
+                            if (progress != null) await progress($"❌ Transfer error for team {team.Name}");
                         }
                     }
                     break;
@@ -72,11 +83,14 @@ public class CpuManagerService : ICPUManagerService
                     {
                         try
                         {
+                            if (progress != null) await progress($"💪 CPU team {team.Name} is running daily training...");
                             await _trainingService.RunDailyCpuTrainingAsync(gameSaveId, seasonId, date, team.Id);
+                            if (progress != null) await progress($"✅ CPU team {team.Name} finished training");
                         }
                         catch (Exception ex)
                         {
                             _logger.LogError(ex, "❌ CPU training logic error for team {TeamId}", team.Id);
+                            if (progress != null) await progress($"❌ Training error for team {team.Name}");
                         }
                     }
                     break;
@@ -86,15 +100,19 @@ public class CpuManagerService : ICPUManagerService
                 //case SeasonEventType.EuropeanMatch:
                 //case SeasonEventType.FriendlyMatch:
                 //    foreach (var team in cpuTeams)
+                //    {
+                //        if (progress != null) await progress($"⚽ CPU team {team.Name} is auto-picking lineup...");
                 //        await _teamPlanService.AutoPickTacticAsync(team.Id, gameSaveId);
+                //        if (progress != null) await progress($"✅ CPU team {team.Name} finished tactic selection");
+                //    }
                 //    break;
 
                 default:
-                    _logger.LogInformation("🤷 Няма логика за {EventType}", ev.Type);
+                    var defMsg = $"🤷 No logic implemented for event {ev.Type}";
+                    _logger.LogInformation(defMsg);
+                    if (progress != null) await progress(defMsg);
                     break;
             }
         }
     }
-
-
 }

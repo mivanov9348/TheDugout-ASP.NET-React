@@ -19,7 +19,7 @@ namespace TheDugout.Services.Game
             _seasonEventService = seasonEventService;
             _cpuManagerService = cpuManagerService;
         }
-        public async Task ProcessNextDayAsync(int saveId)
+        public async Task ProcessNextDayAsync(int saveId, Func<string, Task>? progress = null)
         {
             var save = await _context.GameSaves
                 .Include(s => s.Seasons)
@@ -31,14 +31,16 @@ namespace TheDugout.Services.Game
             var season = save.Seasons.OrderByDescending(s => s.StartDate).FirstOrDefault();
             if (season == null) throw new Exception("No active season found.");
 
-            // ⏩ минаваме напред с 1 ден
             season.CurrentDate = season.CurrentDate.AddDays(1);
             await _context.SaveChangesAsync();
 
-            // ⏩ CPU логика
-            await _cpuManagerService.RunDailyCpuLogicAsync(save.Id, season.Id, season.CurrentDate, save.UserTeamId);
+            if (progress != null) await progress("⏩ Date advanced to " + season.CurrentDate.ToShortDateString());
 
-            // ⏩ проверяваме дали има event на днешната дата
+            // CPU logic
+            await _cpuManagerService.RunDailyCpuLogicAsync(
+                save.Id, season.Id, season.CurrentDate, save.UserTeamId, progress
+            );
+
             var todaysEvent = season.Events
                 .FirstOrDefault(e => e.Date.Date == season.CurrentDate.Date);
 
@@ -67,6 +69,7 @@ namespace TheDugout.Services.Game
 
             await _context.SaveChangesAsync();
         }
+
         public async Task<object> ProcessNextDayAndGetResultAsync(int saveId)
         {
             await ProcessNextDayAsync(saveId);

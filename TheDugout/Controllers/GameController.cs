@@ -1,9 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using TheDugout.Data;
-using TheDugout.Models.Fixtures;
-using TheDugout.Models.Matches;
 using TheDugout.Models.Messages;
 using TheDugout.Services.Game;
 using TheDugout.Services.Message;
@@ -101,7 +100,8 @@ namespace TheDugout.Controllers
                         save.UserTeam.Balance,
                         LeagueName = save.UserTeam.League.Template.Name
                     },
-                    Seasons = save.Seasons.Select(s => new {
+                    Seasons = save.Seasons.Select(s => new
+                    {
                         s.Id,
                         s.CurrentDate
                     }),
@@ -121,20 +121,18 @@ namespace TheDugout.Controllers
 
             var user = await _context.Users
                 .Include(u => u.CurrentSave)
-                    .ThenInclude(s => s.Seasons) // 👈 важно - включваме Seasons
+                    .ThenInclude(s => s.Seasons)
                 .FirstOrDefaultAsync(u => u.Id == userId.Value);
 
             if (user?.CurrentSave == null)
                 return BadRequest(new { message = "No current save selected." });
 
-            // 👇 Безопасна проверка за сезони
             var season = user.CurrentSave.Seasons?.FirstOrDefault();
             if (season == null)
                 return BadRequest(new { message = "No season found for current save." });
 
             var today = season.CurrentDate.Date;
 
-            // 👇 Проверка дали има неизиграни мачове
             var hasUnplayedMatches = await _context.Fixtures
                 .AnyAsync(f => f.GameSaveId == user.CurrentSave.Id &&
                               f.Date.Date == today &&
@@ -149,11 +147,58 @@ namespace TheDugout.Controllers
                 });
             }
 
-            // 👉 целият процес вече е в GameDayService
             var result = await _gameDayService.ProcessNextDayAndGetResultAsync(user.CurrentSave.Id);
 
             return Ok(result);
         }
+
+        [HttpGet("current/next-day-stream")]
+        public async Task NextDayStream()
+        {
+            Response.ContentType = "text/event-stream";
+
+            async Task Send(string type, string msg, object? extra = null)
+            {
+                var payload = JsonConvert.SerializeObject(new { type, message = msg, extra });
+                await Response.WriteAsync($"data: {payload}\n\n");
+                await Response.Body.FlushAsync();
+            }
+
+            try
+            {
+                var userId = _userContext.GetUserId(User);
+                if (userId == null)
+                {
+                    await Send("error", "Unauthorized");
+                    return;
+                }
+
+                var user = await _context.Users
+                    .Include(u => u.CurrentSave)
+                    .FirstOrDefaultAsync(u => u.Id == userId.Value);
+
+                if (user?.CurrentSave == null)
+                {
+                    await Send("error", "No current save selected.");
+                    return;
+                }
+
+                var saveId = user.CurrentSave.Id;
+
+                await Send("progress", "Advancing to next day...");
+
+                await _gameDayService.ProcessNextDayAsync(saveId, msg => Send("progress", msg));
+
+                var result = await _gameDayService.ProcessNextDayAndGetResultAsync(saveId);
+
+                await Send("done", "Finished!", result);
+            }
+            catch (Exception ex)
+            {
+                await Send("error", $"Error: {ex.Message}");
+            }
+        }
+
 
 
         [HttpGet("teamtemplates")]

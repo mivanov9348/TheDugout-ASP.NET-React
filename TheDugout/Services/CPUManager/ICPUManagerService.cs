@@ -2,6 +2,11 @@
 {
     public interface ICPUManagerService
     {
-        Task RunDailyCpuLogicAsync(int gameSaveId, int seasonId, DateTime date, int? humanTeamId);
+        Task RunDailyCpuLogicAsync(
+            int gameSaveId,
+            int seasonId,
+            DateTime date,
+            int? humanTeamId,
+            Func<string, Task>? progress = null);
     }
 }

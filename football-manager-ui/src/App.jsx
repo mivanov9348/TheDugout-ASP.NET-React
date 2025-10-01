@@ -7,6 +7,8 @@ import AuthForm from "./components/AuthForm";
 import StartScreen from "./components/StartScreen";
 import LoadGameModal from "./components/LoadGameModal";
 import TeamSelectionModal from "./components/TeamSelectionModal";
+import { ProcessingProvider } from "./context/ProcessingContext";
+import ProcessingOverlay from "./components/ProcessingOverlay";
 import Swal from "sweetalert2";
 
 import Home from "./pages/Home";
@@ -52,6 +54,7 @@ function AppInner() {
   const [loading, setLoading] = useState(true);
   const [userSaves, setUserSaves] = useState([]);
   const [showLoadModal, setShowLoadModal] = useState(false);
+  const [processingMessage, setProcessingMessage] = useState(null);
 
   const { currentGameSave, setCurrentGameSave } = useGameSave();
 
@@ -390,13 +393,16 @@ function AppInner() {
                       element={<TodayMatches />}
                     />
 
-                    <Route path="/live-match/:fixtureId" element={<MatchPreview />} />
-<Route path="/match/:matchId" element={<Match />} />
-
+                    <Route
+                      path="/live-match/:fixtureId"
+                      element={<MatchPreview />}
+                    />
+                    <Route path="/match/:matchId" element={<Match />} />
 
                     <Route path="*" element={<div>404 Not Found</div>} />
                   </Routes>
                 </main>
+                <ProcessingOverlay message={processingMessage} />
               </div>
             </div>
           </ProtectedRoute>
@@ -409,7 +415,9 @@ function AppInner() {
 export default function App() {
   return (
     <GameSaveProvider>
-      <AppInner />
+      <ProcessingProvider>
+        <AppInner />
+      </ProcessingProvider>
     </GameSaveProvider>
   );
 }

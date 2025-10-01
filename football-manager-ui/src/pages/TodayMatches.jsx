@@ -10,7 +10,7 @@ export default function TodayMatches() {
   const [userFixtureId, setUserFixtureId] = useState(null);
   const [hasUnplayed, setHasUnplayed] = useState(false);
   const [activeMatch, setActiveMatch] = useState(null);
-  
+
   // 👇 ДОБАВИ ТОВА ЗА ДОСТЪП ДО ФУНКЦИИТЕ ОТ ХЕДЪРА
   const { setCurrentGameSave } = useGameSave();
 
@@ -29,9 +29,9 @@ export default function TodayMatches() {
       // намери потребителския мач
       const userMatch = data.matches.find((m) => m.isUserTeamMatch);
       setUserFixtureId(userMatch ? userMatch.fixtureId : null);
-      
+
       // 👇 ОБНОВИ hasUnplayed ВЪЗ ОСНОВА НА МАЧОВЕТЕ
-      const hasUnplayedMatchesToday = data.matches.some(m => m.status === 0);
+      const hasUnplayedMatchesToday = data.matches.some((m) => m.status === 0);
       setHasUnplayed(hasUnplayedMatchesToday);
     } catch (err) {
       console.error("Failed to fetch matches", err);
@@ -63,31 +63,21 @@ export default function TodayMatches() {
 
       const data = await res.json();
 
-      // 👇 ОБНОВИ ВСИЧКО ВЕДНАГА
-      if (data.matches) setMatches(data.matches);
-      
-      // 👇 АКО БЕКЕНДЪТ ВРЪЩА gameStatus (според предишния ми съвет)
+      // 👇 СИНХРОНИЗИРАЙ ВСИЧКО С ХЕДЪРА
       if (data.gameStatus) {
         setCurrentGameSave(data.gameStatus.gameSave);
         setHasUnplayed(data.gameStatus.hasUnplayedMatchesToday);
         setActiveMatch(data.gameStatus.activeMatch);
-      } 
-      // 👇 АКО БЕКЕНДЪТ ВРЪЩА САМО hasUnplayedMatchesToday и activeMatch
-      else {
-        if (typeof data.hasUnplayedMatchesToday === "boolean") {
-          setHasUnplayed(data.hasUnplayedMatchesToday);
+
+        // 👇 АКТУАЛИЗИРАЙ МАЧОВЕТЕ
+        if (data.matches) {
+          setMatches(data.matches);
         }
-        if (data.activeMatch) {
-          setActiveMatch(data.activeMatch);
-        } else {
-          setActiveMatch(null);
-        }
+
+        // 👇 ОБНОВИ userFixtureId
+        const userMatch = data.matches?.find((m) => m.isUserTeamMatch);
+        setUserFixtureId(userMatch ? userMatch.fixtureId : null);
       }
-
-      // 👇 ОБНОВИ userFixtureId СЛЕД СИМУЛИРАНЕ
-      const userMatch = data.matches?.find((m) => m.isUserTeamMatch);
-      setUserFixtureId(userMatch ? userMatch.fixtureId : null);
-
     } catch (err) {
       console.error("Simulation failed:", err);
       alert("Error simulating matches");

@@ -30,16 +30,26 @@ namespace TheDugout.Services.Match
 
         public EventOutcome GetEventOutcome(Models.Players.Player player, EventType eventType)
         {
-            if (eventType.AttributeWeights == null || !eventType.AttributeWeights.Any())
-                throw new InvalidOperationException($"No attribute weights found for event type {eventType.Code}");
+            // Вземаме атрибутните тежести директно от контекста, ако липсват в самия eventType
+            var attributeWeights = eventType.AttributeWeights?.Any() == true
+                ? eventType.AttributeWeights
+                : _context.EventAttributeWeights.Where(w => w.EventType.Id == eventType.Id).ToList();
+
+            if (attributeWeights == null || !attributeWeights.Any())
+            {
+                Console.WriteLine($"⚠ Няма намерени атрибутни тежести за евент {eventType.Code}. Връщам дефолтен изход.");
+                // Можеш да върнеш дефолтен outcome (пример: първия), или null
+                return eventType.Outcomes.FirstOrDefault()
+                       ?? new EventOutcome { Name = "Default", RangeMin = 0, RangeMax = 100 };
+            }
 
             double weightedSum = 0;
-            double totalWeight = eventType.AttributeWeights.Sum(w => w.Weight);
+            double totalWeight = attributeWeights.Sum(w => w.Weight);
 
             Console.WriteLine($"--- Calculating outcome for {player.FirstName} {player.LastName} (Age {player.Age}), Event {eventType.Code} ---");
             Console.WriteLine("Attributes used:");
 
-            foreach (var weight in eventType.AttributeWeights)
+            foreach (var weight in attributeWeights)
             {
                 var playerAttr = player.Attributes.FirstOrDefault(a => a.Attribute.Code == weight.AttributeCode);
                 if (playerAttr != null)
@@ -54,20 +64,20 @@ namespace TheDugout.Services.Match
                 }
             }
 
-            // 1. Нормализиран атрибутен скор (1-20) → преобразуван в 0-100 чрез нелинейна (степенна) функция
-            double attrScore = weightedSum / totalWeight; // средно между 1 и 20
-            double baseScore = Math.Pow(attrScore / 20.0, 0.7) * 100.0; // нелинейна скала – по-високи стойности за средни/добри атрибути
+            // 1. Нормализиран скор (1–20) → скалиран в 0–100
+            double attrScore = weightedSum / totalWeight;
+            double baseScore = Math.Pow(attrScore / 20.0, 0.7) * 100.0;
 
-            // 2. Възрастов фактор – пик около 27г, но по-мек penalty
+            // 2. Възрастов фактор
             int ageRef = 27;
             int ageSpan = 10;
-            double ageFactor = 1.0 - (Math.Abs(player.Age - ageRef) / (double)ageSpan) * 0.06; // намален ефект
-            ageFactor = Math.Max(0.8, ageFactor); // минимум 80% (вместо 60%)
+            double ageFactor = 1.0 - (Math.Abs(player.Age - ageRef) / (double)ageSpan) * 0.06;
+            ageFactor = Math.Max(0.8, ageFactor);
 
             double ageAdjusted = baseScore * ageFactor;
 
-            // 3. Рандом вариация – по-малка и по-стабилна
-            double variability = 4 + (Math.Abs(player.Age - ageRef) * 0.3); // намалена база и възрастов ефект
+            // 3. Рандом вариация
+            double variability = 4 + (Math.Abs(player.Age - ageRef) * 0.3);
             double randomOffset = (_random.NextDouble() * 2 - 1) * variability;
 
             // 4. Финален скор
@@ -83,14 +93,18 @@ namespace TheDugout.Services.Match
                 .FirstOrDefault(o => score >= o.RangeMin && score <= o.RangeMax);
 
             if (outcome == null)
-                throw new InvalidOperationException(
-                    $"No outcome found for score {score} in event type {eventType.Code}");
+            {
+                Console.WriteLine($"⚠ Няма outcome за score {score} → ще върна дефолтен.");
+                outcome = eventType.Outcomes.FirstOrDefault()
+                          ?? new EventOutcome { Name = "Default", RangeMin = 0, RangeMax = 100 };
+            }
 
             Console.WriteLine($"Outcome={outcome.Name}");
             Console.WriteLine("--------------------------------------------------------------");
 
             return outcome;
         }
+
         public string GetRandomCommentary(EventOutcome outcome, Models.Players.Player player)
         {
             var templates = _context.CommentaryTemplates

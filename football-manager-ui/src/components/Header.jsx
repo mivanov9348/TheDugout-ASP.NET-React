@@ -1,16 +1,18 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useGameSave } from "../context/GameSaveContext";
+import { useProcessing } from "../context/ProcessingContext";
 import { useState, useEffect } from "react";
 
 function Header({ username }) {
   const { currentGameSave, setCurrentGameSave } = useGameSave();
+  const { startProcessing, stopProcessing } = useProcessing(); // 👈 новото
   const [hasUnplayed, setHasUnplayed] = useState(false);
   const [activeMatch, setActiveMatch] = useState(null);
   const [hasMatchesToday, setHasMatchesToday] = useState(false);
 
   const navigate = useNavigate();
 
-  // Полинг за статус на играта
+  // 🔄 Полинг за статус на играта
   useEffect(() => {
     if (!currentGameSave) return;
 
@@ -25,7 +27,7 @@ function Header({ username }) {
           setCurrentGameSave(data.gameSave);
           setHasUnplayed(data.hasUnplayedMatchesToday);
           setActiveMatch(data.activeMatch);
-          setHasMatchesToday(data.hasMatchesToday); // 👈 добавяме това
+          setHasMatchesToday(data.hasMatchesToday);
         }
       } catch (err) {
         console.error("Polling failed:", err);
@@ -34,7 +36,6 @@ function Header({ username }) {
 
     fetchStatus();
     const interval = setInterval(fetchStatus, 5000);
-
     return () => clearInterval(interval);
   }, [currentGameSave?.id, setCurrentGameSave]);
 
@@ -58,35 +59,38 @@ function Header({ username }) {
     });
   };
 
-  const handleNextDay = async () => {
-    // 👇 Проверка дали има неизиграни мачове
-    if (hasUnplayed) {
-      navigate(`/today-matches/${currentGameSave.id}`);
-      return;
-    }
-
-    try {
-      const res = await fetch("/api/games/current/next-day", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        const updatedSave = data.gameSave;
-
-        setCurrentGameSave(updatedSave);
-        setHasUnplayed(data.hasUnplayedMatchesToday);
-
-        if (data.hasMatchesToday) {
-          navigate(`/today-matches/${updatedSave.id}`);
-        }
+    const handleNextDay = async () => {
+      if (hasUnplayed) {
+        navigate(`/today-matches/${currentGameSave.id}`);
+        return;
       }
-    } catch (err) {
-      console.error("Next Day failed:", err);
-    }
-  };
+
+      try {
+        startProcessing("Advancing to next day...");
+
+        const res = await fetch("/api/games/current/next-day", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          const updatedSave = data.gameSave;
+
+          setCurrentGameSave(updatedSave);
+          setHasUnplayed(data.hasUnplayedMatchesToday);
+
+          if (data.hasMatchesToday) {
+            navigate(`/today-matches/${updatedSave.id}`);
+          }
+        }
+      } catch (err) {
+        console.error("Next Day failed:", err);
+      } finally {
+        stopProcessing(); // 👈 скриваме overlay
+      }
+    };
 
   const handleGoToMatch = () => {
     if (activeMatch) {

@@ -188,13 +188,13 @@ public class MatchesController : ControllerBase
                     }),
                 },
                 hasUnplayedMatchesToday,
-                hasMatchesToday,
+                hasMatchesToday, // 👈 ДОБАВИ ТОВА
                 activeMatch = activeMatch != null ? new { activeMatch.Id } : null
             },
             matches = todayMatches.Select(f => new
             {
                 FixtureId = f.Id,
-                CompetitionName = GetCompetitionName(f), 
+                CompetitionName = GetCompetitionName(f),
                 Home = f.HomeTeam?.Name ?? "Unknown Team",
                 Away = f.AwayTeam?.Name ?? "Unknown Team",
                 HomeGoals = f.HomeTeamGoals,
