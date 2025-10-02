@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using TheDugout.Data;
+using TheDugout.Hubs;
 using TheDugout.Models.Messages;
 using TheDugout.Services.Game;
 using TheDugout.Services.Message;
@@ -21,6 +23,7 @@ namespace TheDugout.Controllers
         private readonly IMessageService _messageService;
         private readonly IMessageOrchestrator _messageOrchestrator;
         private readonly IGameDayService _gameDayService;
+        private readonly IHubContext<GameHub> _hubContext;
         private readonly DugoutDbContext _context;
 
         public GameController(
@@ -30,7 +33,8 @@ namespace TheDugout.Controllers
             DugoutDbContext _context,
             IMessageService messageService,
             IMessageOrchestrator messageOrchestrator,
-            IGameDayService gameDayService)
+            IGameDayService gameDayService,
+            IHubContext<GameHub> hubContext)
         {
             _templateService = templateService;
             _gameSaveService = gameSaveService;
@@ -39,6 +43,7 @@ namespace TheDugout.Controllers
             _messageService = messageService;
             _messageOrchestrator = messageOrchestrator;
             _gameDayService = gameDayService;
+            _hubContext = hubContext;
         }
 
         [Authorize]
@@ -114,43 +119,27 @@ namespace TheDugout.Controllers
 
         [Authorize]
         [HttpPost("current/next-day")]
-        public async Task<IActionResult> NextDay()
-        {
-            var userId = _userContext.GetUserId(User);
-            if (userId == null) return Unauthorized();
+    public async Task<IActionResult> NextDay()
+    {
+        var userId = _userContext.GetUserId(User);
+        if (userId == null) return Unauthorized();
 
-            var user = await _context.Users
-                .Include(u => u.CurrentSave)
-                    .ThenInclude(s => s.Seasons)
-                .FirstOrDefaultAsync(u => u.Id == userId.Value);
+        var user = await _context.Users
+            .Include(u => u.CurrentSave)
+                .ThenInclude(s => s.Seasons)
+            .FirstOrDefaultAsync(u => u.Id == userId.Value);
 
-            if (user?.CurrentSave == null)
-                return BadRequest(new { message = "No current save selected." });
+        if (user?.CurrentSave == null)
+            return BadRequest(new { message = "No current save selected." });
 
-            var season = user.CurrentSave.Seasons?.FirstOrDefault();
-            if (season == null)
-                return BadRequest(new { message = "No season found for current save." });
+        var result = await _gameDayService.ProcessNextDayAndGetResultAsync(user.CurrentSave.Id);
 
-            var today = season.CurrentDate.Date;
+        // 👉 Изпращаме обновление САМО до този потребител
+        await _hubContext.Clients.User(userId.ToString()).SendAsync("GameUpdated", result);
 
-            var hasUnplayedMatches = await _context.Fixtures
-                .AnyAsync(f => f.GameSaveId == user.CurrentSave.Id &&
-                              f.Date.Date == today &&
-                              f.Status == 0);
+        return Ok(result);
+    }
 
-            if (hasUnplayedMatches)
-            {
-                return BadRequest(new
-                {
-                    message = "Cannot advance to next day while there are unplayed matches today.",
-                    redirectTo = $"/today-matches/{user.CurrentSave.Id}"
-                });
-            }
-
-            var result = await _gameDayService.ProcessNextDayAndGetResultAsync(user.CurrentSave.Id);
-
-            return Ok(result);
-        }
 
         [HttpGet("current/next-day-stream")]
         public async Task NextDayStream()

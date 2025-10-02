@@ -1,5 +1,5 @@
 // src/contexts/ProcessingContext.jsx
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useRef } from "react";
 import ProcessingOverlay from "../components/ProcessingOverlay";
 
 const ProcessingContext = createContext();
@@ -7,32 +7,54 @@ const ProcessingContext = createContext();
 export function ProcessingProvider({ children }) {
   const [logs, setLogs] = useState([]);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [allowCancel, setAllowCancel] = useState(true);
 
-  const startProcessing = (msg = "Processing...") => {
-    setIsProcessing(true);
+  // refs so we can close/abort from stopProcessing
+  const eventSourceRef = useRef(null);
+  const abortCtrlRef = useRef(null);
+
+  const startProcessing = (msg = "Processing...", { allowCancel = true } = {}) => {
     setLogs([msg]);
+    setIsProcessing(true);
+    setAllowCancel(allowCancel);
   };
 
   const addLog = (msg) =>
     setLogs((prev) => {
-      // ограничаваме на ~500 реда, ако е нужно
       const next = [...prev, msg];
       return next.length > 500 ? next.slice(next.length - 500) : next;
     });
 
   const stopProcessing = () => {
+    // close SSE if present
+    if (eventSourceRef.current) {
+      try {
+        eventSourceRef.current.close();
+      } catch (e) {}
+      eventSourceRef.current = null;
+    }
+
+    // abort ongoing fetch if present
+    if (abortCtrlRef.current) {
+      try {
+        abortCtrlRef.current.abort();
+      } catch (e) {}
+      abortCtrlRef.current = null;
+    }
+
     setIsProcessing(false);
+    setAllowCancel(true);
     setLogs([]);
   };
 
-  // helper sleep
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-  // runNextDay - запази настоящата логика (SSE) - без промяна
+  // runNextDay left mostly as SSE example (we keep ability to cancel)
   const runNextDay = async () => {
-    startProcessing("Advancing to next day...");
+    startProcessing("Advancing to next day...", { allowCancel: true });
 
     const evtSource = new EventSource("/api/game/current/next-day-stream");
+    eventSourceRef.current = evtSource;
 
     evtSource.onmessage = (e) => {
       try {
@@ -46,13 +68,14 @@ export function ProcessingProvider({ children }) {
           addLog("✅ " + data.message);
           addLog(JSON.stringify(data.extra, null, 2));
           evtSource.close();
-          // малко delay преди да скрием overlay за по-приятен UX
+          eventSourceRef.current = null;
           setTimeout(() => stopProcessing(), 700);
         }
 
         if (data.type === "error") {
           addLog("❌ Error: " + data.message);
           evtSource.close();
+          eventSourceRef.current = null;
           setTimeout(() => stopProcessing(), 800);
         }
       } catch (err) {
@@ -63,27 +86,37 @@ export function ProcessingProvider({ children }) {
     evtSource.onerror = (err) => {
       console.error("SSE error", err);
       addLog("Connection lost.");
-      evtSource.close();
+      try {
+        evtSource.close();
+      } catch (e) {}
+      eventSourceRef.current = null;
       setTimeout(() => stopProcessing(), 800);
     };
   };
 
-  // runSimulateMatches - Variant 1 but step-by-step on client
+  // runSimulateMatches — BLOCKING overlay (allowCancel=false) and RETURNS data
   const runSimulateMatches = async (gameSaveId, { stepDelay = 400 } = {}) => {
-    startProcessing("Simulating matches...");
+    startProcessing("Simulating matches...", { allowCancel: false });
+
+    // create abort controller in case we ever want to abort
+    const ac = new AbortController();
+    abortCtrlRef.current = ac;
 
     try {
       const res = await fetch(`/api/matches/simulate/${gameSaveId}`, {
+      const res = await fetch(`/api/matches/simulate/${gameSaveId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        signal: ac.signal,
       });
 
       if (!res.ok) {
         const txt = await res.text().catch(() => "");
         addLog(`❌ Error: ${res.status} ${res.statusText} ${txt}`);
-        // оставяме прозореца да се види за кратко и го скриваме
-        setTimeout(() => stopProcessing(), 1200);
-        return;
+        // keep overlay visible briefly so user can read
+        await sleep(1200);
+        return null;
       }
 
       const data = await res.json();
@@ -92,21 +125,22 @@ export function ProcessingProvider({ children }) {
       const matches = data.matches ?? [];
       if (!matches.length) {
         addLog("Няма мачове за симулация (празен списък).");
-        setTimeout(() => stopProcessing(), 900);
-        return;
+        await sleep(900);
+        return data;
       }
 
-      // Показваме всеки мач един по един (step-by-step)
+      // step-by-step log every match (visual effect)
       for (const m of matches) {
-        const homeGoals = m.homeGoals ?? "-";
-        const awayGoals = m.awayGoals ?? "-";
-        const isUser = m.isUserTeamMatch ? " (Your team)" : "";
-        const line = `${m.competitionName}: ${m.home} ${homeGoals} - ${awayGoals} ${m.away}${isUser}`;
+        // Форматиране на ред: "League: Home 2 - 1 Away (User match)"
+        const homeGoals = m.HomeGoals ?? "-";
+        const awayGoals = m.AwayGoals ?? "-";
+        const isUser = m.IsUserTeamMatch ? " (Your team)" : "";
+        const line = `${m.CompetitionName}: ${m.Home} ${homeGoals} - ${awayGoals} ${m.Away}${isUser}`;
         addLog(line);
         await sleep(stepDelay);
       }
 
-      // Опционално: кратко summary от gameStatus
+      // optional summary from gameStatus
       try {
         if (data.gameStatus && data.gameStatus.gameSave) {
           const gs = data.gameStatus.gameSave;
@@ -118,10 +152,15 @@ export function ProcessingProvider({ children }) {
       }
 
       addLog("✅ Simulation complete.");
+      return data;
     } catch (err) {
-      addLog("❌ Exception: " + (err.message || err));
+      if (err.name === "AbortError") addLog("❌ Simulation aborted.");
+      else addLog("❌ Exception: " + (err.message || err));
+      throw err;
     } finally {
+      // оставяме последния ред видим 0.8s и след това чистим
       await sleep(800);
+      abortCtrlRef.current = null;
       stopProcessing();
       // рефреш на страницата след като се скрие overlay
       setTimeout(() => {
@@ -132,20 +171,10 @@ export function ProcessingProvider({ children }) {
 
   return (
     <ProcessingContext.Provider
-      value={{
-        startProcessing,
-        addLog,
-        stopProcessing,
-        runNextDay,
-        runSimulateMatches,
-      }}
+      value={{ startProcessing, addLog, stopProcessing, runNextDay, runSimulateMatches }}
     >
       {children}
-      <ProcessingOverlay
-        logs={logs}
-        isProcessing={isProcessing}
-        stopProcessing={stopProcessing}
-      />
+      <ProcessingOverlay logs={logs} isProcessing={isProcessing} stopProcessing={stopProcessing} />
     </ProcessingContext.Provider>
   );
 }

@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using TheDugout.Data;
 using TheDugout.DTOs.Match;
+using TheDugout.Hubs;
 using TheDugout.Models.Fixtures;
 using TheDugout.Models.Matches;
 using TheDugout.Services.Match;
@@ -14,13 +16,15 @@ using TheDugout.Services.Player;
 public class MatchesController : ControllerBase
 {
     private readonly DugoutDbContext _context;
+    private readonly IHubContext<GameHub> _hub;
     private readonly IMatchService _matchService;
     private readonly IMatchEngine _matchEngine;
     private readonly IPlayerStatsService _playerStatsService;
 
-    public MatchesController(DugoutDbContext context, IMatchService matchService, IMatchEngine matchEngine, IPlayerStatsService playerStatsService)
+    public MatchesController(DugoutDbContext context, IHubContext<GameHub> hub, IMatchService matchService, IMatchEngine matchEngine, IPlayerStatsService playerStatsService)
     {
         _context = context;
+        _hub = hub;
         _matchService = matchService;
         _matchEngine = matchEngine;
         _playerStatsService = playerStatsService;
@@ -29,6 +33,7 @@ public class MatchesController : ControllerBase
     [HttpGet("today/{gameSaveId}")]
     public async Task<IActionResult> GetTodayMatches(int gameSaveId)
     {
+
         var save = await _context.GameSaves
             .Include(gs => gs.Seasons)
             .Include(gs => gs.Fixtures).ThenInclude(f => f.Matches)
@@ -82,6 +87,7 @@ public class MatchesController : ControllerBase
     [HttpPost("simulate/{gameSaveId}")]
     public async Task<IActionResult> SimulateMatches(int gameSaveId)
     {
+
         var gameSave = await _context.GameSaves
             .Include(gs => gs.Fixtures)
                 .ThenInclude(f => f.Matches)

@@ -9,6 +9,7 @@ import LoadGameModal from "./components/LoadGameModal";
 import TeamSelectionModal from "./components/TeamSelectionModal";
 import { ProcessingProvider } from "./context/ProcessingContext";
 import ProcessingOverlay from "./components/ProcessingOverlay";
+
 import Swal from "sweetalert2";
 
 import Home from "./pages/Home";
@@ -35,7 +36,7 @@ import TodayMatches from "./pages/TodayMatches";
 import MatchPreview from "./pages/MatchPreview";
 
 // 👉 Context
-import { GameSaveProvider, useGameSave } from "./context/GameSaveContext";
+import { GameProvider, useGame } from "./context/GameContext";
 
 // 🔹 ProtectedRoute
 function ProtectedRoute({ isAuthenticated, children }) {
@@ -55,7 +56,7 @@ function AppInner() {
   const [userSaves, setUserSaves] = useState([]);
   const [showLoadModal, setShowLoadModal] = useState(false);
 
-  const { currentGameSave, setCurrentGameSave } = useGameSave();
+const { currentGameSave, setCurrentGameSave } = useGame();
 
   // ---- Auth + сейф check при refresh ----
   useEffect(() => {
@@ -415,10 +416,10 @@ function AppInner() {
 
 export default function App() {
   return (
-    <GameSaveProvider>
+    <GameProvider>
       <ProcessingProvider>
         <AppInner />
       </ProcessingProvider>
-    </GameSaveProvider>
+    </GameProvider>
   );
 }

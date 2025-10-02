@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { useGameSave } from "../context/GameSaveContext";
 import TeamLogo from "../components/TeamLogo";
 
 const Cup = ({ gameSaveId, seasonId }) => {
