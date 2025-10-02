@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Trophy, Play } from "lucide-react";
 import TeamLogo from "../components/TeamLogo";
-import { useGameSave } from "../context/GameSaveContext"; // 👈 ИМПОРТИРАЙ КОНТЕКСТА
+import { useGameSave } from "../context/GameSaveContext";
+import { useProcessing } from "../context/ProcessingContext";
 
 export default function TodayMatches() {
   const { gameSaveId } = useParams();
@@ -11,8 +12,8 @@ export default function TodayMatches() {
   const [hasUnplayed, setHasUnplayed] = useState(false);
   const [activeMatch, setActiveMatch] = useState(null);
 
-  // 👇 ДОБАВИ ТОВА ЗА ДОСТЪП ДО ФУНКЦИИТЕ ОТ ХЕДЪРА
   const { setCurrentGameSave } = useGameSave();
+  const { runSimulateMatches } = useProcessing();
 
   const navigate = useNavigate();
 
@@ -48,40 +49,9 @@ export default function TodayMatches() {
     }
   };
 
-  // 👇 ПРОМЕНЕНА ФУНКЦИЯ ЗА СИМУЛИРАНЕ
-  const handleSimulate = async () => {
-    try {
-      const res = await fetch(`/api/matches/simulate/${gameSaveId}`, {
-        method: "POST",
-        credentials: "include",
-      });
-
-      if (!res.ok) {
-        alert("Failed to simulate matches");
-        return;
-      }
-
-      const data = await res.json();
-
-      // 👇 СИНХРОНИЗИРАЙ ВСИЧКО С ХЕДЪРА
-      if (data.gameStatus) {
-        setCurrentGameSave(data.gameStatus.gameSave);
-        setHasUnplayed(data.gameStatus.hasUnplayedMatchesToday);
-        setActiveMatch(data.gameStatus.activeMatch);
-
-        // 👇 АКТУАЛИЗИРАЙ МАЧОВЕТЕ
-        if (data.matches) {
-          setMatches(data.matches);
-        }
-
-        // 👇 ОБНОВИ userFixtureId
-        const userMatch = data.matches?.find((m) => m.isUserTeamMatch);
-        setUserFixtureId(userMatch ? userMatch.fixtureId : null);
-      }
-    } catch (err) {
-      console.error("Simulation failed:", err);
-      alert("Error simulating matches");
-    }
+  // 👇 Сега handleSimulate просто вика ProcessingContext
+  const handleSimulate = () => {
+    runSimulateMatches(gameSaveId, { stepDelay: 600 });
   };
 
   // 👇 ПРОМЕНЕНА ПРОВЕРКА - ползва локалното състояние

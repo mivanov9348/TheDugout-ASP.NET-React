@@ -73,7 +73,7 @@ export function ProcessingProvider({ children }) {
     startProcessing("Simulating matches...");
 
     try {
-      const res = await fetch(`/api/game/simulate/${gameSaveId}`, {
+      const res = await fetch(`/api/matches/simulate/${gameSaveId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
       });
@@ -98,13 +98,11 @@ export function ProcessingProvider({ children }) {
 
       // Показваме всеки мач един по един (step-by-step)
       for (const m of matches) {
-        // Форматиране на ред: "League: Home 2 - 1 Away (User match)"
-        const homeGoals = m.HomeGoals ?? "-";
-        const awayGoals = m.AwayGoals ?? "-";
-        const isUser = m.IsUserTeamMatch ? " (Your team)" : "";
-        const line = `${m.CompetitionName}: ${m.Home} ${homeGoals} - ${awayGoals} ${m.Away}${isUser}`;
+        const homeGoals = m.homeGoals ?? "-";
+        const awayGoals = m.awayGoals ?? "-";
+        const isUser = m.isUserTeamMatch ? " (Your team)" : "";
+        const line = `${m.competitionName}: ${m.home} ${homeGoals} - ${awayGoals} ${m.away}${isUser}`;
         addLog(line);
-        // малко пауза за "стъпков ефект"
         await sleep(stepDelay);
       }
 
@@ -123,18 +121,31 @@ export function ProcessingProvider({ children }) {
     } catch (err) {
       addLog("❌ Exception: " + (err.message || err));
     } finally {
-      // оставяме последния ред видим 0.8s и след това чистим
       await sleep(800);
       stopProcessing();
+      // рефреш на страницата след като се скрие overlay
+      setTimeout(() => {
+        window.location.reload();
+      }, 200);
     }
   };
 
   return (
     <ProcessingContext.Provider
-      value={{ startProcessing, addLog, stopProcessing, runNextDay, runSimulateMatches }}
+      value={{
+        startProcessing,
+        addLog,
+        stopProcessing,
+        runNextDay,
+        runSimulateMatches,
+      }}
     >
       {children}
-      <ProcessingOverlay logs={logs} isProcessing={isProcessing} stopProcessing={stopProcessing} />
+      <ProcessingOverlay
+        logs={logs}
+        isProcessing={isProcessing}
+        stopProcessing={stopProcessing}
+      />
     </ProcessingContext.Provider>
   );
 }

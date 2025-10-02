@@ -54,7 +54,6 @@ function AppInner() {
   const [loading, setLoading] = useState(true);
   const [userSaves, setUserSaves] = useState([]);
   const [showLoadModal, setShowLoadModal] = useState(false);
-  const [processingMessage, setProcessingMessage] = useState(null);
 
   const { currentGameSave, setCurrentGameSave } = useGameSave();
 
@@ -402,7 +401,9 @@ function AppInner() {
                     <Route path="*" element={<div>404 Not Found</div>} />
                   </Routes>
                 </main>
-                <ProcessingOverlay message={processingMessage} />
+
+                {/* 🔹 Overlay вече няма пропсове */}
+                <ProcessingOverlay />
               </div>
             </div>
           </ProtectedRoute>
