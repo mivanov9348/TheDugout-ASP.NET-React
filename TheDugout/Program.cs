@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using TheDugout.Data;
+using TheDugout.Hubs;
 using TheDugout.Services;
 using TheDugout.Services.CPUManager;
 using TheDugout.Services.Cup;
@@ -34,18 +36,19 @@ var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("Default");
 
 builder.Services.AddDbContext<DugoutDbContext>(options =>
-options.UseSqlServer(connectionString, opt => opt.CommandTimeout(90)));
+    options.UseSqlServer(connectionString, opt => opt.CommandTimeout(90)));
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());    
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Services DI
 builder.Services.AddScoped<IUserContextService, UserContextService>();
 builder.Services.AddScoped<ITemplateService, TemplateService>();
 builder.Services.AddScoped<IGameSaveService, GameSaveService>();
@@ -85,17 +88,22 @@ builder.Services.AddScoped<ILeagueStandingsService, LeagueStandingsService>();
 builder.Services.AddScoped<IStandingsDispatcherService, StandingsDispatcherService>();
 builder.Services.AddScoped<IEuropeanCupStandingService, EuropeanCupStandingService>();
 
+// SignalR
+builder.Services.AddSignalR();
+
+// CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("http://localhost:5173") // frontend port
+        policy.WithOrigins("http://localhost:5173")
               .AllowAnyHeader()
               .AllowAnyMethod()
-        .AllowCredentials();
+              .AllowCredentials();
     });
 });
 
+// JWT Auth
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -107,12 +115,24 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateLifetime = true
         };
 
-        // Чети token от cookie вместо header (custom)
         options.Events = new JwtBearerEvents
         {
             OnMessageReceived = context =>
             {
-                context.Token = context.Request.Cookies["jwt"];
+                // Чети токен от query string (SignalR) или от cookie
+                var accessToken = context.Request.Query["access_token"];
+                var path = context.HttpContext.Request.Path;
+
+                if (!string.IsNullOrEmpty(accessToken) &&
+                    path.StartsWithSegments("/hubs/game"))
+                {
+                    context.Token = accessToken;
+                }
+                else
+                {
+                    context.Token = context.Request.Cookies["jwt"];
+                }
+
                 return Task.CompletedTask;
             }
         };
@@ -120,11 +140,19 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =>
 {
-    options.SerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+    options.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
 });
 
-
 builder.Services.AddAuthorization();
+
+builder.Services.AddHttpContextAccessor();
+
+builder.Services.AddSignalR()
+    .AddHubOptions<GameHub>(options =>
+    {
+    });
+
+builder.Services.AddSingleton<IUserIdProvider, UserIdProvider>();
 
 var app = builder.Build();
 
@@ -136,14 +164,16 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseHttpsRedirection();
 app.UseStaticFiles();
 
+app.UseRouting();
 
-app.UseHttpsRedirection();
 app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<GameHub>("/hubs/game");
 
 app.Run();

@@ -1,44 +1,29 @@
+// src/components/Header.jsx
 import { Link, useNavigate } from "react-router-dom";
-import { useGameSave } from "../context/GameSaveContext";
 import { useProcessing } from "../context/ProcessingContext";
-import { useState, useEffect } from "react";
+import { useGame } from "../context/GameContext";
 
 function Header({ username }) {
-  const { currentGameSave, setCurrentGameSave } = useGameSave();
-  const { startProcessing, stopProcessing } = useProcessing(); // 👈 новото
-  const [hasUnplayed, setHasUnplayed] = useState(false);
-  const [activeMatch, setActiveMatch] = useState(null);
-  const [hasMatchesToday, setHasMatchesToday] = useState(false);
+  const { startProcessing, stopProcessing } = useProcessing();
+  const {
+    currentGameSave,
+    hasUnplayedMatchesToday: hasUnplayed,
+    activeMatch,
+    isLoading,
+  } = useGame();
 
   const navigate = useNavigate();
 
-  // 🔄 Полинг за статус на играта
-  useEffect(() => {
-    if (!currentGameSave) return;
+  // Показваме "Loading..." само ако нямаме данни и все още зареждаме
+  if (isLoading && !currentGameSave) {
+    return (
+      <header className="px-6 py-3 bg-slate-800 text-white shadow-md">
+        <h1 className="font-bold text-lg">Loading...</h1>
+      </header>
+    );
+  }
 
-    const fetchStatus = async () => {
-      try {
-        const res = await fetch(`/api/matches/status/${currentGameSave.id}`, {
-          credentials: "include",
-        });
-
-        if (res.ok) {
-          const data = await res.json();
-          setCurrentGameSave(data.gameSave);
-          setHasUnplayed(data.hasUnplayedMatchesToday);
-          setActiveMatch(data.activeMatch);
-          setHasMatchesToday(data.hasMatchesToday);
-        }
-      } catch (err) {
-        console.error("Polling failed:", err);
-      }
-    };
-
-    fetchStatus();
-    const interval = setInterval(fetchStatus, 5000);
-    return () => clearInterval(interval);
-  }, [currentGameSave?.id, setCurrentGameSave]);
-
+  // Ако нямаме save след зареждане — значи няма активна игра
   if (!currentGameSave) {
     return (
       <header className="px-6 py-3 bg-slate-800 text-white shadow-md">
@@ -50,65 +35,45 @@ function Header({ username }) {
   const season = currentGameSave.seasons?.[0];
   const team = currentGameSave.userTeam;
 
-  const formatDate = (dateStr) => {
-    if (!dateStr) return "";
-    return new Date(dateStr).toLocaleDateString("en-GB", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    });
-  };
+  const formatDate = (dateStr) =>
+    dateStr
+      ? new Date(dateStr).toLocaleDateString("en-GB", {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+        })
+      : "";
 
-    const handleNextDay = async () => {
-      if (hasUnplayed) {
-        navigate(`/today-matches/${currentGameSave.id}`);
-        return;
-      }
-
-      try {
-        startProcessing("Advancing to next day...");
-
-        const res = await fetch("/api/games/current/next-day", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-        });
-
-        if (res.ok) {
-          const data = await res.json();
-          const updatedSave = data.gameSave;
-
-          setCurrentGameSave(updatedSave);
-          setHasUnplayed(data.hasUnplayedMatchesToday);
-
-          if (data.hasMatchesToday) {
-            navigate(`/today-matches/${updatedSave.id}`);
-          }
-        }
-      } catch (err) {
-        console.error("Next Day failed:", err);
-      } finally {
-        stopProcessing(); // 👈 скриваме overlay
-      }
-    };
-
-  const handleGoToMatch = () => {
-    if (activeMatch) {
-      navigate(`/match/${activeMatch.id}`);
-    }
-  };
-
-  const handleGoToTodayMatches = () => {
-    if (currentGameSave) {
+  const handleNextDay = async () => {
+    if (hasUnplayed) {
       navigate(`/today-matches/${currentGameSave.id}`);
+      return;
+    }
+    try {
+      startProcessing("Advancing to next day...");
+      const res = await fetch("/api/games/current/next-day", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      });
+      if (!res.ok) {
+        console.error("Next day API failed with status", res.status);
+      }
+      // НЕ правим нищо повече — SignalR ще обнови автоматично
+    } catch (err) {
+      console.error("Next Day failed:", err);
+    } finally {
+      stopProcessing();
     }
   };
 
-  // 👉 Обновена логика за бутона
+  const handleGoToMatch = () => activeMatch && navigate(`/match/${activeMatch.id}`);
+  const handleGoToTodayMatches = () =>
+    currentGameSave && navigate(`/today-matches/${currentGameSave.id}`);
+
   let buttonLabel = "Next Day →";
   let buttonAction = handleNextDay;
-  let buttonDisabled = false;
-  let buttonTitle = "";
+  let buttonTitle = "Continue to next day";
 
   if (activeMatch) {
     buttonLabel = "To Match";
@@ -118,15 +83,10 @@ function Header({ username }) {
     buttonLabel = "Match Day";
     buttonAction = handleGoToTodayMatches;
     buttonTitle = "You have unplayed matches today";
-  } else if (!hasMatchesToday) {
-    buttonLabel = "Next Day →";
-    buttonAction = handleNextDay;
-    buttonTitle = "Continue to next day";
   }
 
   return (
     <header className="flex justify-between items-center px-6 py-3 bg-slate-800 text-white shadow-md">
-      {/* Ляво: лого + отбор */}
       <div className="flex items-center gap-3">
         <Link
           to="/"
@@ -143,7 +103,6 @@ function Header({ username }) {
         </div>
       </div>
 
-      {/* Дясно: дата + юзер + баланс + бутон */}
       <div className="flex items-center gap-8 text-sm text-slate-300">
         <span>{season ? formatDate(season.currentDate) : ""}</span>
         <span className="font-semibold">{username}</span>
@@ -159,8 +118,7 @@ function Header({ username }) {
               : hasUnplayed
               ? "bg-amber-600 hover:bg-amber-700"
               : "bg-sky-600 hover:bg-sky-700"
-          } ${buttonDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
-          disabled={buttonDisabled}
+          }`}
         >
           {buttonLabel}
         </button>
