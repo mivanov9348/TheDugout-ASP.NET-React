@@ -1,20 +1,25 @@
+// src/pages/TodayMatches.jsx
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Trophy, Play } from "lucide-react";
 import TeamLogo from "../components/TeamLogo";
 import { useProcessing } from "../context/ProcessingContext";
-import { useGameSave } from "../context/GameSaveContext";
-import { useProcessing } from "../context/ProcessingContext";
+import { useGame } from "../context/GameContext";
 
 export default function TodayMatches() {
   const { gameSaveId } = useParams();
   const [matches, setMatches] = useState([]);
   const [userFixtureId, setUserFixtureId] = useState(null);
-  const [activeMatch, setActiveMatch] = useState(null);
+  const [activeMatchLocal, setActiveMatchLocal] = useState(null);
 
-  // 👇 ДОБАВИ ТОВА ЗА ДОСТЪП ДО ФУНКЦИИТЕ ОТ ХЕДЪРА
-  const { setCurrentGameSave } = useGameSave();
+  const {
+    setCurrentGameSave,
+    setHasUnplayedMatchesToday,
+    setActiveMatch,
+    refreshGameStatus,
+  } = useGame();
 
+  const { isProcessing, startProcessing, stopProcessing } = useProcessing();
   const navigate = useNavigate();
 
   const normalizeMatch = (m) => ({
@@ -33,16 +38,22 @@ export default function TodayMatches() {
     awayLogoFileName: m.awayLogoFileName ?? m.AwayLogoFileName,
   });
 
-  // зареждане на мачовете
   const loadMatches = async () => {
     try {
       const res = await fetch(`/api/matches/today/${gameSaveId}`, {
         credentials: "include",
       });
+      if (!res.ok) {
+        console.error("Failed to fetch matches", res.status);
+        return;
+      }
       const data = await res.json();
-      const normalized = data.matches.map(normalizeMatch);
+      const normalized = (data.matches ?? []).map(normalizeMatch);
       setMatches(normalized);
-      if (data.activeMatch) setActiveMatch(data.activeMatch);
+      if (data.activeMatch) {
+        setActiveMatchLocal(data.activeMatch);
+        setActiveMatch(data.activeMatch);
+      }
       const userMatch = normalized.find((m) => m.isUserTeamMatch);
       setUserFixtureId(userMatch?.fixtureId ?? null);
     } catch (err) {
@@ -58,8 +69,8 @@ export default function TodayMatches() {
     if (userFixtureId) navigate(`/live-match/${userFixtureId}`);
   };
 
-  // 👇 ПРОМЕНЕНА ФУНКЦИЯ ЗА СИМУЛИРАНЕ
   const handleSimulate = async () => {
+    startProcessing("Simulating matches...");
     try {
       const res = await fetch(`/api/matches/simulate/${gameSaveId}`, {
         method: "POST",
@@ -73,24 +84,30 @@ export default function TodayMatches() {
 
       const data = await res.json();
 
-      // 👇 СИНХРОНИЗИРАЙ ВСИЧКО С ХЕДЪРА
-      if (data.gameStatus) {
-        setCurrentGameSave(data.gameStatus.gameSave);
-        setHasUnplayed(data.gameStatus.hasUnplayedMatchesToday);
-        setActiveMatch(data.gameStatus.activeMatch);
+      // Ако бекендът връща gameStatus — обнови контекста
+      const status = data.gameStatus ?? data.gameStatus;
+      if (status) {
+        if (status.gameSave) setCurrentGameSave(status.gameSave);
+        setHasUnplayedMatchesToday(Boolean(status.hasUnplayedMatchesToday));
+        setActiveMatch(status.activeMatch ?? null);
+      } else {
+        // иначе опресни централен статус
+        await refreshGameStatus();
+      }
 
-        // 👇 АКТУАЛИЗИРАЙ МАЧОВЕТЕ
-        if (data.matches) {
-          setMatches(data.matches);
-        }
-
-        // 👇 ОБНОВИ userFixtureId
-        const userMatch = data.matches?.find((m) => m.isUserTeamMatch);
-        setUserFixtureId(userMatch ? userMatch.fixtureId : null);
+      if (data.matches) {
+        const normalized = data.matches.map(normalizeMatch);
+        setMatches(normalized);
+        const userMatch = normalized.find((m) => m.isUserTeamMatch);
+        setUserFixtureId(userMatch?.fixtureId ?? null);
+      } else {
+        await loadMatches();
       }
     } catch (err) {
       console.error("Simulation failed:", err);
       alert("Error simulating matches");
+    } finally {
+      stopProcessing();
     }
   };
 
@@ -119,7 +136,6 @@ export default function TodayMatches() {
 
   return (
     <div className="p-6 sm:p-8 space-y-10 max-w-5xl mx-auto">
-      {/* Buttons */}
       <div className="flex justify-center gap-4 mb-6">
         <button
           onClick={handleToMatch}

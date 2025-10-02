@@ -8,13 +8,16 @@ function Header({ username }) {
   const {
     currentGameSave,
     hasUnplayedMatchesToday: hasUnplayed,
+    setHasUnplayedMatchesToday,
     activeMatch,
+    setActiveMatch,
     isLoading,
+    refreshGameStatus,
+    setCurrentGameSave,
   } = useGame();
 
   const navigate = useNavigate();
 
-  // Показваме "Loading..." само ако нямаме данни и все още зареждаме
   if (isLoading && !currentGameSave) {
     return (
       <header className="px-6 py-3 bg-slate-800 text-white shadow-md">
@@ -23,7 +26,6 @@ function Header({ username }) {
     );
   }
 
-  // Ако нямаме save след зареждане — значи няма активна игра
   if (!currentGameSave) {
     return (
       <header className="px-6 py-3 bg-slate-800 text-white shadow-md">
@@ -45,21 +47,53 @@ function Header({ username }) {
       : "";
 
   const handleNextDay = async () => {
+    // ако вече има неизиграни — отиди в today-matches
     if (hasUnplayed) {
       navigate(`/today-matches/${currentGameSave.id}`);
       return;
     }
+
+    startProcessing("Advancing to next day...");
     try {
-      startProcessing("Advancing to next day...");
       const res = await fetch("/api/games/current/next-day", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
       });
+
       if (!res.ok) {
         console.error("Next day API failed with status", res.status);
+        // опитай да опресниш статуса директно
+        const fallback = await refreshGameStatus();
+        if (fallback?.hasUnplayedMatchesToday) {
+          navigate(`/today-matches/${fallback.gameSave?.id ?? currentGameSave.id}`);
+        }
+        return;
       }
-      // НЕ правим нищо повече — SignalR ще обнови автоматично
+
+      const payload = await res.json();
+      const status = payload.gameStatus ?? payload;
+
+      // Ако backend е включил новия status — обнови контекста
+      if (status) {
+        if (status.gameSave) setCurrentGameSave(status.gameSave);
+        setHasUnplayedMatchesToday(Boolean(status.hasUnplayedMatchesToday));
+        setActiveMatch(status.activeMatch ?? null);
+
+        // веднага навигирай при наличие на неизиграни
+        if (status.hasUnplayedMatchesToday) {
+          const gid = status.gameSave?.id ?? currentGameSave.id;
+          navigate(`/today-matches/${gid}`);
+          return;
+        }
+      } else {
+        // ако няма status в тялото — опресни и провери
+        const fallback = await refreshGameStatus();
+        if (fallback?.hasUnplayedMatchesToday) {
+          navigate(`/today-matches/${fallback.gameSave?.id ?? currentGameSave.id}`);
+          return;
+        }
+      }
     } catch (err) {
       console.error("Next Day failed:", err);
     } finally {

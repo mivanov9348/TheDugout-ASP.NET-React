@@ -56,7 +56,7 @@ function AppInner() {
   const [userSaves, setUserSaves] = useState([]);
   const [showLoadModal, setShowLoadModal] = useState(false);
 
-const { currentGameSave, setCurrentGameSave } = useGame();
+  const { currentGameSave, setCurrentGameSave } = useGame();
 
   // ---- Auth + сейф check при refresh ----
   useEffect(() => {
@@ -402,9 +402,6 @@ const { currentGameSave, setCurrentGameSave } = useGame();
                     <Route path="*" element={<div>404 Not Found</div>} />
                   </Routes>
                 </main>
-
-                {/* 🔹 Overlay вече няма пропсове */}
-                <ProcessingOverlay />
               </div>
             </div>
           </ProtectedRoute>

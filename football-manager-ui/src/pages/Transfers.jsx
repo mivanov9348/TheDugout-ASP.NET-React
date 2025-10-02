@@ -4,7 +4,8 @@ const Transfers = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 h-[calc(100vh-100px)] flex flex-col">
+      {/* Header */}
       <div className="bg-white shadow rounded-2xl p-4 border border-slate-200">
         <h1 className="text-3xl font-bold text-slate-800">Transfers</h1>
         <p className="text-slate-500 text-sm mt-1">
@@ -12,7 +13,8 @@ const Transfers = () => {
         </p>
       </div>
 
-      <div className="bg-white shadow rounded-2xl border border-slate-200">
+      {/* Content with tabs */}
+      <div className="bg-white shadow rounded-2xl border border-slate-200 flex flex-col flex-1 overflow-hidden">
         <nav className="flex gap-3 px-4 pt-3 border-b">
           {[
             { path: "search", label: "Search Players" },
@@ -37,8 +39,8 @@ const Transfers = () => {
           ))}
         </nav>
 
-        {/* Content area */}
-        <div className="p-6 h-[calc(100vh-220px)] overflow-hidden flex flex-col">
+        {/* Outlet content */}
+        <div className="flex-1 overflow-hidden">
           <Outlet />
         </div>
       </div>

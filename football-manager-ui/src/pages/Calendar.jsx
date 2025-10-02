@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-
+import { useGame } from "../context/GameContext";
 
 const Calendar = ({ gameSaveId }) => {
-  const { currentGameSave } = useGameSave();
+  const { currentGameSave } = useGame();
   const [currentDate, setCurrentDate] = useState(new Date(2025, 6, 1));
   const [events, setEvents] = useState([]);
 

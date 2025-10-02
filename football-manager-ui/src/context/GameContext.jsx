@@ -1,62 +1,61 @@
 // src/context/GameContext.jsx
-import { createContext, useContext, useState, useEffect } from "react";
-import { HubConnectionBuilder } from "@microsoft/signalr";
+import React, { createContext, useContext, useCallback, useEffect, useState } from "react";
 
 const GameContext = createContext();
 
 export function GameProvider({ children }) {
   const [currentGameSave, setCurrentGameSave] = useState(null);
-  const [connection, setConnection] = useState(null);
+  const [hasUnplayedMatchesToday, setHasUnplayedMatchesToday] = useState(false);
+  const [activeMatch, setActiveMatch] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // SignalR връзка
-  useEffect(() => {
-    const newConnection = new HubConnectionBuilder()
-      .withUrl("/gameHub", {
-        withCredentials: true, // Изпраща бисквитки за аутентикация
-        // Ако използваш JWT токен, добави:
-        // accessTokenFactory: () => localStorage.getItem("token"),
-      })
-      .withAutomaticReconnect()
-      .build();
-
-    setConnection(newConnection);
-
-    return () => {
-      if (newConnection) {
-        newConnection.stop();
+  const refreshGameStatus = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch("/api/games/current/status", { credentials: "include" });
+      if (!res.ok) {
+        console.error("refreshGameStatus failed", res.status);
+        setIsLoading(false);
+        return null;
       }
-    };
+      const data = await res.json();
+      // backend може да върне { gameStatus: { ... } } или директно { ... }
+      const status = data.gameStatus ?? data;
+      if (status) {
+        setCurrentGameSave(status.gameSave ?? null);
+        setHasUnplayedMatchesToday(Boolean(status.hasUnplayedMatchesToday));
+        setActiveMatch(status.activeMatch ?? null);
+      }
+      return status;
+    } catch (err) {
+      console.error("refreshGameStatus error", err);
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
-  // Стартиране на SignalR връзка
   useEffect(() => {
-    if (connection) {
-      const startConnection = async () => {
-        try {
-          await connection.start();
-          console.log("SignalR свързан успешно");
-        } catch (err) {
-          console.error("SignalR грешка:", err);
-          if (err.message.includes("401")) {
-            window.location.href = "/login";
-          }
-        }
-      };
-      startConnection();
-    }
-  }, [connection]);
+    // в началото опресни
+    refreshGameStatus();
+  }, [refreshGameStatus]);
 
   return (
-    <GameContext.Provider value={{ currentGameSave, setCurrentGameSave, connection }}>
+    <GameContext.Provider
+      value={{
+        currentGameSave,
+        setCurrentGameSave,
+        hasUnplayedMatchesToday,
+        setHasUnplayedMatchesToday,
+        activeMatch,
+        setActiveMatch,
+        isLoading,
+        refreshGameStatus,
+      }}
+    >
       {children}
     </GameContext.Provider>
   );
 }
 
-export function useGame() {
-  const context = useContext(GameContext);
-  if (!context) {
-    throw new Error("useGame трябва да се използва в GameProvider");
-  }
-  return context;
-}
+export const useGame = () => useContext(GameContext);
