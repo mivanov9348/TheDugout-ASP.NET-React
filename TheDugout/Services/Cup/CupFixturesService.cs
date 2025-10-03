@@ -24,9 +24,6 @@ namespace TheDugout.Services.Cup
             _cupScheduleService = cupScheduleService;
         }
 
-        /// <summary>
-        /// Генерира първи кръг (или прелим ако трябва) за всички купи в сезона.
-        /// </summary>
         public async Task GenerateInitialFixturesAsync(int seasonId, int gameSaveId, List<Models.Cups.Cup> cups)
         {
             var season = await _context.Seasons
@@ -62,9 +59,6 @@ namespace TheDugout.Services.Cup
             }
         }
 
-        /// <summary>
-        /// Генерира следващ кръг на купата (чисто елиминации).
-        /// </summary>
         public async Task GenerateNextRoundAsync(int cupId, int gameSaveId, int seasonId)
         {
             var cup = await _context.Cups
@@ -160,7 +154,11 @@ namespace TheDugout.Services.Cup
         // Helpers
         // ---------------------------
 
-        private List<Models.Fixtures.Fixture> GenerateFirstRoundFixtures(Models.Cups.Cup cup, List<Models.Teams.Team> teams, int gameSaveId, int seasonId)
+        private List<Models.Fixtures.Fixture> GenerateFirstRoundFixtures(
+     Models.Cups.Cup cup,
+     List<Models.Teams.Team> teams,
+     int gameSaveId,
+     int seasonId)
         {
             var fixtures = new List<Models.Fixtures.Fixture>();
 
@@ -169,12 +167,13 @@ namespace TheDugout.Services.Cup
 
             if (needsPrelim && prelimTeamsCount > 0)
             {
+                // Прелим рунд
                 var prelimTeams = teams.Take(prelimTeamsCount * 2).ToList();
                 var prelimRound = new CupRound
                 {
                     CupId = cup.Id,
                     RoundNumber = 1,
-                    Name = "Preliminary Round"
+                    Name = _fixtureHelperService.GetRoundName(teams.Count, 1, (int)Math.Log2(teams.Count), true)
                 };
 
                 fixtures.AddRange(PairTeamsIntoFixtures(prelimTeams, gameSaveId, seasonId, prelimRound));
@@ -182,11 +181,12 @@ namespace TheDugout.Services.Cup
             }
             else
             {
+                // Няма прелим → директно първи кръг
                 var round = new CupRound
                 {
                     CupId = cup.Id,
                     RoundNumber = 1,
-                    Name = "Round 1"
+                    Name = _fixtureHelperService.GetRoundName(teams.Count, 1, (int)Math.Log2(teams.Count), false)
                 };
 
                 var roundTeams = teams;
@@ -199,7 +199,6 @@ namespace TheDugout.Services.Cup
 
             return fixtures;
         }
-
         private List<Models.Fixtures.Fixture> PairTeamsIntoFixtures(List<Models.Teams.Team> teams, int gameSaveId, int seasonId, CupRound round)
         {
             var fixtures = new List<Models.Fixtures.Fixture>();

@@ -52,7 +52,7 @@ namespace TheDugout.Services.MatchEngine
             // инициализация на статистиките за играчите
             match.PlayerStats = _playerStatsService.InitializeMatchStats(match);
         }
-        public async void EndMatch(Models.Matches.Match match)
+        public async Task EndMatch(Models.Matches.Match match)
         {
             match.Status = MatchStatus.Played;
 

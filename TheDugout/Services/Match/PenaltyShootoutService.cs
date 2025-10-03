@@ -1,84 +1,86 @@
 ﻿using TheDugout.Models.Matches;
-using TheDugout.Models.Players;
+using TheDugout.Services.Team;
 using TheDugout.Services.Player;
 
 namespace TheDugout.Services.Match
 {
     public class PenaltyShootoutService : IPenaltyShootoutService
     {
-        private readonly Random _random = new Random();
         private readonly IMatchEventService _matchEventService;
         private readonly IPlayerStatsService _playerStatsService;
+        private readonly ITeamPlanService _teamPlanService;
 
         public PenaltyShootoutService(
             IMatchEventService matchEventService,
-            IPlayerStatsService playerStatsService)
+            IPlayerStatsService playerStatsService,
+            ITeamPlanService teamPlanService)
         {
             _matchEventService = matchEventService;
             _playerStatsService = playerStatsService;
+            _teamPlanService = teamPlanService;
         }
 
         public async Task<Models.Matches.Match> RunPenaltyShootoutAsync(Models.Matches.Match match)
         {
+            // Материализираме lineup-ите като списъци още тук
+            var homeLineup = (await _teamPlanService.GetStartingLineupAsync(match.Fixture.HomeTeam)).ToList();
+            var awayLineup = (await _teamPlanService.GetStartingLineupAsync(match.Fixture.AwayTeam)).ToList();
+
+            var homeQueue = new Queue<Models.Players.Player>(homeLineup);
+            var awayQueue = new Queue<Models.Players.Player>(awayLineup);
+
+            int homeScore = 0, awayScore = 0;
+
             // 1. Първите 5 дузпи
-            await RunInitialSeriesAsync(match);
-
-            // 2. Проверка за равенство
-            var homeScore = match.Penalties.Count(p => p.TeamId == match.Fixture.HomeTeamId && p.IsScored);
-            var awayScore = match.Penalties.Count(p => p.TeamId == match.Fixture.AwayTeamId && p.IsScored);
-
-            // 3. Ако още е равен → sudden death
-            if (homeScore == awayScore)
+            for (int round = 1; round <= 5; round++)
             {
-                await RunSuddenDeathAsync(match, homeScore, awayScore);
+                homeScore += await TakePenaltyKick(match, match.Fixture.HomeTeamId, homeQueue, round);
+                awayScore += await TakePenaltyKick(match, match.Fixture.AwayTeamId, awayQueue, round);
+
+                if (IsDecided(homeScore, awayScore, round)) break;
             }
+
+            // 2. Внезапна смърт
+            int suddenRound = 6;
+            while (homeScore == awayScore)
+            {
+                homeScore += await TakePenaltyKick(match, match.Fixture.HomeTeamId, homeQueue, suddenRound);
+                awayScore += await TakePenaltyKick(match, match.Fixture.AwayTeamId, awayQueue, suddenRound);
+
+                suddenRound++;
+
+                if (suddenRound > 11) break; // safeguard
+            }
+
+            match.Fixture.WinnerTeamId = homeScore > awayScore
+                ? match.Fixture.HomeTeamId
+                : match.Fixture.AwayTeamId;
 
             return match;
         }
 
-        private async Task RunInitialSeriesAsync(Models.Matches.Match match)
+        private static bool IsDecided(int homeScore, int awayScore, int round)
         {
-            var homeTeamId = match.Fixture.HomeTeamId;
-            var awayTeamId = match.Fixture.AwayTeamId;
-
-            for (int i = 1; i <= 5; i++)
-            {
-                await TakePenaltyAsync(match, homeTeamId, i);
-                await TakePenaltyAsync(match, awayTeamId, i);
-            }
+            return homeScore > awayScore + (5 - round) ||
+                   awayScore > homeScore + (5 - round);
         }
 
-        private async Task RunSuddenDeathAsync(Models.Matches.Match match, int homeScore, int awayScore)
-        {
-            var homeTeamId = match.Fixture.HomeTeamId;
-            var awayTeamId = match.Fixture.AwayTeamId;
-
-            int order = 6; // започваме след 5-тата дузпа
-
-            while (homeScore == awayScore)
-            {
-                var homePenalty = await TakePenaltyAsync(match, homeTeamId, order);
-                var awayPenalty = await TakePenaltyAsync(match, awayTeamId, order);
-
-                if (homePenalty.IsScored) homeScore++;
-                if (awayPenalty.IsScored) awayScore++;
-
-                order++;
-            }
-        }
-
-        private async Task<Penalty> TakePenaltyAsync(Models.Matches.Match match, int teamId, int order)
+        private async Task<int> TakePenaltyKick(Models.Matches.Match match, int teamId, Queue<Models.Players.Player> queue, int order)
         {
             var team = teamId == match.Fixture.HomeTeamId ? match.Fixture.HomeTeam : match.Fixture.AwayTeam;
-            var lineup = team?.Players.Where(p => p.Position.Code != "GK").ToList() ?? new List<Models.Players.Player>();
 
-            if (!lineup.Any())
-                throw new InvalidOperationException($"No penalty takers found for team {teamId}");
+            if (!queue.Any())
+            {
+                // Тук също материализираме списък
+                var lineup = (await _teamPlanService.GetStartingLineupAsync(team)).ToList();
+                foreach (var p in lineup) queue.Enqueue(p);
+            }
 
-            var player = lineup[_random.Next(lineup.Count)];
+            var player = queue.Dequeue();
 
-            // Random шанс за гол (примерно 75%)
-            bool isScored = _random.NextDouble() < 0.75;
+            var eventType = _matchEventService.GetEventByCode("PEN");
+            var outcome = _matchEventService.GetEventOutcome(player, eventType);
+            bool scored = outcome.Name == "Goal";
 
             var penalty = new Penalty
             {
@@ -86,38 +88,28 @@ namespace TheDugout.Services.Match
                 TeamId = teamId,
                 PlayerId = player.Id,
                 Order = order,
-                IsScored = isScored
+                IsScored = scored
             };
-
             match.Penalties.Add(penalty);
 
-            //// (По желание) създаване на MatchEvent за дузпата
-            //var eventType = _matchEventService.GetRandomEvent(); 
-
-            //var outcome = isScored
-            //    ? _matchEventService.GetOutcomeByName("Goal")
-            //    : _matchEventService.GetOutcomeByName("Miss");
-
-            //var commentary = _matchEventService.GetRandomCommentary(outcome, player);
-            //var matchEvent = _matchEventService.CreateMatchEvent(
-            //    match.Id,
-            //    90, // винаги след мача
-            //    team!,
-            //    player,
-            //    eventType,
-            //    outcome,
-            //    commentary
-            //);
-            //match.Events.Add(matchEvent);
+            var commentary = _matchEventService.GetRandomCommentary(outcome, player);
+            var matchEvent = _matchEventService.CreateMatchEvent(
+                match.Id,
+                120, // по-реалистично
+                team,
+                player,
+                eventType,
+                outcome,
+                commentary
+            );
+            match.Events.Add(matchEvent);
 
             // Update stats
-            //var playerStats = match.PlayerStats.FirstOrDefault(s => s.PlayerId == player.Id);
-            //if (playerStats != null)
-            //{
-            //    _playerStatsService.UpdateStats(matchEvent, playerStats);
-            //}
+            var playerStats = match.PlayerStats.FirstOrDefault(s => s.PlayerId == player.Id);
+            if (playerStats != null)
+                _playerStatsService.UpdateStats(matchEvent, playerStats);
 
-            return penalty;
+            return scored ? 1 : 0;
         }
     }
 }

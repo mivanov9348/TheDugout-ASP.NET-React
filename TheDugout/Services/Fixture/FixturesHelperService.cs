@@ -1,4 +1,7 @@
-﻿using System;
+﻿// FixturesHelperService.cs
+using Microsoft.EntityFrameworkCore;
+
+using TheDugout.Data;
 using TheDugout.Models.Cups;
 using TheDugout.Models.Fixtures;
 
@@ -6,23 +9,25 @@ namespace TheDugout.Services.Fixture
 {
     public class FixturesHelperService : IFixturesHelperService
     {
+        private readonly DugoutDbContext _context;
         private static readonly Random _random = new Random();
-        public FixturesHelperService()
+
+        public FixturesHelperService(DugoutDbContext context)
         {
+            _context = context;
         }
 
         public Models.Fixtures.Fixture CreateFixture(
-          int gameSaveId,
-          int seasonId,
-          int homeTeamId,
-          int awayTeamId,
-          DateTime date,
-          int round,
-          CompetitionType competitionType,
-          CupRound? cupRound = null,
-          int? leagueId = null,
-          int? europeanCupPhaseId = null
-      )
+            int gameSaveId,
+            int seasonId,
+            int homeTeamId,
+            int awayTeamId,
+            DateTime date,
+            int round,
+            CompetitionType competitionType,
+            CupRound? cupRound = null,
+            int? leagueId = null,
+            int? europeanCupPhaseId = null)
         {
             return new Models.Fixtures.Fixture
             {
@@ -36,14 +41,14 @@ namespace TheDugout.Services.Fixture
                 AwayTeamId = awayTeamId,
                 HomeTeamGoals = 0,
                 AwayTeamGoals = 0,
-            
+                IsElimination = DetermineIsElimination(competitionType, cupRound, europeanCupPhaseId),
                 Date = date,
                 Round = round,
                 Status = FixtureStatus.Scheduled
             };
         }
 
-        public List<(int, int)> TryFindRoundPairing(List<int> teamIds, HashSet<string> existingPairs, int maxAttempts)
+        public List<(int, int)>? TryFindRoundPairing(List<int> teamIds, HashSet<string> existingPairs, int maxAttempts)
         {
             var rnd = _random;
             var n = teamIds.Count;
@@ -75,6 +80,7 @@ namespace TheDugout.Services.Fixture
                 if (ok) return pairs;
             }
 
+            // не успяхме да намерим без повторение
             return null;
         }
 
@@ -97,7 +103,8 @@ namespace TheDugout.Services.Fixture
                     }
                 }
 
-                if (best == -1) best = remaining.First();
+                if (best == -1)
+                    best = remaining.First();
 
                 remaining.Remove(best);
                 pairs.Add((a, best));
@@ -116,22 +123,51 @@ namespace TheDugout.Services.Fixture
             return _random.Next(2) == 0 ? a : b;
         }
 
-        public string GetRoundName(int teamsCount, int roundNumber, int totalRounds)
+        public string GetRoundName(int teamsCount, int roundNumber, int totalRounds, bool hasPrelim = false)
         {
-            // if its the final
-            if (roundNumber == totalRounds)
+            if (hasPrelim && roundNumber == 1)
+                return "Preliminary Round";
+
+            int adjustedRound = hasPrelim ? roundNumber - 1 : roundNumber;
+
+            if (adjustedRound == totalRounds)
                 return "Final";
 
-            if (roundNumber == totalRounds - 1)
+            if (adjustedRound == totalRounds - 1)
                 return "Semi Final";
 
-            if (roundNumber == totalRounds - 2)
+            if (adjustedRound == totalRounds - 2)
                 return "Quarter Final";
 
-            // the rest
-            int teamsInThisRound = (int)Math.Pow(2, totalRounds - roundNumber + 1);
+            // teams left in this round: 2^(totalRounds - adjustedRound + 1)
+            int teamsInThisRound = (int)Math.Pow(2, totalRounds - adjustedRound + 1);
             return $"Round of {teamsInThisRound}";
         }
 
+        private bool DetermineIsElimination(CompetitionType competitionType, CupRound? cupRound, int? europeanCupPhaseId)
+        {
+            switch (competitionType)
+            {
+                case CompetitionType.League:
+                    return false;
+
+                case CompetitionType.DomesticCup:
+                    return true;
+
+                case CompetitionType.EuropeanCup:
+                    if (europeanCupPhaseId.HasValue)
+                    {
+                        var phase = _context.EuropeanCupPhases
+                            .Include(p => p.PhaseTemplate)
+                            .FirstOrDefault(p => p.Id == europeanCupPhaseId.Value);
+
+                        return phase?.PhaseTemplate.IsKnockout ?? false;
+                    }
+                    return false;
+
+                default:
+                    return false;
+            }
+        }
     }
 }

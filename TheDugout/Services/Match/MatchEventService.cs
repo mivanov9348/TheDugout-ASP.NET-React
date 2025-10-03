@@ -123,7 +123,7 @@ namespace TheDugout.Services.Match
 
             string rendered = template.Template
                 .Replace("{PlayerName}", $"{player.FirstName} {player.LastName}")
-                .Replace("{TeamAbbr}", team.Abbreviation ?? team.Name); 
+                .Replace("{TeamAbbr}", team.Abbreviation ?? team.Name);
 
             return rendered;
         }
@@ -135,22 +135,30 @@ namespace TheDugout.Services.Match
                 MatchId = matchId,
                 Minute = minute,
                 TeamId = team.Id,
-                Team = team,
                 PlayerId = player.Id,
-                Player = player,
                 EventTypeId = eventType.Id,
-                EventType = eventType,
                 OutcomeId = outcome.Id,
-                Outcome = outcome,
                 Commentary = commentary
             };
 
-            _context.MatchEvents.Add(matchEvent);
-            _context.SaveChanges();
+            //_context.MatchEvents.Add(matchEvent);
+            //_context.SaveChanges();
 
             return matchEvent;
         }
 
+        public EventType GetEventByCode(string code)
+        {
+            var entity = _context.EventTypes
+                .Include(e => e.Outcomes)
+                .Include(e => e.AttributeWeights)
+                    .ThenInclude(w => w.Attribute)
+                .AsNoTracking() 
+                .FirstOrDefault(e => e.Code == code)
+                ?? throw new InvalidOperationException($"EventType with code '{code}' not found.");
+
+            return entity;
+        }
 
     }
 }

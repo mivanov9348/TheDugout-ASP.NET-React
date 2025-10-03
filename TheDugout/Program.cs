@@ -88,8 +88,6 @@ builder.Services.AddScoped<IStandingsDispatcherService, StandingsDispatcherServi
 builder.Services.AddScoped<IEuropeanCupStandingService, EuropeanCupStandingService>();
 builder.Services.AddScoped<IPenaltyShootoutService, PenaltyShootoutService>();
 
-// SignalR
-builder.Services.AddSignalR();
 
 // CORS
 builder.Services.AddCors(options =>
