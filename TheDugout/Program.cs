@@ -6,7 +6,6 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using TheDugout.Data;
-using TheDugout.Hubs;
 using TheDugout.Services;
 using TheDugout.Services.CPUManager;
 using TheDugout.Services.Cup;
@@ -87,6 +86,7 @@ builder.Services.AddScoped<IPlayerStatsService, PlayerStatsService>();
 builder.Services.AddScoped<ILeagueStandingsService, LeagueStandingsService>();
 builder.Services.AddScoped<IStandingsDispatcherService, StandingsDispatcherService>();
 builder.Services.AddScoped<IEuropeanCupStandingService, EuropeanCupStandingService>();
+builder.Services.AddScoped<IPenaltyShootoutService, PenaltyShootoutService>();
 
 // SignalR
 builder.Services.AddSignalR();
@@ -147,13 +147,6 @@ builder.Services.AddAuthorization();
 
 builder.Services.AddHttpContextAccessor();
 
-builder.Services.AddSignalR()
-    .AddHubOptions<GameHub>(options =>
-    {
-    });
-
-builder.Services.AddSingleton<IUserIdProvider, UserIdProvider>();
-
 var app = builder.Build();
 
 await TheDugout.Infrastructure.SeedData.EnsureSeededAsync(app.Services, app.Logger);
@@ -174,6 +167,5 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-app.MapHub<GameHub>("/hubs/game");
 
 app.Run();

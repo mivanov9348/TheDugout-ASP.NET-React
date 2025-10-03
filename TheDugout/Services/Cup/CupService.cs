@@ -71,15 +71,17 @@ namespace TheDugout.Services.Cup
 
                 allCups.Add(cup);
                 _context.Cups.Add(cup);
+                await _context.SaveChangesAsync();
             }
-
-            await _context.SaveChangesAsync();
 
             // Генериране на fixtures след като всички купи са създадени
             if (allCups.Any())
             {
-                await _cupFixturesService.GenerateAllCupFixturesAsync(seasonId, gameSave.Id, allCups);
+                await _cupFixturesService.GenerateInitialFixturesAsync(seasonId, gameSave.Id, allCups);
             }
+
+            await _context.SaveChangesAsync();
+
         }
     }
 }

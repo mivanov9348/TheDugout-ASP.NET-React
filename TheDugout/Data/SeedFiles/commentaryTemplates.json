@@ -1,4 +1,5 @@
 [
+  // === PASS EVENTS (PAS) ===
   {
     "EventTypeCode": "PAS",
     "OutcomeName": "Success",
@@ -29,6 +30,8 @@
     "OutcomeName": "Fail",
     "Template": "{PlayerName} ({TeamAbbr})'s pass takes a detour out of bounds!"
   },
+
+  // === SHOT EVENTS (SHT) ===
   {
     "EventTypeCode": "SHT",
     "OutcomeName": "Goal",
@@ -89,126 +92,8 @@
     "OutcomeName": "Blocked",
     "Template": "{PlayerName} ({TeamAbbr})'s shot is bravely blocked!"
   },
-  {
-    "EventTypeCode": "GOL",
-    "OutcomeName": "Success",
-    "Template": "It's in! {PlayerName} ({TeamAbbr})'s goal lights up the scoreboard!"
-  },
-  {
-    "EventTypeCode": "GOL",
-    "OutcomeName": "Success",
-    "Template": "Goal! {PlayerName} ({TeamAbbr})'s strike gets the crowd roaring!"
-  },
-  {
-    "EventTypeCode": "GOL",
-    "OutcomeName": "Success",
-    "Template": "{PlayerName} ({TeamAbbr})'s goal is a green light from the ref!"
-  },
-  {
-    "EventTypeCode": "SAV",
-    "OutcomeName": "Success",
-    "Template": "{PlayerName} ({TeamAbbr}) pulls off a save for the highlight reel!"
-  },
-  {
-    "EventTypeCode": "SAV",
-    "OutcomeName": "Success",
-    "Template": "{PlayerName} ({TeamAbbr}) dives like a superhero to stop the shot!"
-  },
-  {
-    "EventTypeCode": "SAV",
-    "OutcomeName": "Success",
-    "Template": "{PlayerName} ({TeamAbbr}) says 'not today' with a brilliant save!"
-  },
-  {
-    "EventTypeCode": "SAV",
-    "OutcomeName": "Fail",
-    "Template": "{PlayerName} ({TeamAbbr}) watches helplessly as the ball sneaks by!"
-  },
-  {
-    "EventTypeCode": "SAV",
-    "OutcomeName": "Fail",
-    "Template": "{PlayerName} ({TeamAbbr})'s hands can't stop that screamer!"
-  },
-  {
-    "EventTypeCode": "SAV",
-    "OutcomeName": "Fail",
-    "Template": "{PlayerName} ({TeamAbbr}) gets a touch, but the ball slips through!"
-  },
-  {
-    "EventTypeCode": "FOU",
-    "OutcomeName": "Success",
-    "Template": "{PlayerName} ({TeamAbbr}) trips up the play with a cheeky foul!"
-  },
-  {
-    "EventTypeCode": "FOU",
-    "OutcomeName": "Success",
-    "Template": "{PlayerName} ({TeamAbbr}) gets too cozy with the opponent—foul!"
-  },
-  {
-    "EventTypeCode": "FOU",
-    "OutcomeName": "Success",
-    "Template": "{PlayerName} ({TeamAbbr}) halts the action with a sneaky tackle!"
-  },
-  {
-    "EventTypeCode": "FOU",
-    "OutcomeName": "Fail",
-    "Template": "{PlayerName} ({TeamAbbr}) begs for a foul, but the ref's not buying it!"
-  },
-  {
-    "EventTypeCode": "FOU",
-    "OutcomeName": "Fail",
-    "Template": "{PlayerName} ({TeamAbbr})'s dramatic dive gets no whistle!"
-  },
-  {
-    "EventTypeCode": "FOU",
-    "OutcomeName": "Fail",
-    "Template": "{PlayerName} ({TeamAbbr}) pleads for a call, but the game rolls on!"
-  },
-  {
-    "EventTypeCode": "COR",
-    "OutcomeName": "Success",
-    "Template": "{PlayerName} ({TeamAbbr}) whips in a corner that spells trouble!"
-  },
-  {
-    "EventTypeCode": "COR",
-    "OutcomeName": "Success",
-    "Template": "{PlayerName} ({TeamAbbr})'s corner has the defense scrambling!"
-  },
-  {
-    "EventTypeCode": "COR",
-    "OutcomeName": "Success",
-    "Template": "{PlayerName} ({TeamAbbr}) curls in a wicked corner!"
-  },
-  {
-    "EventTypeCode": "COR",
-    "OutcomeName": "Fail",
-    "Template": "{PlayerName} ({TeamAbbr})'s corner barely leaves the ground—cleared!"
-  },
-  {
-    "EventTypeCode": "COR",
-    "OutcomeName": "Fail",
-    "Template": "{PlayerName} ({TeamAbbr})'s corner is a gift to the keeper!"
-  },
-  {
-    "EventTypeCode": "COR",
-    "OutcomeName": "Fail",
-    "Template": "{PlayerName} ({TeamAbbr})'s corner sails straight to the stands!"
-  },
-  {
-    "EventTypeCode": "OUT",
-    "OutcomeName": "Success",
-    "Template": "{PlayerName} ({TeamAbbr}) hurls the throw-in like a missile!"
-  },
-  {
-    "EventTypeCode": "OUT",
-    "OutcomeName": "Success",
-    "Template": "{PlayerName} ({TeamAbbr}) slings a quick throw-in to keep the tempo!"
-  },
-  {
-    "EventTypeCode": "OUT",
-    "OutcomeName": "Success",
-    "Template": "{PlayerName} ({TeamAbbr}) fires the throw-in with pinpoint accuracy!"
-  },
+
+  // === TACKLE EVENTS (TAC) ===
   {
     "EventTypeCode": "TAC",
     "OutcomeName": "Success",
@@ -239,21 +124,8 @@
     "OutcomeName": "Fail",
     "Template": "{PlayerName} ({TeamAbbr})'s tackle goes wrong, and the ball is gone!"
   },
-  {
-    "EventTypeCode": "OFF",
-    "OutcomeName": "Success",
-    "Template": "{PlayerName} ({TeamAbbr}) sneaks offside—flag up, nice try!"
-  },
-  {
-    "EventTypeCode": "OFF",
-    "OutcomeName": "Success",
-    "Template": "{PlayerName} ({TeamAbbr}) gets caught napping offside!"
-  },
-  {
-    "EventTypeCode": "OFF",
-    "OutcomeName": "Success",
-    "Template": "{PlayerName} ({TeamAbbr})'s offside adventure ends with a whistle!"
-  },
+
+  // === DRIBBLE EVENTS (DRI) ===
   {
     "EventTypeCode": "DRI",
     "OutcomeName": "Success",
@@ -283,5 +155,52 @@
     "EventTypeCode": "DRI",
     "OutcomeName": "Fail",
     "Template": "{PlayerName} ({TeamAbbr})'s dribble gets snuffed out!"
+  },
+
+  // === PENALTY EVENTS (PEN) ===
+  {
+    "EventTypeCode": "PEN",
+    "OutcomeName": "Scored",
+    "Template": "GOAL! {PlayerName} ({TeamAbbr}) smashes the penalty into the net!"
+  },
+  {
+    "EventTypeCode": "PEN",
+    "OutcomeName": "Scored",
+    "Template": "GOAL! {PlayerName} ({TeamAbbr}) calmly sends the keeper the wrong way!"
+  },
+  {
+    "EventTypeCode": "PEN",
+    "OutcomeName": "Scored",
+    "Template": "GOAL! {PlayerName} ({TeamAbbr}) buries the penalty with confidence!"
+  },
+  {
+    "EventTypeCode": "PEN",
+    "OutcomeName": "Saved",
+    "Template": "{PlayerName} ({TeamAbbr})'s penalty is stopped by the keeper!"
+  },
+  {
+    "EventTypeCode": "PEN",
+    "OutcomeName": "Saved",
+    "Template": "Brilliant save! {PlayerName} ({TeamAbbr})'s penalty is denied!"
+  },
+  {
+    "EventTypeCode": "PEN",
+    "OutcomeName": "Saved",
+    "Template": "The keeper guesses right! {PlayerName} ({TeamAbbr}) can't convert!"
+  },
+  {
+    "EventTypeCode": "PEN",
+    "OutcomeName": "Missed",
+    "Template": "{PlayerName} ({TeamAbbr}) skies the penalty into the stands!"
+  },
+  {
+    "EventTypeCode": "PEN",
+    "OutcomeName": "Missed",
+    "Template": "{PlayerName} ({TeamAbbr}) hits the post and misses the penalty!"
+  },
+  {
+    "EventTypeCode": "PEN",
+    "OutcomeName": "Missed",
+    "Template": "{PlayerName} ({TeamAbbr}) drags the penalty wide of the goal!"
   }
 ]

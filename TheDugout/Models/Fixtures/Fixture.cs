@@ -58,9 +58,9 @@ namespace TheDugout.Models.Fixtures
         public DateTime Date { get; set; }
 
         public int Round { get; set; }
+        public bool IsElimination { get; set; } = false;
 
         public FixtureStatus Status { get; set; } = FixtureStatus.Scheduled;
         public ICollection<Match> Matches { get; set; } = new List<Match>();
-
     }
 }

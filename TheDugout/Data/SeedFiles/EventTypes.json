@@ -14,5 +14,9 @@
   {
     "Code": "DRI",
     "Name": "Dribble"
+  },
+  {
+    "Code": "PEN",
+    "Name": "Penalty"
   }
 ]

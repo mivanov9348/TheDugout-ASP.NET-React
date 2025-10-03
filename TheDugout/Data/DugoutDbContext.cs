@@ -75,6 +75,7 @@ namespace TheDugout.Data
         public DbSet<EventOutcome> EventOutcomes { get; set; }
         public DbSet<CommentaryTemplate> CommentaryTemplates { get; set; }
         public DbSet<EventAttributeWeight> EventAttributeWeights { get; set; }
+        public DbSet<Penalty> Penalties { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

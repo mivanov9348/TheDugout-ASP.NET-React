@@ -30,6 +30,11 @@ namespace TheDugout.Data.Configurations.Matches
                 .WithOne(ps => ps.Match)
                 .HasForeignKey(ps => ps.MatchId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasMany(m => m.Penalties)
+                .WithOne(e => e.Match)
+                .HasForeignKey(e => e.MatchId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
 
     }

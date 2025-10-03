@@ -1144,6 +1144,40 @@ namespace TheDugout.Migrations
                     b.ToTable("MatchEvents");
                 });
 
+            modelBuilder.Entity("TheDugout.Models.Matches.Penalty", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("IsScored")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("MatchId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PlayerId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TeamId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MatchId");
+
+                    b.HasIndex("PlayerId");
+
+                    b.HasIndex("TeamId");
+
+                    b.ToTable("Penalties");
+                });
+
             modelBuilder.Entity("TheDugout.Models.Messages.Message", b =>
                 {
                     b.Property<int>("Id")
@@ -2439,6 +2473,33 @@ namespace TheDugout.Migrations
                     b.Navigation("Team");
                 });
 
+            modelBuilder.Entity("TheDugout.Models.Matches.Penalty", b =>
+                {
+                    b.HasOne("TheDugout.Models.Matches.Match", "Match")
+                        .WithMany("Penalties")
+                        .HasForeignKey("MatchId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TheDugout.Models.Players.Player", "Player")
+                        .WithMany()
+                        .HasForeignKey("PlayerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TheDugout.Models.Teams.Team", "Team")
+                        .WithMany()
+                        .HasForeignKey("TeamId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Match");
+
+                    b.Navigation("Player");
+
+                    b.Navigation("Team");
+                });
+
             modelBuilder.Entity("TheDugout.Models.Messages.Message", b =>
                 {
                     b.HasOne("TheDugout.Models.Game.GameSave", "GameSave")
@@ -2917,6 +2978,8 @@ namespace TheDugout.Migrations
             modelBuilder.Entity("TheDugout.Models.Matches.Match", b =>
                 {
                     b.Navigation("Events");
+
+                    b.Navigation("Penalties");
 
                     b.Navigation("PlayerStats");
                 });

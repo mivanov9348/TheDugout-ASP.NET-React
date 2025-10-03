@@ -115,5 +115,23 @@ namespace TheDugout.Services.Fixture
             if (bHome < aHome) return b;
             return _random.Next(2) == 0 ? a : b;
         }
+
+        public string GetRoundName(int teamsCount, int roundNumber, int totalRounds)
+        {
+            // if its the final
+            if (roundNumber == totalRounds)
+                return "Final";
+
+            if (roundNumber == totalRounds - 1)
+                return "Semi Final";
+
+            if (roundNumber == totalRounds - 2)
+                return "Quarter Final";
+
+            // the rest
+            int teamsInThisRound = (int)Math.Pow(2, totalRounds - roundNumber + 1);
+            return $"Round of {teamsInThisRound}";
+        }
+
     }
 }

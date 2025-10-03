@@ -1196,6 +1196,41 @@ namespace TheDugout.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Penalties",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    MatchId = table.Column<int>(type: "int", nullable: false),
+                    TeamId = table.Column<int>(type: "int", nullable: false),
+                    PlayerId = table.Column<int>(type: "int", nullable: false),
+                    Order = table.Column<int>(type: "int", nullable: false),
+                    IsScored = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Penalties", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Penalties_Matches_MatchId",
+                        column: x => x.MatchId,
+                        principalTable: "Matches",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Penalties_Players_PlayerId",
+                        column: x => x.PlayerId,
+                        principalTable: "Players",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Penalties_Teams_TeamId",
+                        column: x => x.TeamId,
+                        principalTable: "Teams",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "PlayerAttributes",
                 columns: table => new
                 {
@@ -1710,6 +1745,21 @@ namespace TheDugout.Migrations
                 column: "MessageTemplateId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Penalties_MatchId",
+                table: "Penalties",
+                column: "MatchId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Penalties_PlayerId",
+                table: "Penalties",
+                column: "PlayerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Penalties_TeamId",
+                table: "Penalties",
+                column: "TeamId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_PlayerAttributes_AttributeId",
                 table: "PlayerAttributes",
                 column: "AttributeId");
@@ -2145,6 +2195,9 @@ namespace TheDugout.Migrations
 
             migrationBuilder.DropTable(
                 name: "Messages");
+
+            migrationBuilder.DropTable(
+                name: "Penalties");
 
             migrationBuilder.DropTable(
                 name: "PlayerMatchStats");

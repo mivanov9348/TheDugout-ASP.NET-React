@@ -30,6 +30,8 @@ namespace TheDugout.Models.Matches
         public MatchTurn CurrentTurn { get; set; } = MatchTurn.Home;
         public ICollection<MatchEvent> Events { get; set; } = new List<MatchEvent>();
         public ICollection<PlayerMatchStats> PlayerStats { get; set; } = new List<PlayerMatchStats>();
+        public ICollection<Penalty> Penalties { get; set; } = new List<Penalty>();
+
 
     }
 }

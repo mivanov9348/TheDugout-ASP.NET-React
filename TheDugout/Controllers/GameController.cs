@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using TheDugout.Data;
-using TheDugout.Hubs;
 using TheDugout.Models.Messages;
 using TheDugout.Services.Game;
 using TheDugout.Services.Message;
@@ -23,7 +22,6 @@ namespace TheDugout.Controllers
         private readonly IMessageService _messageService;
         private readonly IMessageOrchestrator _messageOrchestrator;
         private readonly IGameDayService _gameDayService;
-        private readonly IHubContext<GameHub> _hubContext;
         private readonly DugoutDbContext _context;
 
         public GameController(
@@ -33,8 +31,7 @@ namespace TheDugout.Controllers
             DugoutDbContext _context,
             IMessageService messageService,
             IMessageOrchestrator messageOrchestrator,
-            IGameDayService gameDayService,
-            IHubContext<GameHub> hubContext)
+            IGameDayService gameDayService)
         {
             _templateService = templateService;
             _gameSaveService = gameSaveService;
@@ -43,7 +40,6 @@ namespace TheDugout.Controllers
             _messageService = messageService;
             _messageOrchestrator = messageOrchestrator;
             _gameDayService = gameDayService;
-            _hubContext = hubContext;
         }
 
         [Authorize]
@@ -134,9 +130,7 @@ namespace TheDugout.Controllers
 
         var result = await _gameDayService.ProcessNextDayAndGetResultAsync(user.CurrentSave.Id);
 
-        // 👉 Изпращаме обновление САМО до този потребител
-        await _hubContext.Clients.User(userId.ToString()).SendAsync("GameUpdated", result);
-
+        
         return Ok(result);
     }
 

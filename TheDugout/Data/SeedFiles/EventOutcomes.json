@@ -71,5 +71,33 @@
     "RangeMax": 40,
     "ChangesPossession": true,
     "EventTypeCode": "DRI"
+  },
+  {
+    "Name": "Fouled",
+    "RangeMin": 0,
+    "RangeMax": 5,
+    "ChangesPossession": true,
+    "EventTypeCode": "DRI"
+  },
+  {
+    "Name": "Scored",
+    "RangeMin": 31,
+    "RangeMax": 100,
+    "ChangesPossession": true,
+    "EventTypeCode": "PEN"
+  },
+  {
+    "Name": "Saved",
+    "RangeMin": 11,
+    "RangeMax": 30,
+    "ChangesPossession": true,
+    "EventTypeCode": "PEN"
+  },
+  {
+    "Name": "Missed",
+    "RangeMin": 0,
+    "RangeMax": 10,
+    "ChangesPossession": true,
+    "EventTypeCode": "PEN"
   }
 ]

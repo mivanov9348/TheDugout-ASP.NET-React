@@ -40,8 +40,20 @@ namespace TheDugout.Services.Standings
                     if (fixture.CupRoundId.HasValue)
                     {
                         var cupRound = await _context.CupRounds
-                            .Include(cr => cr.Fixtures)
-                            .FirstOrDefaultAsync(cr => cr.Id == fixture.CupRoundId.Value, ct);
+                                      .Include(cr => cr.Cup)
+                                          .ThenInclude(c => c.Teams)
+                                      .Include(cr => cr.Cup)
+                                          .ThenInclude(c => c.Rounds)
+                                              .ThenInclude(r => r.Fixtures)
+                                      .Include(cr => cr.Fixtures)
+                                      .FirstOrDefaultAsync(cr => cr.Id == fixture.CupRoundId.Value, ct);
+
+                        if (cupRound.Cup.SeasonId != fixture.SeasonId)
+                        {
+                            _logger.LogWarning("Fixture {FixtureId} belongs to a cup from different season {CupSeasonId}",
+                                fixture.Id, cupRound.Cup.SeasonId);
+                            break;
+                        }
 
                         if (cupRound == null)
                         {
@@ -50,8 +62,9 @@ namespace TheDugout.Services.Standings
                             break;
                         }
 
-                        var allFinished = cupRound.Fixtures.All(f => f.WinnerTeamId != null);
-                        if (allFinished)
+                        var allFinished = _cupFixturesService.IsRoundFinished(cupRound);
+
+                        if (_cupFixturesService.IsRoundFinished(cupRound))
                         {
                             await _cupFixturesService.GenerateNextRoundAsync(
                                 cupRound.CupId,
@@ -59,6 +72,7 @@ namespace TheDugout.Services.Standings
                                 fixture.SeasonId
                             );
                         }
+
                     }
                     break;
 

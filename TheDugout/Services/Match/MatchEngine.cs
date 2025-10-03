@@ -19,6 +19,7 @@ namespace TheDugout.Services.MatchEngine
         private readonly IPlayerStatsService _playerStatsService;
         private readonly ILeagueStandingsService _leagueStandingsService;
         private readonly IStandingsDispatcherService _standingsDispatcher;
+        private readonly IPenaltyShootoutService _penaltyService;
         private readonly DugoutDbContext _context;
 
         public MatchEngine(
@@ -28,6 +29,7 @@ namespace TheDugout.Services.MatchEngine
             ILeagueStandingsService leagueStandingsService,
             IStandingsDispatcherService standingsDispatcher,
         IMatchService matchService,
+            IPenaltyShootoutService penaltyService,
             DugoutDbContext context)
         {
             _teamPlanService = teamPlanService;
@@ -36,6 +38,7 @@ namespace TheDugout.Services.MatchEngine
             _leagueStandingsService = leagueStandingsService;
             _matchService = matchService;
             _standingsDispatcher = standingsDispatcher;
+            _penaltyService = penaltyService;
             _context = context;
         }
         public void StartMatch(Models.Matches.Match match)
@@ -49,7 +52,7 @@ namespace TheDugout.Services.MatchEngine
             // инициализация на статистиките за играчите
             match.PlayerStats = _playerStatsService.InitializeMatchStats(match);
         }
-        public void EndMatch(Models.Matches.Match match)
+        public async void EndMatch(Models.Matches.Match match)
         {
             match.Status = MatchStatus.Played;
 
@@ -70,6 +73,11 @@ namespace TheDugout.Services.MatchEngine
             else
             {
                 fixture.WinnerTeamId = null;
+
+                if (fixture.IsElimination)
+                {
+                    await HandlePenaltyShootoutAsync(match);
+                }
             }
         }
         public void PlayNextMinute(Models.Matches.Match match)
@@ -216,6 +224,15 @@ namespace TheDugout.Services.MatchEngine
                     Console.WriteLine($"GOAL! {match.Fixture.AwayTeam?.Name} scores! {match.Fixture.HomeTeamGoals}-{match.Fixture.AwayTeamGoals}"); // 👈 ДОБАВИ ЛОГ
                 }
             }
+        }
+        private async Task HandlePenaltyShootoutAsync(Models.Matches.Match match)
+        {
+            match = await _penaltyService.RunPenaltyShootoutAsync(match);
+
+            if (match.Fixture.HomeTeamGoals > match.Fixture.AwayTeamGoals)
+                match.Fixture.WinnerTeamId = match.Fixture.HomeTeamId;
+            else
+                match.Fixture.WinnerTeamId = match.Fixture.AwayTeamId;
         }
         public async Task RunMatch(Models.Matches.Match match)
         {

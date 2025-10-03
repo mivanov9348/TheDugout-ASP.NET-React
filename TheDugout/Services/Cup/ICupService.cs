@@ -5,7 +5,5 @@ namespace TheDugout.Services.Cup
     public interface ICupService
     {
         Task InitializeCupsForGameSaveAsync(GameSave gameSave, int seasonId);
-
     }
-
 }

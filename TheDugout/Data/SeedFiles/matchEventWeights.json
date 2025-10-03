@@ -70,9 +70,43 @@
   {
     "EventTypeCode": "OFF",
     "Attributes": [
-      { "AttributeCode": "ANT", "Weight": 0.5 },
-      { "AttributeCode": "POS", "Weight": 0.3 },
-      { "AttributeCode": "DEC", "Weight": 0.2 }
+      {
+        "AttributeCode": "ANT",
+        "Weight": 0.5
+      },
+      {
+        "AttributeCode": "POS",
+        "Weight": 0.3
+      },
+      {
+        "AttributeCode": "DEC",
+        "Weight": 0.2
+      }
+    ]
+  },
+  {
+    "EventTypeCode": "PEN",
+    "Attributes": [
+      {
+        "AttributeCode": "FIN",
+        "Weight": 0.5
+      },
+      {
+        "AttributeCode": "COM",
+        "Weight": 0.25
+      },
+      {
+        "AttributeCode": "DEC",
+        "Weight": 0.15
+      },
+      {
+        "AttributeCode": "STR",
+        "Weight": 0.05
+      },
+      {
+        "AttributeCode": "POS",
+        "Weight": 0.05
+      }
     ]
   }
 ]
