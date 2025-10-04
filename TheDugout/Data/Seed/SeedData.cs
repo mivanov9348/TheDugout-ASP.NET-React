@@ -407,9 +407,12 @@ public static class SeedData
                 continue;
             }
 
-            var existing = dbOutcomes.FirstOrDefault(x => x.Name == eo.Name && x.EventTypeId == type.Id);
+            // Търсим по EventTypeId и Range (уникалната комбинация за outcome), вместо само по име
+            var existing = dbOutcomes.FirstOrDefault(x => x.EventTypeId == type.Id && x.Name == eo.Name);
+
             if (existing == null)
             {
+                // Ако няма → създаваме
                 db.EventOutcomes.Add(new EventOutcome
                 {
                     Name = eo.Name,
@@ -422,18 +425,20 @@ public static class SeedData
             }
             else
             {
-                bool needsUpdate = false;
+                // Ако има → презаписваме всички полета (не само част от тях)
+                existing.Name = eo.Name;
+                existing.EventTypeId = type.Id;
+                existing.EventTypeCode = eo.EventTypeCode;
+                existing.ChangesPossession = eo.ChangesPossession;
+                existing.RangeMin = eo.RangeMin;
+                existing.RangeMax = eo.RangeMax;
 
-                if (existing.RangeMin != eo.RangeMin) { existing.RangeMin = eo.RangeMin; needsUpdate = true; }
-                if (existing.RangeMax != eo.RangeMax) { existing.RangeMax = eo.RangeMax; needsUpdate = true; }
-                if (existing.ChangesPossession != eo.ChangesPossession) { existing.ChangesPossession = eo.ChangesPossession; needsUpdate = true; }
-
-                if (needsUpdate)
-                    db.EventOutcomes.Update(existing);
+                db.EventOutcomes.Update(existing);
             }
         }
 
         await db.SaveChangesAsync();
+
 
         // 13) CommentaryTemplates
         var commentaryFile = Path.Combine(seedDir, "commentaryTemplates.json");

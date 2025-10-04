@@ -80,23 +80,23 @@
     "EventTypeCode": "DRI"
   },
   {
-    "Name": "Scored",
-    "RangeMin": 31,
+    "Name": "Goal",
+    "RangeMin": 61,
     "RangeMax": 100,
     "ChangesPossession": true,
     "EventTypeCode": "PEN"
   },
   {
     "Name": "Saved",
-    "RangeMin": 11,
-    "RangeMax": 30,
+    "RangeMin": 16,
+    "RangeMax": 60,
     "ChangesPossession": true,
     "EventTypeCode": "PEN"
   },
   {
     "Name": "Missed",
     "RangeMin": 0,
-    "RangeMax": 10,
+    "RangeMax": 15,
     "ChangesPossession": true,
     "EventTypeCode": "PEN"
   }

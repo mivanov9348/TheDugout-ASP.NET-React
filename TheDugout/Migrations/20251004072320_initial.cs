@@ -652,6 +652,7 @@ namespace TheDugout.Migrations
                     WinnerTeamId = table.Column<int>(type: "int", nullable: true),
                     Date = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Round = table.Column<int>(type: "int", nullable: false),
+                    IsElimination = table.Column<bool>(type: "bit", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>

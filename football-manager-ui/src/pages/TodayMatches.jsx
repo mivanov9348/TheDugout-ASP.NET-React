@@ -36,6 +36,9 @@ export default function TodayMatches() {
         : m.IsUserTeamMatch ?? false,
     homeLogoFileName: m.homeLogoFileName ?? m.HomeLogoFileName,
     awayLogoFileName: m.awayLogoFileName ?? m.AwayLogoFileName,
+
+    homePenalties: m.homePenalties ?? m.HomePenalties ?? null,
+    awayPenalties: m.awayPenalties ?? m.AwayPenalties ?? null,
   });
 
   const loadMatches = async () => {
@@ -122,15 +125,35 @@ export default function TodayMatches() {
   const renderStatus = (status) => {
     switch (status) {
       case 0:
-        return <span className="px-2 py-0.5 text-xs rounded-full bg-gray-200 text-gray-600">Scheduled</span>;
+        return (
+          <span className="px-2 py-0.5 text-xs rounded-full bg-gray-200 text-gray-600">
+            Scheduled
+          </span>
+        );
       case 1:
-        return <span className="px-2 py-0.5 text-xs rounded-full bg-green-200 text-green-700">Played</span>;
+        return (
+          <span className="px-2 py-0.5 text-xs rounded-full bg-green-200 text-green-700">
+            Played
+          </span>
+        );
       case 2:
-        return <span className="px-2 py-0.5 text-xs rounded-full bg-red-200 text-red-700">Cancelled</span>;
+        return (
+          <span className="px-2 py-0.5 text-xs rounded-full bg-red-200 text-red-700">
+            Cancelled
+          </span>
+        );
       case 3:
-        return <span className="px-2 py-0.5 text-xs rounded-full bg-orange-200 text-orange-700 animate-pulse">Live 🔴</span>;
+        return (
+          <span className="px-2 py-0.5 text-xs rounded-full bg-orange-200 text-orange-700 animate-pulse">
+            Live 🔴
+          </span>
+        );
       default:
-        return <span className="px-2 py-0.5 text-xs rounded-full bg-gray-100 text-gray-400">Unknown</span>;
+        return (
+          <span className="px-2 py-0.5 text-xs rounded-full bg-gray-100 text-gray-400">
+            Unknown
+          </span>
+        );
     }
   };
 
@@ -208,6 +231,9 @@ export default function TodayMatches() {
                     {m.homeGoals != null && m.awayGoals != null
                       ? `${m.homeGoals} : ${m.awayGoals}`
                       : "vs"}
+                    {m.homePenalties > 0 || m.awayPenalties > 0
+                      ? ` (${m.homePenalties} : ${m.awayPenalties} pens)`
+                      : ""}
                   </span>
                   {renderStatus(m.status)}
                 </div>

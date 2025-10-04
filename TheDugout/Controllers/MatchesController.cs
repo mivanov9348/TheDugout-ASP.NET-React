@@ -61,7 +61,13 @@ public class MatchesController : ControllerBase
                 HomeGoals = f.HomeTeamGoals,
                 AwayGoals = f.AwayTeamGoals,
                 Status = (int)f.Status,
-                IsUserTeamMatch = (f.HomeTeamId == save.UserTeamId || f.AwayTeamId == save.UserTeamId)
+                IsUserTeamMatch = (f.HomeTeamId == save.UserTeamId || f.AwayTeamId == save.UserTeamId),
+                HomePenalties = f.Matches
+        .SelectMany(m => m.Penalties)
+        .Count(p => p.TeamId == f.HomeTeamId && p.IsScored),
+                AwayPenalties = f.Matches
+        .SelectMany(m => m.Penalties)
+        .Count(p => p.TeamId == f.AwayTeamId && p.IsScored)
             })
             .ToListAsync();
 

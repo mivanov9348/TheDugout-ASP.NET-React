@@ -72,13 +72,9 @@ namespace TheDugout.Services.MatchEngine
             }
             else
             {
-                fixture.WinnerTeamId = null;
-
-                if (fixture.IsElimination)
-                {
-                    await HandlePenaltyShootoutAsync(match);
-                }
+                fixture.WinnerTeamId = null;               
             }
+
         }
         public void PlayNextMinute(Models.Matches.Match match)
         {
@@ -126,8 +122,7 @@ namespace TheDugout.Services.MatchEngine
             var outcome = _matchEventService.GetEventOutcome(player, eventType);
             var commentary = _matchEventService.GetRandomCommentary(outcome, player);
 
-            var matchEvent = _matchEventService.CreateMatchEvent(
-                match.Id, match.CurrentMinute, currentTeam, player, eventType, outcome, commentary);
+            var matchEvent = await _matchEventService.CreateMatchEvent(match.Id, match.CurrentMinute, currentTeam, player, eventType, outcome, commentary);
 
             UpdateFixtureScore(match, currentTeam.Id, player, eventType, outcome);
 
@@ -204,7 +199,13 @@ namespace TheDugout.Services.MatchEngine
             }
 
             // 3. Край на мача
-            EndMatch(match);
+            await EndMatch(match);
+
+            if (fixture.IsElimination && fixture.WinnerTeamId == null)
+            {
+                await HandlePenaltyShootoutAsync(match);
+            }
+
             await _standingsDispatcher.UpdateAfterMatchAsync(match.Fixture);
 
             return match;

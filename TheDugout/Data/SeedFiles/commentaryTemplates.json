@@ -160,17 +160,17 @@
   // === PENALTY EVENTS (PEN) ===
   {
     "EventTypeCode": "PEN",
-    "OutcomeName": "Scored",
+    "OutcomeName": "Goal",
     "Template": "GOAL! {PlayerName} ({TeamAbbr}) smashes the penalty into the net!"
   },
   {
     "EventTypeCode": "PEN",
-    "OutcomeName": "Scored",
+    "OutcomeName": "Goal",
     "Template": "GOAL! {PlayerName} ({TeamAbbr}) calmly sends the keeper the wrong way!"
   },
   {
     "EventTypeCode": "PEN",
-    "OutcomeName": "Scored",
+    "OutcomeName": "Goal",
     "Template": "GOAL! {PlayerName} ({TeamAbbr}) buries the penalty with confidence!"
   },
   {

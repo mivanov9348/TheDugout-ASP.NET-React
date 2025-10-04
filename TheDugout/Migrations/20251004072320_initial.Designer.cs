@@ -12,7 +12,7 @@ using TheDugout.Data;
 namespace TheDugout.Migrations
 {
     [DbContext(typeof(DugoutDbContext))]
-    [Migration("20251003055352_initial")]
+    [Migration("20251004072320_initial")]
     partial class initial
     {
         /// <inheritdoc />
@@ -672,6 +672,9 @@ namespace TheDugout.Migrations
 
                     b.Property<int>("HomeTeamId")
                         .HasColumnType("int");
+
+                    b.Property<bool>("IsElimination")
+                        .HasColumnType("bit");
 
                     b.Property<int?>("LeagueId")
                         .HasColumnType("int");
