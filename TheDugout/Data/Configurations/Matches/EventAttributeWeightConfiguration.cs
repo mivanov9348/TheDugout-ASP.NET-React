@@ -11,8 +11,7 @@ namespace TheDugout.Data.Configurations.Matches
             builder.HasKey(eaw => eaw.Id);
 
             builder.Property(eaw => eaw.EventTypeCode)
-                .IsRequired()
-                .HasMaxLength(50);
+                .IsRequired();
 
             builder.Property(eaw => eaw.AttributeCode)
                 .IsRequired()
@@ -25,6 +24,11 @@ namespace TheDugout.Data.Configurations.Matches
                 .WithMany(et => et.AttributeWeights)
                 .HasForeignKey(eaw => eaw.EventTypeCode)
                 .HasPrincipalKey(et => et.Code);
+
+            builder.HasOne(eaw => eaw.Attribute)
+                .WithMany() 
+                .HasForeignKey(eaw => eaw.AttributeCode)
+                .HasPrincipalKey(a => a.Code);
         }
     }
 }

@@ -104,7 +104,12 @@ namespace TheDugout.Services.Match
             var player = queue.Dequeue();
 
             // Изчисляваме изход
-            var outcome = _matchEventService.GetEventOutcome(player, penaltyEventType);
+            var goalkeeper = teamId == match.Fixture.HomeTeamId
+                ? match.Fixture.AwayTeam.Players.FirstOrDefault(p => p.Position.Code == "GK")
+                : match.Fixture.HomeTeam.Players.FirstOrDefault(p => p.Position.Code == "GK");
+
+            var outcome = _matchEventService.GetPenaltyOutcome(player, goalkeeper, penaltyEventType);
+            
             bool scored = outcome.Name == "Goal";
 
             // Commentary

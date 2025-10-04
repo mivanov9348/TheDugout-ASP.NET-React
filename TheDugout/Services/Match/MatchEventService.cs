@@ -105,7 +105,71 @@ namespace TheDugout.Services.Match
                 return outcome;
             }
 
-            public string GetRandomCommentary(EventOutcome outcome, Models.Players.Player player)
+        public EventOutcome GetPenaltyOutcome(Models.Players.Player kicker, Models.Players.Player goalkeeper, EventType eventType)
+        {
+            // 🧩 Помощна функция за взимане на стойност на атрибут
+            double GetAttrValue(Models.Players.Player player, string code, double def = 10)
+                => player?.Attributes.FirstOrDefault(a => a.Attribute.Code == code)?.Value ?? def;
+
+            // 🧠 1. Зареждаме теглата за дадения EventType (примерно "PEN")
+            var weights = eventType.AttributeWeights.ToList();
+
+            // ⚖️ 2. Делим теглата на такива, които важат за нападателя (всички)
+            //    Вратарят ще се изчисли отделно по собствените му goalkeeping атрибути
+            var kickerWeights = weights.ToList();
+
+            // 🏃‍♂️ 3. Изчисляваме оценка за нападателя
+            double kickerScore = 0, totalKickerWeight = 0;
+            foreach (var w in kickerWeights)
+            {
+                double value = GetAttrValue(kicker, w.AttributeCode);
+                kickerScore += value * w.Weight;
+                totalKickerWeight += w.Weight;
+            }
+            kickerScore = totalKickerWeight > 0 ? kickerScore / totalKickerWeight : 10;
+
+            // 🧱 4. Изчисляваме оценка за вратаря спрямо всички негови Goalkeeping атрибути
+            var gkAttributes = goalkeeper.Attributes
+                .Where(a => a.Attribute.Category == AttributeCategory.Goalkeeping)
+                .ToList();
+
+            double keeperScore = gkAttributes.Any()
+                ? gkAttributes.Average(a => a.Value)
+                : 10; // fallback ако няма такива атрибути
+
+            // ⚖️ 5. Изчисляваме базов шанс за гол
+            double baseChance = 50 + (kickerScore - keeperScore) * 1.2;
+
+            // 😤 6. Психологически фактори и малко RNG
+            double composure = GetAttrValue(kicker, "COM");
+            double pressureFactor = 1 + ((composure - 10) / 100.0);
+            double randomOffset = _random.NextDouble() * 10 - 5;
+
+            double finalChance = (baseChance * pressureFactor) + randomOffset;
+            finalChance = Math.Clamp(finalChance, 1, 99);
+
+            // 🧤 7. Hero Save шанс – вратарят има 5% шанс да направи чудо
+            double heroSaveChance = 5 + ((keeperScore - 10) * 0.5);
+            if (_random.NextDouble() * 100 < heroSaveChance)
+            {
+                finalChance -= _random.NextDouble() * 15 + 5;
+                finalChance = Math.Max(1, finalChance);
+                Console.WriteLine($"🦸‍♂️ GK Hero Save triggered! ({heroSaveChance:F1}% chance)");
+            }
+
+            // 🎯 8. Определяме outcome според диапазоните
+            var outcome = eventType.Outcomes
+                .FirstOrDefault(o => finalChance >= o.RangeMin && finalChance <= o.RangeMax)
+                ?? eventType.Outcomes.First();
+
+            // 🪄 9. Debug лог
+            Console.WriteLine($"⚽ Penalty: {kicker.FirstName} {kicker.LastName} vs GK {goalkeeper?.FirstName ?? "?"}");
+            Console.WriteLine($"   KickerScore={kickerScore:F1}, KeeperScore={keeperScore:F1}, FinalChance={finalChance:F1}% → {outcome.Name}");
+
+            return outcome;
+        }
+
+        public string GetRandomCommentary(EventOutcome outcome, Models.Players.Player player)
             {
                 var templates = _context.CommentaryTemplates
                     .Where(c => c.EventOutcomeId == outcome.Id)

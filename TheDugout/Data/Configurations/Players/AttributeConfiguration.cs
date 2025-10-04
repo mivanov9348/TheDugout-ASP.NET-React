@@ -3,21 +3,19 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace TheDugout.Data.Configurations
 {
-    public class AttributeConfiguration : IEntityTypeConfiguration<Models.Players.Attribute>
+    public class AttributeConfiguration : IEntityTypeConfiguration<Models.Players.AttributeDefinition>
     {
-        public void Configure(EntityTypeBuilder<Models.Players.Attribute> builder)
+        public void Configure(EntityTypeBuilder<Models.Players.AttributeDefinition> builder)
         {
             builder.ToTable("Attributes");
 
             builder.HasKey(a => a.Id);
 
             builder.Property(a => a.Code)
-                   .IsRequired()
-                   .HasMaxLength(10);
+                   .IsRequired();
 
             builder.Property(a => a.Name)
-                   .IsRequired()
-                   .HasMaxLength(50);
+                   .IsRequired();
 
             builder.HasIndex(a => a.Code)
                    .IsUnique(); 

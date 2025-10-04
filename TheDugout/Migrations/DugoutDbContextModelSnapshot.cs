@@ -988,12 +988,8 @@ namespace TheDugout.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<int>("AttributeId")
-                        .HasColumnType("int");
-
                     b.Property<string>("EventTypeCode")
                         .IsRequired()
-                        .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<double>("Weight")
@@ -1001,7 +997,7 @@ namespace TheDugout.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AttributeId");
+                    b.HasIndex("AttributeCode");
 
                     b.HasIndex("EventTypeCode");
 
@@ -1267,7 +1263,7 @@ namespace TheDugout.Migrations
                     b.ToTable("MessageTemplates");
                 });
 
-            modelBuilder.Entity("TheDugout.Models.Players.Attribute", b =>
+            modelBuilder.Entity("TheDugout.Models.Players.AttributeDefinition", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -1280,13 +1276,13 @@ namespace TheDugout.Migrations
 
                     b.Property<string>("Code")
                         .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.HasKey("Id");
 
@@ -2385,9 +2381,10 @@ namespace TheDugout.Migrations
 
             modelBuilder.Entity("TheDugout.Models.Matches.EventAttributeWeight", b =>
                 {
-                    b.HasOne("TheDugout.Models.Players.PlayerAttribute", "Attribute")
+                    b.HasOne("TheDugout.Models.Players.AttributeDefinition", "Attribute")
                         .WithMany()
-                        .HasForeignKey("AttributeId")
+                        .HasForeignKey("AttributeCode")
+                        .HasPrincipalKey("Code")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -2566,7 +2563,7 @@ namespace TheDugout.Migrations
 
             modelBuilder.Entity("TheDugout.Models.Players.PlayerAttribute", b =>
                 {
-                    b.HasOne("TheDugout.Models.Players.Attribute", "Attribute")
+                    b.HasOne("TheDugout.Models.Players.AttributeDefinition", "Attribute")
                         .WithMany("PlayerAttributes")
                         .HasForeignKey("AttributeId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -2623,7 +2620,7 @@ namespace TheDugout.Migrations
 
             modelBuilder.Entity("TheDugout.Models.Players.PositionWeight", b =>
                 {
-                    b.HasOne("TheDugout.Models.Players.Attribute", "Attribute")
+                    b.HasOne("TheDugout.Models.Players.AttributeDefinition", "Attribute")
                         .WithMany("PositionWeights")
                         .HasForeignKey("AttributeId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -2760,7 +2757,7 @@ namespace TheDugout.Migrations
 
             modelBuilder.Entity("TheDugout.Models.Training.PlayerTraining", b =>
                 {
-                    b.HasOne("TheDugout.Models.Players.Attribute", "Attribute")
+                    b.HasOne("TheDugout.Models.Players.AttributeDefinition", "Attribute")
                         .WithMany()
                         .HasForeignKey("AttributeId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -2987,7 +2984,7 @@ namespace TheDugout.Migrations
                     b.Navigation("PlayerStats");
                 });
 
-            modelBuilder.Entity("TheDugout.Models.Players.Attribute", b =>
+            modelBuilder.Entity("TheDugout.Models.Players.AttributeDefinition", b =>
                 {
                     b.Navigation("PlayerAttributes");
 

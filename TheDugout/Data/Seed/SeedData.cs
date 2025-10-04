@@ -81,14 +81,14 @@ public static class SeedData
 
         // 3) Attributes
         var attributesPath = Path.Combine(seedDir, "attributes.json");
-        var attributes = await ReadJsonAsync<List<Models.Players.Attribute>>(attributesPath);
+        var attributes = await ReadJsonAsync<List<Models.Players.AttributeDefinition>>(attributesPath);
 
         foreach (var a in attributes)
         {
             var existing = await db.Attributes.FirstOrDefaultAsync(x => x.Code == a.Code);
             if (existing == null)
             {
-                db.Attributes.Add(new Models.Players.Attribute
+                db.Attributes.Add(new Models.Players.AttributeDefinition
                 {
                     Code = a.Code,
                     Name = a.Name,
@@ -356,7 +356,7 @@ public static class SeedData
             .Include(et => et.AttributeWeights)
             .ToListAsync();
 
-        var dbAttributes = await db.PlayerAttributes.ToListAsync();
+        var dbAttributes = await db.Attributes.ToListAsync();
 
         foreach (var ew in eventWeights)
         {
@@ -368,15 +368,15 @@ public static class SeedData
                 var existing = eventType.AttributeWeights.FirstOrDefault(x => x.AttributeCode == attr.AttributeCode);
                 if (existing == null)
                 {
-                    var playerAttr = dbAttributes.FirstOrDefault(a => a.Attribute.Code == attr.AttributeCode);
-                    if (playerAttr == null) continue;
+                    var attribute = dbAttributes.FirstOrDefault(a => a.Code == attr.AttributeCode);
+                    if (attribute == null) continue;
 
                     db.EventAttributeWeights.Add(new EventAttributeWeight
                     {
                         EventTypeCode = ew.EventTypeCode,
                         EventType = eventType,
                         AttributeCode = attr.AttributeCode,
-                        Attribute = playerAttr,
+                        Attribute = attribute, 
                         Weight = attr.Weight
                     });
                 }

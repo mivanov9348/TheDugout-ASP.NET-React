@@ -10,7 +10,7 @@ namespace TheDugout.Models.Training
         public int PlayerId { get; set; }
         public Player Player { get; set; } = null!;
         public int AttributeId { get; set; }
-        public Players.Attribute Attribute { get; set; } = null!;
+        public Players.AttributeDefinition Attribute { get; set; } = null!;
         public int ChangeValue { get; set; }   
     }
 }

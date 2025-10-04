@@ -49,7 +49,7 @@ namespace TheDugout.Data
         public DbSet<PlayerMatchStats> PlayerMatchStats { get; set; }
         public DbSet<PlayerSeasonStats> PlayerSeasonStats { get; set; }
         public DbSet<PlayerAttribute> PlayerAttributes { get; set; }
-        public DbSet<Models.Players.Attribute> Attributes { get; set; }
+        public DbSet<Models.Players.AttributeDefinition> Attributes { get; set; }
         public DbSet<Position> Positions { get; set; }
         public DbSet<PositionWeight> PositionWeights { get; set; }  
         public DbSet<Fixture> Fixtures { get; set; }

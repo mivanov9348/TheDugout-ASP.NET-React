@@ -32,13 +32,14 @@ namespace TheDugout.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Code = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Code = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Category = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Attributes", x => x.Id);
+                    table.UniqueConstraint("AK_Attributes_Code", x => x.Code);
                 });
 
             migrationBuilder.CreateTable(
@@ -172,6 +173,33 @@ namespace TheDugout.Migrations
                         column: x => x.EuropeanCupTemplateId,
                         principalTable: "EuropeanCupTemplates",
                         principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "EventAttributeWeights",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    EventTypeCode = table.Column<string>(type: "nvarchar(50)", nullable: false),
+                    AttributeCode = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Weight = table.Column<double>(type: "float", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_EventAttributeWeights", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_EventAttributeWeights_Attributes_AttributeCode",
+                        column: x => x.AttributeCode,
+                        principalTable: "Attributes",
+                        principalColumn: "Code",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_EventAttributeWeights_EventTypes_EventTypeCode",
+                        column: x => x.EventTypeCode,
+                        principalTable: "EventTypes",
+                        principalColumn: "Code",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -567,28 +595,6 @@ namespace TheDugout.Migrations
                         column: x => x.EuropeanCupId,
                         principalTable: "EuropeanCups",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "EventAttributeWeights",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    EventTypeCode = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    AttributeCode = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    AttributeId = table.Column<int>(type: "int", nullable: false),
-                    Weight = table.Column<double>(type: "float", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_EventAttributeWeights", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_EventAttributeWeights_EventTypes_EventTypeCode",
-                        column: x => x.EventTypeCode,
-                        principalTable: "EventTypes",
-                        principalColumn: "Code",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -1544,9 +1550,9 @@ namespace TheDugout.Migrations
                 column: "TeamId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_EventAttributeWeights_AttributeId",
+                name: "IX_EventAttributeWeights_AttributeCode",
                 table: "EventAttributeWeights",
-                column: "AttributeId");
+                column: "AttributeCode");
 
             migrationBuilder.CreateIndex(
                 name: "IX_EventAttributeWeights_EventTypeCode",
@@ -2057,14 +2063,6 @@ namespace TheDugout.Migrations
                 onDelete: ReferentialAction.Restrict);
 
             migrationBuilder.AddForeignKey(
-                name: "FK_EventAttributeWeights_PlayerAttributes_AttributeId",
-                table: "EventAttributeWeights",
-                column: "AttributeId",
-                principalTable: "PlayerAttributes",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
-
-            migrationBuilder.AddForeignKey(
                 name: "FK_FinancialTransactions_Teams_FromTeamId",
                 table: "FinancialTransactions",
                 column: "FromTeamId",
@@ -2201,6 +2199,9 @@ namespace TheDugout.Migrations
                 name: "Penalties");
 
             migrationBuilder.DropTable(
+                name: "PlayerAttributes");
+
+            migrationBuilder.DropTable(
                 name: "PlayerMatchStats");
 
             migrationBuilder.DropTable(
@@ -2231,9 +2232,6 @@ namespace TheDugout.Migrations
                 name: "YouthAcademies");
 
             migrationBuilder.DropTable(
-                name: "PlayerAttributes");
-
-            migrationBuilder.DropTable(
                 name: "Banks");
 
             migrationBuilder.DropTable(
@@ -2249,10 +2247,10 @@ namespace TheDugout.Migrations
                 name: "TrainingSessions");
 
             migrationBuilder.DropTable(
-                name: "Tactics");
+                name: "Attributes");
 
             migrationBuilder.DropTable(
-                name: "Attributes");
+                name: "Tactics");
 
             migrationBuilder.DropTable(
                 name: "Players");

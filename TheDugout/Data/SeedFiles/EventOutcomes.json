@@ -81,22 +81,22 @@
   },
   {
     "Name": "Goal",
-    "RangeMin": 61,
+    "RangeMin": 50,
     "RangeMax": 100,
     "ChangesPossession": true,
     "EventTypeCode": "PEN"
   },
   {
     "Name": "Saved",
-    "RangeMin": 16,
-    "RangeMax": 60,
+    "RangeMin": 20,
+    "RangeMax": 49,
     "ChangesPossession": true,
     "EventTypeCode": "PEN"
   },
   {
     "Name": "Missed",
     "RangeMin": 0,
-    "RangeMax": 15,
+    "RangeMax": 19,
     "ChangesPossession": true,
     "EventTypeCode": "PEN"
   }
