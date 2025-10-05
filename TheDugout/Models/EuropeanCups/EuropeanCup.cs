@@ -20,6 +20,7 @@ namespace TheDugout.Models.Competitions
         public bool IsActive { get; set; }
 
         public string? LogoFileName { get; set; }
+        public bool IsFinished { get; set; }
 
         public ICollection<EuropeanCupTeam> Teams { get; set; } = new List<EuropeanCupTeam>();
         public ICollection<EuropeanCupPhase> Phases { get; set; } = new List<EuropeanCupPhase>();

@@ -12,6 +12,11 @@ namespace TheDugout.Models.Competitions
         public int TeamId { get; set; }
         public Team Team { get; set; } = null!;
 
+        public int CurrentPhaseOrder { get; set; } = 0; 
+        public bool IsEliminated { get; set; } = false; 
+        public bool IsPlayoffParticipant { get; set; } = false;
+
+
 
     }
 }

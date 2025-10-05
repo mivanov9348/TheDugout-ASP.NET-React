@@ -19,7 +19,7 @@ export default function EuropeanCup({ gameSaveId, seasonId }) {
         const data = await res.json();
         setCup(data);
 
-        // по подразбиране избира първия рунд
+        // по подразбиране избира първия рунд, ако има фикстури
         if (data?.fixtures?.length > 0) {
           setSelectedRound(data.fixtures[0].round);
         }
@@ -36,10 +36,26 @@ export default function EuropeanCup({ gameSaveId, seasonId }) {
   if (loading) return <p>Loading...</p>;
   if (!cup?.exists) return <p>No European Cup for this season.</p>;
 
-  // ✅ Просто конкатенираме името на файла с пътя
   const competitionLogoUrl = cup.logoFileName
     ? `/competitionsLogos/${cup.logoFileName}`
     : "/competitionsLogos/default.png";
+
+  // 🟢 ако няма избран рунд → показваме всички
+  let roundsToShow =
+    selectedRound != null
+      ? cup.fixtures.filter((r) => r.round === selectedRound)
+      : cup.fixtures;
+
+  // Сортиране: рундовете по номер (ако all), мачовете по дата
+  if (selectedRound == null) {
+    roundsToShow = [...roundsToShow].sort((a, b) => a.round - b.round);
+  }
+  roundsToShow = roundsToShow.map((round) => ({
+    ...round,
+    matches: [...round.matches].sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+    ),
+  }));
 
   return (
     <div className="p-4">
@@ -102,59 +118,72 @@ export default function EuropeanCup({ gameSaveId, seasonId }) {
           </table>
         </div>
 
-        {/* Fixtures with round selection */}
+        {/* Fixtures */}
         <div className="bg-white shadow rounded-2xl p-4">
           <div className="flex justify-between items-center mb-3">
             <h3 className="text-xl font-semibold">Fixtures</h3>
             <select
               value={selectedRound ?? ""}
-              onChange={(e) => setSelectedRound(Number(e.target.value))}
+              onChange={(e) =>
+                setSelectedRound(
+                  e.target.value === "" ? null : Number(e.target.value)
+                )
+              }
               className="border rounded px-2 py-1 text-sm"
+              disabled={cup.fixtures.length === 0}
             >
-              {cup.fixtures.map((round) => (
-                <option key={round.round} value={round.round}>
-                  Round {round.round}
-                </option>
-              ))}
+              <option value="">All Rounds</option>
+              {[...new Set(cup.fixtures.map((round) => round.round))]
+                .sort((a, b) => a - b)
+                .map((roundNum) => (
+                  <option key={roundNum} value={roundNum}>
+                    Round {roundNum}
+                  </option>
+                ))}
             </select>
           </div>
 
-          {/* Matches for selected round */}
-          {cup.fixtures
-            .filter((r) => r.round === selectedRound)
-            .map((round) => (
-              <ul key={round.round} className="divide-y">
-                {round.matches.map((m) => (
-                  <li
-                    key={m.id}
-                    className="flex items-center justify-between p-2 hover:bg-slate-50 rounded"
-                  >
-                    <div className="flex-1 text-right pr-2 font-medium flex items-center justify-end gap-2">
-                      <span>{m.homeTeam?.name}</span>
-                      <TeamLogo
-                        teamName={m.homeTeam?.name}
-                        logoFileName={m.homeTeam?.logoFileName}
-                      />
-                    </div>
-                    <div className="w-28 text-center font-bold">
-                      {m.homeTeamGoals != null && m.awayTeamGoals != null
-                        ? `${m.homeTeamGoals} : ${m.awayTeamGoals}`
-                        : "vs"}
-                    </div>
-                    <div className="flex-1 pl-2 font-medium flex items-center gap-2">
-                      <TeamLogo
-                        teamName={m.awayTeam?.name}
-                        logoFileName={m.awayTeam?.logoFileName}
-                      />
-                      <span>{m.awayTeam?.name}</span>
-                    </div>
-                    <div className="ml-4 text-xs text-slate-500 whitespace-nowrap">
-                      {new Date(m.date).toLocaleDateString()}
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            ))}
+          {/* Matches */}
+          {roundsToShow.length === 0 ? (
+            <p className="text-center text-slate-500 italic">No matches scheduled yet.</p>
+          ) : (
+            roundsToShow.map((round) => (
+              <div key={round.round} className="mb-4">
+                <h4 className="text-md font-bold mb-2">Round {round.round}</h4>
+                <ul className="divide-y">
+                  {round.matches.map((m) => (
+                    <li
+                      key={m.id}
+                      className="flex items-center justify-between p-2 hover:bg-slate-50 rounded"
+                    >
+                      <div className="flex-1 text-right pr-2 font-medium flex items-center justify-end gap-2">
+                        <span>{m.homeTeam?.name}</span>
+                        <TeamLogo
+                          teamName={m.homeTeam?.name}
+                          logoFileName={m.homeTeam?.logoFileName}
+                        />
+                      </div>
+                      <div className="w-28 text-center font-bold">
+                        {m.homeTeamGoals != null && m.awayTeamGoals != null
+                          ? `${m.homeTeamGoals} : ${m.awayTeamGoals}`
+                          : "vs"}
+                      </div>
+                      <div className="flex-1 pl-2 font-medium flex items-center gap-2">
+                        <TeamLogo
+                          teamName={m.awayTeam?.name}
+                          logoFileName={m.awayTeam?.logoFileName}
+                        />
+                        <span>{m.awayTeam?.name}</span>
+                      </div>
+                      <div className="ml-4 text-xs text-slate-500 whitespace-nowrap">
+                        {new Date(m.date).toLocaleDateString()}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>

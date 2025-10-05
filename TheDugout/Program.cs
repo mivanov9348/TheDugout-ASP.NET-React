@@ -71,6 +71,7 @@ builder.Services.AddScoped<IEurocupFixturesService, EurocupFixturesService>();
 builder.Services.AddScoped<ILeagueScheduleService, LeagueScheduleService>();
 builder.Services.AddScoped<ICupScheduleService, CupScheduleService>();
 builder.Services.AddScoped<IEurocupScheduleService, EurocupScheduleService>();
+builder.Services.AddScoped<IEurocupKnockoutService, EurocupKnockoutService>();
 builder.Services.AddScoped<ITrainingFacilitiesService, TrainingFacilitiesService>();
 builder.Services.AddScoped<IYouthAcademyService, YouthAcademyService>();
 builder.Services.AddScoped<IStadiumService, StadiumService>();

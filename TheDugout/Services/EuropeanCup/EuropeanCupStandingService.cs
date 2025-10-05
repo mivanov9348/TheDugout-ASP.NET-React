@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using TheDugout.Data;
 using TheDugout.Models.Competitions;
+using TheDugout.Models.Fixtures;
 
 namespace TheDugout.Services.EuropeanCup
 {
@@ -101,6 +102,16 @@ namespace TheDugout.Services.EuropeanCup
 
             return standing;
         }
+
+        public bool AreAllGroupMatchesPlayed(Models.Competitions.EuropeanCup cup)
+        {
+            var leaguePhase = cup.Phases.FirstOrDefault(p => p.PhaseTemplate.Order == 1);
+            if (leaguePhase == null)
+                return false;
+
+            return leaguePhase.Fixtures.All(f => f.Status == FixtureStatus.Played);
+        }
+
     }
 }
 

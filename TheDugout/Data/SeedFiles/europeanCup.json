@@ -16,29 +16,37 @@
       },
       {
         "Id": 2,
-        "Name": "Round of 16",
+        "Name": "Play-off Round",
         "Order": 2,
         "IsKnockout": true,
-        "IsTwoLegged": true
+        "IsTwoLegged": true,
+        "IsQualificationPhase": true
       },
       {
         "Id": 3,
-        "Name": "Quarterfinals",
+        "Name": "Round of 16",
         "Order": 3,
         "IsKnockout": true,
         "IsTwoLegged": true
       },
       {
         "Id": 4,
-        "Name": "Semifinals",
+        "Name": "Quarterfinals",
         "Order": 4,
         "IsKnockout": true,
         "IsTwoLegged": true
       },
       {
         "Id": 5,
-        "Name": "Final",
+        "Name": "Semifinals",
         "Order": 5,
+        "IsKnockout": true,
+        "IsTwoLegged": true
+      },
+      {
+        "Id": 6,
+        "Name": "Final",
+        "Order": 6,
         "IsKnockout": true,
         "IsTwoLegged": false
       }

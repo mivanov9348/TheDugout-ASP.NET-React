@@ -42,8 +42,10 @@ namespace TheDugout.Services.EuropeanCup
                 .FirstOrDefaultAsync(s => s.Id == seasonId, ct)
                 ?? throw new InvalidOperationException("Season not found.");
 
-            var leaguePhase = cup.Phases.FirstOrDefault(p => !p.PhaseTemplate.IsKnockout)
-                ?? throw new InvalidOperationException("No league phase found.");
+            var leaguePhase = cup.Phases
+                               .FirstOrDefault(p => p.PhaseTemplate.Order == 1)
+                               ?? throw new InvalidOperationException("No league phase found.");
+
 
             int rounds = cup.Template.LeaguePhaseMatchesPerTeam;
             var teamIds = cup.Teams.Select(t => t.TeamId).ToList();
@@ -94,60 +96,5 @@ namespace TheDugout.Services.EuropeanCup
             _logger.LogInformation("Generated {Count} league fixtures for cup {CupId}", fixturesToAdd.Count, cup.Id);
         }
 
-
-        // ---------------- EUROCUP: KNOCKOUT ----------------
-        public async Task GenerateEuropeanKnockoutFixturesAsync(int europeanCupId, int knockoutPhaseTemplateId, CancellationToken ct = default)
-        {
-            var phaseTemplate = await _context.Set<EuropeanCupPhaseTemplate>()
-                .FirstOrDefaultAsync(p => p.Id == knockoutPhaseTemplateId, ct)
-                ?? throw new InvalidOperationException("Phase template not found.");
-
-            var phase = await _context.Set<EuropeanCupPhase>()
-                .FirstOrDefaultAsync(p => p.EuropeanCupId == europeanCupId && p.PhaseTemplateId == knockoutPhaseTemplateId, ct)
-                ?? throw new InvalidOperationException("Phase not found.");
-
-            var top16 = await _context.Set<EuropeanCupStanding>()
-                .Where(s => s.EuropeanCupId == europeanCupId)
-                .OrderBy(s => s.Ranking)
-                .Take(16)
-                .Select(s => s.TeamId)
-                .ToListAsync(ct);
-
-            if (top16.Count != 16)
-                throw new InvalidOperationException($"Expect 16 teams to generate knockout, got {top16.Count}.");
-
-            var shuffled = top16.OrderBy(_ => _random.Next()).ToList();
-            var fixturesToAdd = new List<Models.Fixtures.Fixture>();
-
-            int gameSaveId = await _context.Set<Models.Competitions.EuropeanCup>()
-                .Where(c => c.Id == europeanCupId)
-                .Select(c => c.GameSaveId)
-                .FirstAsync(ct);
-
-            for (int i = 0; i < shuffled.Count; i += 2)
-            {
-                int a = shuffled[i];
-                int b = shuffled[i + 1];
-
-                if (phaseTemplate.IsTwoLegged)
-                {
-                    fixturesToAdd.Add(_fixturesHelperService.CreateFixture(gameSaveId, seasonId: phase.EuropeanCup.SeasonId, a, b,
-                        DateTime.UtcNow.AddDays(7 + i / 2 * 14), 1, CompetitionType.EuropeanCup, europeanCupPhaseId: phase.Id));
-
-                    fixturesToAdd.Add(_fixturesHelperService.CreateFixture(gameSaveId, seasonId: phase.EuropeanCup.SeasonId, b, a,
-                        DateTime.UtcNow.AddDays(14 + i / 2 * 14), 2, CompetitionType.EuropeanCup, europeanCupPhaseId: phase.Id));
-                }
-                else
-                {
-                    fixturesToAdd.Add(_fixturesHelperService.CreateFixture(gameSaveId, seasonId: phase.EuropeanCup.SeasonId, a, b,
-                        DateTime.UtcNow.AddDays(7 + i / 2 * 7), 1, CompetitionType.EuropeanCup, europeanCupPhaseId: phase.Id));
-                }
-            }
-
-            await _context.AddRangeAsync(fixturesToAdd, ct);
-            await _context.SaveChangesAsync(ct);
-
-            _logger.LogInformation("Generated {Count} knockout fixtures for European cup {CupId}", fixturesToAdd.Count, europeanCupId);
-        }
     }
 }

@@ -724,13 +724,14 @@ public static class SeedData
 
         await db.SaveChangesAsync();
 
-        // European Cup Phases
+        // 1) European Cup Phases 
         var phasesPath = Path.Combine(seedDir, "europeanCupPhase.json");
         var phases = await ReadJsonAsync<List<EuropeanCupPhaseTemplate>>(phasesPath);
 
         foreach (var p in phases)
         {
             var existing = await db.EuropeanCupPhaseTemplates.FirstOrDefaultAsync(x => x.Name == p.Name);
+
             if (existing == null)
             {
                 db.EuropeanCupPhaseTemplates.Add(new EuropeanCupPhaseTemplate
@@ -748,11 +749,14 @@ public static class SeedData
                 existing.IsTwoLegged = p.IsTwoLegged;
             }
         }
+
         await db.SaveChangesAsync();
 
-        var dbPhases = await db.EuropeanCupPhaseTemplates.ToDictionaryAsync(x => x.Id, x => x);
+        // Вземаме актуален речник (по име, не по Id!)
+        var dbPhases = await db.EuropeanCupPhaseTemplates
+            .ToDictionaryAsync(x => x.Name, x => x);
 
-        // 13) European Cups
+        // 2) European Cups
         var europeanCupsPath = Path.Combine(seedDir, "europeanCup.json");
         var europeanCups = await ReadJsonAsync<List<EuropeanCupTemplate>>(europeanCupsPath);
 
@@ -770,17 +774,28 @@ public static class SeedData
                     TeamsCount = ec.TeamsCount,
                     LeaguePhaseMatchesPerTeam = ec.LeaguePhaseMatchesPerTeam,
                     Ranking = ec.Ranking,
-                    IsActive = ec.IsActive,
+                    IsActive = ec.IsActive
                 };
 
                 if (ec.PhaseTemplates != null && ec.PhaseTemplates.Count > 0)
                 {
-                    foreach (var phaseId in ec.PhaseTemplates.Select(p => p.Id))
+                    foreach (var p in ec.PhaseTemplates)
                     {
-                        if (dbPhases.TryGetValue(phaseId, out var phase))
+                        // Ако фаза не е дефинирана в глобалния JSON, добавяме я
+                        if (!dbPhases.TryGetValue(p.Name, out var phase))
                         {
-                            newCup.PhaseTemplates.Add(phase);
+                            phase = new EuropeanCupPhaseTemplate
+                            {
+                                Name = p.Name,
+                                Order = p.Order,
+                                IsKnockout = p.IsKnockout,
+                                IsTwoLegged = p.IsTwoLegged
+                            };
+                            db.EuropeanCupPhaseTemplates.Add(phase);
+                            dbPhases[p.Name] = phase;
                         }
+
+                        newCup.PhaseTemplates.Add(phase);
                     }
                 }
 
@@ -794,18 +809,30 @@ public static class SeedData
                 existing.IsActive = ec.IsActive;
 
                 existing.PhaseTemplates.Clear();
+
                 if (ec.PhaseTemplates != null && ec.PhaseTemplates.Count > 0)
                 {
-                    foreach (var phaseId in ec.PhaseTemplates.Select(p => p.Id))
+                    foreach (var p in ec.PhaseTemplates)
                     {
-                        if (dbPhases.TryGetValue(phaseId, out var phase))
+                        if (!dbPhases.TryGetValue(p.Name, out var phase))
                         {
-                            existing.PhaseTemplates.Add(phase);
+                            phase = new EuropeanCupPhaseTemplate
+                            {
+                                Name = p.Name,
+                                Order = p.Order,
+                                IsKnockout = p.IsKnockout,
+                                IsTwoLegged = p.IsTwoLegged
+                            };
+                            db.EuropeanCupPhaseTemplates.Add(phase);
+                            dbPhases[p.Name] = phase;
                         }
+
+                        existing.PhaseTemplates.Add(phase);
                     }
                 }
             }
         }
+
         await db.SaveChangesAsync();
 
         // Валидирай брой отбори спрямо лигите

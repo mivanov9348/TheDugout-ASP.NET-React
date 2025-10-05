@@ -11,6 +11,7 @@ namespace TheDugout.Models.Competitions
 
         public int PhaseTemplateId { get; set; }
         public EuropeanCupPhaseTemplate PhaseTemplate { get; set; } = null!;
+        public bool IsQualificationPhase { get; set; } = false;
 
         public ICollection<Fixture> Fixtures { get; set; } = new List<Fixture>();
     }

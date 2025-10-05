@@ -25,11 +25,6 @@ namespace TheDugout.Controllers
                 .Include(c => c.Teams)
                     .ThenInclude(ct => ct.Team)
                 .Include(c => c.Phases)
-                    .ThenInclude(p => p.Fixtures)
-                        .ThenInclude(f => f.HomeTeam)
-                .Include(c => c.Phases)
-                    .ThenInclude(p => p.Fixtures)
-                        .ThenInclude(f => f.AwayTeam)
                 .Include(c => c.Standings)
                     .ThenInclude(s => s.Team)
                 .FirstOrDefaultAsync(c => c.GameSaveId == gameSaveId && c.SeasonId == seasonId);
@@ -42,12 +37,24 @@ namespace TheDugout.Controllers
             // ✅ НОВО: Вземи само името на файла (например "European Cup.png")
             string logoFileName = cup.LogoFileName; // Това е полето, което вече имаш в модела!
 
+            // НОВО: Извлечи ID-тата на фазите
+            var phaseIds = cup.Phases.Select(p => p.Id).ToList();
+
+            // НОВО: Търси мачовете директно през DbSet<Fixture>, филтрирайки по phaseIds
+            var fixturesQuery = _context.Fixtures
+                .Include(f => f.HomeTeam)
+                .Include(f => f.AwayTeam)
+                .Where(f => f.EuropeanCupPhaseId.HasValue && phaseIds.Contains(f.EuropeanCupPhaseId.Value))
+                .Where(f => f.HomeTeam != null && f.AwayTeam != null);
+
+            var fixtures = await fixturesQuery.ToListAsync();
+
             var result = new
             {
                 exists = true,
                 id = cup.Id,
                 name = cup.Template.Name,
-                logoFileName = logoFileName, // 🚀 ТУК ГО ДОБАВЯМЕ!
+                logoFileName = logoFileName,
                 teams = cup.Teams.Select(t => new
                 {
                     id = t.Team.Id,
@@ -74,8 +81,7 @@ namespace TheDugout.Controllers
                         goalDifference = s.GoalDifference,
                         ranking = s.Ranking
                     }),
-                fixtures = cup.Phases
-                    .SelectMany(p => p.Fixtures)
+                fixtures = fixtures
                     .GroupBy(f => f.Round)
                     .Select(g => new
                     {
