@@ -12,8 +12,8 @@ using TheDugout.Data;
 namespace TheDugout.Migrations
 {
     [DbContext(typeof(DugoutDbContext))]
-    [Migration("20251004110845_initial")]
-    partial class initial
+    [Migration("20251005094822_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -148,6 +148,9 @@ namespace TheDugout.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("IsFinished")
+                        .HasColumnType("bit");
+
                     b.Property<string>("LogoFileName")
                         .HasColumnType("nvarchar(max)");
 
@@ -181,6 +184,9 @@ namespace TheDugout.Migrations
 
                     b.Property<int>("EuropeanCupId")
                         .HasColumnType("int");
+
+                    b.Property<bool>("IsQualificationPhase")
+                        .HasColumnType("bit");
 
                     b.Property<int>("PhaseTemplateId")
                         .HasColumnType("int");
@@ -309,8 +315,17 @@ namespace TheDugout.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("CurrentPhaseOrder")
+                        .HasColumnType("int");
+
                     b.Property<int>("EuropeanCupId")
                         .HasColumnType("int");
+
+                    b.Property<bool>("IsEliminated")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsPlayoffParticipant")
+                        .HasColumnType("bit");
 
                     b.Property<int>("TeamId")
                         .HasColumnType("int");

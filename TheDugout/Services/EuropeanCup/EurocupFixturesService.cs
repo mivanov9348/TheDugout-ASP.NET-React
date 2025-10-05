@@ -42,9 +42,11 @@ namespace TheDugout.Services.EuropeanCup
                 .FirstOrDefaultAsync(s => s.Id == seasonId, ct)
                 ?? throw new InvalidOperationException("Season not found.");
 
-            var leaguePhase = cup.Phases
-                               .FirstOrDefault(p => p.PhaseTemplate.Order == 1)
-                               ?? throw new InvalidOperationException("No league phase found.");
+            var leaguePhase = await _context.Set<EuropeanCupPhase>()
+                        .Include(p => p.PhaseTemplate)
+                        .Include(p => p.Fixtures)
+                        .FirstOrDefaultAsync(p => p.EuropeanCupId == europeanCupId && p.PhaseTemplate.Order == 1, ct)
+                        ?? throw new InvalidOperationException("League phase not found.");
 
 
             int rounds = cup.Template.LeaguePhaseMatchesPerTeam;
@@ -66,11 +68,16 @@ namespace TheDugout.Services.EuropeanCup
 
             for (int round = 1; round <= rounds; round++)
             {
+                var usedTeams = new HashSet<int>();
+
                 var roundPairs = _fixturesHelperService.TryFindRoundPairing(teamIds, existingPairs, 2000)
-                                 ?? _fixturesHelperService.GreedyPairingMinimizeRepeats(teamIds, existingPairs);
+                                     ?? _fixturesHelperService.GreedyPairingMinimizeRepeats(teamIds, existingPairs);
 
                 foreach (var (a, b) in roundPairs)
                 {
+                    if (usedTeams.Contains(a) || usedTeams.Contains(b))
+                        continue;
+
                     int home = _fixturesHelperService.DecideHome(a, b, homeCount);
                     int away = home == a ? b : a;
 
@@ -79,16 +86,20 @@ namespace TheDugout.Services.EuropeanCup
                         seasonId,
                         home,
                         away,
-                        roundDates[Math.Min(round - 1, roundDates.Count - 1)], // <-- вече от календара
+                        roundDates[Math.Min(round - 1, roundDates.Count - 1)],
                         round,
                         CompetitionType.EuropeanCup,
                         europeanCupPhaseId: leaguePhase.Id
                     ));
 
+                    usedTeams.Add(a);
+                    usedTeams.Add(b);
+
                     existingPairs.Add(_fixturesHelperService.PairKey(a, b));
                     homeCount[home]++;
                 }
             }
+
 
             await _context.AddRangeAsync(fixturesToAdd, ct);
             await _context.SaveChangesAsync(ct);

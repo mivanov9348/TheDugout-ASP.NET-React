@@ -147,6 +147,7 @@ namespace TheDugout.Services.Game
                 // 4.5 Инициализиране на European Cup за първата година (ако имаш шаблон)
                 var euroTemplates = await _context.Set<EuropeanCupTemplate>()
                                     .Include(t => t.PhaseTemplates)
+                                    .Where(t => t.IsActive)
                                     .ToListAsync(ct);
 
                 foreach (var template in euroTemplates)
@@ -171,10 +172,7 @@ namespace TheDugout.Services.Game
                             templateId: template.Id,
                             gameSaveId: gameSave.Id,
                             seasonId: season.Id,
-                            ct: ct);
-
-                        // 3. Генерираме league-phase fixtures
-                        await _eurocupFixturesService.GenerateEuropeanLeaguePhaseFixturesAsync(cup.Id, season.Id, ct);
+                            ct: ct);                      
 
                         _logger.LogInformation(
                             "Successfully initialized European Cup '{TemplateName}' (ID: {CupId}) with {Teams} teams.",

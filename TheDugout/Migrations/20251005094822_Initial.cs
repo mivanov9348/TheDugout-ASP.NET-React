@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace TheDugout.Migrations
 {
     /// <inheritdoc />
-    public partial class initial : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -512,7 +512,8 @@ namespace TheDugout.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     EuropeanCupId = table.Column<int>(type: "int", nullable: false),
-                    PhaseTemplateId = table.Column<int>(type: "int", nullable: false)
+                    PhaseTemplateId = table.Column<int>(type: "int", nullable: false),
+                    IsQualificationPhase = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -536,7 +537,8 @@ namespace TheDugout.Migrations
                     SeasonId = table.Column<int>(type: "int", nullable: false),
                     Ranking = table.Column<int>(type: "int", nullable: false),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
-                    LogoFileName = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    LogoFileName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    IsFinished = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -585,7 +587,10 @@ namespace TheDugout.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     EuropeanCupId = table.Column<int>(type: "int", nullable: false),
-                    TeamId = table.Column<int>(type: "int", nullable: false)
+                    TeamId = table.Column<int>(type: "int", nullable: false),
+                    CurrentPhaseOrder = table.Column<int>(type: "int", nullable: false),
+                    IsEliminated = table.Column<bool>(type: "bit", nullable: false),
+                    IsPlayoffParticipant = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {

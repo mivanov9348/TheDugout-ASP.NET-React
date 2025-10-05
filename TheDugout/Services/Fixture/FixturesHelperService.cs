@@ -143,7 +143,6 @@ namespace TheDugout.Services.Fixture
             int teamsInThisRound = (int)Math.Pow(2, totalRounds - adjustedRound + 1);
             return $"Round of {teamsInThisRound}";
         }
-
         private bool DetermineIsElimination(CompetitionType competitionType, CupRound? cupRound, int? europeanCupPhaseId)
         {
             switch (competitionType)

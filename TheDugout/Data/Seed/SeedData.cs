@@ -92,7 +92,7 @@ public static class SeedData
                 {
                     Code = a.Code,
                     Name = a.Name,
-                    Category = a.Category   
+                    Category = a.Category
                 });
             }
             else
@@ -100,7 +100,7 @@ public static class SeedData
                 if (existing.Name != a.Name)
                     existing.Name = a.Name;
 
-                if (existing.Category != a.Category)   
+                if (existing.Category != a.Category)
                     existing.Category = a.Category;
             }
         }
@@ -177,7 +177,7 @@ public static class SeedData
                 {
                     Code = c.Code,
                     Name = c.Name,
-                    RegionCode = c.RegionCode 
+                    RegionCode = c.RegionCode
                 });
             }
             else
@@ -376,7 +376,7 @@ public static class SeedData
                         EventTypeCode = ew.EventTypeCode,
                         EventType = eventType,
                         AttributeCode = attr.AttributeCode,
-                        Attribute = attribute, 
+                        Attribute = attribute,
                         Weight = attr.Weight
                     });
                 }
@@ -445,7 +445,7 @@ public static class SeedData
         var commentaryTemplates = await ReadJsonAsync<List<SeedDtos.CommentaryTemplateDto>>(commentaryFile);
 
         var dbOutcomesByKey = await db.EventOutcomes
-            .ToDictionaryAsync(x => (x.EventTypeCode, x.Name)); 
+            .ToDictionaryAsync(x => (x.EventTypeCode, x.Name));
 
         var dbCommentary = await db.CommentaryTemplates.ToListAsync();
 
@@ -713,12 +713,12 @@ public static class SeedData
                 {
                     Category = categoryParsed,
                     SubjectTemplate = t.SubjectTemplate,
-                    BodyTemplate = t.BodyTemplate                    
+                    BodyTemplate = t.BodyTemplate
                 });
             }
             else
             {
-                
+
             }
         }
 
@@ -759,6 +759,19 @@ public static class SeedData
         // 2) European Cups
         var europeanCupsPath = Path.Combine(seedDir, "europeanCup.json");
         var europeanCups = await ReadJsonAsync<List<EuropeanCupTemplate>>(europeanCupsPath);
+
+        // Зануляваме Id-та от JSON, преди да почнем да ги вкарваме в EF
+        foreach (var ec in europeanCups)
+        {
+            ec.Id = 0;
+            if (ec.PhaseTemplates != null)
+            {
+                foreach (var p in ec.PhaseTemplates)
+                {
+                    p.Id = 0;
+                }
+            }
+        }
 
         foreach (var ec in europeanCups)
         {

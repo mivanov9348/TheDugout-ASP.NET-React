@@ -17,9 +17,63 @@ export default function EuropeanCup({ gameSaveId, seasonId }) {
         );
         if (!res.ok) throw new Error("Error while loading European Cup");
         const data = await res.json();
+
+        // 🟢 Добавяме фиктивни елиминации за демо
+        data.knockoutFixtures = [
+          {
+            round: 1,
+            name: "Quarter-Finals",
+            matches: [
+              {
+                id: 1,
+                homeTeam: { name: "Barcelona", logoFileName: "barca.png" },
+                awayTeam: { name: "Chelsea", logoFileName: "chelsea.png" },
+                homeTeamGoals: 2,
+                awayTeamGoals: 1,
+                date: new Date().toISOString(),
+              },
+              {
+                id: 2,
+                homeTeam: { name: "Juventus", logoFileName: "juve.png" },
+                awayTeam: { name: "Bayern", logoFileName: "bayern.png" },
+                homeTeamGoals: 0,
+                awayTeamGoals: 3,
+                date: new Date().toISOString(),
+              },
+            ],
+          },
+          {
+            round: 2,
+            name: "Semi-Finals",
+            matches: [
+              {
+                id: 3,
+                homeTeam: { name: "Barcelona", logoFileName: "barca.png" },
+                awayTeam: { name: "Bayern", logoFileName: "bayern.png" },
+                homeTeamGoals: null,
+                awayTeamGoals: null,
+                date: new Date().toISOString(),
+              },
+            ],
+          },
+          {
+            round: 3,
+            name: "Final",
+            matches: [
+              {
+                id: 4,
+                homeTeam: { name: "Winner SF1", logoFileName: "default.png" },
+                awayTeam: { name: "Winner SF2", logoFileName: "default.png" },
+                homeTeamGoals: null,
+                awayTeamGoals: null,
+                date: new Date().toISOString(),
+              },
+            ],
+          },
+        ];
+
         setCup(data);
 
-        // по подразбиране избира първия рунд, ако има фикстури
         if (data?.fixtures?.length > 0) {
           setSelectedRound(data.fixtures[0].round);
         }
@@ -40,13 +94,11 @@ export default function EuropeanCup({ gameSaveId, seasonId }) {
     ? `/competitionsLogos/${cup.logoFileName}`
     : "/competitionsLogos/default.png";
 
-  // 🟢 ако няма избран рунд → показваме всички
   let roundsToShow =
     selectedRound != null
       ? cup.fixtures.filter((r) => r.round === selectedRound)
       : cup.fixtures;
 
-  // Сортиране: рундовете по номер (ако all), мачовете по дата
   if (selectedRound == null) {
     roundsToShow = [...roundsToShow].sort((a, b) => a.round - b.round);
   }
@@ -143,7 +195,6 @@ export default function EuropeanCup({ gameSaveId, seasonId }) {
             </select>
           </div>
 
-          {/* Matches */}
           {roundsToShow.length === 0 ? (
             <p className="text-center text-slate-500 italic">No matches scheduled yet.</p>
           ) : (
@@ -185,6 +236,54 @@ export default function EuropeanCup({ gameSaveId, seasonId }) {
             ))
           )}
         </div>
+      </div>
+
+      {/* Knockout Stage */}
+      <div className="mt-8 bg-white shadow rounded-2xl p-4">
+        <h3 className="text-xl font-semibold mb-3">Knockout Stage</h3>
+
+        {(!cup.knockoutFixtures || cup.knockoutFixtures.length === 0) ? (
+          <p className="text-center text-slate-500 italic">
+            No eliminations yet. (Coming soon)
+          </p>
+        ) : (
+          cup.knockoutFixtures.map((round) => (
+            <div key={round.round} className="mb-6">
+              <h4 className="text-md font-bold mb-2">{round.name}</h4>
+              <ul className="divide-y">
+                {round.matches.map((m) => (
+                  <li
+                    key={m.id}
+                    className="flex items-center justify-between p-2 hover:bg-slate-50 rounded"
+                  >
+                    <div className="flex-1 text-right pr-2 font-medium flex items-center justify-end gap-2">
+                      <span>{m.homeTeam?.name}</span>
+                      <TeamLogo
+                        teamName={m.homeTeam?.name}
+                        logoFileName={m.homeTeam?.logoFileName}
+                      />
+                    </div>
+                    <div className="w-28 text-center font-bold">
+                      {m.homeTeamGoals != null && m.awayTeamGoals != null
+                        ? `${m.homeTeamGoals} : ${m.awayTeamGoals}`
+                        : "vs"}
+                    </div>
+                    <div className="flex-1 pl-2 font-medium flex items-center gap-2">
+                      <TeamLogo
+                        teamName={m.awayTeam?.name}
+                        logoFileName={m.awayTeam?.logoFileName}
+                      />
+                      <span>{m.awayTeam?.name}</span>
+                    </div>
+                    <div className="ml-4 text-xs text-slate-500 whitespace-nowrap">
+                      {new Date(m.date).toLocaleDateString()}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );

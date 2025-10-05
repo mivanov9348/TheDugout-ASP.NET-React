@@ -10,24 +10,21 @@ namespace TheDugout.Services.EuropeanCup
     public class EuropeanCupService : IEuropeanCupService
     {
         private readonly DugoutDbContext _context;
-        //private readonly IFixturesService _fixturesService;
         private readonly IEurocupFixturesService _eurocupFixturesService;
-        private readonly IFixturesHelperService _fixturesHelperService;
         private readonly ILogger<EuropeanCupService> _logger;
         private readonly Random _rng = new Random();
-        public EuropeanCupService(DugoutDbContext context, IFixturesHelperService fixturesHelperService, IEurocupFixturesService eurocupFixturesService, ILogger<EuropeanCupService> logger)
+        public EuropeanCupService(DugoutDbContext context, IEurocupFixturesService eurocupFixturesService, ILogger<EuropeanCupService> logger)
         {
             _context = context;
             _eurocupFixturesService = eurocupFixturesService;
-            _fixturesHelperService = fixturesHelperService;
             _logger = logger;
         }
 
         public async Task<Models.Competitions.EuropeanCup> InitializeTournamentAsync(
-    int templateId,
-    int gameSaveId,
-    int seasonId,
-    CancellationToken ct = default)
+                int templateId,
+                int gameSaveId,
+                int seasonId,
+                CancellationToken ct = default)
         {
             // 1. Зареждаме шаблона и фазите
             var template = await _context.Set<EuropeanCupTemplate>()
@@ -69,7 +66,8 @@ namespace TheDugout.Services.EuropeanCup
                 TemplateId = template.Id,
                 GameSaveId = gameSaveId,
                 SeasonId = seasonId,
-                LogoFileName = logoFileName
+                LogoFileName = logoFileName,
+                IsActive = template.IsActive
             };
 
             _context.Add(cup);
@@ -94,6 +92,7 @@ namespace TheDugout.Services.EuropeanCup
                     CurrentPhaseOrder = 1,
                     IsEliminated = false,
                     IsPlayoffParticipant = false
+
                 });
 
                 _context.Add(new EuropeanCupStanding
@@ -116,19 +115,31 @@ namespace TheDugout.Services.EuropeanCup
             var orderedPhaseTemplates = template.PhaseTemplates.OrderBy(p => p.Order).ToList();
             foreach (var pt in orderedPhaseTemplates)
             {
-                _context.Add(new EuropeanCupPhase
+                var phase = new EuropeanCupPhase
                 {
                     EuropeanCupId = cup.Id,
                     PhaseTemplateId = pt.Id
-                });
-            }
+                };
 
+                cup.Phases.Add(phase);
+            }
             await _context.SaveChangesAsync(ct);
+
             _logger.LogInformation("Initialized EuropeanCup {CupId} with {Teams} teams and logo: {Logo}", cup.Id, chosenTeams.Count, validLogoFileName);
+
+            // 7. Генерираме мачове за първата фаза (лигова)
+            try
+            {
+                await _eurocupFixturesService.GenerateEuropeanLeaguePhaseFixturesAsync(cup.Id, seasonId, ct);
+                _logger.LogInformation("Fixtures generated for EuropeanCup {CupId}", cup.Id);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error generating fixtures for EuropeanCup {CupId}", cup.Id);
+            }
 
             return cup;
         }
-
         public async Task UpdateStandingsForPhaseAsync(int europeanCupPhaseId, CancellationToken ct = default)
         {
             // Recalculate standings from scratch for a cup/phase's fixtures (useful for recompute)

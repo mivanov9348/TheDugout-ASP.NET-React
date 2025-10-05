@@ -22,39 +22,30 @@ namespace TheDugout.Controllers
         {
             var cup = await _context.Set<EuropeanCup>()
                 .Include(c => c.Template)
-                .Include(c => c.Teams)
-                    .ThenInclude(ct => ct.Team)
-                .Include(c => c.Phases)
-                .Include(c => c.Standings)
-                    .ThenInclude(s => s.Team)
+                .Include(c => c.Teams).ThenInclude(ct => ct.Team)
+                .Include(c => c.Standings).ThenInclude(s => s.Team)
+                .Include(c => c.Phases).ThenInclude(p => p.PhaseTemplate)
                 .FirstOrDefaultAsync(c => c.GameSaveId == gameSaveId && c.SeasonId == seasonId);
 
             if (cup == null)
-            {
                 return Ok(new { exists = false });
-            }
 
-            // ✅ НОВО: Вземи само името на файла (например "European Cup.png")
-            string logoFileName = cup.LogoFileName; // Това е полето, което вече имаш в модела!
+            // 🔹 взимаме id-тата на фазите
+            var phaseIds = _context.EuropeanCupPhases.Select(p => p.Id).ToList();
 
-            // НОВО: Извлечи ID-тата на фазите
-            var phaseIds = cup.Phases.Select(p => p.Id).ToList();
-
-            // НОВО: Търси мачовете директно през DbSet<Fixture>, филтрирайки по phaseIds
-            var fixturesQuery = _context.Fixtures
+            // 🔹 търсим фикстурите директно в context.Fixtures
+            var fixtures = await _context.Fixtures
                 .Include(f => f.HomeTeam)
                 .Include(f => f.AwayTeam)
                 .Where(f => f.EuropeanCupPhaseId.HasValue && phaseIds.Contains(f.EuropeanCupPhaseId.Value))
-                .Where(f => f.HomeTeam != null && f.AwayTeam != null);
-
-            var fixtures = await fixturesQuery.ToListAsync();
+                .ToListAsync();
 
             var result = new
             {
                 exists = true,
                 id = cup.Id,
                 name = cup.Template.Name,
-                logoFileName = logoFileName,
+                logoFileName = cup.LogoFileName,
                 teams = cup.Teams.Select(t => new
                 {
                     id = t.Team.Id,
@@ -83,6 +74,7 @@ namespace TheDugout.Controllers
                     }),
                 fixtures = fixtures
                     .GroupBy(f => f.Round)
+                    .OrderBy(g => g.Key)
                     .Select(g => new
                     {
                         round = g.Key,
@@ -111,5 +103,7 @@ namespace TheDugout.Controllers
 
             return Ok(result);
         }
+
+
     }
 }
