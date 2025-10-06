@@ -49,5 +49,65 @@ namespace TheDugout.Services.Season
 
             return distributedDates;
         }
+
+        public List<DateTime> AssignKnockoutDatesAfter(Models.Seasons.Season season, DateTime lastGroupMatchDate, int remainingPhases)
+        {
+            var candidateDates = season.Events
+                .Where(e => e.Type == SeasonEventType.EuropeanMatch
+                            && !e.IsOccupied
+                            && e.Date > lastGroupMatchDate)
+                .OrderBy(e => e.Date)
+                .ToList();
+
+            if (!candidateDates.Any())
+                throw new InvalidOperationException("No available EuropeanMatch dates after group stage.");
+
+            int available = candidateDates.Count;
+            if (remainingPhases <= 0)
+                throw new InvalidOperationException("Invalid number of remaining phases.");
+
+            List<DateTime> distributedDates = new();
+
+            // Ако има по-малко дати от фази — взимаме всички налични
+            if (available <= remainingPhases)
+            {
+                distributedDates = candidateDates
+                    .Take(available)
+                    .Select(e => e.Date)
+                    .ToList();
+            }
+            else
+            {
+                // равномерно разпределяне по оста на датите
+                double step = (double)(available - 1) / (remainingPhases - 1);
+
+                HashSet<int> usedIndexes = new();
+
+                for (int i = 0; i < remainingPhases; i++)
+                {
+                    // изчисляваме плаващ индекс
+                    double floatIndex = i * step;
+                    int index = (int)Math.Round(floatIndex);
+
+                    // за всеки случай — избягваме дублиране при закръгляне
+                    while (usedIndexes.Contains(index) && index < available - 1)
+                        index++;
+
+                    usedIndexes.Add(index);
+                    distributedDates.Add(candidateDates[index].Date);
+                }
+            }
+
+            // Отбелязваме избраните като заети
+            foreach (var date in distributedDates)
+            {
+                var seasonEvent = candidateDates.FirstOrDefault(e => e.Date == date);
+                if (seasonEvent != null)
+                    seasonEvent.IsOccupied = true;
+            }
+
+            return distributedDates;
+        }
+
     }
 }

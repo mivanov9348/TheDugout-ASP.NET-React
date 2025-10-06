@@ -9,7 +9,8 @@ const Transfers = () => {
       <div className="bg-white shadow rounded-2xl p-4 border border-slate-200">
         <h1 className="text-3xl font-bold text-slate-800">Transfers</h1>
         <p className="text-slate-500 text-sm mt-1">
-          Manage player transfers, ongoing negotiations and your club’s transfer history.
+          Manage player transfers, ongoing negotiations and your club’s transfer
+          history.
         </p>
       </div>
 
@@ -40,7 +41,7 @@ const Transfers = () => {
         </nav>
 
         {/* Outlet content */}
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 overflow-auto p-4">
           <Outlet />
         </div>
       </div>

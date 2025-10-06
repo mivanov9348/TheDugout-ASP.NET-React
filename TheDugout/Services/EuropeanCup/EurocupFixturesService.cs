@@ -86,7 +86,6 @@ namespace TheDugout.Services.EuropeanCup
             var homeCount = teamIds.ToDictionary(id => id, _ => 0);
             var fixturesToAdd = new List<Models.Fixtures.Fixture>();
 
-            // Взимаме равномерно разпределени дати от календара
             var roundDates = _eurocupScheduleService.AssignEuropeanFixtures(season, rounds);
 
             for (int round = 1; round <= rounds; round++)
@@ -129,6 +128,59 @@ namespace TheDugout.Services.EuropeanCup
             _logger.LogInformation("Generated {Count} league fixtures for cup {CupId}", fixturesToAdd.Count, cup.Id);
         }
 
+        public async Task<List<Models.Fixtures.Fixture>> GetAllFixturesForCupAsync(int europeanCupId)
+        {
+            var phaseIds = await _context.EuropeanCupPhases
+                .Where(p => p.EuropeanCupId == europeanCupId)
+                .Select(p => p.Id)
+                .ToListAsync();
 
+            return await _context.Fixtures
+                .Include(f => f.HomeTeam)
+                .Include(f => f.AwayTeam)
+                .Where(f => f.EuropeanCupPhaseId.HasValue && phaseIds.Contains(f.EuropeanCupPhaseId.Value))
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<object>> GetGroupFixturesAsync(int europeanCupId)
+        {
+            var groupPhase = await _context.EuropeanCupPhases
+                .Include(p => p.Fixtures)
+                    .ThenInclude(f => f.HomeTeam)
+                .Include(p => p.Fixtures)
+                    .ThenInclude(f => f.AwayTeam)
+                .FirstOrDefaultAsync(p => p.EuropeanCupId == europeanCupId && !p.PhaseTemplate.IsKnockout);
+
+            if (groupPhase == null)
+                return Enumerable.Empty<object>();
+
+            return groupPhase.Fixtures
+                .GroupBy(f => f.Round)
+                .OrderBy(g => g.Key)
+                .Select(g => new
+                {
+                    round = g.Key,
+                    matches = g.Select(f => new
+                    {
+                        id = f.Id,
+                        homeTeam = f.HomeTeam == null ? null : new
+                        {
+                            id = f.HomeTeam.Id,
+                            name = f.HomeTeam.Name,
+                            logoFileName = f.HomeTeam.LogoFileName
+                        },
+                        awayTeam = f.AwayTeam == null ? null : new
+                        {
+                            id = f.AwayTeam.Id,
+                            name = f.AwayTeam.Name,
+                            logoFileName = f.AwayTeam.LogoFileName
+                        },
+                        homeTeamGoals = f.HomeTeamGoals,
+                        awayTeamGoals = f.AwayTeamGoals,
+                        date = f.Date,
+                        status = f.Status
+                    })
+                });
+        }
     }
 }

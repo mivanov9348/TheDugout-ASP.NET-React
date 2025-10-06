@@ -97,6 +97,15 @@ namespace TheDugout.Services.Standings
                                 await _eurocupKnockoutService.DeterminePostGroupAdvancementAsync(phase.EuropeanCupId);
                                 await _eurocupKnockoutService.GeneratePlayoffRoundAsync(phase.EuropeanCupId);
                             }
+
+                        }
+                        else
+                        {
+                            bool allMatchesFinished = phase.Fixtures.All(f => f.Status == FixtureStatus.Played);
+                            if (allMatchesFinished)
+                            {
+                                await _eurocupKnockoutService.GenerateNextKnockoutPhaseAsync(phase.EuropeanCupId, phase.PhaseTemplate.Order);
+                            }
                         }
                     }
                     break;

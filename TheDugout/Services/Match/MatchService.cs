@@ -15,25 +15,27 @@ public class MatchService : IMatchService
     {
         _context = context;
     }
-
     public async Task<Match> CreateMatchFromFixtureAsync(Fixture fixture, GameSave gameSave)
     {
         if (fixture == null) throw new ArgumentNullException(nameof(fixture));
         if (gameSave == null) throw new ArgumentNullException(nameof(gameSave));
 
+        // Проверка дали вече има създаден мач за този fixture
+        var existingMatch = await _context.Matches
+            .FirstOrDefaultAsync(m => m.FixtureId == fixture.Id && m.GameSaveId == gameSave.Id);
+
+        if (existingMatch != null)
+            return existingMatch;
+
         var match = new Match
         {
             GameSaveId = gameSave.Id,
-            GameSave = gameSave,
             FixtureId = fixture.Id,
-            Fixture = fixture,
             CurrentMinute = 0,
             Status = MatchStatus.Live
         };
 
-        fixture.Matches.Add(match);
-
-        _context.Add(match);
+        _context.Matches.Add(match);
         await _context.SaveChangesAsync();
 
         return match;
@@ -55,20 +57,20 @@ public class MatchService : IMatchService
         return BuildMatchView(match, fixture);
     }
 
-        public async Task<object?> GetMatchViewByIdAsync(int matchId)
-        {
-            var match = await _context.Matches
-                       .Include(m => m.Fixture).ThenInclude(f => f.HomeTeam).ThenInclude(t => t.Players).ThenInclude(p => p.Position)
-                       .Include(m => m.Fixture).ThenInclude(f => f.HomeTeam).ThenInclude(t => t.TeamTactic)
-                       .Include(m => m.Fixture).ThenInclude(f => f.AwayTeam).ThenInclude(t => t.Players).ThenInclude(p => p.Position)
-                       .Include(m => m.Fixture).ThenInclude(f => f.AwayTeam).ThenInclude(t => t.TeamTactic)
-                       .FirstOrDefaultAsync(m => m.Id == matchId);
+    public async Task<object?> GetMatchViewByIdAsync(int matchId)
+    {
+        var match = await _context.Matches
+                   .Include(m => m.Fixture).ThenInclude(f => f.HomeTeam).ThenInclude(t => t.Players).ThenInclude(p => p.Position)
+                   .Include(m => m.Fixture).ThenInclude(f => f.HomeTeam).ThenInclude(t => t.TeamTactic)
+                   .Include(m => m.Fixture).ThenInclude(f => f.AwayTeam).ThenInclude(t => t.Players).ThenInclude(p => p.Position)
+                   .Include(m => m.Fixture).ThenInclude(f => f.AwayTeam).ThenInclude(t => t.TeamTactic)
+                   .FirstOrDefaultAsync(m => m.Id == matchId);
 
 
-            if (match == null) return null;
+        if (match == null) return null;
 
-            return BuildMatchView(match, match.Fixture);
-        }
+        return BuildMatchView(match, match.Fixture);
+    }
 
     public async Task CompleteMatchAndSaveResultAsync(Match match, int homeGoals, int awayGoals)
     {

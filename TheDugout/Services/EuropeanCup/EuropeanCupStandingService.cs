@@ -111,6 +111,33 @@ namespace TheDugout.Services.EuropeanCup
 
             return leaguePhase.Fixtures.All(f => f.Status == FixtureStatus.Played);
         }
+        public async Task<IEnumerable<object>> GetSortedStandingsAsync(int cupId)
+        {
+            var standings = await _context.Set<EuropeanCupStanding>()
+                .Include(s => s.Team)
+                .Where(s => s.EuropeanCupId == cupId)
+                .ToListAsync();
+
+            return standings
+                .OrderByDescending(s => s.Points)
+                .ThenByDescending(s => s.GoalDifference)
+                .ThenByDescending(s => s.GoalsFor)
+                .Select(s => new
+                {
+                    teamId = s.TeamId,
+                    name = s.Team.Name,
+                    logoFileName = s.Team.LogoFileName,
+                    points = s.Points,
+                    matches = s.Matches,
+                    wins = s.Wins,
+                    draws = s.Draws,
+                    losses = s.Losses,
+                    goalsFor = s.GoalsFor,
+                    goalsAgainst = s.GoalsAgainst,
+                    goalDifference = s.GoalDifference,
+                    ranking = s.Ranking
+                });
+        }
 
     }
 }

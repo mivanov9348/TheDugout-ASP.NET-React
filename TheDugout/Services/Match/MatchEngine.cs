@@ -1,4 +1,5 @@
-﻿using TheDugout.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using TheDugout.Data;
 using TheDugout.Models.Fixtures;
 using TheDugout.Models.Game;
 using TheDugout.Models.Matches;
@@ -137,7 +138,7 @@ namespace TheDugout.Services.MatchEngine
             // 6. Ако вече е минало 90' → край
             if (IsMatchFinished(match))
             {
-                EndMatch(match);
+                await EndMatch(match);
                 await _standingsDispatcher.UpdateAfterMatchAsync(match.Fixture);
             }
 
@@ -145,19 +146,25 @@ namespace TheDugout.Services.MatchEngine
         }
         public async Task<Models.Matches.Match> SimulateMatchAsync(Models.Fixtures.Fixture fixture, GameSave gameSave)
         {
-            if (fixture == null) throw new ArgumentNullException(nameof(fixture));
-            if (gameSave == null) throw new ArgumentNullException(nameof(gameSave));
+            if (fixture is null) throw new ArgumentNullException(nameof(fixture));
+            if (gameSave is null) throw new ArgumentNullException(nameof(gameSave));
 
-            // 1. Създай мач от фикстура
-            var match = await _matchService.CreateMatchFromFixtureAsync(fixture, gameSave);
+            var dbFixture = await _context.Fixtures
+                .Include(f => f.EuropeanCupPhase)
+                    .ThenInclude(p => p.PhaseTemplate)
+                .FirstOrDefaultAsync(f => f.Id == fixture.Id);
 
-            // 2. Върти докато не свърши
+            if (dbFixture is null)
+                throw new InvalidOperationException($"Fixture with Id {fixture.Id} not found in DB.");
+
+            // Сигурен, не-null аргумент за CreateMatchFromFixtureAsync
+            var match = await _matchService.CreateMatchFromFixtureAsync(dbFixture, gameSave);
+
+            // Симулация (не променяме логиката ти)
             while (!IsMatchFinished(match))
             {
-                // 2.1 Минутка
                 PlayNextMinute(match);
 
-                // 2.2 Определи кой отбор е на ход
                 var currentTeamId = match.CurrentTurn == MatchTurn.Home
                     ? match.Fixture.HomeTeamId
                     : match.Fixture.AwayTeamId;
@@ -172,11 +179,9 @@ namespace TheDugout.Services.MatchEngine
 
                 var player = outfieldPlayers[_random.Next(outfieldPlayers.Count)];
 
-                // 2.3 Евент + изход (но без да създаваме MatchEvent)
                 var eventType = _matchEventService.GetRandomEvent();
-                var outcome = _matchEventService.GetEventOutcome(player, eventType);
+                var outcome = _matchEventService.GetEventOutcome(player, eventType); // поправи името, ако е различно
 
-                // 2.4 Update на статистики + резултат
                 if (eventType.Code == "SHT" && outcome.Name == "Goal")
                 {
                     UpdateFixtureScore(match, currentTeamId, player, eventType, outcome);
@@ -194,14 +199,19 @@ namespace TheDugout.Services.MatchEngine
                         Outcome = outcome
                     }, playerStats);
 
-                // 2.5 Смяна на притежание
                 ChangeTurn(match);
             }
 
-            // 3. Край на мача
+            // Финализираме мача (той ще попълни fixture.WinnerTeamId ако има гол)
             await EndMatch(match);
 
-            if (fixture.IsElimination && fixture.WinnerTeamId == null)
+            // Надежден начин да проверим дали това е knockout: използваме match.Fixture (сигурно има стойности)
+            var fixtureAfter = match.Fixture ?? dbFixture; // защита в краен случай
+
+            bool isKnockout = fixtureAfter.IsElimination
+                              || (fixtureAfter.EuropeanCupPhase?.PhaseTemplate?.IsKnockout == true);
+
+            if (isKnockout && fixtureAfter.WinnerTeamId == null)
             {
                 await HandlePenaltyShootoutAsync(match);
             }
@@ -210,6 +220,7 @@ namespace TheDugout.Services.MatchEngine
 
             return match;
         }
+
         private void UpdateFixtureScore(Models.Matches.Match match, int? currentTeamId, Models.Players.Player player, EventType eventType, EventOutcome outcome)
         {
             if (eventType.Code == "SHT" && outcome.Name == "Goal")
@@ -241,7 +252,7 @@ namespace TheDugout.Services.MatchEngine
             while (!IsMatchFinished(match))
                 await PlayStep(match);
 
-            EndMatch(match);
+            await EndMatch(match);
         }
     }
 }
