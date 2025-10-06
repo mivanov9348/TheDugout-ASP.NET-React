@@ -159,6 +159,7 @@ namespace TheDugout.Services.MatchEngine
 
             // Сигурен, не-null аргумент за CreateMatchFromFixtureAsync
             var match = await _matchService.CreateMatchFromFixtureAsync(dbFixture, gameSave);
+            match.PlayerStats = _playerStatsService.EnsureMatchStats(match);
 
             // Симулация (не променяме логиката ти)
             while (!IsMatchFinished(match))

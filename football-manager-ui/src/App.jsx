@@ -1,4 +1,3 @@
-// src/App.jsx
 import { useState, useEffect } from "react";
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import Header from "./components/Header";
@@ -21,10 +20,6 @@ import Training from "./pages/Training";
 import Transfers from "./pages/Transfers";
 import Club from "./pages/Club";
 import Finances from "./pages/Finances";
-import Competitions from "./pages/Competitions";
-import Cup from "./pages/Cup";
-import EuropeanCup from "./pages/EuropeanCup";
-import League from "./pages/League";
 import SearchPlayers from "./pages/SearchPlayers";
 import Negotiations from "./pages/Negotiations";
 import TransferHistory from "./pages/TransferHistory";
@@ -34,6 +29,21 @@ import Facilities from "./pages/Facilities";
 import Match from "./pages/Match";
 import TodayMatches from "./pages/TodayMatches";
 import MatchPreview from "./pages/MatchPreview";
+
+import Competitions from "./pages/competitions/Competitions";
+import Cup from "./pages/competitions/Cup";
+import EuropeanCup from "./pages/competitions/EuropeanCup";
+import League from "./pages/competitions/League";
+
+import LeagueStandings from "./pages/competitions/league/Standings";
+import LeaguePlayerStats from "./pages/competitions/league/PlayerStats";
+
+import CupPlayerStats from "./pages/competitions/cup/PlayerStats";
+import CupKnockouts from "./pages/competitions/cup/Knockouts";
+
+import EuropeGroupStage from "./pages/competitions/europe/GroupStage";
+import EuropeKnockouts from "./pages/competitions/europe/Knockouts";
+import EuropePlayerStats from "./pages/competitions/europe/PlayerStats";
 
 // 👉 Context
 import { GameProvider, useGame } from "./context/GameContext";
@@ -267,6 +277,7 @@ function AppInner() {
                       path="/"
                       element={<Home gameSaveId={currentGameSave?.id} />}
                     />
+
                     <Route
                       path="/competitions/*"
                       element={
@@ -274,28 +285,65 @@ function AppInner() {
                       }
                     >
                       <Route index element={<Navigate to="league" replace />} />
+
+                      {/* League */}
                       <Route
-                        path="league"
+                        path="league/*"
                         element={<League gameSaveId={currentGameSave?.id} />}
-                      />
+                      >
+                        <Route
+                          index
+                          element={<Navigate to="standings" replace />}
+                        />
+                        <Route path="standings" element={<LeagueStandings />} />
+                        <Route
+                          path="player-stats"
+                          element={<LeaguePlayerStats />}
+                        />
+                      </Route>
+
+                      {/* Cup */}
                       <Route
-                        path="cup"
+                        path="cup/*"
                         element={
                           <Cup
                             gameSaveId={currentGameSave?.id}
                             seasonId={currentGameSave?.seasons?.[0]?.id}
                           />
                         }
-                      />
+                      >
+                        <Route
+                          index
+                          element={<Navigate to="knockouts" replace />}
+                        />
+                        <Route path="knockouts" element={<CupKnockouts />} />
+                        <Route path="player-stats" element={<CupPlayerStats />} />
+                      </Route>
+
+                      {/* European Cup */}
                       <Route
-                        path="europe"
+                        path="europe/*"
                         element={
                           <EuropeanCup
                             gameSaveId={currentGameSave?.id}
                             seasonId={currentGameSave?.seasons?.[0]?.id}
                           />
                         }
-                      />
+                      >
+                        <Route
+                          index
+                          element={<Navigate to="standings" replace />}
+                        />
+                        <Route
+                          path="groupstage"
+                          element={<EuropeGroupStage />}
+                        />
+                        <Route path="knockouts" element={<EuropeKnockouts />} />
+                        <Route
+                          path="player-stats"
+                          element={<EuropePlayerStats />}
+                        />
+                      </Route>
                     </Route>
 
                     <Route

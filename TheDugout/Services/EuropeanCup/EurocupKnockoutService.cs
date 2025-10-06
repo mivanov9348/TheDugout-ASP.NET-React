@@ -181,8 +181,13 @@ namespace TheDugout.Services.EuropeanCup
         {
             var knockoutPhases = await _context.EuropeanCupPhases
                 .Include(p => p.PhaseTemplate)
-                .Include(p => p.Fixtures).ThenInclude(f => f.HomeTeam)
-                .Include(p => p.Fixtures).ThenInclude(f => f.AwayTeam)
+                .Include(p => p.Fixtures)
+                    .ThenInclude(f => f.HomeTeam)
+                .Include(p => p.Fixtures)
+                    .ThenInclude(f => f.AwayTeam)
+                .Include(p => p.Fixtures)
+                    .ThenInclude(f => f.Matches)
+                        .ThenInclude(m => m.Penalties)
                 .Where(p => p.EuropeanCupId == europeanCupId && p.PhaseTemplate.IsKnockout)
                 .OrderBy(p => p.PhaseTemplate.Order)
                 .ToListAsync();
@@ -209,7 +214,15 @@ namespace TheDugout.Services.EuropeanCup
                     homeTeamGoals = f.HomeTeamGoals,
                     awayTeamGoals = f.AwayTeamGoals,
                     date = f.Date,
-                    status = f.Status
+                    status = f.Status,
+
+                    homeTeamPenalties = f.Matches
+                        .SelectMany(m => m.Penalties)
+                        .Count(p => p.TeamId == f.HomeTeamId && p.IsScored),
+
+                    awayTeamPenalties = f.Matches
+                        .SelectMany(m => m.Penalties)
+                        .Count(p => p.TeamId == f.AwayTeamId && p.IsScored)
                 })
             });
         }

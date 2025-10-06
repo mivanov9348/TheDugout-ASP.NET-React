@@ -40,7 +40,6 @@ public class MatchService : IMatchService
 
         return match;
     }
-
     public async Task<object?> GetMatchViewAsync(int fixtureId)
     {
         var fixture = await _context.Fixtures

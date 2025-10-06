@@ -17,6 +17,5 @@ namespace TheDugout.Models.Competitions
         public bool IsPlayoffParticipant { get; set; } = false;
 
 
-
     }
 }

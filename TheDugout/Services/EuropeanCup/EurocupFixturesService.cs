@@ -26,9 +26,9 @@ namespace TheDugout.Services.EuropeanCup
         }
 
         public async Task GenerateEuropeanLeaguePhaseFixturesAsync(
-    int europeanCupId,
-    int seasonId,
-    CancellationToken ct = default)
+                int europeanCupId,
+                int seasonId,
+                CancellationToken ct = default)
         {
             var cup = await _context.Set<Models.Competitions.EuropeanCup>()
                 .Include(x => x.Template).ThenInclude(t => t.PhaseTemplates) // важно — включваме template->phaseTemplates
