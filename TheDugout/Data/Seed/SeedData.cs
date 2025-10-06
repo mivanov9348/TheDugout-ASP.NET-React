@@ -724,129 +724,89 @@ public static class SeedData
 
         await db.SaveChangesAsync();
 
-        // 1) European Cup Phases 
-        var phasesPath = Path.Combine(seedDir, "europeanCupPhase.json");
-        var phases = await ReadJsonAsync<List<EuropeanCupPhaseTemplate>>(phasesPath);
-
-        foreach (var p in phases)
-        {
-            var existing = await db.EuropeanCupPhaseTemplates.FirstOrDefaultAsync(x => x.Name == p.Name);
-
-            if (existing == null)
-            {
-                db.EuropeanCupPhaseTemplates.Add(new EuropeanCupPhaseTemplate
-                {
-                    Name = p.Name,
-                    Order = p.Order,
-                    IsKnockout = p.IsKnockout,
-                    IsTwoLegged = p.IsTwoLegged
-                });
-            }
-            else
-            {
-                existing.Order = p.Order;
-                existing.IsKnockout = p.IsKnockout;
-                existing.IsTwoLegged = p.IsTwoLegged;
-            }
-        }
-
-        await db.SaveChangesAsync();
-
-        // Вземаме актуален речник (по име, не по Id!)
-        var dbPhases = await db.EuropeanCupPhaseTemplates
-            .ToDictionaryAsync(x => x.Name, x => x);
-
-        // 2) European Cups
+        // --- European Cups and Phases Seeding ---
         var europeanCupsPath = Path.Combine(seedDir, "europeanCup.json");
         var europeanCups = await ReadJsonAsync<List<EuropeanCupTemplate>>(europeanCupsPath);
 
-        // Зануляваме Id-та от JSON, преди да почнем да ги вкарваме в EF
-        foreach (var ec in europeanCups)
-        {
-            ec.Id = 0;
-            if (ec.PhaseTemplates != null)
-            {
-                foreach (var p in ec.PhaseTemplates)
-                {
-                    p.Id = 0;
-                }
-            }
-        }
+        // 1) Подготвяме lookup за вече съществуващи купи и фази
+        var dbCups = await db.EuropeanCupTemplates
+            .Include(x => x.PhaseTemplates)
+            .ToListAsync();
 
         foreach (var ec in europeanCups)
         {
-            var existing = await db.EuropeanCupTemplates
-                .Include(x => x.PhaseTemplates)
-                .FirstOrDefaultAsync(x => x.Name == ec.Name);
+            // Намираме купата по име (Case-insensitive just in case)
+            var existing = dbCups.FirstOrDefault(x => x.Name.ToLower() == ec.Name.ToLower());
 
             if (existing == null)
             {
+                // 🆕 Няма я — създаваме нова с фазите
                 var newCup = new EuropeanCupTemplate
                 {
                     Name = ec.Name,
                     TeamsCount = ec.TeamsCount,
                     LeaguePhaseMatchesPerTeam = ec.LeaguePhaseMatchesPerTeam,
                     Ranking = ec.Ranking,
-                    IsActive = ec.IsActive
-                };
-
-                if (ec.PhaseTemplates != null && ec.PhaseTemplates.Count > 0)
-                {
-                    foreach (var p in ec.PhaseTemplates)
+                    IsActive = ec.IsActive,
+                    PhaseTemplates = ec.PhaseTemplates.Select(p => new EuropeanCupPhaseTemplate
                     {
-                        // Ако фаза не е дефинирана в глобалния JSON, добавяме я
-                        if (!dbPhases.TryGetValue(p.Name, out var phase))
-                        {
-                            phase = new EuropeanCupPhaseTemplate
-                            {
-                                Name = p.Name,
-                                Order = p.Order,
-                                IsKnockout = p.IsKnockout,
-                                IsTwoLegged = p.IsTwoLegged
-                            };
-                            db.EuropeanCupPhaseTemplates.Add(phase);
-                            dbPhases[p.Name] = phase;
-                        }
-
-                        newCup.PhaseTemplates.Add(phase);
-                    }
-                }
+                        Name = p.Name,
+                        Order = p.Order,
+                        IsKnockout = p.IsKnockout,
+                        IsTwoLegged = p.IsTwoLegged
+                    }).ToList()
+                };
 
                 db.EuropeanCupTemplates.Add(newCup);
             }
             else
             {
+                // 🔄 Има съществуваща купа → обновяваме основните полета
                 existing.TeamsCount = ec.TeamsCount;
                 existing.LeaguePhaseMatchesPerTeam = ec.LeaguePhaseMatchesPerTeam;
                 existing.Ranking = ec.Ranking;
                 existing.IsActive = ec.IsActive;
 
-                existing.PhaseTemplates.Clear();
-
-                if (ec.PhaseTemplates != null && ec.PhaseTemplates.Count > 0)
+                // 🧩 Обновяване на фазите (без да трием излишно)
+                foreach (var phaseFromJson in ec.PhaseTemplates)
                 {
-                    foreach (var p in ec.PhaseTemplates)
-                    {
-                        if (!dbPhases.TryGetValue(p.Name, out var phase))
-                        {
-                            phase = new EuropeanCupPhaseTemplate
-                            {
-                                Name = p.Name,
-                                Order = p.Order,
-                                IsKnockout = p.IsKnockout,
-                                IsTwoLegged = p.IsTwoLegged
-                            };
-                            db.EuropeanCupPhaseTemplates.Add(phase);
-                            dbPhases[p.Name] = phase;
-                        }
+                    var existingPhase = existing.PhaseTemplates
+                        .FirstOrDefault(p => p.Name.ToLower() == phaseFromJson.Name.ToLower());
 
-                        existing.PhaseTemplates.Add(phase);
+                    if (existingPhase == null)
+                    {
+                        // ➕ Добавяме само ако няма такава
+                        existing.PhaseTemplates.Add(new EuropeanCupPhaseTemplate
+                        {
+                            Name = phaseFromJson.Name,
+                            Order = phaseFromJson.Order,
+                            IsKnockout = phaseFromJson.IsKnockout,
+                            IsTwoLegged = phaseFromJson.IsTwoLegged
+                        });
+                    }
+                    else
+                    {
+                        // 📝 Обновяваме съществуващата
+                        existingPhase.Order = phaseFromJson.Order;
+                        existingPhase.IsKnockout = phaseFromJson.IsKnockout;
+                        existingPhase.IsTwoLegged = phaseFromJson.IsTwoLegged;
                     }
                 }
+
+                // ❌ Премахваме фази, които ги няма вече в JSON-а (ако искаш да се чистят)
+                var jsonPhaseNames = ec.PhaseTemplates.Select(p => p.Name.ToLower()).ToHashSet();
+                var toRemoveExisted = existing.PhaseTemplates
+                    .Where(p => !jsonPhaseNames.Contains(p.Name.ToLower()))
+                    .ToList();
+
+                if (toRemoveExisted.Any())
+                    db.EuropeanCupPhaseTemplates.RemoveRange(toRemoveExisted);
             }
         }
 
         await db.SaveChangesAsync();
+
+
 
         // Валидирай брой отбори спрямо лигите
         var teamsByLeague = allTeams

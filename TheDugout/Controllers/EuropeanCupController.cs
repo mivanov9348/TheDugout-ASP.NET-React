@@ -40,6 +40,82 @@ namespace TheDugout.Controllers
                 .Where(f => f.EuropeanCupPhaseId.HasValue && phaseIds.Contains(f.EuropeanCupPhaseId.Value))
                 .ToListAsync();
 
+            // 🔹 групови фази (само Group Stage)
+            var groupPhase = await _context.EuropeanCupPhases
+                .Include(p => p.Fixtures)
+                    .ThenInclude(f => f.HomeTeam)
+                .Include(p => p.Fixtures)
+                    .ThenInclude(f => f.AwayTeam)
+                .FirstOrDefaultAsync(p => p.EuropeanCupId == cup.Id && !p.PhaseTemplate.IsKnockout);
+
+            var groupFixtures = groupPhase != null
+                ? groupPhase.Fixtures
+                    .GroupBy(f => f.Round)
+                    .OrderBy(g => g.Key)
+                    .Select(g => new
+                    {
+                        round = g.Key,
+                        matches = g.Select(f => new
+                        {
+                            id = f.Id,
+                            homeTeam = f.HomeTeam == null ? null : new
+                            {
+                                id = f.HomeTeam.Id,
+                                name = f.HomeTeam.Name,
+                                logoFileName = f.HomeTeam.LogoFileName
+                            },
+                            awayTeam = f.AwayTeam == null ? null : new
+                            {
+                                id = f.AwayTeam.Id,
+                                name = f.AwayTeam.Name,
+                                logoFileName = f.AwayTeam.LogoFileName
+                            },
+                            homeTeamGoals = f.HomeTeamGoals,
+                            awayTeamGoals = f.AwayTeamGoals,
+                            date = f.Date,
+                            status = f.Status
+                        })
+                    })
+                : Enumerable.Empty<object>();
+
+            // 🔹 елиминации (всички knockout)
+            var knockoutPhases = await _context.EuropeanCupPhases
+                .Include(p => p.PhaseTemplate)
+                .Include(p => p.Fixtures)
+                    .ThenInclude(f => f.HomeTeam)
+                .Include(p => p.Fixtures)
+                    .ThenInclude(f => f.AwayTeam)
+                .Where(p => p.EuropeanCupId == cup.Id && p.PhaseTemplate.IsKnockout)
+                .OrderBy(p => p.PhaseTemplate.Order)
+                .ToListAsync();
+
+            var knockoutFixtures = knockoutPhases.Select(p => new
+            {
+                round = p.Id,
+                name = p.PhaseTemplate.Name,
+                matches = p.Fixtures.Select(f => new
+                {
+                    id = f.Id,
+                    homeTeam = f.HomeTeam == null ? null : new
+                    {
+                        id = f.HomeTeam.Id,
+                        name = f.HomeTeam.Name,
+                        logoFileName = f.HomeTeam.LogoFileName
+                    },
+                    awayTeam = f.AwayTeam == null ? null : new
+                    {
+                        id = f.AwayTeam.Id,
+                        name = f.AwayTeam.Name,
+                        logoFileName = f.AwayTeam.LogoFileName
+                    },
+                    homeTeamGoals = f.HomeTeamGoals,
+                    awayTeamGoals = f.AwayTeamGoals,
+                    date = f.Date,
+                    status = f.Status
+                })
+            });
+
+
             var result = new
             {
                 exists = true,
@@ -98,7 +174,9 @@ namespace TheDugout.Controllers
                             date = f.Date,
                             status = f.Status
                         })
-                    })
+                    }),
+                groupFixtures = groupFixtures,
+                knockoutFixtures = knockoutFixtures
             };
 
             return Ok(result);

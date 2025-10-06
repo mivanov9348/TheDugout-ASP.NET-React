@@ -18,64 +18,10 @@ export default function EuropeanCup({ gameSaveId, seasonId }) {
         if (!res.ok) throw new Error("Error while loading European Cup");
         const data = await res.json();
 
-        // 🟢 Добавяме фиктивни елиминации за демо
-        data.knockoutFixtures = [
-          {
-            round: 1,
-            name: "Quarter-Finals",
-            matches: [
-              {
-                id: 1,
-                homeTeam: { name: "Barcelona", logoFileName: "barca.png" },
-                awayTeam: { name: "Chelsea", logoFileName: "chelsea.png" },
-                homeTeamGoals: 2,
-                awayTeamGoals: 1,
-                date: new Date().toISOString(),
-              },
-              {
-                id: 2,
-                homeTeam: { name: "Juventus", logoFileName: "juve.png" },
-                awayTeam: { name: "Bayern", logoFileName: "bayern.png" },
-                homeTeamGoals: 0,
-                awayTeamGoals: 3,
-                date: new Date().toISOString(),
-              },
-            ],
-          },
-          {
-            round: 2,
-            name: "Semi-Finals",
-            matches: [
-              {
-                id: 3,
-                homeTeam: { name: "Barcelona", logoFileName: "barca.png" },
-                awayTeam: { name: "Bayern", logoFileName: "bayern.png" },
-                homeTeamGoals: null,
-                awayTeamGoals: null,
-                date: new Date().toISOString(),
-              },
-            ],
-          },
-          {
-            round: 3,
-            name: "Final",
-            matches: [
-              {
-                id: 4,
-                homeTeam: { name: "Winner SF1", logoFileName: "default.png" },
-                awayTeam: { name: "Winner SF2", logoFileName: "default.png" },
-                homeTeamGoals: null,
-                awayTeamGoals: null,
-                date: new Date().toISOString(),
-              },
-            ],
-          },
-        ];
-
         setCup(data);
 
-        if (data?.fixtures?.length > 0) {
-          setSelectedRound(data.fixtures[0].round);
+        if (data?.groupFixtures?.length > 0) {
+          setSelectedRound(data.groupFixtures[0].round);
         }
       } catch (err) {
         console.error(err);
@@ -94,10 +40,11 @@ export default function EuropeanCup({ gameSaveId, seasonId }) {
     ? `/competitionsLogos/${cup.logoFileName}`
     : "/competitionsLogos/default.png";
 
+  // 🔹 Сортираме и филтрираме груповите мачове
   let roundsToShow =
     selectedRound != null
-      ? cup.fixtures.filter((r) => r.round === selectedRound)
-      : cup.fixtures;
+      ? cup.groupFixtures.filter((r) => r.round === selectedRound)
+      : cup.groupFixtures;
 
   if (selectedRound == null) {
     roundsToShow = [...roundsToShow].sort((a, b) => a.round - b.round);
@@ -145,32 +92,47 @@ export default function EuropeanCup({ gameSaveId, seasonId }) {
               </tr>
             </thead>
             <tbody>
-              {cup.standings.map((s) => (
-                <tr key={s.teamId} className="border-b hover:bg-slate-50">
-                  <td className="p-2">{s.ranking}</td>
-                  <td className="p-2 flex items-center gap-2">
-                    <TeamLogo
-                      teamName={s.name}
-                      logoFileName={s.logoFileName}
-                      className="w-6 h-6"
-                    />
-                    {s.name}
-                  </td>
-                  <td className="p-2 text-center">{s.matches}</td>
-                  <td className="p-2 text-center">{s.wins}</td>
-                  <td className="p-2 text-center">{s.draws}</td>
-                  <td className="p-2 text-center">{s.losses}</td>
-                  <td className="p-2 text-center">{s.goalsFor}</td>
-                  <td className="p-2 text-center">{s.goalsAgainst}</td>
-                  <td className="p-2 text-center">{s.goalDifference}</td>
-                  <td className="p-2 text-center font-bold">{s.points}</td>
-                </tr>
-              ))}
+              {cup.standings.map((s) => {
+                let rowClass = "";
+
+                if (s.ranking >= 1 && s.ranking <= 8) {
+                  rowClass = "bg-green-200"; // по-силно зелено
+                } else if (s.ranking >= 9 && s.ranking <= 24) {
+                  rowClass = "bg-green-100"; // по-светло зелено
+                } else if (s.ranking >= 25 && s.ranking <= 36) {
+                  rowClass = "bg-red-100"; // червено
+                }
+
+                return (
+                  <tr
+                    key={s.teamId}
+                    className={`${rowClass} border-b hover:bg-slate-50`}
+                  >
+                    <td className="p-2">{s.ranking}</td>
+                    <td className="p-2 flex items-center gap-2">
+                      <TeamLogo
+                        teamName={s.name}
+                        logoFileName={s.logoFileName}
+                        className="w-6 h-6"
+                      />
+                      {s.name}
+                    </td>
+                    <td className="p-2 text-center">{s.matches}</td>
+                    <td className="p-2 text-center">{s.wins}</td>
+                    <td className="p-2 text-center">{s.draws}</td>
+                    <td className="p-2 text-center">{s.losses}</td>
+                    <td className="p-2 text-center">{s.goalsFor}</td>
+                    <td className="p-2 text-center">{s.goalsAgainst}</td>
+                    <td className="p-2 text-center">{s.goalDifference}</td>
+                    <td className="p-2 text-center font-bold">{s.points}</td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
 
-        {/* Fixtures */}
+        {/* Group Fixtures */}
         <div className="bg-white shadow rounded-2xl p-4">
           <div className="flex justify-between items-center mb-3">
             <h3 className="text-xl font-semibold">Fixtures</h3>
@@ -182,10 +144,9 @@ export default function EuropeanCup({ gameSaveId, seasonId }) {
                 )
               }
               className="border rounded px-2 py-1 text-sm"
-              disabled={cup.fixtures.length === 0}
+              disabled={cup.groupFixtures.length === 0}
             >
-              <option value="">All Rounds</option>
-              {[...new Set(cup.fixtures.map((round) => round.round))]
+              {[...new Set(cup.groupFixtures.map((round) => round.round))]
                 .sort((a, b) => a - b)
                 .map((roundNum) => (
                   <option key={roundNum} value={roundNum}>
@@ -196,7 +157,9 @@ export default function EuropeanCup({ gameSaveId, seasonId }) {
           </div>
 
           {roundsToShow.length === 0 ? (
-            <p className="text-center text-slate-500 italic">No matches scheduled yet.</p>
+            <p className="text-center text-slate-500 italic">
+              No matches scheduled yet.
+            </p>
           ) : (
             roundsToShow.map((round) => (
               <div key={round.round} className="mb-4">
@@ -238,11 +201,11 @@ export default function EuropeanCup({ gameSaveId, seasonId }) {
         </div>
       </div>
 
-      {/* Knockout Stage */}
+      {/* Knockout Stage BELOW */}
       <div className="mt-8 bg-white shadow rounded-2xl p-4">
         <h3 className="text-xl font-semibold mb-3">Knockout Stage</h3>
 
-        {(!cup.knockoutFixtures || cup.knockoutFixtures.length === 0) ? (
+        {!cup.knockoutFixtures || cup.knockoutFixtures.length === 0 ? (
           <p className="text-center text-slate-500 italic">
             No eliminations yet. (Coming soon)
           </p>

@@ -21,22 +21,31 @@ namespace TheDugout.Services.EuropeanCup
         }
 
         public async Task<Models.Competitions.EuropeanCup> InitializeTournamentAsync(
-                int templateId,
-                int gameSaveId,
-                int seasonId,
-                CancellationToken ct = default)
+     int templateId,
+     int gameSaveId,
+     int seasonId,
+     CancellationToken ct = default)
         {
-            // 1. Зареждаме шаблона и фазите
+            // 1. Зареждаме шаблона и фазите (guard за IsActive)
             var template = await _context.Set<EuropeanCupTemplate>()
                 .Include(t => t.PhaseTemplates)
                 .FirstOrDefaultAsync(t => t.Id == templateId, ct)
                 ?? throw new InvalidOperationException($"Template {templateId} not found.");
 
-            var teams = await _context.Set<Models.Teams.Team>().ToListAsync();
+            if (!template.IsActive)
+            {
+                _logger.LogWarning("Requested template {TemplateId} is not active. Aborting.", template.Id);
+                throw new InvalidOperationException($"Template {templateId} is not active.");
+            }
 
-            // 2. Взимаме eligible отбори (LeagueId == null и същия GameSave)
+            _logger.LogInformation("Template {TemplateId} loaded. PhaseTemplates count = {Count}. Orders = {Orders}",
+                template.Id,
+                template.PhaseTemplates?.Count ?? 0,
+                template.PhaseTemplates != null ? string.Join(",", template.PhaseTemplates.Select(pt => $"{pt.Id}:{pt.Order}")) : "null");
+
+            // 2. Взимаме eligible отбори (филтрираме по GameSaveId — много важно)
             var eligibleTeams = await _context.Set<Models.Teams.Team>()
-                .Where(t => t.LeagueId == null)
+                .Where(t => t.LeagueId == null && t.GameSaveId == gameSaveId)
                 .ToListAsync(ct);
 
             if (eligibleTeams.Count < template.TeamsCount)
@@ -49,8 +58,8 @@ namespace TheDugout.Services.EuropeanCup
                 .Take(template.TeamsCount)
                 .ToList();
 
+            // 3.1 Подготвяме валидно име за лого (вземаме sanitized версията)
             string logoFileName = $"{template.Name}.png";
-
             string validLogoFileName = new string(logoFileName
                 .Select(c => c switch
                 {
@@ -59,21 +68,20 @@ namespace TheDugout.Services.EuropeanCup
                 })
                 .ToArray());
 
-
             // 4. Създаваме Cup
             var cup = new Models.Competitions.EuropeanCup
             {
                 TemplateId = template.Id,
                 GameSaveId = gameSaveId,
                 SeasonId = seasonId,
-                LogoFileName = logoFileName,
+                LogoFileName = validLogoFileName, // <- използваме sanitized
                 IsActive = template.IsActive
             };
 
             _context.Add(cup);
             await _context.SaveChangesAsync(ct); // Id нужен за FK
 
-            // 5. Добавяме отбори + standings с ПРЕДВАРИТЕЛЕН РАНКИНГ ПО ПОПУЛЯРНОСТ!
+            // 5. Добавяме отбори + standings
             var rankedTeams = chosenTeams
                 .OrderByDescending(t => t.Popularity)
                 .ThenByDescending(t => t.Id)
@@ -85,14 +93,21 @@ namespace TheDugout.Services.EuropeanCup
             {
                 var team = rankedTeams[i];
 
+                // защита: в случай че вече има записани (рядко при freshly created cup), можем да skip-нем
+                var existsTeam = await _context.Set<EuropeanCupTeam>()
+                    .AnyAsync(et => et.EuropeanCupId == cup.Id && et.TeamId == team.Id, ct);
+
+                if (existsTeam) continue;
+
                 _context.Add(new EuropeanCupTeam
                 {
                     EuropeanCupId = cup.Id,
                     TeamId = team.Id,
-                    CurrentPhaseOrder = 1,
+                    CurrentPhaseOrder = template.PhaseTemplates != null && template.PhaseTemplates.Any()
+                        ? template.PhaseTemplates.OrderBy(p => p.Order).First().Order // сетваме към първата фаза (order)
+                        : 1,
                     IsEliminated = false,
                     IsPlayoffParticipant = false
-
                 });
 
                 _context.Add(new EuropeanCupStanding
@@ -111,19 +126,39 @@ namespace TheDugout.Services.EuropeanCup
                 });
             }
 
-            // 6. Фази по ред
-            var orderedPhaseTemplates = template.PhaseTemplates.OrderBy(p => p.Order).ToList();
+            // 6. Фази по ред — добавяме фази като отделни ентитети за този cup (копирани от template.PhaseTemplates)
+            var orderedPhaseTemplates = template.PhaseTemplates?.OrderBy(p => p.Order).ToList() ?? new List<EuropeanCupPhaseTemplate>();
+
+            if (!orderedPhaseTemplates.Any())
+            {
+                _logger.LogError("Template {TemplateId} has no PhaseTemplates defined.", template.Id);
+                throw new InvalidOperationException("Template has no phases.");
+            }
+
             foreach (var pt in orderedPhaseTemplates)
             {
+                // Създаваме отделен EuropeanCupPhase, който сочи към PhaseTemplateId (не присвояваме navigation to pt)
                 var phase = new EuropeanCupPhase
                 {
                     EuropeanCupId = cup.Id,
                     PhaseTemplateId = pt.Id
+                    // НЕ слагаме PhaseTemplate = pt, за да избегнем случайно вмъкване/дублиране
                 };
 
-                cup.Phases.Add(phase);
+                _context.Add(phase);
             }
+
             await _context.SaveChangesAsync(ct);
+
+            // Презареждаме фазите за cup (да сме сигурни)
+            await _context.Entry(cup).Collection(c => c.Phases).Query().Include(p => p.PhaseTemplate).LoadAsync(ct);
+
+            _logger.LogInformation("After SaveChanges: cup.Id={CupId}. Phases created: {Phases}",
+                cup.Id,
+                string.Join(",", _context.Set<EuropeanCupPhase>()
+                    .Where(p => p.EuropeanCupId == cup.Id)
+                    .Select(p => p.PhaseTemplateId + ":" + p.Id)
+                    .ToList()));
 
             _logger.LogInformation("Initialized EuropeanCup {CupId} with {Teams} teams and logo: {Logo}", cup.Id, chosenTeams.Count, validLogoFileName);
 
@@ -140,6 +175,8 @@ namespace TheDugout.Services.EuropeanCup
 
             return cup;
         }
+
+
         public async Task UpdateStandingsForPhaseAsync(int europeanCupPhaseId, CancellationToken ct = default)
         {
             // Recalculate standings from scratch for a cup/phase's fixtures (useful for recompute)

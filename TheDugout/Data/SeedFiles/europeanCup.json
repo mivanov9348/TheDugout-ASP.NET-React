@@ -16,8 +16,7 @@
         "Name": "Play-off Round",
         "Order": 2,
         "IsKnockout": true,
-        "IsTwoLegged": true,
-        "IsQualificationPhase": true
+        "IsTwoLegged": true
       },
       {
         "Name": "Round of 16",

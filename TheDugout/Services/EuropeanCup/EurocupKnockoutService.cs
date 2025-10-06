@@ -82,6 +82,19 @@ namespace TheDugout.Services.EuropeanCup
                 .FirstOrDefaultAsync(c => c.Id == europeanCupId)
                 ?? throw new InvalidOperationException("Cup not found");
 
+            var lastFixtureDate = await _context.Fixtures
+                .Where(f => f.CompetitionType == CompetitionType.EuropeanCup
+                         && f.SeasonId == cup.SeasonId
+                         && f.GameSaveId == cup.GameSaveId)
+                .OrderByDescending(f => f.Date)
+                .Select(f => f.Date)
+                .FirstOrDefaultAsync();
+
+            if (lastFixtureDate == default)
+                lastFixtureDate = DateTime.Now;
+
+            var knockoutStartDate = lastFixtureDate.AddDays(7);
+
             var playoffPhaseTemplate = cup.Phases
                 .Select(p => p.PhaseTemplate)
                 .FirstOrDefault(pt => pt.Order == 2)
@@ -111,6 +124,8 @@ namespace TheDugout.Services.EuropeanCup
 
                 _context.Fixtures.Add(new Models.Fixtures.Fixture
                 {
+                    GameSaveId = cup.GameSaveId,
+                    SeasonId = cup.SeasonId,
                     HomeTeamId = home.TeamId,
                     AwayTeamId = away.TeamId,
                     CompetitionType = CompetitionType.EuropeanCup,

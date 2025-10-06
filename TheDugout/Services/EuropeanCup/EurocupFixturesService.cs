@@ -31,26 +31,49 @@ namespace TheDugout.Services.EuropeanCup
     CancellationToken ct = default)
         {
             var cup = await _context.Set<Models.Competitions.EuropeanCup>()
-                .Include(x => x.Template)
+                .Include(x => x.Template).ThenInclude(t => t.PhaseTemplates) // важно — включваме template->phaseTemplates
                 .Include(x => x.Teams)
                 .Include(x => x.Phases).ThenInclude(p => p.PhaseTemplate)
                 .FirstOrDefaultAsync(x => x.Id == europeanCupId, ct)
                 ?? throw new InvalidOperationException($"Cup {europeanCupId} not found.");
+
+            // Guard: template must be active
+            if (!cup.Template.IsActive)
+            {
+                _logger.LogWarning("Cup {CupId} uses template {TemplateId} which is not active - aborting fixture generation.", cup.Id, cup.TemplateId);
+                return;
+            }
 
             var season = await _context.Seasons
                 .Include(s => s.Events)
                 .FirstOrDefaultAsync(s => s.Id == seasonId, ct)
                 ?? throw new InvalidOperationException("Season not found.");
 
-            var leaguePhase = await _context.Set<EuropeanCupPhase>()
-                        .Include(p => p.PhaseTemplate)
-                        .Include(p => p.Fixtures)
-                        .FirstOrDefaultAsync(p => p.EuropeanCupId == europeanCupId && p.PhaseTemplate.Order == 1, ct)
-                        ?? throw new InvalidOperationException("League phase not found.");
-
+            // safer: търсим league phase във вече заредените cup.Phases
+            var leaguePhase = cup.Phases.FirstOrDefault(p => p.PhaseTemplate != null && p.PhaseTemplate.Order == 1);
+            if (leaguePhase == null)
+            {
+                _logger.LogError("League phase not found for cup {CupId}. Cup.Phases: {Phases}. Template.Phases: {TemplatePhases}",
+                    cup.Id,
+                    string.Join(",", cup.Phases.Select(p => $"{p.Id}:{p.PhaseTemplateId}->{p.PhaseTemplate?.Order ?? -1}")),
+                    string.Join(",", cup.Template?.PhaseTemplates?.Select(pt => $"{pt.Id}:{pt.Order}") ?? Enumerable.Empty<string>())
+                );
+                throw new InvalidOperationException("League phase not found.");
+            }
 
             int rounds = cup.Template.LeaguePhaseMatchesPerTeam;
+            if (rounds <= 0)
+            {
+                _logger.LogError("Invalid number of rounds ({Rounds}) in template for cup {CupId}", rounds, cup.Id);
+                return;
+            }
+
             var teamIds = cup.Teams.Select(t => t.TeamId).ToList();
+            if (teamIds.Count == 0)
+            {
+                _logger.LogError("No teams attached to cup {CupId} - cannot generate fixtures.", cup.Id);
+                return;
+            }
 
             var existingPairs = new HashSet<string>();
             var existing = await _context.Set<Models.Fixtures.Fixture>()
@@ -100,12 +123,12 @@ namespace TheDugout.Services.EuropeanCup
                 }
             }
 
-
             await _context.AddRangeAsync(fixturesToAdd, ct);
             await _context.SaveChangesAsync(ct);
 
             _logger.LogInformation("Generated {Count} league fixtures for cup {CupId}", fixturesToAdd.Count, cup.Id);
         }
+
 
     }
 }
