@@ -2,8 +2,10 @@
 using System;
 using System.Xml.Linq;
 using TheDugout.Data;
+using TheDugout.Models.Common;
 using TheDugout.Models.Competitions;
 using TheDugout.Models.Cups;
+using TheDugout.Models.Enums;
 using TheDugout.Models.Game;
 using TheDugout.Models.Matches;
 using TheDugout.Services.Fixture;
@@ -55,6 +57,19 @@ namespace TheDugout.Services.Cup
                 int nextPowerOfTwo = (int)Math.Pow(2, Math.Ceiling(Math.Log2(teamsCount)));
                 int roundsCount = (int)Math.Ceiling(Math.Log2(nextPowerOfTwo));
 
+                // 🏆 1. Създаваме Competition за купата
+                var competition = new Competition
+                {
+                    Name = template.Name,
+                    Type = CompetitionTypeEnum.DomesticCup,
+                    SeasonId = seasonId,
+                    GameSaveId = gameSave.Id
+                };
+
+                _context.Competitions.Add(competition);
+                await _context.SaveChangesAsync();
+
+                // 🏆 2. Създаваме самата Cup и я вързваме
                 var cup = new Models.Cups.Cup
                 {
                     TemplateId = template.Id,
@@ -63,7 +78,9 @@ namespace TheDugout.Services.Cup
                     CountryId = country.Id,
                     TeamsCount = teamsCount,
                     RoundsCount = roundsCount,
-                    IsActive = true
+                    IsActive = true,
+                    CompetitionId = competition.Id,
+                    Competition = competition
                 };
 
                 foreach (var team in teams)
@@ -81,7 +98,7 @@ namespace TheDugout.Services.Cup
             }
 
             await _context.SaveChangesAsync();
-
         }
+
     }
 }

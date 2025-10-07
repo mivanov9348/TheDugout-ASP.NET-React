@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using TheDugout.Models.Cups;
+using TheDugout.Models.Enums;
 using TheDugout.Models.Fixtures;
 
 namespace TheDugout.Services.Fixture
@@ -15,7 +16,7 @@ namespace TheDugout.Services.Fixture
             int awayTeamId,
             DateTime date,
             int round,
-            CompetitionType competitionType,
+            CompetitionTypeEnum competitionType,
             CupRound? cupRound = null,
             int? leagueId = null,
             int? europeanCupPhaseId = null);

@@ -11,6 +11,12 @@ namespace TheDugout.Data.Configurations
             builder.Property(f => f.Id)
                    .ValueGeneratedOnAdd();
 
+            builder.Property(f => f.HomeTeamGoals)
+                   .HasDefaultValue(0);
+
+            builder.Property(f => f.AwayTeamGoals)
+                   .HasDefaultValue(0);
+
             builder.HasOne(f => f.GameSave)
                    .WithMany(gs => gs.Fixtures)
                    .HasForeignKey(f => f.GameSaveId)

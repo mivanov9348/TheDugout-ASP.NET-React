@@ -1,6 +1,7 @@
 ﻿
 using Microsoft.EntityFrameworkCore;
 using TheDugout.Data;
+using TheDugout.Models.Enums;
 using TheDugout.Models.Fixtures;
 using TheDugout.Models.Seasons;
 using TheDugout.Services.Fixture;
@@ -85,7 +86,7 @@ namespace TheDugout.Services.League
                         swap ? home.Id : away.Id,
                         DateTime.MinValue, 
                         round + 1,
-                        CompetitionType.League,
+                        CompetitionTypeEnum.League,
                         leagueId: leagueId
                     ));
                 }
@@ -107,7 +108,7 @@ namespace TheDugout.Services.League
                     f.HomeTeamId,
                     DateTime.MinValue, 
                     f.Round + firstLegRounds,
-                    CompetitionType.League,
+                    CompetitionTypeEnum.League,
                     leagueId: f.LeagueId
                 ));
             }

@@ -1,6 +1,8 @@
 ﻿using Bogus;
 using Microsoft.EntityFrameworkCore;
 using TheDugout.Data;
+using TheDugout.Models.Common;
+using TheDugout.Models.Enums;
 using TheDugout.Models.Game;
 using TheDugout.Models.Leagues;
 using TheDugout.Services.Team;
@@ -27,25 +29,51 @@ namespace TheDugout.Services.League
 
             foreach (var lt in leagueTemplates)
             {
+                // 🏆 1. Създаваме Competition
+                var competition = new Competition
+                {
+                    Name = lt.Name,
+                    Type = CompetitionTypeEnum.League,
+                    SeasonId = season.Id,
+                    GameSaveId = gameSave.Id
+                };
+
+                _context.Competitions.Add(competition);
+                await _context.SaveChangesAsync();
+
+                // 🏆 2. Създаваме League
                 var league = new Models.Leagues.League
                 {
                     TemplateId = lt.Id,
                     GameSave = gameSave,
-                    Season = season,    
+                    Season = season,
                     CountryId = lt.CountryId,
                     Tier = lt.Tier,
                     TeamsCount = lt.TeamsCount,
                     RelegationSpots = lt.RelegationSpots,
-                    PromotionSpots = lt.PromotionSpots
+                    PromotionSpots = lt.PromotionSpots,
+                    CompetitionId = competition.Id,
+                    Competition = competition
                 };
 
+                _context.Leagues.Add(league);
+                await _context.SaveChangesAsync(); // 💾 ID-то вече е налично тук
+
+                // 🏟️ Генерираме отборите
                 var teams = await _teamGenerator.GenerateTeamsAsync(gameSave, league, lt.TeamTemplates);
                 league.Teams = teams;
+
+                // ✅ Тук не я добавяй пак в контекста!
+                // _context.Leagues.Add(league); // ❌ махни този ред
+
+                await _context.SaveChangesAsync(); // обновява само промените по връзките
                 leagues.Add(league);
             }
 
             return leagues;
         }
+
+
 
         public async Task InitializeStandingsAsync(GameSave gameSave, Models.Seasons.Season season)
         {
@@ -53,14 +81,14 @@ namespace TheDugout.Services.League
 
             foreach (var league in gameSave.Leagues)
             {
-                
+
                 var teamsInLeague = league.Teams
                     .Select(t => new { Team = t, LeagueId = league.Id })
                     .ToList();
-                
+
                 var sortedTeams = teamsInLeague
-                    .OrderByDescending(x => x.Team.Popularity) 
-                    .ThenBy(x => x.Team.Name)                   
+                    .OrderByDescending(x => x.Team.Popularity)
+                    .ThenBy(x => x.Team.Name)
                     .ToList();
 
                 for (int i = 0; i < sortedTeams.Count; i++)
@@ -79,7 +107,7 @@ namespace TheDugout.Services.League
                             SeasonId = season.Id,
                             LeagueId = leagueId,
                             TeamId = team.Id,
-                            Ranking = i + 1 
+                            Ranking = i + 1
                         });
                     }
                 }

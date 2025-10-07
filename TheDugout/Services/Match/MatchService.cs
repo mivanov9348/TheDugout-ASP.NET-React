@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TheDugout;
 using TheDugout.Data;
+using TheDugout.Models.Enums;
 using TheDugout.Models.Fixtures;
 using TheDugout.Models.Game;
 using TheDugout.Models.Matches;
@@ -89,7 +90,7 @@ public class MatchService : IMatchService
         fixture.WinnerTeamId = homeGoals > awayGoals ? fixture.HomeTeamId :
                               awayGoals > homeGoals ? fixture.AwayTeamId : null;
 
-        fixture.Status = FixtureStatus.Played;
+        fixture.Status = FixtureStatusEnum.Played;
         match.Status = MatchStatus.Played;
         match.CurrentMinute = 90;
 

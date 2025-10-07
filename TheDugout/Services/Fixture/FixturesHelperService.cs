@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 using TheDugout.Data;
 using TheDugout.Models.Cups;
+using TheDugout.Models.Enums;
 using TheDugout.Models.Fixtures;
 
 namespace TheDugout.Services.Fixture
@@ -24,7 +25,7 @@ namespace TheDugout.Services.Fixture
             int awayTeamId,
             DateTime date,
             int round,
-            CompetitionType competitionType,
+            CompetitionTypeEnum competitionType,
             CupRound? cupRound = null,
             int? leagueId = null,
             int? europeanCupPhaseId = null)
@@ -44,7 +45,7 @@ namespace TheDugout.Services.Fixture
                 IsElimination = DetermineIsElimination(competitionType, cupRound, europeanCupPhaseId),
                 Date = date,
                 Round = round,
-                Status = FixtureStatus.Scheduled
+                Status = FixtureStatusEnum.Scheduled
             };
         }
 
@@ -143,17 +144,17 @@ namespace TheDugout.Services.Fixture
             int teamsInThisRound = (int)Math.Pow(2, totalRounds - adjustedRound + 1);
             return $"Round of {teamsInThisRound}";
         }
-        private bool DetermineIsElimination(CompetitionType competitionType, CupRound? cupRound, int? europeanCupPhaseId)
+        private bool DetermineIsElimination(CompetitionTypeEnum competitionType, CupRound? cupRound, int? europeanCupPhaseId)
         {
             switch (competitionType)
             {
-                case CompetitionType.League:
+                case CompetitionTypeEnum.League:
                     return false;
 
-                case CompetitionType.DomesticCup:
+                case CompetitionTypeEnum.DomesticCup:
                     return true;
 
-                case CompetitionType.EuropeanCup:
+                case CompetitionTypeEnum.EuropeanCup:
                     if (europeanCupPhaseId.HasValue)
                     {
                         var phase = _context.EuropeanCupPhases

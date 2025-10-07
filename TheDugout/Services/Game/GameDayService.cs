@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TheDugout.Data;
+using TheDugout.Models.Enums;
 using TheDugout.Models.Fixtures;
 using TheDugout.Models.Seasons;
 using TheDugout.Services.CPUManager;
@@ -95,7 +96,7 @@ namespace TheDugout.Services.Game
             {
                 GameSave = updatedSave.ToDto(),
                 HasMatchesToday = todaysFixtures.Any(),
-                HasUnplayedMatchesToday = todaysFixtures.Any(f => f.Status != FixtureStatus.Played)
+                HasUnplayedMatchesToday = todaysFixtures.Any(f => f.Status != FixtureStatusEnum.Played)
             };
         }
 

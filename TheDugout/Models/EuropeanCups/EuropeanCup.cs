@@ -1,4 +1,5 @@
-﻿using TheDugout.Models.Game;
+﻿using TheDugout.Models.Common;
+using TheDugout.Models.Game;
 using TheDugout.Models.Seasons;
 
 namespace TheDugout.Models.Competitions
@@ -15,6 +16,9 @@ namespace TheDugout.Models.Competitions
 
         public int SeasonId { get; set; }
         public Season Season { get; set; } = null!;
+
+        public int? CompetitionId { get; set; }
+        public Competition? Competition { get; set; } = null!;
 
         public int Ranking { get; set; }     
         public bool IsActive { get; set; }

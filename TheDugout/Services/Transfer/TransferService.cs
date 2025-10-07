@@ -127,7 +127,6 @@ namespace TheDugout.Services.Transfer
                     {
                         s.SeasonId,
                         s.Goals,
-                        s.Assists,
                         s.MatchesPlayed
                     }).ToList(),
                     Agency = p.TeamId == null ? new // ← Само ако е свободен агент

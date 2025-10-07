@@ -1,4 +1,5 @@
-﻿using TheDugout.Models.Cups;
+﻿using TheDugout.Models.Common;
+using TheDugout.Models.Cups;
 using TheDugout.Models.Finance;
 using TheDugout.Models.Fixtures;
 using TheDugout.Models.Leagues;
@@ -42,6 +43,7 @@ namespace TheDugout.Models.Game
         public ICollection<Agency> Agencies { get; set; } = new List<Agency>();
         public ICollection<Match> Matches { get; set; } = new List<Match>();
 
+        public ICollection<Competition> Competitions { get; set; } = new List<Competition>();
 
     }
 }

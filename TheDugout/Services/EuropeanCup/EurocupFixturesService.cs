@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using TheDugout.Data;
 using TheDugout.Models.Competitions;
+using TheDugout.Models.Enums;
 using TheDugout.Models.Fixtures;
 using TheDugout.Services.Fixture;
 using TheDugout.Services.Season;
@@ -110,7 +111,7 @@ namespace TheDugout.Services.EuropeanCup
                         away,
                         roundDates[Math.Min(round - 1, roundDates.Count - 1)],
                         round,
-                        CompetitionType.EuropeanCup,
+                        CompetitionTypeEnum.EuropeanCup,
                         europeanCupPhaseId: leaguePhase.Id
                     ));
 

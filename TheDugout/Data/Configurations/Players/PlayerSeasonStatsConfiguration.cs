@@ -19,6 +19,17 @@ namespace TheDugout.Data.Configurations
                    .WithMany(s => s.PlayerStats)
                    .HasForeignKey(e => e.SeasonId)
                    .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasOne(e => e.Competition)
+                   .WithMany()
+                   .HasForeignKey(e => e.CompetitionId)
+                   .OnDelete(DeleteBehavior.SetNull);
+
+            builder.Property(e => e.MatchesPlayed)
+                   .HasDefaultValue(0);
+
+            builder.Property(e => e.Goals)
+                   .HasDefaultValue(0);
         }
     }
 }

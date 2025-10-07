@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TheDugout.Data;
+using TheDugout.Models.Enums;
 using TheDugout.Models.Fixtures;
 using TheDugout.Models.Game;
 using TheDugout.Models.Matches;
@@ -42,7 +43,7 @@ namespace TheDugout.Services.MatchEngine
             _penaltyService = penaltyService;
             _context = context;
         }
-        public void StartMatch(Models.Matches.Match match)
+        public async Task StartMatch(Models.Matches.Match match)
         {
             match.Status = MatchStatus.Live;
             match.CurrentMinute = 0;
@@ -50,15 +51,15 @@ namespace TheDugout.Services.MatchEngine
             match.Fixture.AwayTeamGoals = 0;
             match.CurrentTurn = MatchTurn.Home;
 
-            // инициализация на статистиките за играчите
-            match.PlayerStats = _playerStatsService.InitializeMatchStats(match);
+            if (match.PlayerStats == null || !match.PlayerStats.Any())
+                match.PlayerStats = await _playerStatsService.InitializeMatchStatsAsync(match);
         }
         public async Task EndMatch(Models.Matches.Match match)
         {
             match.Status = MatchStatus.Played;
 
             var fixture = match.Fixture;
-            fixture.Status = FixtureStatus.Played;
+            fixture.Status = FixtureStatusEnum.Played;
 
             int homeGoals = fixture.HomeTeamGoals ?? 0;
             int awayGoals = fixture.AwayTeamGoals ?? 0;
@@ -73,7 +74,12 @@ namespace TheDugout.Services.MatchEngine
             }
             else
             {
-                fixture.WinnerTeamId = null;               
+                fixture.WinnerTeamId = null;
+            }
+
+            if (match.PlayerStats != null && match.PlayerStats.Any())
+            {
+                await _playerStatsService.UpdateSeasonStatsAfterMatchAsync(match);
             }
 
         }
@@ -150,16 +156,18 @@ namespace TheDugout.Services.MatchEngine
             if (gameSave is null) throw new ArgumentNullException(nameof(gameSave));
 
             var dbFixture = await _context.Fixtures
-                .Include(f => f.EuropeanCupPhase)
-                    .ThenInclude(p => p.PhaseTemplate)
+                .Include(f => f.HomeTeam).ThenInclude(t => t.Players)
+                .Include(f => f.AwayTeam).ThenInclude(t => t.Players)
+                .Include(f => f.EuropeanCupPhase).ThenInclude(p => p.PhaseTemplate)
                 .FirstOrDefaultAsync(f => f.Id == fixture.Id);
+
 
             if (dbFixture is null)
                 throw new InvalidOperationException($"Fixture with Id {fixture.Id} not found in DB.");
 
             // Сигурен, не-null аргумент за CreateMatchFromFixtureAsync
             var match = await _matchService.CreateMatchFromFixtureAsync(dbFixture, gameSave);
-            match.PlayerStats = _playerStatsService.EnsureMatchStats(match);
+            match.PlayerStats = await _playerStatsService.EnsureMatchStatsAsync(match);
 
             // Симулация (не променяме логиката ти)
             while (!IsMatchFinished(match))
@@ -218,6 +226,7 @@ namespace TheDugout.Services.MatchEngine
             }
 
             await _standingsDispatcher.UpdateAfterMatchAsync(match.Fixture);
+            await _playerStatsService.UpdateSeasonStatsAfterMatchAsync(match);
 
             return match;
         }

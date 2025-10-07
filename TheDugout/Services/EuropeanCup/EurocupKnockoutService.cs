@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TheDugout.Data;
 using TheDugout.Models.Competitions;
+using TheDugout.Models.Enums;
 using TheDugout.Models.Fixtures;
 using TheDugout.Services.Season;
 
@@ -32,7 +33,7 @@ namespace TheDugout.Services.EuropeanCup
                 throw new InvalidOperationException("League phase not found");
 
             // убедим се, че всички мачове са маркирани като Played
-            bool allMatchesFinished = leaguePhase.Fixtures != null && leaguePhase.Fixtures.All(f => f.Status == FixtureStatus.Played);
+            bool allMatchesFinished = leaguePhase.Fixtures != null && leaguePhase.Fixtures.All(f => f.Status == FixtureStatusEnum.Played);
             if (!allMatchesFinished)
                 throw new InvalidOperationException("Not all group matches have been played.");
 
@@ -92,7 +93,7 @@ namespace TheDugout.Services.EuropeanCup
             {
                 // fallback: всички fixtures (ако няма заредени директно в phase)
                 lastGroupMatchDate = await _context.Fixtures
-                    .Where(f => f.CompetitionType == CompetitionType.EuropeanCup
+                    .Where(f => f.CompetitionType == CompetitionTypeEnum.EuropeanCup
                              && f.SeasonId == cup.SeasonId
                              && f.GameSaveId == cup.GameSaveId)
                     .OrderByDescending(f => f.Date)
@@ -167,9 +168,9 @@ namespace TheDugout.Services.EuropeanCup
                     HomeTeamId = home.TeamId,
                     AwayTeamId = away.TeamId,
                     IsElimination = true,
-                    CompetitionType = CompetitionType.EuropeanCup,
+                    CompetitionType = CompetitionTypeEnum.EuropeanCup,
                     EuropeanCupPhaseId = playoffPhase.Id,
-                    Status = FixtureStatus.Scheduled,
+                    Status = FixtureStatusEnum.Scheduled,
                     Date = thisRoundDate
                 });
             }
@@ -308,9 +309,9 @@ namespace TheDugout.Services.EuropeanCup
                     HomeTeamId = home,
                     AwayTeamId = away,
                     IsElimination = true,
-                    CompetitionType = CompetitionType.EuropeanCup,
+                    CompetitionType = CompetitionTypeEnum.EuropeanCup,
                     EuropeanCupPhaseId = nextPhase.Id,
-                    Status = FixtureStatus.Scheduled,
+                    Status = FixtureStatusEnum.Scheduled,
                     Date = thisRoundDate
                 });
             }

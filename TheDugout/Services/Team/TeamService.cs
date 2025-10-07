@@ -63,8 +63,7 @@ public class TeamService : ITeamService
                 {
                     SeasonId = s.SeasonId,
                     MatchesPlayed = s.MatchesPlayed,
-                    Goals = s.Goals,
-                    Assists = s.Assists
+                    Goals = s.Goals
                 }).ToList()
             }).ToList()
         };
@@ -114,8 +113,7 @@ public class TeamService : ITeamService
                 {
                     SeasonId = s.SeasonId,
                     MatchesPlayed = s.MatchesPlayed,
-                    Goals = s.Goals,
-                    Assists = s.Assists
+                    Goals = s.Goals
                 }).ToList()
             }).ToList()
         };

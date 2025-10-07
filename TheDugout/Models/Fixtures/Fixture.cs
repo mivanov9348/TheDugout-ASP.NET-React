@@ -1,5 +1,6 @@
 ﻿using TheDugout.Models.Competitions;
 using TheDugout.Models.Cups;
+using TheDugout.Models.Enums;
 using TheDugout.Models.Game;
 using TheDugout.Models.Leagues;
 using TheDugout.Models.Matches;
@@ -7,20 +8,7 @@ using TheDugout.Models.Seasons;
 using TheDugout.Models.Teams;
 
 namespace TheDugout.Models.Fixtures
-{
-    public enum CompetitionType
-    {
-        League = 0,
-        DomesticCup = 1,
-        EuropeanCup = 2
-    }
-
-    public enum FixtureStatus
-    {
-        Scheduled = 0,
-        Played = 1,
-        Cancelled = 2
-    }
+{      
 
     public class Fixture
     {
@@ -32,7 +20,7 @@ namespace TheDugout.Models.Fixtures
         public int SeasonId { get; set; }
         public Season Season { get; set; } = null!;
 
-        public CompetitionType CompetitionType { get; set; }
+        public CompetitionTypeEnum CompetitionType { get; set; }
 
         public int? LeagueId { get; set; }
         public League? League { get; set; }
@@ -60,7 +48,7 @@ namespace TheDugout.Models.Fixtures
         public int Round { get; set; }
         public bool IsElimination { get; set; } = false;
 
-        public FixtureStatus Status { get; set; } = FixtureStatus.Scheduled;
+        public FixtureStatusEnum Status { get; set; } = FixtureStatusEnum.Scheduled;
         public ICollection<Match> Matches { get; set; } = new List<Match>();
     }
 }

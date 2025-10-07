@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using TheDugout.Data;
+using TheDugout.Models.Enums;
 using TheDugout.Models.Fixtures;
 using TheDugout.Models.Seasons;
 
@@ -86,9 +87,9 @@ public class CalendarController : ControllerBase
 
             SeasonEventType type = f.CompetitionType switch
             {
-                CompetitionType.League => SeasonEventType.ChampionshipMatch,
-                CompetitionType.DomesticCup => SeasonEventType.CupMatch,
-                CompetitionType.EuropeanCup => SeasonEventType.EuropeanMatch,
+                CompetitionTypeEnum.League => SeasonEventType.ChampionshipMatch,
+                CompetitionTypeEnum.DomesticCup => SeasonEventType.CupMatch,
+                CompetitionTypeEnum.EuropeanCup => SeasonEventType.EuropeanMatch,
                 _ => SeasonEventType.Other
             };
 

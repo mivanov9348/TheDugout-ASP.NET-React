@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using TheDugout.Data;
 using TheDugout.DTOs.Match;
+using TheDugout.Models.Enums;
 using TheDugout.Models.Fixtures;
 using TheDugout.Models.Matches;
 using TheDugout.Services.Match;
@@ -51,9 +52,9 @@ public class MatchesController : ControllerBase
             {
                 FixtureId = f.Id,
                 CompetitionName =
-                    f.CompetitionType == CompetitionType.League
+                    f.CompetitionType == CompetitionTypeEnum.League
                         ? f.League!.Template.Name
-                        : f.CompetitionType == CompetitionType.DomesticCup
+                        : f.CompetitionType == CompetitionTypeEnum.DomesticCup
                             ? f.CupRound!.Cup.Template.Name
                             : f.EuropeanCupPhase!.EuropeanCup.Template.Name,
                 Home = f.HomeTeam.Name,
@@ -127,7 +128,7 @@ public class MatchesController : ControllerBase
                 fixture.Matches.Add(match);
             }
 
-            var stats = _playerStatsService.EnsureMatchStats(match);
+            var stats = await _playerStatsService.EnsureMatchStatsAsync(match);
             if (stats.Any())
             {
                 _context.PlayerMatchStats.AddRange(stats);
@@ -137,7 +138,7 @@ public class MatchesController : ControllerBase
             await _matchEngine.SimulateMatchAsync(fixture, gameSave);
 
             match.Status = MatchStatus.Played;
-            fixture.Status = FixtureStatus.Played;
+            fixture.Status = FixtureStatusEnum.Played;
         }
 
         await _context.SaveChangesAsync();
@@ -220,9 +221,9 @@ public class MatchesController : ControllerBase
         {
             return fixture.CompetitionType switch
             {
-                CompetitionType.League => fixture.League?.Template?.Name ?? "Unknown League",
-                CompetitionType.DomesticCup => fixture.CupRound?.Cup?.Template?.Name ?? "Unknown Cup",
-                CompetitionType.EuropeanCup => fixture.EuropeanCupPhase?.EuropeanCup?.Template?.Name ?? "Unknown European Cup",
+                CompetitionTypeEnum.League => fixture.League?.Template?.Name ?? "Unknown League",
+                CompetitionTypeEnum.DomesticCup => fixture.CupRound?.Cup?.Template?.Name ?? "Unknown Cup",
+                CompetitionTypeEnum.EuropeanCup => fixture.EuropeanCupPhase?.EuropeanCup?.Template?.Name ?? "Unknown European Cup",
                 _ => "Unknown Competition"
             };
         }
@@ -248,9 +249,9 @@ public class MatchesController : ControllerBase
             return NotFound(new { error = "Fixture not found" });
 
         var competitionName =
-            fixture.CompetitionType == CompetitionType.League
+            fixture.CompetitionType == CompetitionTypeEnum.League
                 ? fixture.League?.Template.Name
-                : fixture.CompetitionType == CompetitionType.DomesticCup
+                : fixture.CompetitionType == CompetitionTypeEnum.DomesticCup
                     ? fixture.CupRound?.Cup?.Template.Name
                     : fixture.EuropeanCupPhase?.EuropeanCup?.Template.Name;
 
@@ -279,7 +280,7 @@ public class MatchesController : ControllerBase
                     Position = p.Position?.Code ?? "N/A"
                 })
             },
-            Minute = fixture.Status == FixtureStatus.Played ? 90 : 0,
+            Minute = fixture.Status == FixtureStatusEnum.Played ? 90 : 0,
             Status = fixture.Status.ToString()
         });
     }
@@ -368,7 +369,7 @@ public class MatchesController : ControllerBase
         // Ensure PlayerStats
         if (match.PlayerStats == null || !match.PlayerStats.Any())
         {
-            var stats = _playerStatsService.InitializeMatchStats(match);
+            var stats = await _playerStatsService.InitializeMatchStatsAsync(match);
 
             match.PlayerStats = stats;
             _context.PlayerMatchStats.AddRange(stats);

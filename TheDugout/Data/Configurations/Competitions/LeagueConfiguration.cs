@@ -12,6 +12,12 @@ namespace TheDugout.Data.Configurations
 
             builder.HasKey(e => e.Id);
 
+            builder.Property(e => e.Id)
+                   .ValueGeneratedOnAdd(); 
+
+
+            builder.HasKey(e => e.Id);
+
             builder.HasOne(e => e.Template)
                    .WithMany()
                    .HasForeignKey(e => e.TemplateId)
@@ -26,6 +32,11 @@ namespace TheDugout.Data.Configurations
                    .WithMany(s => s.Leagues)
                    .HasForeignKey(e => e.SeasonId)
                    .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasOne(c => c.Competition)
+               .WithMany()
+               .HasForeignKey(c => c.CompetitionId)
+               .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(e => e.Country)
                    .WithMany()

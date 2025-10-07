@@ -1,4 +1,5 @@
-﻿using TheDugout.Models.Competitions;
+﻿using TheDugout.Models.Common;
+using TheDugout.Models.Competitions;
 using TheDugout.Models.Cups;
 using TheDugout.Models.Fixtures;
 using TheDugout.Models.Game;
@@ -16,7 +17,7 @@ namespace TheDugout.Models.Seasons
         public DateTime StartDate { get; set; } = new DateTime(DateTime.UtcNow.Year, 7, 1);
         public DateTime EndDate { get; set; }
         public DateTime CurrentDate { get; set; }
-        public bool IsActive { get; set; }   
+        public bool IsActive { get; set; }
         public ICollection<SeasonEvent> Events { get; set; } = new List<SeasonEvent>();
         public ICollection<PlayerSeasonStats> PlayerStats { get; set; } = new List<PlayerSeasonStats>();
         public ICollection<Fixture> Fixtures { get; set; } = new List<Fixture>();
@@ -25,5 +26,6 @@ namespace TheDugout.Models.Seasons
         public ICollection<LeagueStanding> LeagueStandings { get; set; } = new List<LeagueStanding>();
         public ICollection<EuropeanCup> EuropeanCups { get; set; } = new List<EuropeanCup>();
         public ICollection<Cup> Cups { get; set; } = new List<Cup>();
+        public ICollection<Competition> Competitions { get; set; } = new List<Competition>();
     }
 }

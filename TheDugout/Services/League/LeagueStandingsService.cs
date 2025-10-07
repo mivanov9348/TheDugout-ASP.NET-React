@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TheDugout.Data;
 using TheDugout.Models.Competitions;
+using TheDugout.Models.Enums;
 using TheDugout.Models.Fixtures;
 
 namespace TheDugout.Services.League
@@ -18,7 +19,7 @@ namespace TheDugout.Services.League
         public async Task UpdateStandingsAfterMatchAsync(Models.Fixtures.Fixture fixture)
         {
             // само за лигата
-            if (fixture.CompetitionType != CompetitionType.League || fixture.LeagueId == null)
+            if (fixture.CompetitionType != CompetitionTypeEnum.League || fixture.LeagueId == null)
                 return;
 
             var homeStanding = await _context.LeagueStandings

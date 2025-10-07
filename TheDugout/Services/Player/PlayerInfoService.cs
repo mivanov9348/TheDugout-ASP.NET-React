@@ -51,8 +51,7 @@ namespace TheDugout.Services
                     {
                         SeasonId = s.SeasonId,
                         MatchesPlayed = s.MatchesPlayed,
-                        Goals = s.Goals,
-                        Assists = s.Assists
+                        Goals = s.Goals
                     }).ToList()
                 })
                 .FirstOrDefaultAsync();
@@ -105,8 +104,7 @@ namespace TheDugout.Services
                 {
                     SeasonId = s.SeasonId,
                     MatchesPlayed = s.MatchesPlayed,
-                    Goals = s.Goals,
-                    Assists = s.Assists
+                    Goals = s.Goals
                 })
                 .ToListAsync();
         }

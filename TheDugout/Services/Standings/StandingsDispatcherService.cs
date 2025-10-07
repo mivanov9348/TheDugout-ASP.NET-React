@@ -2,6 +2,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using TheDugout.Data;
+using TheDugout.Models.Enums;
 using TheDugout.Models.Fixtures;
 using TheDugout.Services.Cup;
 using TheDugout.Services.EuropeanCup;
@@ -33,12 +34,12 @@ namespace TheDugout.Services.Standings
 
             switch (fixture.CompetitionType)
             {
-                case CompetitionType.League:
+                case CompetitionTypeEnum.League:
                     if (fixture.LeagueId.HasValue)
                         await _leagueStandingsService.UpdateStandingsAfterMatchAsync(fixture);
                     break;
 
-                case CompetitionType.DomesticCup:
+                case CompetitionTypeEnum.DomesticCup:
                     if (fixture.CupRoundId.HasValue)
                     {
                         var cupRound = await _context.CupRounds
@@ -78,7 +79,7 @@ namespace TheDugout.Services.Standings
                     }
                     break;
 
-                case CompetitionType.EuropeanCup:
+                case CompetitionTypeEnum.EuropeanCup:
                     if (fixture.EuropeanCupPhaseId.HasValue)
                     {
                         var phase = await _context.EuropeanCupPhases
@@ -101,7 +102,7 @@ namespace TheDugout.Services.Standings
                         }
                         else
                         {
-                            bool allMatchesFinished = phase.Fixtures.All(f => f.Status == FixtureStatus.Played);
+                            bool allMatchesFinished = phase.Fixtures.All(f => f.Status == FixtureStatusEnum.Played);
                             if (allMatchesFinished)
                             {
                                 await _eurocupKnockoutService.GenerateNextKnockoutPhaseAsync(phase.EuropeanCupId, phase.PhaseTemplate.Order);

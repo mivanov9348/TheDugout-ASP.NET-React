@@ -15,6 +15,8 @@ namespace TheDugout.Models.Cups
         public Season Season { get; set; } = null!;
         public int CountryId { get; set; }
         public Country Country { get; set; } = null!;
+        public int? CompetitionId { get; set; }
+        public Competition? Competition { get; set; } = null!;
         public int TeamsCount { get; set; }     
         public int RoundsCount { get; set; }    
         public bool IsActive { get; set; } = true;

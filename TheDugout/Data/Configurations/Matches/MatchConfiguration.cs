@@ -8,7 +8,7 @@ namespace TheDugout.Data.Configurations.Matches
     {
         public void Configure(EntityTypeBuilder<Models.Matches.Match> builder)
         {
-            builder.HasKey(m => m.Id);
+            builder.HasKey(m => m.Id);           
 
             builder.HasOne(m => m.GameSave)
                 .WithMany(gs => gs.Matches)

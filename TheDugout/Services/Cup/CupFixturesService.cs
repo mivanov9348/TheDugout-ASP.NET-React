@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TheDugout.Data;
 using TheDugout.Models.Cups;
+using TheDugout.Models.Enums;
 using TheDugout.Models.Fixtures;
 using TheDugout.Services.Fixture;
 using TheDugout.Services.Season;
@@ -142,7 +143,7 @@ namespace TheDugout.Services.Cup
                     away,
                     DateTime.MinValue,
                     1,
-                    CompetitionType.DomesticCup,
+                    CompetitionTypeEnum.DomesticCup,
                     nextRound
                 );
 
@@ -226,7 +227,7 @@ namespace TheDugout.Services.Cup
                     away.Id,
                     DateTime.MinValue,
                     1,
-                    CompetitionType.DomesticCup,
+                    CompetitionTypeEnum.DomesticCup,
                     round
                 );
 

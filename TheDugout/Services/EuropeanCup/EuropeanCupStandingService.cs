@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using TheDugout.Data;
 using TheDugout.Models.Competitions;
+using TheDugout.Models.Enums;
 using TheDugout.Models.Fixtures;
 
 namespace TheDugout.Services.EuropeanCup
@@ -109,7 +110,7 @@ namespace TheDugout.Services.EuropeanCup
             if (leaguePhase == null)
                 return false;
 
-            return leaguePhase.Fixtures.All(f => f.Status == FixtureStatus.Played);
+            return leaguePhase.Fixtures.All(f => f.Status == FixtureStatusEnum.Played);
         }
         public async Task<IEnumerable<object>> GetSortedStandingsAsync(int cupId)
         {

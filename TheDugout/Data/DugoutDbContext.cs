@@ -49,7 +49,7 @@ namespace TheDugout.Data
         public DbSet<PlayerMatchStats> PlayerMatchStats { get; set; }
         public DbSet<PlayerSeasonStats> PlayerSeasonStats { get; set; }
         public DbSet<PlayerAttribute> PlayerAttributes { get; set; }
-        public DbSet<Models.Players.AttributeDefinition> Attributes { get; set; }
+        public DbSet<AttributeDefinition> Attributes { get; set; }
         public DbSet<Position> Positions { get; set; }
         public DbSet<PositionWeight> PositionWeights { get; set; }  
         public DbSet<Fixture> Fixtures { get; set; }
@@ -58,6 +58,7 @@ namespace TheDugout.Data
         public DbSet<TrainingSession> TrainingSessions { get; set; }
         public DbSet<PlayerTraining> PlayerTrainings { get; set; }
         public DbSet<Transfer> Transfers { get; set; }
+        public DbSet<Competition> Competitions { get; set; }
         public DbSet<EuropeanCup> EuropeanCups { get; set; }
         public DbSet<EuropeanCupPhase> EuropeanCupPhases { get; set; }
         public DbSet<EuropeanCupTeam> EuropeanCupTeams { get; set; }
