@@ -21,7 +21,7 @@ namespace TheDugout.Models.Transfers
         public int? FromTeamId { get; set; }
         public Team? FromTeam { get; set; }
 
-        public int ToTeamId { get; set; }
+        public int? ToTeamId { get; set; }
         public Team ToTeam { get; set; } = null!;
 
         public decimal Fee { get; set; }

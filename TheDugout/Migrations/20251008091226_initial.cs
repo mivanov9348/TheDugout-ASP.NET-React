@@ -173,7 +173,7 @@ namespace TheDugout.Migrations
                         column: x => x.EuropeanCupTemplateId,
                         principalTable: "EuropeanCupTemplates",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -224,7 +224,7 @@ namespace TheDugout.Migrations
                         column: x => x.EventTypeId,
                         principalTable: "EventTypes",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -245,13 +245,13 @@ namespace TheDugout.Migrations
                         column: x => x.AttributeId,
                         principalTable: "Attributes",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_PositionWeights_Positions_PositionId",
                         column: x => x.PositionId,
                         principalTable: "Positions",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -359,7 +359,7 @@ namespace TheDugout.Migrations
                         column: x => x.CountryId,
                         principalTable: "Countries",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -382,7 +382,7 @@ namespace TheDugout.Migrations
                         column: x => x.CountryId,
                         principalTable: "Countries",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_TeamTemplates_LeagueTemplates_LeagueId",
                         column: x => x.LeagueId,
@@ -414,7 +414,7 @@ namespace TheDugout.Migrations
                         column: x => x.AgencyTemplateId,
                         principalTable: "AgencyTemplates",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Agencies_Regions_RegionId",
                         column: x => x.RegionId,
@@ -529,7 +529,7 @@ namespace TheDugout.Migrations
                         column: x => x.CupId,
                         principalTable: "Cups",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -617,7 +617,7 @@ namespace TheDugout.Migrations
                         column: x => x.EuropeanCupId,
                         principalTable: "EuropeanCups",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -640,7 +640,7 @@ namespace TheDugout.Migrations
                         column: x => x.EuropeanCupId,
                         principalTable: "EuropeanCups",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -681,7 +681,7 @@ namespace TheDugout.Migrations
                         column: x => x.BankId,
                         principalTable: "Banks",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -774,7 +774,7 @@ namespace TheDugout.Migrations
                         column: x => x.GameSaveId,
                         principalTable: "GameSaves",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -801,7 +801,7 @@ namespace TheDugout.Migrations
                         column: x => x.GameSaveId,
                         principalTable: "GameSaves",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Messages_GameSaves_GameSaveId1",
                         column: x => x.GameSaveId1,
@@ -835,7 +835,7 @@ namespace TheDugout.Migrations
                         column: x => x.GameSaveId,
                         principalTable: "GameSaves",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -902,7 +902,7 @@ namespace TheDugout.Migrations
                         column: x => x.GameSaveId,
                         principalTable: "GameSaves",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Leagues_LeagueTemplates_TemplateId",
                         column: x => x.TemplateId,
@@ -937,7 +937,7 @@ namespace TheDugout.Migrations
                         column: x => x.SeasonId,
                         principalTable: "Seasons",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -970,7 +970,7 @@ namespace TheDugout.Migrations
                         column: x => x.GameSaveId,
                         principalTable: "GameSaves",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Teams_Leagues_LeagueId",
                         column: x => x.LeagueId,
@@ -1019,7 +1019,7 @@ namespace TheDugout.Migrations
                         column: x => x.LeagueId,
                         principalTable: "Leagues",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_LeagueStandings_Seasons_SeasonId",
                         column: x => x.SeasonId,
@@ -1077,7 +1077,7 @@ namespace TheDugout.Migrations
                         column: x => x.GameSaveId,
                         principalTable: "GameSaves",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Players_Positions_PositionId",
                         column: x => x.PositionId,
@@ -1111,7 +1111,7 @@ namespace TheDugout.Migrations
                         column: x => x.TeamId,
                         principalTable: "Teams",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -1134,13 +1134,13 @@ namespace TheDugout.Migrations
                         column: x => x.TacticId,
                         principalTable: "Tactics",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_TeamTactics_Teams_TeamId",
                         column: x => x.TeamId,
                         principalTable: "Teams",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -1161,7 +1161,7 @@ namespace TheDugout.Migrations
                         column: x => x.TeamId,
                         principalTable: "Teams",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -1183,7 +1183,7 @@ namespace TheDugout.Migrations
                         column: x => x.GameSaveId,
                         principalTable: "GameSaves",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_TrainingSessions_Seasons_SeasonId",
                         column: x => x.SeasonId,
@@ -1215,7 +1215,7 @@ namespace TheDugout.Migrations
                         column: x => x.TeamId,
                         principalTable: "Teams",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -1252,7 +1252,7 @@ namespace TheDugout.Migrations
                         column: x => x.MatchId,
                         principalTable: "Matches",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_MatchEvents_Players_PlayerId",
                         column: x => x.PlayerId,
@@ -1287,7 +1287,7 @@ namespace TheDugout.Migrations
                         column: x => x.MatchId,
                         principalTable: "Matches",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Penalties_Players_PlayerId",
                         column: x => x.PlayerId,
@@ -1321,13 +1321,13 @@ namespace TheDugout.Migrations
                         column: x => x.AttributeId,
                         principalTable: "Attributes",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_PlayerAttributes_Players_PlayerId",
                         column: x => x.PlayerId,
                         principalTable: "Players",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -1355,7 +1355,7 @@ namespace TheDugout.Migrations
                         column: x => x.MatchId,
                         principalTable: "Matches",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_PlayerMatchStats_Players_PlayerId",
                         column: x => x.PlayerId,
@@ -1390,12 +1390,13 @@ namespace TheDugout.Migrations
                         column: x => x.PlayerId,
                         principalTable: "Players",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_PlayerSeasonStats_Seasons_SeasonId",
                         column: x => x.SeasonId,
                         principalTable: "Seasons",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -1422,7 +1423,7 @@ namespace TheDugout.Migrations
                         column: x => x.GameSaveId,
                         principalTable: "GameSaves",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Transfers_Players_PlayerId",
                         column: x => x.PlayerId,
@@ -1480,7 +1481,7 @@ namespace TheDugout.Migrations
                         column: x => x.TrainingSessionId,
                         principalTable: "TrainingSessions",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateIndex(
@@ -2111,7 +2112,7 @@ namespace TheDugout.Migrations
                 column: "GameSaveId",
                 principalTable: "GameSaves",
                 principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
+                onDelete: ReferentialAction.Restrict);
 
             migrationBuilder.AddForeignKey(
                 name: "FK_Banks_GameSaves_GameSaveId",
@@ -2119,14 +2120,15 @@ namespace TheDugout.Migrations
                 column: "GameSaveId",
                 principalTable: "GameSaves",
                 principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
+                onDelete: ReferentialAction.Restrict);
 
             migrationBuilder.AddForeignKey(
                 name: "FK_Competitions_Seasons_SeasonId",
                 table: "Competitions",
                 column: "SeasonId",
                 principalTable: "Seasons",
-                principalColumn: "Id");
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Restrict);
 
             migrationBuilder.AddForeignKey(
                 name: "FK_CupRounds_Cups_CupId",
@@ -2134,7 +2136,7 @@ namespace TheDugout.Migrations
                 column: "CupId",
                 principalTable: "Cups",
                 principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
+                onDelete: ReferentialAction.Restrict);
 
             migrationBuilder.AddForeignKey(
                 name: "FK_Cups_GameSaves_GameSaveId",
@@ -2142,7 +2144,7 @@ namespace TheDugout.Migrations
                 column: "GameSaveId",
                 principalTable: "GameSaves",
                 principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
+                onDelete: ReferentialAction.Restrict);
 
             migrationBuilder.AddForeignKey(
                 name: "FK_Cups_Seasons_SeasonId",
@@ -2166,7 +2168,7 @@ namespace TheDugout.Migrations
                 column: "EuropeanCupId",
                 principalTable: "EuropeanCups",
                 principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
+                onDelete: ReferentialAction.Restrict);
 
             migrationBuilder.AddForeignKey(
                 name: "FK_EuropeanCups_GameSaves_GameSaveId",
@@ -2174,7 +2176,7 @@ namespace TheDugout.Migrations
                 column: "GameSaveId",
                 principalTable: "GameSaves",
                 principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
+                onDelete: ReferentialAction.Restrict);
 
             migrationBuilder.AddForeignKey(
                 name: "FK_EuropeanCups_Seasons_SeasonId",
@@ -2222,7 +2224,7 @@ namespace TheDugout.Migrations
                 column: "GameSaveId",
                 principalTable: "GameSaves",
                 principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
+                onDelete: ReferentialAction.Restrict);
 
             migrationBuilder.AddForeignKey(
                 name: "FK_Fixtures_Leagues_LeagueId",

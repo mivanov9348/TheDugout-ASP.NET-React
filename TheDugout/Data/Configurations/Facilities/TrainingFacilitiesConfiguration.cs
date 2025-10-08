@@ -13,7 +13,7 @@ namespace TheDugout.Data.Configurations.Facilities
             builder.HasOne(tf => tf.Team)
                    .WithOne(t => t.TrainingFacility)
                    .HasForeignKey<TrainingFacility>(tf => tf.TeamId)
-                   .OnDelete(DeleteBehavior.Cascade);
+                   .OnDelete(DeleteBehavior.Restrict);
 
             builder.Property(tf => tf.Level)
                    .IsRequired();

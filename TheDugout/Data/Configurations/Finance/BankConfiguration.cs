@@ -13,7 +13,7 @@ namespace TheDugout.Data.Configurations
             builder.HasOne(b => b.GameSave)
                 .WithOne(gs => gs.Bank)
                 .HasForeignKey<Bank>(b => b.GameSaveId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Restrict);
 
             builder.Property(b => b.Balance)
                 .HasColumnType("decimal(18,2)");

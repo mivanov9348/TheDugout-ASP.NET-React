@@ -13,7 +13,7 @@ namespace TheDugout.Data.Configurations.Matches
             builder.HasOne(eo => eo.EventType)
                 .WithMany(et => et.Outcomes)
                 .HasForeignKey(eo => eo.EventTypeId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Restrict);
 
             builder.Property(eo => eo.Name)
                 .IsRequired()

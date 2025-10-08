@@ -21,17 +21,18 @@ namespace TheDugout.Data.Configurations
             builder.HasOne(p => p.Team)
                    .WithMany(t => t.Players)
                    .HasForeignKey(p => p.TeamId)
-                   .OnDelete(DeleteBehavior.Restrict); 
+                   .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(p => p.GameSave)
                    .WithMany(g => g.Players)
                    .HasForeignKey(p => p.GameSaveId)
-                   .OnDelete(DeleteBehavior.Cascade);
+                   .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(p => p.Agency)
                    .WithMany(a => a.Players)
                    .HasForeignKey(p => p.AgencyId)
                    .OnDelete(DeleteBehavior.Restrict);
         }
+
     }
 }

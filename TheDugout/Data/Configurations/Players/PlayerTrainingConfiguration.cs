@@ -13,7 +13,7 @@ namespace TheDugout.Data.Configurations
             builder.HasOne(pt => pt.TrainingSession)
                    .WithMany(ts => ts.PlayerTrainings)
                    .HasForeignKey(pt => pt.TrainingSessionId)
-                   .OnDelete(DeleteBehavior.Cascade); 
+                   .OnDelete(DeleteBehavior.Restrict); 
 
             builder.HasOne(pt => pt.Player)
                    .WithMany()

@@ -25,7 +25,7 @@ namespace TheDugout.Data.Configurations
             builder.HasMany(e => e.PhaseTemplates)
                    .WithOne()
                    .HasForeignKey("EuropeanCupTemplateId")
-                   .OnDelete(DeleteBehavior.Cascade);
+                   .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

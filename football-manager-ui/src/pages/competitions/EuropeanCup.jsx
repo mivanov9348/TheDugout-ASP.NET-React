@@ -2,8 +2,6 @@ import { useEffect, useState } from "react";
 import GroupStage from "./europe/GroupStage";
 import Knockouts from "./europe/Knockouts"
 import PlayerStats from "./europe/PlayerStats";
-
-
 export default function EuropeanCup({ gameSaveId, seasonId }) {
   const [cup, setCup] = useState(null);
   const [loading, setLoading] = useState(true);

@@ -209,7 +209,7 @@ namespace TheDugout.Controllers
             var userId = _userContext.GetUserId(User);
             if (userId == null) return Unauthorized();
 
-            var success = await _gameSaveService.DeleteGameSaveAsync(userId.Value, id);
+            var success = await _gameSaveService.DeleteGameSaveAsync( id);
             return success ? Ok(new { message = "Game save deleted successfully" })
                            : NotFound(new { message = "Save not found" });
         }

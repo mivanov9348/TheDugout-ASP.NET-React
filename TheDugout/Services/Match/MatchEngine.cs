@@ -203,7 +203,7 @@ namespace TheDugout.Services.MatchEngine
                         Minute = match.CurrentMinute,
                         Player = player,
                         Team = currentTeam,
-                        TeamId = currentTeamId,
+                        TeamId = currentTeam.Id,
                         EventType = eventType,
                         Outcome = outcome
                     }, playerStats);
@@ -226,7 +226,7 @@ namespace TheDugout.Services.MatchEngine
             }
 
             await _standingsDispatcher.UpdateAfterMatchAsync(match.Fixture);
-            await _playerStatsService.UpdateSeasonStatsAfterMatchAsync(match);
+            //await _playerStatsService.UpdateSeasonStatsAfterMatchAsync(match);
 
             return match;
         }

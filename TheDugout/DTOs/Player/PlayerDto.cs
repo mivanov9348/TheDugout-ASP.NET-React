@@ -37,4 +37,13 @@ namespace TheDugout.DTOs.Player
         public int Goals { get; set; }
         public int Assists { get; set; }
     }
+
+    public class PlayerStatsDTO
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string TeamName { get; set; } = string.Empty;
+        public int Goals { get; set; }
+        public int Matches { get; set; }
+    }
 }

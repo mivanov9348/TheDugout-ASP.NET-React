@@ -15,7 +15,7 @@ namespace TheDugout.Data.Configurations
             builder.HasOne(e => e.EuropeanCup)
                    .WithMany(c => c.Phases)
                    .HasForeignKey(e => e.EuropeanCupId)
-                   .OnDelete(DeleteBehavior.Cascade);
+                   .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(e => e.PhaseTemplate)
                    .WithMany()
@@ -25,7 +25,7 @@ namespace TheDugout.Data.Configurations
             builder.HasMany(e => e.Fixtures)
                    .WithOne(f => f.EuropeanCupPhase)
                    .HasForeignKey(f => f.EuropeanCupPhaseId)
-                   .OnDelete(DeleteBehavior.Cascade);
+                   .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

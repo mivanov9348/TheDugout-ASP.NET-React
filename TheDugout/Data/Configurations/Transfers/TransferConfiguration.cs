@@ -11,12 +11,12 @@ public class TransferConfiguration : IEntityTypeConfiguration<Transfer>
         builder.HasOne(t => t.GameSave)
             .WithMany()
             .HasForeignKey(t => t.GameSaveId)
-            .OnDelete(DeleteBehavior.Cascade); // ако триеш GameSave -> трие и Transfers
+            .OnDelete(DeleteBehavior.Restrict); 
 
         builder.HasOne(t => t.Season)
             .WithMany()
             .HasForeignKey(t => t.SeasonId)
-            .OnDelete(DeleteBehavior.Restrict); // не cascade, за да няма цикъл
+            .OnDelete(DeleteBehavior.Restrict); 
 
         builder.HasOne(t => t.Player)
             .WithMany()

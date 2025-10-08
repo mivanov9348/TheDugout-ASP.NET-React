@@ -21,7 +21,7 @@ namespace TheDugout.Data.Configurations
             builder.HasOne(e => e.Country)
                    .WithMany(c => c.LeagueTemplates)
                    .HasForeignKey(e => e.CountryId)
-                   .OnDelete(DeleteBehavior.Cascade);
+                   .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

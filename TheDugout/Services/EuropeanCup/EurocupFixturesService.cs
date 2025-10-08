@@ -82,7 +82,7 @@ namespace TheDugout.Services.EuropeanCup
                 .ToListAsync(ct);
 
             foreach (var f in existing)
-                existingPairs.Add(_fixturesHelperService.PairKey(f.HomeTeamId, f.AwayTeamId));
+                existingPairs.Add(_fixturesHelperService.PairKey(f.HomeTeam.Id, f.AwayTeam.Id));
 
             var homeCount = teamIds.ToDictionary(id => id, _ => 0);
             var fixturesToAdd = new List<Models.Fixtures.Fixture>();

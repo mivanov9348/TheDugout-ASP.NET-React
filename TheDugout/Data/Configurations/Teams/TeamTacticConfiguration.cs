@@ -19,12 +19,12 @@ namespace TheDugout.Data.Configurations
             builder.HasOne(tt => tt.Team)
                    .WithOne(t => t.TeamTactic)
                    .HasForeignKey<TeamTactic>(tt => tt.TeamId)
-                   .OnDelete(DeleteBehavior.Cascade);
+                   .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(tt => tt.Tactic)
                    .WithMany(t => t.TeamTactics)
                    .HasForeignKey(tt => tt.TacticId)
-                   .OnDelete(DeleteBehavior.Cascade);
+                   .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

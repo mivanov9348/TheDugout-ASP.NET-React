@@ -29,12 +29,12 @@ namespace TheDugout.Data.Configurations
             builder.HasOne(a => a.AgencyTemplate)
                 .WithMany()
                 .HasForeignKey(a => a.AgencyTemplateId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(a => a.GameSave)
                 .WithMany(gs => gs.Agencies)
                 .HasForeignKey(a => a.GameSaveId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(a => a.Region)
                 .WithMany(r => r.Agencies)

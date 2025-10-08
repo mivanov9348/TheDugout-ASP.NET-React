@@ -8,38 +8,35 @@ namespace TheDugout.Data.Configurations.Matches
     {
         public void Configure(EntityTypeBuilder<Models.Matches.Match> builder)
         {
-            builder.HasKey(m => m.Id);           
+            builder.HasKey(m => m.Id);
 
             builder.HasOne(m => m.GameSave)
-                .WithMany(gs => gs.Matches)
-                .HasForeignKey(m => m.GameSaveId)
-                .OnDelete(DeleteBehavior.Cascade);
+                   .WithMany(gs => gs.Matches)
+                   .HasForeignKey(m => m.GameSaveId)
+                   .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(m => m.Fixture)
-                .WithMany(f => f.Matches)
-                .HasForeignKey(m => m.FixtureId)
-                .OnDelete(DeleteBehavior.Restrict);
+                   .WithMany(f => f.Matches)
+                   .HasForeignKey(m => m.FixtureId)
+                   .OnDelete(DeleteBehavior.Restrict);
 
-            builder.Property(m => m.Status)
-                .HasConversion<int>();
-
-            builder.Property(m => m.CurrentTurn)
-                .HasConversion<int>();
+            builder.Property(m => m.Status).HasConversion<int>();
+            builder.Property(m => m.CurrentTurn).HasConversion<int>();
 
             builder.HasMany(m => m.PlayerStats)
-                .WithOne(ps => ps.Match)
-                .HasForeignKey(ps => ps.MatchId)
-                .OnDelete(DeleteBehavior.Cascade);
+                   .WithOne(ps => ps.Match)
+                   .HasForeignKey(ps => ps.MatchId)
+                   .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasMany(m => m.Penalties)
-                .WithOne(e => e.Match)
-                .HasForeignKey(e => e.MatchId)
-                .OnDelete(DeleteBehavior.Cascade);
+                   .WithOne(e => e.Match)
+                   .HasForeignKey(e => e.MatchId)
+                   .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(m => m.Competition)
-                  .WithMany(c => c.Matches)
-                  .HasForeignKey(m => m.CompetitionId)
-                  .OnDelete(DeleteBehavior.Restrict);
+                   .WithMany(c => c.Matches)
+                   .HasForeignKey(m => m.CompetitionId)
+                   .OnDelete(DeleteBehavior.Restrict);
         }
 
     }

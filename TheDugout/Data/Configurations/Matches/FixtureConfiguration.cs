@@ -8,19 +8,14 @@ namespace TheDugout.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<Fixture> builder)
         {
-            builder.Property(f => f.Id)
-                   .ValueGeneratedOnAdd();
-
-            builder.Property(f => f.HomeTeamGoals)
-                   .HasDefaultValue(0);
-
-            builder.Property(f => f.AwayTeamGoals)
-                   .HasDefaultValue(0);
+            builder.Property(f => f.Id).ValueGeneratedOnAdd();
+            builder.Property(f => f.HomeTeamGoals).HasDefaultValue(0);
+            builder.Property(f => f.AwayTeamGoals).HasDefaultValue(0);
 
             builder.HasOne(f => f.GameSave)
                    .WithMany(gs => gs.Fixtures)
                    .HasForeignKey(f => f.GameSaveId)
-                   .OnDelete(DeleteBehavior.Cascade);
+                   .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(f => f.Season)
                    .WithMany(s => s.Fixtures)
@@ -57,5 +52,6 @@ namespace TheDugout.Data.Configurations
                    .HasForeignKey(f => f.WinnerTeamId)
                    .OnDelete(DeleteBehavior.Restrict);
         }
+
     }
 }

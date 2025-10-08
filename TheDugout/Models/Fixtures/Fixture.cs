@@ -31,10 +31,10 @@ namespace TheDugout.Models.Fixtures
         public int? EuropeanCupPhaseId { get; set; }
         public EuropeanCupPhase? EuropeanCupPhase { get; set; }
 
-        public int HomeTeamId { get; set; }
+        public int? HomeTeamId { get; set; }
         public Team HomeTeam { get; set; } = null!;
 
-        public int AwayTeamId { get; set; }
+        public int? AwayTeamId { get; set; }
         public Team AwayTeam { get; set; } = null!;
 
         public int? HomeTeamGoals { get; set; }

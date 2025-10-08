@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TheDugout.Data;
+using TheDugout.DTOs.Player;
 using TheDugout.Models.Competitions;
+using TheDugout.Models.Players;
 using TheDugout.Services.EuropeanCup;
 
 namespace TheDugout.Controllers
@@ -36,6 +38,7 @@ namespace TheDugout.Controllers
                 .Include(c => c.Teams).ThenInclude(ct => ct.Team)
                 .Include(c => c.Standings).ThenInclude(s => s.Team)
                 .Include(c => c.Phases).ThenInclude(p => p.PhaseTemplate)
+                .Include(c => c.Competition) // ✅ добавяме Competition
                 .FirstOrDefaultAsync(c => c.GameSaveId == gameSaveId && c.SeasonId == seasonId);
 
             if (cup == null)
@@ -45,6 +48,36 @@ namespace TheDugout.Controllers
             var groupFixtures = await _fixturesService.GetGroupFixturesAsync(cup.Id);
             var knockoutFixtures = await _knockoutService.GetKnockoutFixturesAsync(cup.Id);
             var sortedStandings = await _standingService.GetSortedStandingsAsync(cup.Id);
+
+            // --- ТУК СЕ ПРОВЕРЯВАМЕ CompetitionId ---
+            int? competitionId = cup.CompetitionId;
+            if (competitionId == null)
+            {
+                var competition = await _context.Competitions
+                    .FirstOrDefaultAsync(c => c.EuropeanCup != null && c.EuropeanCup.Id == cup.Id);
+                competitionId = competition?.Id;
+            }
+
+            List<PlayerStatsDTO> playerStats = new();
+
+            if (competitionId != null)
+            {
+                playerStats = await _context.PlayerSeasonStats
+                    .Include(ps => ps.Player)
+                        .ThenInclude(p => p.Team)
+                    .Where(ps => ps.CompetitionId == competitionId)
+                    .Select(ps => new PlayerStatsDTO
+                    {
+                        Id = ps.Player.Id,
+                        Name = ps.Player.FirstName + " " + ps.Player.LastName,
+                        TeamName = ps.Player.Team.Name,
+                        Goals = ps.Goals,
+                        Matches = ps.MatchesPlayed
+                    })
+                    .OrderByDescending(p => p.Goals)
+                    .ThenBy(p => p.Name)
+                    .ToListAsync();
+            }
 
             var result = new
             {
@@ -88,11 +121,13 @@ namespace TheDugout.Controllers
                         })
                     }),
                 groupFixtures = groupFixtures,
-                knockoutFixtures = knockoutFixtures
+                knockoutFixtures = knockoutFixtures,
+                playerStats = playerStats
             };
 
             return Ok(result);
         }
-    
-        }
+
+
+    }
 }

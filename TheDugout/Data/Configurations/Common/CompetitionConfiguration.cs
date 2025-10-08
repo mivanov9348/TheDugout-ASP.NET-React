@@ -23,10 +23,11 @@ namespace TheDugout.Data.Configurations.Common
                    .HasForeignKey(m => m.CompetitionId)
                    .OnDelete(DeleteBehavior.Restrict);
 
-            builder.HasMany(c => c.PlayerStats) 
+            builder.HasMany(c => c.PlayerStats)
                    .WithOne(ps => ps.Competition)
                    .HasForeignKey(ps => ps.CompetitionId)
                    .OnDelete(DeleteBehavior.Restrict);
         }
+
     }
 }

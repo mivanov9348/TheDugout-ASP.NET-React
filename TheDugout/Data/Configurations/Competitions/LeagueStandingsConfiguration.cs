@@ -38,7 +38,7 @@ namespace TheDugout.Data.Configurations
             builder.HasOne(e => e.League)
                    .WithMany(l => l.Standings)
                    .HasForeignKey(e => e.LeagueId)
-                   .OnDelete(DeleteBehavior.Cascade);
+                   .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(e => e.Team)
                    .WithMany(t => t.LeagueStandings)

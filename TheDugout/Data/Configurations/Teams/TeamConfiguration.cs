@@ -9,7 +9,6 @@ namespace TheDugout.Data.Configurations
         public void Configure(EntityTypeBuilder<Team> builder)
         {
             builder.ToTable("Teams");
-
             builder.HasKey(e => e.Id);
 
             builder.Property(e => e.Name)
@@ -36,7 +35,7 @@ namespace TheDugout.Data.Configurations
             builder.HasOne(e => e.GameSave)
                    .WithMany(gs => gs.Teams)
                    .HasForeignKey(e => e.GameSaveId)
-                   .OnDelete(DeleteBehavior.Cascade);
+                   .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(e => e.League)
                    .WithMany(l => l.Teams)
@@ -71,9 +70,8 @@ namespace TheDugout.Data.Configurations
             builder.HasOne(t => t.TeamTactic)
                    .WithOne(tt => tt.Team)
                    .HasForeignKey<TeamTactic>(tt => tt.TeamId)
-                   .OnDelete(DeleteBehavior.Cascade);
-
-
+                   .OnDelete(DeleteBehavior.Restrict);
         }
+
     }
 }

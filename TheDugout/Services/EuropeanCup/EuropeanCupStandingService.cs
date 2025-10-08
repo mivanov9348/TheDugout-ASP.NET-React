@@ -31,8 +31,8 @@ namespace TheDugout.Services.EuropeanCup
             var cupId = fixture.EuropeanCupPhase?.EuropeanCupId
                 ?? throw new InvalidOperationException("Fixture is not linked to EuropeanCupPhase");
 
-            var homeStanding = await GetOrCreateStanding(cupId, fixture.HomeTeamId, ct);
-            var awayStanding = await GetOrCreateStanding(cupId, fixture.AwayTeamId, ct);
+            var homeStanding = await GetOrCreateStanding(cupId, fixture.HomeTeam.Id, ct);
+            var awayStanding = await GetOrCreateStanding(cupId, fixture.AwayTeam.Id, ct);
 
             int homeGoals = fixture.HomeTeamGoals.Value;
             int awayGoals = fixture.AwayTeamGoals.Value;

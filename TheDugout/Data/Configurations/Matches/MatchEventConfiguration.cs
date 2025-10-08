@@ -14,7 +14,7 @@ namespace TheDugout.Data.Configurations.Matches
             builder.HasOne(me => me.Match)
                 .WithMany(m => m.Events)
                 .HasForeignKey(me => me.MatchId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(me => me.Team)
                 .WithMany(t => t.MatchEvents) 

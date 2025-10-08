@@ -17,7 +17,7 @@ namespace TheDugout.Data.Configurations
             builder.HasOne(cr => cr.Cup)
                 .WithMany(c => c.Rounds)
                 .HasForeignKey(cr => cr.CupId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

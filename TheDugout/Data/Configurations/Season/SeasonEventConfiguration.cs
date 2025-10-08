@@ -23,7 +23,7 @@ namespace TheDugout.Data.Configurations
             builder.HasOne(e => e.Season)
                    .WithMany(s => s.Events)
                    .HasForeignKey(e => e.SeasonId)
-                   .OnDelete(DeleteBehavior.Cascade);
+                   .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

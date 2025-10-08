@@ -13,12 +13,12 @@ namespace TheDugout.Data.Configurations
             builder.HasOne(e => e.Player)
                    .WithMany(p => p.SeasonStats)
                    .HasForeignKey(e => e.PlayerId)
-                   .OnDelete(DeleteBehavior.Cascade);
+                   .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(e => e.Season)
                    .WithMany(s => s.PlayerSeasonStats)
                    .HasForeignKey(e => e.SeasonId)
-                   .OnDelete(DeleteBehavior.NoAction);
+                   .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(e => e.Competition)
                    .WithMany()
@@ -31,5 +31,6 @@ namespace TheDugout.Data.Configurations
             builder.Property(e => e.Goals)
                    .HasDefaultValue(0);
         }
+
     }
 }

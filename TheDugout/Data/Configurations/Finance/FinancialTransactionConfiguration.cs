@@ -39,7 +39,7 @@ namespace TheDugout.Data.Configurations
             builder.HasOne(ft => ft.Bank)
                 .WithMany(b => b.Transactions)
                 .HasForeignKey(ft => ft.BankId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

@@ -18,12 +18,12 @@ namespace TheDugout.Data.Configurations
             builder.HasOne(pa => pa.Player)
                    .WithMany(p => p.Attributes)
                    .HasForeignKey(pa => pa.PlayerId)
-                   .OnDelete(DeleteBehavior.Cascade);
+                   .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(pa => pa.Attribute)
                    .WithMany(a => a.PlayerAttributes)
                    .HasForeignKey(pa => pa.AttributeId)
-                   .OnDelete(DeleteBehavior.Cascade);
+                   .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasIndex(pa => new { pa.PlayerId, pa.AttributeId })
                    .IsUnique();

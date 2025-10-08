@@ -12,7 +12,7 @@ namespace TheDugout.Data.Configurations.Matches
             builder.HasOne(p => p.Match)
                 .WithMany(m => m.Penalties)
                 .HasForeignKey(p => p.MatchId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(p => p.Team)
                 .WithMany()

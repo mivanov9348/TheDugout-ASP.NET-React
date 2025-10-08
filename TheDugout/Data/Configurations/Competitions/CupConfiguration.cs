@@ -11,29 +11,30 @@ namespace TheDugout.Data.Configurations
             builder.HasKey(c => c.Id);
 
             builder.HasOne(c => c.Template)
-                .WithMany() 
-                .HasForeignKey(c => c.TemplateId)
-                .OnDelete(DeleteBehavior.Restrict);
+                   .WithMany()
+                   .HasForeignKey(c => c.TemplateId)
+                   .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(c => c.GameSave)
-                .WithMany(gs => gs.Cups) 
-                .HasForeignKey(c => c.GameSaveId)
-                .OnDelete(DeleteBehavior.Cascade);
+                   .WithMany(gs => gs.Cups)
+                   .HasForeignKey(c => c.GameSaveId)
+                   .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(c => c.Season)
-                .WithMany(s => s.Cups) 
-                .HasForeignKey(c => c.SeasonId)
-                .OnDelete(DeleteBehavior.Restrict);
+                   .WithMany(s => s.Cups)
+                   .HasForeignKey(c => c.SeasonId)
+                   .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(c => c.Competition)
-                .WithMany()
-                .HasForeignKey(c => c.CompetitionId)
-                .OnDelete(DeleteBehavior.Restrict);
+                   .WithMany()
+                   .HasForeignKey(c => c.CompetitionId)
+                   .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(c => c.Country)
-                .WithMany()
-                .HasForeignKey(c => c.CountryId)
-                .OnDelete(DeleteBehavior.Restrict);
+                   .WithMany()
+                   .HasForeignKey(c => c.CountryId)
+                   .OnDelete(DeleteBehavior.Restrict);
         }
+
     }
 }

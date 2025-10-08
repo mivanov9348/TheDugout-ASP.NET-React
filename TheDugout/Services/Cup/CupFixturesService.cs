@@ -93,7 +93,7 @@ namespace TheDugout.Services.Cup
                 .ToList();
 
             var losers = lastRound.Fixtures
-                .SelectMany(f => new[] { f.HomeTeamId, f.AwayTeamId })
+                .SelectMany(f => new[] { f.HomeTeam.Id, f.AwayTeam.Id })
                 .Except(winners)
                 .ToList();
 

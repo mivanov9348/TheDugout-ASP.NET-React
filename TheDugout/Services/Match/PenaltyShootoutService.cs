@@ -40,8 +40,8 @@ namespace TheDugout.Services.Match
             // първи 5
             for (int round = 1; round <= 5; round++)
             {
-                homeScore += await TakePenaltyKick(match, match.Fixture.HomeTeamId, homeQueue, round, penaltyEventType);
-                awayScore += await TakePenaltyKick(match, match.Fixture.AwayTeamId, awayQueue, round, penaltyEventType);
+                homeScore += await TakePenaltyKick(match, match.Fixture.HomeTeam.Id, homeQueue, round, penaltyEventType);
+                awayScore += await TakePenaltyKick(match, match.Fixture.AwayTeam.Id, awayQueue, round, penaltyEventType);
 
                 if (IsDecided(homeScore, awayScore, round))
                     break;
@@ -51,8 +51,8 @@ namespace TheDugout.Services.Match
             int suddenRound = 6;
             while (homeScore == awayScore)
             {
-                homeScore += await TakePenaltyKick(match, match.Fixture.HomeTeamId, homeQueue, suddenRound, penaltyEventType);
-                awayScore += await TakePenaltyKick(match, match.Fixture.AwayTeamId, awayQueue, suddenRound, penaltyEventType);
+                homeScore += await TakePenaltyKick(match, match.Fixture.HomeTeam.Id, homeQueue, suddenRound, penaltyEventType);
+                awayScore += await TakePenaltyKick(match, match.Fixture.AwayTeam.Id, awayQueue, suddenRound, penaltyEventType);
 
                 suddenRound++;
 
