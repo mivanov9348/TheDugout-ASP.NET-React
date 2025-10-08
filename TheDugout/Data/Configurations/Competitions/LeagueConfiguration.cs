@@ -33,15 +33,15 @@ namespace TheDugout.Data.Configurations
                    .HasForeignKey(e => e.SeasonId)
                    .OnDelete(DeleteBehavior.Restrict);
 
-            builder.HasOne(c => c.Competition)
-               .WithMany()
-               .HasForeignKey(c => c.CompetitionId)
-               .OnDelete(DeleteBehavior.Restrict);
-
             builder.HasOne(e => e.Country)
                    .WithMany()
                    .HasForeignKey(e => e.CountryId)
                    .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasOne(c => c.Competition)
+                .WithMany()
+                .HasForeignKey(c => c.CompetitionId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

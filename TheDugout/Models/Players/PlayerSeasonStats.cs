@@ -1,5 +1,4 @@
 ﻿using TheDugout.Models.Common;
-using TheDugout.Models.Fixtures;
 using TheDugout.Models.Seasons;
 
 namespace TheDugout.Models.Players

@@ -24,10 +24,11 @@ namespace TheDugout.Data.Configurations
                    .HasForeignKey(ev => ev.SeasonId)
                    .OnDelete(DeleteBehavior.Cascade);
 
-            builder.HasMany(e => e.PlayerStats)
+            builder.HasMany(e => e.PlayerSeasonStats)
                    .WithOne(ps => ps.Season)
                    .HasForeignKey(ps => ps.SeasonId)
-                   .OnDelete(DeleteBehavior.Restrict);
+                   .OnDelete(DeleteBehavior.NoAction);
+
 
             builder.HasMany(s => s.Fixtures)
                    .WithOne(f => f.Season)
@@ -38,6 +39,12 @@ namespace TheDugout.Data.Configurations
                    .WithOne(c => c.Season)
                    .HasForeignKey(c => c.SeasonId)
                    .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasMany(s => s.Competitions)
+                   .WithOne(c => c.Season)
+                   .HasForeignKey(c => c.SeasonId)
+                   .OnDelete(DeleteBehavior.NoAction);
+
         }
     }
 }

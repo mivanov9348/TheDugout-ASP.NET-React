@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using TheDugout.Data;
 using TheDugout.Models.Common;
+using TheDugout.Models.Cups;
 using TheDugout.Models.Enums;
 using TheDugout.Models.Game;
 using TheDugout.Models.Leagues;
@@ -32,10 +33,8 @@ namespace TheDugout.Services.League
                 // 🏆 1. Създаваме Competition
                 var competition = new Competition
                 {
-                    Name = lt.Name,
                     Type = CompetitionTypeEnum.League,
-                    SeasonId = season.Id,
-                    GameSaveId = gameSave.Id
+                    SeasonId = season.Id
                 };
 
                 _context.Competitions.Add(competition);
@@ -53,8 +52,10 @@ namespace TheDugout.Services.League
                     RelegationSpots = lt.RelegationSpots,
                     PromotionSpots = lt.PromotionSpots,
                     CompetitionId = competition.Id,
-                    Competition = competition
+                    Competition = competition,
                 };
+
+                competition.League = league;
 
                 _context.Leagues.Add(league);
                 await _context.SaveChangesAsync(); // 💾 ID-то вече е налично тук

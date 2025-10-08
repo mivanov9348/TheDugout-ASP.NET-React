@@ -60,10 +60,8 @@ namespace TheDugout.Services.Cup
                 // 🏆 1. Създаваме Competition за купата
                 var competition = new Competition
                 {
-                    Name = template.Name,
                     Type = CompetitionTypeEnum.DomesticCup,
                     SeasonId = seasonId,
-                    GameSaveId = gameSave.Id
                 };
 
                 _context.Competitions.Add(competition);
@@ -82,6 +80,8 @@ namespace TheDugout.Services.Cup
                     CompetitionId = competition.Id,
                     Competition = competition
                 };
+
+                competition.Cup = cup;
 
                 foreach (var team in teams)
                     cup.Teams.Add(new CupTeam { TeamId = team.Id });

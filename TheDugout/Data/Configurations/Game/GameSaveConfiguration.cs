@@ -51,13 +51,12 @@ namespace TheDugout.Data.Configurations
             builder.HasMany(gs => gs.Teams)
                    .WithOne(t => t.GameSave)
                    .HasForeignKey(t => t.GameSaveId)
-                   .OnDelete(DeleteBehavior.Cascade);
+                   .OnDelete(DeleteBehavior.Cascade);         
 
             builder.HasOne(gs => gs.Bank)
                    .WithOne(b => b.GameSave)
                    .HasForeignKey<Bank>(b => b.GameSaveId)
                    .OnDelete(DeleteBehavior.Cascade);
-
         }
     }
 }

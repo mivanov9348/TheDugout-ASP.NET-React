@@ -16,9 +16,9 @@ namespace TheDugout.Data.Configurations
                    .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasOne(e => e.Season)
-                   .WithMany(s => s.PlayerStats)
+                   .WithMany(s => s.PlayerSeasonStats)
                    .HasForeignKey(e => e.SeasonId)
-                   .OnDelete(DeleteBehavior.Restrict);
+                   .OnDelete(DeleteBehavior.NoAction);
 
             builder.HasOne(e => e.Competition)
                    .WithMany()

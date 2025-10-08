@@ -84,14 +84,24 @@ namespace TheDugout.Services.Game
         public async Task<bool> DeleteGameSaveAsync(int userId, int saveId)
         {
             var gameSave = await _context.GameSaves
+                .Include(gs => gs.Seasons)
+                .Include(gs => gs.Players)
                 .FirstOrDefaultAsync(gs => gs.Id == saveId && gs.UserId == userId);
 
-            if (gameSave == null) return false;
+            if (gameSave == null)
+            {
+                Console.WriteLine($"⚠️ GameSave {saveId} за user {userId} не е намерен!");
+                return false;
+            }
 
             _context.GameSaves.Remove(gameSave);
             await _context.SaveChangesAsync();
+
+            Console.WriteLine($"✅ Изтрит GameSave {saveId}");
             return true;
         }
+
+
 
         public async Task<GameSave> StartNewGameAsync(int userId, CancellationToken ct = default)
         {

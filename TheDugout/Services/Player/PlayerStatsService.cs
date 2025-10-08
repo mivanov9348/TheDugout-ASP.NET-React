@@ -52,11 +52,10 @@ namespace TheDugout.Services.Player
 
                 newStats.Add(new PlayerMatchStats
                 {
-                    // ⚠️ НЕ задаваме Id (EF го генерира)
                     PlayerId = player.Id,
                     MatchId = match.Id,
+                    CompetitionId = match.CompetitionId,
                     Goals = 0,
-                    CompetitionType = compType
                 });
             }
 
@@ -110,7 +109,6 @@ namespace TheDugout.Services.Player
                 .AsNoTracking()
                 .FirstOrDefaultAsync(c =>
                     c.SeasonId == seasonId &&
-                    c.GameSaveId == gameSaveId &&
                     c.Type == match.Fixture.CompetitionType);
 
             if (competition == null)

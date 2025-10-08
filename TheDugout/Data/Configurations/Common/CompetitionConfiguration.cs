@@ -8,26 +8,24 @@ namespace TheDugout.Data.Configurations.Common
     {
         public void Configure(EntityTypeBuilder<Competition> builder)
         {
-            builder.HasKey(e => e.Id);
+            builder.HasKey(c => c.Id);
 
-            builder.Property(e => e.Id)
-       .ValueGeneratedOnAdd();
-
-            builder.Property(e => e.Name)
-                   .IsRequired()
-                   .HasMaxLength(100);
-
-            builder.Property(e => e.Type)
+            builder.Property(c => c.Type)
                    .IsRequired();
 
-            builder.HasOne(e => e.Season)
-                   .WithMany()
-                   .HasForeignKey(e => e.SeasonId)
+            builder.HasOne(c => c.Season)
+                   .WithMany(s => s.Competitions)
+                   .HasForeignKey(c => c.SeasonId)
                    .OnDelete(DeleteBehavior.Restrict);
 
-            builder.HasOne(e => e.GameSave)
-                   .WithMany()
-                   .HasForeignKey(e => e.GameSaveId)
+            builder.HasMany(c => c.Matches)
+                   .WithOne(m => m.Competition)
+                   .HasForeignKey(m => m.CompetitionId)
+                   .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasMany(c => c.PlayerStats) 
+                   .WithOne(ps => ps.Competition)
+                   .HasForeignKey(ps => ps.CompetitionId)
                    .OnDelete(DeleteBehavior.Restrict);
         }
     }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TheDugout;
 using TheDugout.Data;
+using TheDugout.Models.Common;
 using TheDugout.Models.Enums;
 using TheDugout.Models.Fixtures;
 using TheDugout.Models.Game;
@@ -28,12 +29,63 @@ public class MatchService : IMatchService
         if (existingMatch != null)
             return existingMatch;
 
+        Competition? competition = null;
+
+        switch (fixture.CompetitionType)
+        {
+            case CompetitionTypeEnum.League:
+                if (!fixture.LeagueId.HasValue)
+                    throw new InvalidOperationException("LeagueId missing for league fixture.");
+
+                competition = await _context.Competitions
+                    .Include(c => c.League)
+                    .FirstOrDefaultAsync(c =>
+                        c.League != null &&
+                        c.League.Id == fixture.LeagueId.Value &&
+                        c.SeasonId == fixture.SeasonId);
+                break;
+
+            case CompetitionTypeEnum.DomesticCup:
+                if (!fixture.CupRoundId.HasValue)
+                    throw new InvalidOperationException("CupRoundId missing for cup fixture.");
+
+                competition = await _context.Competitions
+                    .Include(c => c.Cup)
+                    .ThenInclude(cup => cup.Rounds)
+                    .FirstOrDefaultAsync(c =>
+                        c.Cup != null &&
+                        c.Cup.Rounds.Any(r => r.Id == fixture.CupRoundId.Value) &&
+                        c.SeasonId == fixture.SeasonId);
+                break;
+
+            case CompetitionTypeEnum.EuropeanCup:
+                if (!fixture.EuropeanCupPhaseId.HasValue)
+                    throw new InvalidOperationException("EuropeanCupPhaseId missing for European cup fixture.");
+
+                competition = await _context.Competitions
+                    .Include(c => c.EuropeanCup)
+                    .ThenInclude(ec => ec.Phases)
+                    .FirstOrDefaultAsync(c =>
+                        c.EuropeanCup != null &&
+                        c.EuropeanCup.Phases.Any(p => p.Id == fixture.EuropeanCupPhaseId.Value) &&
+                        c.SeasonId == fixture.SeasonId);
+                break;
+
+            default:
+                throw new InvalidOperationException($"Unsupported competition type: {fixture.CompetitionType}");
+        }
+
+        if (competition == null)
+            throw new InvalidOperationException("Competition not found for this fixture.");
+
         var match = new Match
         {
             GameSaveId = gameSave.Id,
             FixtureId = fixture.Id,
             CurrentMinute = 0,
-            Status = MatchStatus.Live
+            Status = MatchStatus.Live,
+            CompetitionId = competition.Id,
+            Competition = competition
         };
 
         _context.Matches.Add(match);

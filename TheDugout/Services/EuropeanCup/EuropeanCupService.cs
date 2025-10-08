@@ -64,10 +64,8 @@ namespace TheDugout.Services.EuropeanCup
             // 🏆 1. Създаваме Competition за Европейския турнир
             var competition = new Competition
             {
-                Name = template.Name,
                 Type = CompetitionTypeEnum.EuropeanCup,
-                SeasonId = seasonId,
-                GameSaveId = gameSaveId
+                SeasonId = seasonId
             };
             _context.Competitions.Add(competition);
             await _context.SaveChangesAsync(ct);
@@ -83,6 +81,8 @@ namespace TheDugout.Services.EuropeanCup
                 CompetitionId = competition.Id,
                 Competition = competition
             };
+
+            competition.EuropeanCup = cup;
 
             _context.Add(cup);
             await _context.SaveChangesAsync(ct);
