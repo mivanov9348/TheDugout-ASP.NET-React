@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using TheDugout.Data;
 using TheDugout.DTOs.Player;
 using TheDugout.Models.Competitions;
+using TheDugout.Models.Matches;
 using TheDugout.Models.Players;
 using TheDugout.Services.EuropeanCup;
 
@@ -57,6 +58,29 @@ namespace TheDugout.Controllers
                     .FirstOrDefaultAsync(c => c.EuropeanCup != null && c.EuropeanCup.Id == cup.Id);
                 competitionId = competition?.Id;
             }
+
+            var goalscorersData = await _context.PlayerMatchStats
+       .Include(pms => pms.Player)
+           .ThenInclude(p => p.Team)
+       .Include(pms => pms.Match)
+           .ThenInclude(m => m.Fixture)
+       .Where(pms => pms.Goals > 0 &&
+                    pms.Match.Competition.Id == competitionId &&
+                    pms.Match.Status == MatchStatus.Played)
+       .Select(pms => new
+       {
+           MatchId = pms.Match.FixtureId,
+           PlayerName = pms.Player.FirstName + " " + pms.Player.LastName,
+           TeamId = pms.Player.TeamId,
+           Goals = pms.Goals,
+           Minute = pms.Match.CurrentMinute // или специално поле за минута на гол, ако имате такова
+       })
+       .ToListAsync();
+
+            // Групиране по мачове
+            var goalsByMatch = goalscorersData
+                .GroupBy(g => g.MatchId)
+                .ToDictionary(g => g.Key, g => g.ToList());
 
             List<PlayerStatsDTO> playerStats = new();
 
@@ -117,7 +141,7 @@ namespace TheDugout.Controllers
                             homeTeamGoals = f.HomeTeamGoals,
                             awayTeamGoals = f.AwayTeamGoals,
                             date = f.Date,
-                            status = f.Status
+                            status = f.Status,
                         })
                     }),
                 groupFixtures = groupFixtures,

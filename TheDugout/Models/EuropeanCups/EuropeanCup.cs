@@ -29,6 +29,7 @@ namespace TheDugout.Models.Competitions
         public ICollection<EuropeanCupTeam> Teams { get; set; } = new List<EuropeanCupTeam>();
         public ICollection<EuropeanCupPhase> Phases { get; set; } = new List<EuropeanCupPhase>();
         public ICollection<EuropeanCupStanding> Standings { get; set; } = new List<EuropeanCupStanding>();
+
     }
 
 }

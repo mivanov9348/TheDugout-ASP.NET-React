@@ -12,14 +12,14 @@ namespace TheDugout.Models.Common
     {
         public int Id { get; set; }
         public CompetitionTypeEnum Type { get; set; }
-
         public int SeasonId { get; set; }
         public Season Season { get; set; } = null!;
-
-        public League? League { get; set; }
-        public Cup? Cup { get; set; }
-        public EuropeanCup? EuropeanCup { get; set; }
-
+        public League? League { get; set; } = null!;
+        public int? LeagueId { get; set; }
+        public Cup? Cup { get; set; } = null!;
+        public int? CupId { get; set; }
+        public EuropeanCup? EuropeanCup { get; set; } = null!;
+        public int? EuropeanCupId { get; set; }
         public ICollection<Match> Matches { get; set; } = new List<Match>();
         public ICollection<PlayerMatchStats> PlayerStats { get; set; } = new List<PlayerMatchStats>();
     }

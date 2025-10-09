@@ -23,5 +23,6 @@ namespace TheDugout.Models.Cups
         public string? LogoFileName { get; set; }
         public ICollection<CupTeam> Teams { get; set; } = new List<CupTeam>();
         public ICollection<CupRound> Rounds { get; set; } = new List<CupRound>();
+
     }
 }

@@ -1,6 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using TheDugout.Controllers;
 using TheDugout.Models.Common;
+using TheDugout.Models.Competitions;
+using TheDugout.Models.Cups;
+using TheDugout.Models.Leagues;
 
 namespace TheDugout.Data.Configurations.Common
 {
@@ -26,6 +30,21 @@ namespace TheDugout.Data.Configurations.Common
             builder.HasMany(c => c.PlayerStats)
                    .WithOne(ps => ps.Competition)
                    .HasForeignKey(ps => ps.CompetitionId)
+                   .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasOne(c => c.League)
+                   .WithOne(l => l.Competition)
+                   .HasForeignKey<League>(c => c.CompetitionId)
+                   .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasOne(c => c.Cup)
+                   .WithOne(cu => cu.Competition)
+                   .HasForeignKey<Cup>(c => c.CompetitionId)
+                   .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasOne(c => c.EuropeanCup)
+                   .WithOne(ec => ec.Competition)
+                   .HasForeignKey<EuropeanCup>(c => c.CompetitionId)
                    .OnDelete(DeleteBehavior.Restrict);
         }
 

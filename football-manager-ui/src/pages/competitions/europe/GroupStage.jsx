@@ -108,30 +108,62 @@ export default function GroupStage({ cup }) {
               {round.matches.map((m) => (
                 <li
                   key={m.id}
-                  className="flex items-center justify-between p-2 hover:bg-slate-50 rounded"
+                  className="p-2 hover:bg-slate-50 rounded"
                 >
-                  <div className="flex-1 text-right pr-2 font-medium flex items-center justify-end gap-2">
-                    <span>{m.homeTeam?.name}</span>
-                    <TeamLogo
-                      teamName={m.homeTeam?.name}
-                      logoFileName={m.homeTeam?.logoFileName}
-                    />
+                  {/* Основна информация за мача */}
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex-1 text-right pr-2 font-medium flex items-center justify-end gap-2">
+                      <span>{m.homeTeam?.name}</span>
+                      <TeamLogo
+                        teamName={m.homeTeam?.name}
+                        logoFileName={m.homeTeam?.logoFileName}
+                      />
+                    </div>
+                    <div className="w-24 text-center font-bold">
+                      {m.homeTeamGoals != null && m.awayTeamGoals != null
+                        ? `${m.homeTeamGoals} : ${m.awayTeamGoals}`
+                        : "vs"}
+                    </div>
+                    <div className="flex-1 pl-2 font-medium flex items-center gap-2">
+                      <TeamLogo
+                        teamName={m.awayTeam?.name}
+                        logoFileName={m.awayTeam?.logoFileName}
+                      />
+                      <span>{m.awayTeam?.name}</span>
+                    </div>
+                    <div className="ml-4 text-xs text-slate-500 whitespace-nowrap">
+                      {new Date(m.date).toLocaleDateString()}
+                    </div>
                   </div>
-                  <div className="w-24 text-center font-bold">
-                    {m.homeTeamGoals != null && m.awayTeamGoals != null
-                      ? `${m.homeTeamGoals} : ${m.awayTeamGoals}`
-                      : "vs"}
-                  </div>
-                  <div className="flex-1 pl-2 font-medium flex items-center gap-2">
-                    <TeamLogo
-                      teamName={m.awayTeam?.name}
-                      logoFileName={m.awayTeam?.logoFileName}
-                    />
-                    <span>{m.awayTeam?.name}</span>
-                  </div>
-                  <div className="ml-4 text-xs text-slate-500 whitespace-nowrap">
-                    {new Date(m.date).toLocaleDateString()}
-                  </div>
+
+                  {/* GOALSCORERS с дървесен шрифт */}
+                  {m.goalscorers && m.goalscorers.length > 0 && (
+                    <div className="mt-2 text-xs text-slate-600">
+                      <div className="grid grid-cols-2 gap-2">
+                        {/* Home team goalscorers */}
+                        <div className="text-right">
+                          {m.goalscorers
+                            .filter(goal => goal.teamId === m.homeTeam?.id)
+                            .map((goal, index) => (
+                              <div key={index} className="font-mono">
+                                {goal.playerName} {goal.minute}'
+                              </div>
+                            ))}
+                        </div>
+                        
+                        {/* Away team goalscorers */}
+                        <div className="text-left">
+                          {m.goalscorers
+                            .filter(goal => goal.teamId === m.awayTeam?.id)
+                            .map((goal, index) => (
+                              <div key={index} className="font-mono">
+                                {goal.minute}' {goal.playerName}
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </li>
               ))}
             </ul>

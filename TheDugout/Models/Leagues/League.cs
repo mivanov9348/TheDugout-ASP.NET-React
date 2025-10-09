@@ -33,5 +33,6 @@ namespace TheDugout.Models.Leagues
         public ICollection<Team> Teams { get; set; } = new List<Team>();
         public ICollection<Fixture> Fixtures { get; set; } = new List<Fixture>();
         public ICollection<LeagueStanding> Standings { get; set; } = new List<LeagueStanding>();
+
     }
 }

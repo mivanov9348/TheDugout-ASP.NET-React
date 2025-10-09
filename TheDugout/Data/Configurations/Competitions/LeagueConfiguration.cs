@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using TheDugout.Models.Common;
 using TheDugout.Models.Leagues;
 
 namespace TheDugout.Data.Configurations
@@ -34,8 +35,8 @@ namespace TheDugout.Data.Configurations
                    .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(c => c.Competition)
-                   .WithMany()
-                   .HasForeignKey(c => c.CompetitionId)
+                   .WithOne(cu => cu.League)
+                   .HasForeignKey<Competition>(c => c.LeagueId)
                    .OnDelete(DeleteBehavior.Restrict);
         }
 

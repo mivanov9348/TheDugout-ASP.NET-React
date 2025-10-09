@@ -37,68 +37,54 @@ namespace TheDugout.Services.Cup
             {
                 var country = await _context.Countries
                     .FirstOrDefaultAsync(c => c.Code == template.CountryCode);
-                if (country == null)
-                {
-                    Console.WriteLine($"[WARN] Country not found for template {template.Name} ({template.CountryCode})");
-                    continue;
-                }
+
+                if (country == null) continue;
 
                 var teams = gameSave.Teams
                     .Where(t => t.CountryId == country.Id)
                     .ToList();
 
-                if (teams.Count < 2)
-                {
-                    Console.WriteLine($"[WARN] Not enough teams for cup {template.Name}. Found: {teams.Count}");
-                    continue;
-                }
+                if (teams.Count < 2) continue;
 
                 int teamsCount = teams.Count;
                 int nextPowerOfTwo = (int)Math.Pow(2, Math.Ceiling(Math.Log2(teamsCount)));
                 int roundsCount = (int)Math.Ceiling(Math.Log2(nextPowerOfTwo));
 
-                // 🏆 1. Създаваме Competition за купата
                 var competition = new Competition
                 {
                     Type = CompetitionTypeEnum.DomesticCup,
-                    SeasonId = seasonId,
+                    SeasonId = seasonId
                 };
 
-                _context.Competitions.Add(competition);
-                await _context.SaveChangesAsync();
-
-                // 🏆 2. Създаваме самата Cup и я вързваме
+                // Shared PK pattern — Cup.Id == Competition.Id
                 var cup = new Models.Cups.Cup
                 {
+                    Competition = competition,
                     TemplateId = template.Id,
                     GameSaveId = gameSave.Id,
                     SeasonId = seasonId,
                     CountryId = country.Id,
                     TeamsCount = teamsCount,
                     RoundsCount = roundsCount,
-                    IsActive = true,
-                    CompetitionId = competition.Id,
-                    Competition = competition
+                    IsActive = true
                 };
 
-                competition.Cup = cup;
+                _context.Cups.Add(cup);
+                await _context.SaveChangesAsync();
 
+                // Добавяме участници
                 foreach (var team in teams)
                     cup.Teams.Add(new CupTeam { TeamId = team.Id });
 
                 allCups.Add(cup);
-                _context.Cups.Add(cup);
-                await _context.SaveChangesAsync();
             }
 
-            // Генериране на fixtures след като всички купи са създадени
             if (allCups.Any())
-            {
                 await _cupFixturesService.GenerateInitialFixturesAsync(seasonId, gameSave.Id, allCups);
-            }
 
             await _context.SaveChangesAsync();
         }
+
 
     }
 }

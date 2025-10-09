@@ -34,132 +34,72 @@ namespace TheDugout.Services.EuropeanCup
                 ?? throw new InvalidOperationException($"Template {templateId} not found.");
 
             if (!template.IsActive)
-            {
-                _logger.LogWarning("Requested template {TemplateId} is not active. Aborting.", template.Id);
                 throw new InvalidOperationException($"Template {templateId} is not active.");
-            }
 
             var eligibleTeams = await _context.Set<Models.Teams.Team>()
                 .Where(t => t.LeagueId == null && t.GameSaveId == gameSaveId)
                 .ToListAsync(ct);
 
             if (eligibleTeams.Count < template.TeamsCount)
-                throw new InvalidOperationException(
-                    $"Not enough eligible teams ({eligibleTeams.Count}) for template requires {template.TeamsCount}.");
+                throw new InvalidOperationException($"Not enough teams for {template.Name}");
 
             var chosenTeams = eligibleTeams
                 .OrderBy(_ => _rng.Next())
                 .Take(template.TeamsCount)
                 .ToList();
 
-            string logoFileName = $"{template.Name}.png";
-            string validLogoFileName = new string(logoFileName
-                .Select(c => c switch
-                {
-                    '\\' or '/' or ':' or '*' or '?' or '"' or '<' or '>' or '|' => '_',
-                    _ => c
-                })
-                .ToArray());
-
-            // 🏆 1. Създаваме Competition за Европейския турнир
             var competition = new Competition
             {
                 Type = CompetitionTypeEnum.EuropeanCup,
                 SeasonId = seasonId
             };
-            _context.Competitions.Add(competition);
-            await _context.SaveChangesAsync(ct);
 
-            // 🏆 2. Създаваме EuropeanCup и я свързваме с Competition
-            var cup = new Models.Competitions.EuropeanCup
+            var euroCup = new Models.Competitions.EuropeanCup
             {
                 TemplateId = template.Id,
                 GameSaveId = gameSaveId,
                 SeasonId = seasonId,
-                LogoFileName = validLogoFileName,
+                LogoFileName = $"{template.Name}.png",
                 IsActive = template.IsActive,
-                CompetitionId = competition.Id,
                 Competition = competition
             };
 
-            competition.EuropeanCup = cup;
-
-            _context.Add(cup);
+            _context.EuropeanCups.Add(euroCup);
             await _context.SaveChangesAsync(ct);
 
-            // добавяме отбори и standings
+            // Добавяме отбори, standings и фази
             var rankedTeams = chosenTeams
                 .OrderByDescending(t => t.Popularity)
-                .ThenByDescending(t => t.Id)
-                .ThenBy(t => t.Country?.Name ?? "")
                 .ThenBy(t => t.Name)
                 .ToList();
 
-            for (int i = 0; i < rankedTeams.Count; i++)
+            foreach (var team in rankedTeams)
             {
-                var team = rankedTeams[i];
-                var existsTeam = await _context.Set<EuropeanCupTeam>()
-                    .AnyAsync(et => et.EuropeanCupId == cup.Id && et.TeamId == team.Id, ct);
-
-                if (existsTeam) continue;
-
                 _context.Add(new EuropeanCupTeam
                 {
-                    EuropeanCupId = cup.Id,
+                    EuropeanCupId = euroCup.Id,
                     TeamId = team.Id,
-                    CurrentPhaseOrder = template.PhaseTemplates != null && template.PhaseTemplates.Any()
-                        ? template.PhaseTemplates.OrderBy(p => p.Order).First().Order
-                        : 1,
-                    IsEliminated = false,
-                    IsPlayoffParticipant = false
+                    CurrentPhaseOrder = template.PhaseTemplates?.OrderBy(p => p.Order).FirstOrDefault()?.Order ?? 1,
+                    IsEliminated = false
                 });
 
                 _context.Add(new EuropeanCupStanding
                 {
-                    EuropeanCupId = cup.Id,
+                    EuropeanCupId = euroCup.Id,
                     TeamId = team.Id,
                     Points = 0,
-                    Matches = 0,
-                    Wins = 0,
-                    Draws = 0,
-                    Losses = 0,
-                    GoalsFor = 0,
-                    GoalsAgainst = 0,
-                    GoalDifference = 0,
-                    Ranking = i + 1
+                    Ranking = rankedTeams.IndexOf(team) + 1
                 });
             }
 
-            // фази
-            var orderedPhaseTemplates = template.PhaseTemplates?.OrderBy(p => p.Order).ToList() ?? new List<EuropeanCupPhaseTemplate>();
-            foreach (var pt in orderedPhaseTemplates)
-            {
-                var phase = new EuropeanCupPhase
-                {
-                    EuropeanCupId = cup.Id,
-                    PhaseTemplateId = pt.Id
-                };
-                _context.Add(phase);
-            }
+            foreach (var pt in template.PhaseTemplates.OrderBy(p => p.Order))
+                _context.Add(new EuropeanCupPhase { EuropeanCupId = euroCup.Id, PhaseTemplateId = pt.Id });
 
             await _context.SaveChangesAsync(ct);
 
-            await _context.Entry(cup).Collection(c => c.Phases).Query().Include(p => p.PhaseTemplate).LoadAsync(ct);
-
-            try
-            {
-                await _eurocupFixturesService.GenerateEuropeanLeaguePhaseFixturesAsync(cup.Id, seasonId, ct);
-                _logger.LogInformation("Fixtures generated for EuropeanCup {CupId}", cup.Id);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error generating fixtures for EuropeanCup {CupId}", cup.Id);
-            }
-
-            return cup;
+            await _eurocupFixturesService.GenerateEuropeanLeaguePhaseFixturesAsync(euroCup.Id, seasonId, ct);
+            return euroCup;
         }
-
-
 
         public async Task UpdateStandingsForPhaseAsync(int europeanCupPhaseId, CancellationToken ct = default)
         {

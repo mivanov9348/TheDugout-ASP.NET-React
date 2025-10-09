@@ -1,8 +1,6 @@
-﻿using Bogus;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using TheDugout.Data;
 using TheDugout.Models.Common;
-using TheDugout.Models.Cups;
 using TheDugout.Models.Enums;
 using TheDugout.Models.Game;
 using TheDugout.Models.Leagues;
@@ -30,17 +28,12 @@ namespace TheDugout.Services.League
 
             foreach (var lt in leagueTemplates)
             {
-                // 🏆 1. Създаваме Competition
                 var competition = new Competition
                 {
                     Type = CompetitionTypeEnum.League,
                     SeasonId = season.Id
                 };
 
-                _context.Competitions.Add(competition);
-                await _context.SaveChangesAsync();
-
-                // 🏆 2. Създаваме League
                 var league = new Models.Leagues.League
                 {
                     TemplateId = lt.Id,
@@ -51,30 +44,22 @@ namespace TheDugout.Services.League
                     TeamsCount = lt.TeamsCount,
                     RelegationSpots = lt.RelegationSpots,
                     PromotionSpots = lt.PromotionSpots,
-                    CompetitionId = competition.Id,
-                    Competition = competition,
+                    Competition = competition // само това стига
                 };
 
-                competition.League = league;
-
                 _context.Leagues.Add(league);
-                await _context.SaveChangesAsync(); // 💾 ID-то вече е налично тук
+                await _context.SaveChangesAsync();
 
-                // 🏟️ Генерираме отборите
+                // генерираме отборите
                 var teams = await _teamGenerator.GenerateTeamsAsync(gameSave, league, lt.TeamTemplates);
                 league.Teams = teams;
 
-                // ✅ Тук не я добавяй пак в контекста!
-                // _context.Leagues.Add(league); // ❌ махни този ред
-
-                await _context.SaveChangesAsync(); // обновява само промените по връзките
+                await _context.SaveChangesAsync();
                 leagues.Add(league);
             }
 
             return leagues;
         }
-
-
 
         public async Task InitializeStandingsAsync(GameSave gameSave, Models.Seasons.Season season)
         {
