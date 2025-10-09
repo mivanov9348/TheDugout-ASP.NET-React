@@ -1,42 +1,60 @@
-﻿using TheDugout.Models.Game;
+﻿using Microsoft.EntityFrameworkCore;
+using TheDugout.Data;
+using TheDugout.Models.Game;
 using TheDugout.Models.Seasons;
 
 namespace TheDugout.Services.Season
 {
     public class SeasonGenerationService : ISeasonGenerationService
     {
-        public Models.Seasons.Season GenerateSeason(GameSave gameSave, DateTime startDate)
+        private readonly DugoutDbContext _context;
+        public SeasonGenerationService(DugoutDbContext context)
+        {
+            _context = context;
+        }
+
+        public async Task<Models.Seasons.Season> GenerateSeason(GameSave gameSave, DateTime startDate)
         {
             var season = new Models.Seasons.Season
             {
-                GameSave = gameSave,
+                GameSaveId = gameSave.Id,
                 StartDate = startDate,
                 EndDate = startDate.AddYears(1).AddDays(-1),
                 CurrentDate = startDate,
                 IsActive = true
             };
 
+            // 1. Запиши сезона в базата
+            _context.Seasons.Add(season);
+            await _context.SaveChangesAsync();
+
+            // 2. Актуализирай CurrentSeasonId в GameSave
+            gameSave.CurrentSeasonId = season.Id;
+            await _context.SaveChangesAsync();
+
+            // 3. Създай събитията за сезона
             var events = new List<SeasonEvent>();
             var currentDate = season.StartDate;
 
             while (currentDate <= season.EndDate)
             {
-                var evt = new SeasonEvent
+                events.Add(new SeasonEvent
                 {
-                    Season = season,
+                    SeasonId = season.Id,
                     Date = currentDate,
                     Type = GetEventType(currentDate, season.StartDate, season.EndDate),
                     Description = GetDescription(currentDate, season.StartDate, season.EndDate),
                     IsOccupied = false
-                };
-
-                events.Add(evt);
+                });
                 currentDate = currentDate.AddDays(1);
             }
 
-            season.Events = events;
+            _context.SeasonEvents.AddRange(events);
+            await _context.SaveChangesAsync();
+
             return season;
         }
+
 
         private SeasonEventType GetEventType(DateTime date, DateTime seasonStart, DateTime seasonEnd)
         {

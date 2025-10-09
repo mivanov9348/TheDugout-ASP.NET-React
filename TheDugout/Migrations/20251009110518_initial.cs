@@ -713,6 +713,7 @@ namespace TheDugout.Migrations
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     UserTeamId = table.Column<int>(type: "int", nullable: true),
                     BankId = table.Column<int>(type: "int", nullable: false),
+                    CurrentSeasonId = table.Column<int>(type: "int", nullable: false),
                     NextDayActionLabel = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
@@ -1710,6 +1711,11 @@ namespace TheDugout.Migrations
                 column: "WinnerTeamId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_GameSaves_CurrentSeasonId",
+                table: "GameSaves",
+                column: "CurrentSeasonId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_GameSaves_UserId",
                 table: "GameSaves",
                 column: "UserId");
@@ -2239,6 +2245,14 @@ namespace TheDugout.Migrations
                 table: "Fixtures",
                 column: "WinnerTeamId",
                 principalTable: "Teams",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Restrict);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_GameSaves_Seasons_CurrentSeasonId",
+                table: "GameSaves",
+                column: "CurrentSeasonId",
+                principalTable: "Seasons",
                 principalColumn: "Id",
                 onDelete: ReferentialAction.Restrict);
 

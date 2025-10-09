@@ -43,7 +43,27 @@ namespace TheDugout.Data.Configurations
                    .WithOne(c => c.Season)
                    .HasForeignKey(c => c.SeasonId)
                    .OnDelete(DeleteBehavior.Restrict);
-        }
 
+            // ДОБАВИ ТЕЗИ ЛИПСВАЩИ ВРЪЗКИ:
+            builder.HasMany(s => s.Leagues)
+                   .WithOne(l => l.Season)
+                   .HasForeignKey(l => l.SeasonId)
+                   .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasMany(s => s.LeagueStandings)
+                   .WithOne(ls => ls.Season)
+                   .HasForeignKey(ls => ls.SeasonId)
+                   .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasMany(s => s.Cups)
+                   .WithOne(c => c.Season)
+                   .HasForeignKey(c => c.SeasonId)
+                   .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasMany(s => s.TrainingSessions)
+                   .WithOne(ts => ts.Season)
+                   .HasForeignKey(ts => ts.SeasonId)
+                   .OnDelete(DeleteBehavior.Restrict);
+        }
     }
 }

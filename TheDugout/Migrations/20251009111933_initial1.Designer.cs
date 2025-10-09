@@ -12,8 +12,8 @@ using TheDugout.Data;
 namespace TheDugout.Migrations
 {
     [DbContext(typeof(DugoutDbContext))]
-    [Migration("20251009052104_initial")]
-    partial class initial
+    [Migration("20251009111933_initial1")]
+    partial class initial1
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -787,11 +787,14 @@ namespace TheDugout.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("BankId")
+                    b.Property<int?>("BankId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<int?>("CurrentSeasonId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -808,6 +811,8 @@ namespace TheDugout.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CurrentSeasonId");
 
                     b.HasIndex("UserId");
 
@@ -2374,6 +2379,11 @@ namespace TheDugout.Migrations
 
             modelBuilder.Entity("TheDugout.Models.Game.GameSave", b =>
                 {
+                    b.HasOne("TheDugout.Models.Seasons.Season", "CurrentSeason")
+                        .WithMany()
+                        .HasForeignKey("CurrentSeasonId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("TheDugout.Models.Game.User", "User")
                         .WithMany("GameSaves")
                         .HasForeignKey("UserId")
@@ -2384,6 +2394,8 @@ namespace TheDugout.Migrations
                         .WithMany()
                         .HasForeignKey("UserTeamId")
                         .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("CurrentSeason");
 
                     b.Navigation("User");
 
@@ -3062,8 +3074,7 @@ namespace TheDugout.Migrations
                 {
                     b.Navigation("Agencies");
 
-                    b.Navigation("Bank")
-                        .IsRequired();
+                    b.Navigation("Bank");
 
                     b.Navigation("Cups");
 

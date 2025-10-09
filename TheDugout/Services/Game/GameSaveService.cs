@@ -328,7 +328,7 @@ namespace TheDugout.Services.Game
 
                 // 3. Създаваме първи сезон
                 var startDate = new DateTime(DateTime.UtcNow.Year, 7, 1);
-                var season = _seasonGenerator.GenerateSeason(gameSave, startDate);
+                var season = await _seasonGenerator.GenerateSeason(gameSave, startDate);
                 gameSave.Seasons.Add(season);
                 await _context.SaveChangesAsync();
 

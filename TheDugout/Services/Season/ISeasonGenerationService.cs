@@ -4,7 +4,6 @@ namespace TheDugout.Services.Season
 {
     public interface ISeasonGenerationService
     {
-        Models.Seasons.Season GenerateSeason(GameSave gameSave, DateTime startDate);
-
+        Task<Models.Seasons.Season> GenerateSeason(GameSave gameSave, DateTime startDate);
     }
 }

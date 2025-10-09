@@ -1,51 +1,57 @@
-import { useOutletContext } from "react-router-dom";
-import TeamLogo from "../../../components/TeamLogo";
+import React from "react";
 
-export default function Standings() {
-  const { selectedLeague, myTeamId } = useOutletContext();
-
-  if (!selectedLeague) return <p>Loading standings...</p>;
+const Standings = ({ standings }) => {
+  if (!standings || standings.length === 0)
+    return (
+      <p className="text-gray-400 text-center mt-4">
+        Няма налично класиране за тази лига.
+      </p>
+    );
 
   return (
-    <div>
-      <h2 className="text-xl font-bold mb-4 text-sky-700">{selectedLeague.name} Standings</h2>
-      <table className="w-full text-sm text-gray-700">
-        <thead className="bg-sky-100 text-sky-800 text-sm uppercase">
+    <div className="overflow-x-auto">
+      <table className="w-full text-sm text-gray-300">
+        <thead className="bg-gray-800 text-gray-200 uppercase text-xs">
           <tr>
-            <th className="px-3 py-2 text-center">#</th>
-            <th className="px-3 py-2 text-left">Team</th>
-            <th className="px-3 py-2 text-center">M</th>
-            <th className="px-3 py-2 text-center">W</th>
-            <th className="px-3 py-2 text-center">D</th>
-            <th className="px-3 py-2 text-center">L</th>
-            <th className="px-3 py-2 text-center">Pts</th>
+            <th className="px-3 py-2 text-left">#</th>
+            <th className="px-3 py-2 text-left">Отбор</th>
+            <th className="px-3 py-2 text-center">М</th>
+            <th className="px-3 py-2 text-center">П</th>
+            <th className="px-3 py-2 text-center">Р</th>
+            <th className="px-3 py-2 text-center">З</th>
+            <th className="px-3 py-2 text-center">ГВ</th>
+            <th className="px-3 py-2 text-center">ГП</th>
+            <th className="px-3 py-2 text-center">ГР</th>
+            <th className="px-3 py-2 text-center">Т</th>
           </tr>
         </thead>
         <tbody>
-          {selectedLeague.teams.map((team) => (
+          {standings.map((team) => (
             <tr
-              key={team.id}
-              className={`${
-                team.id === myTeamId
-                  ? "bg-sky-100 border-l-4 border-sky-500"
-                  : "hover:bg-sky-50"
-              } transition`}
+              key={team.TeamId}
+              className="border-b border-gray-700 hover:bg-gray-800"
             >
-              <td className="px-3 py-2 text-center">{team.ranking}</td>
+              <td className="px-3 py-2 text-center">{team.Ranking}</td>
               <td className="px-3 py-2 flex items-center gap-2">
-                <TeamLogo
-                  teamName={team.name}
-                  logoFileName={team.logoFileName}
-                  className="w-6 h-6"
+                <img
+                  src={`/images/logos/${team.TeamLogo}`}
+                  alt={team.TeamName}
+                  className="w-6 h-6 rounded"
                 />
-                {team.name}
+                {team.TeamName}
               </td>
-              <td className="px-3 py-2 text-center">{team.matches}</td>
-              <td className="px-3 py-2 text-center">{team.wins}</td>
-              <td className="px-3 py-2 text-center">{team.draws}</td>
-              <td className="px-3 py-2 text-center">{team.losses}</td>
-              <td className="px-3 py-2 text-center font-bold text-sky-700">
-                {team.points}
+              <td className="px-3 py-2 text-center">{team.Matches}</td>
+              <td className="px-3 py-2 text-center">{team.Wins}</td>
+              <td className="px-3 py-2 text-center">{team.Draws}</td>
+              <td className="px-3 py-2 text-center">{team.Losses}</td>
+              <td className="px-3 py-2 text-center">{team.GoalsFor}</td>
+              <td className="px-3 py-2 text-center">{team.GoalsAgainst}</td>
+              <td className="px-3 py-2 text-center">
+                {team.GoalDifference >= 0 ? "+" : ""}
+                {team.GoalDifference}
+              </td>
+              <td className="px-3 py-2 text-center font-bold text-sky-400">
+                {team.Points}
               </td>
             </tr>
           ))}
@@ -53,4 +59,6 @@ export default function Standings() {
       </table>
     </div>
   );
-}
+};
+
+export default Standings;

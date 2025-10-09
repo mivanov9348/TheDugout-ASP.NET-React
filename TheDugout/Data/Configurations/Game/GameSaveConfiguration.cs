@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using TheDugout.Models.Finance;
 using TheDugout.Models.Game;
+using TheDugout.Models.Seasons;
 
 namespace TheDugout.Data.Configurations
 {
@@ -11,6 +12,12 @@ namespace TheDugout.Data.Configurations
         {
             builder.ToTable("GameSaves");
             builder.HasKey(e => e.Id);
+
+            builder.HasOne(gs => gs.CurrentSeason)
+                   .WithMany()
+                   .HasForeignKey(gs => gs.CurrentSeasonId)
+                   .OnDelete(DeleteBehavior.Restrict)
+                   .IsRequired(false); 
 
             builder.HasOne(gs => gs.User)
                    .WithMany(u => u.GameSaves)
@@ -58,6 +65,4 @@ namespace TheDugout.Data.Configurations
                    .OnDelete(DeleteBehavior.Restrict);
         }
     }
-
 }
-

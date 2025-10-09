@@ -1,13 +1,16 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 using TheDugout.Data;
-using System.Security.Claims;
+using TheDugout.Models.Leagues;
+using TheDugout.Models.Matches;
+using TheDugout.Models.Teams;
+using TheDugout.Models.Seasons;
 
 namespace TheDugout.Controllers
 {
     [ApiController]
-    [Route("api/leagues")]
+    [Route("api/[controller]")]
     public class LeagueController : ControllerBase
     {
         private readonly DugoutDbContext _context;
@@ -17,105 +20,85 @@ namespace TheDugout.Controllers
             _context = context;
         }
 
-        private int? GetUserIdFromClaims()
+        [HttpGet("{gameSaveId}")]
+        public async Task<IActionResult> GetLeaguesByGameSave(int gameSaveId)
         {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
-                              ?? User.FindFirst("sub")?.Value
-                              ?? User.FindFirst("id")?.Value;
+            try
+            {
+                // 1️⃣ Намираме активния сезон за този сейв
+                var season = await _context.Seasons
+                    .FirstOrDefaultAsync(s => s.GameSaveId == gameSaveId && s.IsActive);
 
-            if (int.TryParse(userIdClaim, out var parsed)) return parsed;
-            return null;
-        }
+                if (season == null)
+                    return NotFound($"❌ No active season found for GameSave {gameSaveId}");
 
-        // GET api/leagues?gameSaveId=1&seasonId=5 (опционално)
-        [Authorize]
-        [HttpGet]
-        public async Task<IActionResult> GetLeagues([FromQuery] int gameSaveId, [FromQuery] int? seasonId = null)
-        {
-            var userId = GetUserIdFromClaims();
-            if (userId == null) return Unauthorized();
+                // 2️⃣ Взимаме всички лиги за този сейв и сезон
+                var leagues = await _context.Leagues
+                    .Include(l => l.Template)
+                    .Include(l => l.Country)
+                    .Include(l => l.Standings)
+                        .ThenInclude(ls => ls.Team)
+                            .ThenInclude(t => t.Template)
+                    .Where(l => l.GameSaveId == gameSaveId && l.SeasonId == season.Id)
+                    .ToListAsync();
 
-            // Намираме твоя отбор (който е в този save)
-            var myTeam = await _context.Teams
-                .Include(t => t.League)
-                    .ThenInclude(l => l.GameSave)
-                .FirstOrDefaultAsync(t => t.GameSaveId == gameSaveId);
+                Console.WriteLine($"✅ Found {leagues.Count} leagues for season {season.Id}");
 
-            if (myTeam == null) return NotFound("No team found for this save.");
-
-            // Намираме текущия сезон (ако не е подаден — вземаме последния)
-            var season = seasonId.HasValue
-                ? await _context.Seasons.FirstOrDefaultAsync(s => s.Id == seasonId && s.GameSaveId == gameSaveId)
-                : await _context.Seasons
-                    .Where(s => s.GameSaveId == gameSaveId)
-                    .OrderByDescending(s => s.StartDate)
-                    .FirstOrDefaultAsync();
-
-            if (season == null) return NotFound("No active season found.");
-
-            // Вземаме всички лиги в този save + техните класирания за текущия сезон
-            var leagues = await _context.Leagues
-                .Include(l => l.Template)
-                .Include(l => l.Teams)
-                .Where(l => l.GameSaveId == gameSaveId)
-                .Select(l => new
+                // 3️⃣ Филтрираме Standings-ите за точния сезон и сейв
+                var filteredLeagues = leagues.Select(l => new
                 {
-                    id = l.Id,
-                    name = l.Template.Name,
-                    tier = l.Tier,
-                    countryId = l.CountryId,
-                    hasMyTeam = l.Teams.Any(t => t.Id == myTeam.Id),
-                    teams = _context.LeagueStandings
-                        .Where(ls => ls.LeagueId == l.Id && ls.SeasonId == season.Id)
-                        .OrderBy(ls => ls.Ranking) // Сортиране по ранкинг
-                        .Select(ls => new
+                    Id = l.Id,
+                    Name = l.Template?.Name ?? "Unknown League",
+                    Country = l.Country?.Name ?? "Unknown Country",
+                    Tier = l.Tier,
+                    PromotionSpots = l.PromotionSpots,
+                    RelegationSpots = l.RelegationSpots,
+                    TeamsCount = l.TeamsCount,
+                    Standings = l.Standings
+                        .Where(s => s.SeasonId == season.Id && s.GameSaveId == gameSaveId)
+                        .OrderBy(s => s.Ranking)
+                        .Select(s => new
                         {
-                            id = ls.Team.Id,
-                            name = ls.Team.Name,
-                            abbreviation = ls.Team.Abbreviation,
-                            logoFileName = ls.Team.LogoFileName,
-                            matches = ls.Matches,
-                            wins = ls.Wins,
-                            draws = ls.Draws,
-                            losses = ls.Losses,
-                            goalsFor = ls.GoalsFor,
-                            goalsAgainst = ls.GoalsAgainst,
-                            goalDifference = ls.GoalDifference,
-                            points = ls.Points,
-                            ranking = ls.Ranking // 👈 КЛЮЧОВО: ДОБАВЕНО!
+                            TeamId = s.TeamId,
+                            TeamName = s.Team?.Name ?? "Unknown Team",
+                            TeamAbbr = s.Team?.Abbreviation ?? "",
+                            TeamLogo = s.Team?.LogoFileName ?? "default_logo.png",
+                            Ranking = s.Ranking,
+                            Points = s.Points,
+                            Matches = s.Matches,
+                            Wins = s.Wins,
+                            Draws = s.Draws,
+                            Losses = s.Losses,
+                            GoalsFor = s.GoalsFor,
+                            GoalsAgainst = s.GoalsAgainst,
+                            GoalDifference = s.GoalDifference
                         })
                         .ToList()
-                })
-                .ToListAsync();
+                }).ToList();
 
-            // Подреждаме: Първо — лигата на моя отбор, после останалите
-            var ordered = leagues
-                .OrderByDescending(l => l.hasMyTeam) // Моята лига е първа!
-                .ToList();
+                var jsonDebug = System.Text.Json.JsonSerializer.Serialize(
+                           filteredLeagues,
+                           new System.Text.Json.JsonSerializerOptions { WriteIndented = true }
+                       );
 
-            return Ok(ordered);
-        }
+                Console.WriteLine("📊 Filtered Leagues:");
+                Console.WriteLine(jsonDebug);
 
-        // GET api/leagues/seasons?gameSaveId=1 — за избор на сезон (опционално)
-        [Authorize]
-        [HttpGet("seasons")]
-        public async Task<IActionResult> GetSeasons([FromQuery] int gameSaveId)
-        {
-            var userId = GetUserIdFromClaims();
-            if (userId == null) return Unauthorized();
-
-            var seasons = await _context.Seasons
-                .Where(s => s.GameSaveId == gameSaveId)
-                .OrderByDescending(s => s.StartDate)
-                .Select(s => new
+                // 4️⃣ Връщаме SeasonId + списък с лиги и класирания
+                return Ok(new
                 {
-                    s.Id,
-                    s.StartDate,
-                    s.EndDate
-                })
-                .ToListAsync();
-
-            return Ok(seasons);
+                    SeasonId = season.Id,
+                    Leagues = filteredLeagues
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Error fetching leagues: {ex.Message}");
+                Console.WriteLine(ex.StackTrace);
+                return StatusCode(500, "Internal server error");
+            }
         }
+
+
     }
 }

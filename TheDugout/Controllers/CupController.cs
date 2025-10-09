@@ -61,7 +61,7 @@ namespace TheDugout.Controllers
                     {
                         PlayerId = p.PlayerId,
                         PlayerName = p.Player.FirstName,
-                        TeamName = p.Player.Team != null ? p.Player.Team.Name : "Unknown",
+                        TeamName = p.Player.Team.Name != null ? p.Player.Team.Name : "Unknown",
                         Goals = p.Goals,
                         Matches = p.MatchesPlayed
                     })
