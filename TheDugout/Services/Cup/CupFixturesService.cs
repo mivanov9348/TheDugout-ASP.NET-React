@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Linq;
 using TheDugout.Data;
 using TheDugout.Models.Cups;
 using TheDugout.Models.Enums;
@@ -60,10 +61,10 @@ namespace TheDugout.Services.Cup
             }
         }
 
-        public async Task GenerateNextRoundAsync(int cupId, int gameSaveId, int seasonId)
+        public async Task GenerateNextRoundAsync(int cupId, int gameSaveId, int? seasonId)
         {
             var cup = await _context.Cups
-                .Where(c => c.Id == cupId && c.SeasonId == seasonId)   // филтрираме тук
+                .Where(c => c.Id == cupId && c.SeasonId == seasonId)
                 .Include(c => c.Teams)
                 .Include(c => c.Rounds)
                     .ThenInclude(r => r.Fixtures)
@@ -93,11 +94,13 @@ namespace TheDugout.Services.Cup
                 .ToList();
 
             var losers = lastRound.Fixtures
-                .SelectMany(f => new[] { f.HomeTeam.Id, f.AwayTeam.Id })
+                .SelectMany(f => new[] { f.HomeTeamId, f.AwayTeamId })
+                .Where(id => id.HasValue)
+                .Select(id => id.Value)
                 .Except(winners)
                 .ToList();
 
-            foreach (var ct in cup.Teams.Where(t => losers.Contains(t.TeamId)))
+            foreach (var ct in cup.Teams.Where(t => losers.Contains(t.TeamId ?? -1)))
             {
                 ct.IsEliminated = true;
             }
@@ -115,9 +118,11 @@ namespace TheDugout.Services.Cup
             var nextRoundTeams = GetNextRoundTeams(cup, lastRound, winners);
 
             var totalRounds = (int)Math.Log2(cup.Teams.Count(t => !t.IsEliminated));
+            var roundNumber = (lastRound.RoundNumber ?? 0) + 1;
+
             var roundName = _fixtureHelperService.GetRoundName(
                 nextRoundTeams.Count,
-                lastRound.RoundNumber + 1,
+                roundNumber,
                 totalRounds
             );
 
@@ -133,14 +138,14 @@ namespace TheDugout.Services.Cup
 
             for (int i = 0; i < shuffledTeams.Count; i += 2)
             {
-                var home = shuffledTeams[i];
-                var away = shuffledTeams[i + 1];
+                var homeId = shuffledTeams[i];
+                var awayId = shuffledTeams[i + 1];
 
                 var fixture = _fixtureHelperService.CreateFixture(
                     gameSaveId,
                     seasonId,
-                    home,
-                    away,
+                    homeId,
+                    awayId,
                     DateTime.MinValue,
                     1,
                     CompetitionTypeEnum.DomesticCup,
@@ -250,22 +255,19 @@ namespace TheDugout.Services.Cup
             return teamCount - prevPower;
         }
 
-        /// <summary>
-        /// Връща отборите за следващия кръг:
-        /// - Ако е Prelim → победителите + чакащите
-        /// - Ако е нормален кръг → само победителите
-        /// </summary>
         private static List<int> GetNextRoundTeams(Models.Cups.Cup cup, CupRound lastRound, List<int> winners)
         {
             if (lastRound.Name.Contains("Preliminary", StringComparison.OrdinalIgnoreCase))
             {
                 var prelimTeams = lastRound.Fixtures
                     .SelectMany(f => new[] { f.HomeTeamId, f.AwayTeamId })
+                    .Where(id => id.HasValue)
+                    .Select(id => id.Value)
                     .ToList();
 
                 var waitingTeams = cup.Teams
-                    .Where(t => !t.IsEliminated && !prelimTeams.Contains(t.TeamId))
-                    .Select(t => t.TeamId)
+                    .Where(t => !t.IsEliminated && !prelimTeams.Contains(t.TeamId ?? -1))
+                    .Select(t => t.TeamId ?? -1)
                     .ToList();
 
                 return winners.Concat(waitingTeams).ToList();
@@ -273,5 +275,7 @@ namespace TheDugout.Services.Cup
 
             return winners;
         }
+
+
     }
 }

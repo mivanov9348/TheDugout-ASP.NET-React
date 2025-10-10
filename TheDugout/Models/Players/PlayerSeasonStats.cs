@@ -6,9 +6,9 @@ namespace TheDugout.Models.Players
     public class PlayerSeasonStats
     {
         public int Id { get; set; }
-        public int PlayerId { get; set; }
+        public int? PlayerId { get; set; }
         public Player? Player { get; set; }
-        public int SeasonId { get; set; }
+        public int? SeasonId { get; set; }
         public Season? Season { get; set; }
         public int MatchesPlayed { get; set; }
         public int Goals { get; set; }

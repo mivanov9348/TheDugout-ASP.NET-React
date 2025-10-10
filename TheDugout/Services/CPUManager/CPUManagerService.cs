@@ -79,19 +79,21 @@ public class CpuManagerService : ICPUManagerService
                     break;
 
                 case SeasonEventType.TrainingDay:
-                    foreach (var team in cpuTeams)
+                    try
                     {
-                        try
-                        {
-                            if (progress != null) await progress($"💪 CPU team {team.Name} is running daily training...");
-                            await _trainingService.RunDailyCpuTrainingAsync(gameSaveId, seasonId, date, team.Id);
-                            if (progress != null) await progress($"✅ CPU team {team.Name} finished training");
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex, "❌ CPU training logic error for team {TeamId}", team.Id);
-                            if (progress != null) await progress($"❌ Training error for team {team.Name}");
-                        }
+                        // Message before starting the bulk operation
+                        if (progress != null) await progress("💪 Провежда се тренировка за всички CPU отбори...");
+
+                        // All CPU teams train in one go
+                        await _trainingService.RunDailyTrainingForAllCpuTeamsAsync(gameSaveId, seasonId, date, humanTeamId);
+
+                        if (progress != null) await progress("✅ The training is over!");
+                    }
+                    catch (Exception ex)
+                    {
+                        // Error handling for the bulk operation
+                        _logger.LogError(ex, "❌ Критична грешка при масовата CPU тренировка");
+                        if (progress != null) await progress("❌ Възникна грешка по време на тренировката");
                     }
                     break;
 

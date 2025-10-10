@@ -17,7 +17,7 @@ namespace TheDugout.Models.Fixtures
         public int GameSaveId { get; set; }
         public GameSave GameSave { get; set; } = null!;
 
-        public int SeasonId { get; set; }
+        public int? SeasonId { get; set; }
         public Season Season { get; set; } = null!;
 
         public CompetitionTypeEnum CompetitionType { get; set; }

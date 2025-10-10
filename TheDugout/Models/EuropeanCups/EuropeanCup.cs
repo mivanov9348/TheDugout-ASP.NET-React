@@ -14,7 +14,7 @@ namespace TheDugout.Models.Competitions
         public int GameSaveId { get; set; }
         public GameSave GameSave { get; set; } = null!;
 
-        public int SeasonId { get; set; }
+        public int? SeasonId { get; set; }
         public Season Season { get; set; } = null!;
 
         public int? CompetitionId { get; set; }

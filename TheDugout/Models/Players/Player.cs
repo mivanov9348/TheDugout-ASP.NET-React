@@ -23,12 +23,12 @@ namespace TheDugout.Models.Players
             }
         }
         public int? TeamId { get; set; }
-        public Team? Team { get; set; }
+        public Team Team { get; set; } = null!;
         public int? AgencyId { get; set; }
         public Agency? Agency { get; set; }
         public int? CountryId { get; set; }
         public Country? Country { get; set; }
-        public int PositionId { get; set; }
+        public int? PositionId { get; set; }
         public Position Position { get; set; } = null!;
         public int KitNumber { get; set; }
         public double HeightCm { get; set; }

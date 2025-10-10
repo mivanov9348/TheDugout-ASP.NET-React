@@ -12,7 +12,7 @@ namespace TheDugout.Models.Matches
 
         public int Minute { get; set; }
 
-        public int TeamId { get; set; }
+        public int? TeamId { get; set; }
         public Team Team { get; set; } = null!;
 
         public int PlayerId { get; set; }

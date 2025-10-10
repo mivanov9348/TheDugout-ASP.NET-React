@@ -32,7 +32,7 @@ namespace TheDugout.Services.EuropeanCup
                 CancellationToken ct = default)
         {
             var cup = await _context.Set<Models.Competitions.EuropeanCup>()
-                .Include(x => x.Template).ThenInclude(t => t.PhaseTemplates) // важно — включваме template->phaseTemplates
+                .Include(x => x.Template).ThenInclude(t => t.PhaseTemplates)
                 .Include(x => x.Teams)
                 .Include(x => x.Phases).ThenInclude(p => p.PhaseTemplate)
                 .FirstOrDefaultAsync(x => x.Id == europeanCupId, ct)
@@ -69,7 +69,12 @@ namespace TheDugout.Services.EuropeanCup
                 return;
             }
 
-            var teamIds = cup.Teams.Select(t => t.TeamId).ToList();
+            var teamIds = cup.Teams
+                .Select(t => t.TeamId)
+                .Where(id => id.HasValue) 
+                .Select(id => id.Value)   
+                .ToList();
+            
             if (teamIds.Count == 0)
             {
                 _logger.LogError("No teams attached to cup {CupId} - cannot generate fixtures.", cup.Id);

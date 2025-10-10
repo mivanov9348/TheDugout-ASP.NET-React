@@ -121,7 +121,7 @@ namespace TheDugout.Services.Player
             var existingStats = await _context.PlayerSeasonStats
                 .Where(ps => ps.SeasonId == seasonId &&
                              ps.CompetitionId == competition.Id &&
-                             playerIds.Contains(ps.PlayerId))
+                             playerIds.Contains(ps.PlayerId ?? -1))
                 .ToListAsync();
 
             // Update or create PlayerSeasonStats

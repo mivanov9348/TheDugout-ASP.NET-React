@@ -276,7 +276,7 @@ namespace TheDugout.Services.EuropeanCup
                              && !t.IsEliminated
                              && !t.IsPlayoffParticipant
                              && t.CurrentPhaseOrder == 3)
-                    .Select(t => t.TeamId)
+                    .Select(t => t.TeamId ?? -1)
                     .ToListAsync();
 
                 winners.AddRange(directQualified);

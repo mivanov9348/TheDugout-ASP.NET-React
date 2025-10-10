@@ -11,9 +11,9 @@ namespace TheDugout.Models.Cups
         public CupTemplate Template { get; set; } = null!;
         public int GameSaveId { get; set; }
         public GameSave GameSave { get; set; } = null!;
-        public int SeasonId { get; set; }
+        public int? SeasonId { get; set; }
         public Season Season { get; set; } = null!;
-        public int CountryId { get; set; }
+        public int? CountryId { get; set; }
         public Country Country { get; set; } = null!;
         public int? CompetitionId { get; set; }
         public Competition? Competition { get; set; } = null!;

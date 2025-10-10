@@ -70,7 +70,7 @@ namespace TheDugout.Services.Standings
                         if (_cupFixturesService.IsRoundFinished(cupRound))
                         {
                             await _cupFixturesService.GenerateNextRoundAsync(
-                                cupRound.CupId,
+                                cupRound.CupId ?? -1,
                                 fixture.GameSaveId,
                                 fixture.SeasonId
                             );

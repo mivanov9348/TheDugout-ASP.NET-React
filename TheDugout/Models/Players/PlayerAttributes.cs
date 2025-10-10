@@ -4,10 +4,10 @@
     {
         public int Id { get; set; }
 
-        public int PlayerId { get; set; }
+        public int? PlayerId { get; set; }
         public Player Player { get; set; } = null!;
 
-        public int AttributeId { get; set; }
+        public int? AttributeId { get; set; }
         public AttributeDefinition Attribute { get; set; } = null!;
 
         public int Value { get; set; }

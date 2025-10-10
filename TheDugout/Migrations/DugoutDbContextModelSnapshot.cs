@@ -199,7 +199,7 @@ namespace TheDugout.Migrations
                     b.Property<int>("Ranking")
                         .HasColumnType("int");
 
-                    b.Property<int>("SeasonId")
+                    b.Property<int?>("SeasonId")
                         .HasColumnType("int");
 
                     b.Property<int>("TemplateId")
@@ -331,7 +331,7 @@ namespace TheDugout.Migrations
                         .HasColumnType("int")
                         .HasDefaultValue(0);
 
-                    b.Property<int>("TeamId")
+                    b.Property<int?>("TeamId")
                         .HasColumnType("int");
 
                     b.Property<int>("Wins")
@@ -344,7 +344,8 @@ namespace TheDugout.Migrations
                     b.HasIndex("TeamId");
 
                     b.HasIndex("EuropeanCupId", "TeamId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[TeamId] IS NOT NULL");
 
                     b.ToTable("EuropeanCupStandings", (string)null);
                 });
@@ -369,7 +370,7 @@ namespace TheDugout.Migrations
                     b.Property<bool>("IsPlayoffParticipant")
                         .HasColumnType("bit");
 
-                    b.Property<int>("TeamId")
+                    b.Property<int?>("TeamId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -377,7 +378,8 @@ namespace TheDugout.Migrations
                     b.HasIndex("TeamId");
 
                     b.HasIndex("EuropeanCupId", "TeamId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[TeamId] IS NOT NULL");
 
                     b.ToTable("EuropeanCupTeams", (string)null);
                 });
@@ -423,7 +425,7 @@ namespace TheDugout.Migrations
                     b.Property<int?>("CompetitionId")
                         .HasColumnType("int");
 
-                    b.Property<int>("CountryId")
+                    b.Property<int?>("CountryId")
                         .HasColumnType("int");
 
                     b.Property<int>("GameSaveId")
@@ -438,7 +440,7 @@ namespace TheDugout.Migrations
                     b.Property<int>("RoundsCount")
                         .HasColumnType("int");
 
-                    b.Property<int>("SeasonId")
+                    b.Property<int?>("SeasonId")
                         .HasColumnType("int");
 
                     b.Property<int>("TeamsCount")
@@ -468,7 +470,7 @@ namespace TheDugout.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("CupId")
+                    b.Property<int?>("CupId")
                         .HasColumnType("int");
 
                     b.Property<string>("Name")
@@ -476,7 +478,7 @@ namespace TheDugout.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<int>("RoundNumber")
+                    b.Property<int?>("RoundNumber")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -494,13 +496,13 @@ namespace TheDugout.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("CupId")
+                    b.Property<int?>("CupId")
                         .HasColumnType("int");
 
                     b.Property<bool>("IsEliminated")
                         .HasColumnType("bit");
 
-                    b.Property<int>("TeamId")
+                    b.Property<int?>("TeamId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -558,7 +560,7 @@ namespace TheDugout.Migrations
                     b.Property<int>("Level")
                         .HasColumnType("int");
 
-                    b.Property<int>("TeamId")
+                    b.Property<int?>("TeamId")
                         .HasColumnType("int");
 
                     b.Property<decimal>("TicketPrice")
@@ -567,7 +569,8 @@ namespace TheDugout.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("TeamId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[TeamId] IS NOT NULL");
 
                     b.ToTable("Stadiums");
                 });
@@ -583,7 +586,7 @@ namespace TheDugout.Migrations
                     b.Property<int>("Level")
                         .HasColumnType("int");
 
-                    b.Property<int>("TeamId")
+                    b.Property<int?>("TeamId")
                         .HasColumnType("int");
 
                     b.Property<int>("TrainingQuality")
@@ -592,7 +595,8 @@ namespace TheDugout.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("TeamId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[TeamId] IS NOT NULL");
 
                     b.ToTable("TrainingFacilities");
                 });
@@ -608,13 +612,14 @@ namespace TheDugout.Migrations
                     b.Property<int>("Level")
                         .HasColumnType("int");
 
-                    b.Property<int>("TeamId")
+                    b.Property<int?>("TeamId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.HasIndex("TeamId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[TeamId] IS NOT NULL");
 
                     b.ToTable("YouthAcademies");
                 });
@@ -746,7 +751,7 @@ namespace TheDugout.Migrations
                     b.Property<int>("Round")
                         .HasColumnType("int");
 
-                    b.Property<int>("SeasonId")
+                    b.Property<int?>("SeasonId")
                         .HasColumnType("int");
 
                     b.Property<int>("Status")
@@ -873,7 +878,7 @@ namespace TheDugout.Migrations
                     b.Property<int>("RelegationSpots")
                         .HasColumnType("int");
 
-                    b.Property<int>("SeasonId")
+                    b.Property<int?>("SeasonId")
                         .HasColumnType("int");
 
                     b.Property<int>("TeamsCount")
@@ -955,7 +960,7 @@ namespace TheDugout.Migrations
                     b.Property<int>("SeasonId")
                         .HasColumnType("int");
 
-                    b.Property<int>("TeamId")
+                    b.Property<int?>("TeamId")
                         .HasColumnType("int");
 
                     b.Property<int>("Wins")
@@ -972,7 +977,8 @@ namespace TheDugout.Migrations
                     b.HasIndex("TeamId");
 
                     b.HasIndex("LeagueId", "TeamId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[TeamId] IS NOT NULL");
 
                     b.ToTable("LeagueStandings", (string)null);
                 });
@@ -1205,7 +1211,7 @@ namespace TheDugout.Migrations
                     b.Property<int>("PlayerId")
                         .HasColumnType("int");
 
-                    b.Property<int>("TeamId")
+                    b.Property<int?>("TeamId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -1234,16 +1240,16 @@ namespace TheDugout.Migrations
                     b.Property<bool>("IsScored")
                         .HasColumnType("bit");
 
-                    b.Property<int>("MatchId")
+                    b.Property<int?>("MatchId")
                         .HasColumnType("int");
 
                     b.Property<int>("Order")
                         .HasColumnType("int");
 
-                    b.Property<int>("PlayerId")
+                    b.Property<int?>("PlayerId")
                         .HasColumnType("int");
 
-                    b.Property<int>("TeamId")
+                    b.Property<int?>("TeamId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -1418,7 +1424,7 @@ namespace TheDugout.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<int>("PositionId")
+                    b.Property<int?>("PositionId")
                         .HasColumnType("int");
 
                     b.Property<int>("PotentialAbility")
@@ -1456,10 +1462,10 @@ namespace TheDugout.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("AttributeId")
+                    b.Property<int?>("AttributeId")
                         .HasColumnType("int");
 
-                    b.Property<int>("PlayerId")
+                    b.Property<int?>("PlayerId")
                         .HasColumnType("int");
 
                     b.Property<double>("Progress")
@@ -1473,7 +1479,8 @@ namespace TheDugout.Migrations
                     b.HasIndex("AttributeId");
 
                     b.HasIndex("PlayerId", "AttributeId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[PlayerId] IS NOT NULL AND [AttributeId] IS NOT NULL");
 
                     b.ToTable("PlayerAttributes", (string)null);
                 });
@@ -1530,10 +1537,10 @@ namespace TheDugout.Migrations
                         .HasColumnType("int")
                         .HasDefaultValue(0);
 
-                    b.Property<int>("PlayerId")
+                    b.Property<int?>("PlayerId")
                         .HasColumnType("int");
 
-                    b.Property<int>("SeasonId")
+                    b.Property<int?>("SeasonId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -1581,7 +1588,7 @@ namespace TheDugout.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("AttributeId")
+                    b.Property<int?>("AttributeId")
                         .HasColumnType("int");
 
                     b.Property<int>("PositionId")
@@ -1596,7 +1603,8 @@ namespace TheDugout.Migrations
                     b.HasIndex("AttributeId");
 
                     b.HasIndex("PositionId", "AttributeId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[AttributeId] IS NOT NULL");
 
                     b.ToTable("PositionWeights", (string)null);
                 });
@@ -1842,10 +1850,10 @@ namespace TheDugout.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("TacticId")
+                    b.Property<int?>("TacticId")
                         .HasColumnType("int");
 
-                    b.Property<int>("TeamId")
+                    b.Property<int?>("TeamId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -1853,7 +1861,8 @@ namespace TheDugout.Migrations
                     b.HasIndex("TacticId");
 
                     b.HasIndex("TeamId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[TeamId] IS NOT NULL");
 
                     b.ToTable("TeamTactics", (string)null);
                 });
@@ -1902,16 +1911,16 @@ namespace TheDugout.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("AttributeId")
+                    b.Property<int?>("AttributeId")
                         .HasColumnType("int");
 
                     b.Property<int>("ChangeValue")
                         .HasColumnType("int");
 
-                    b.Property<int>("PlayerId")
+                    b.Property<int?>("PlayerId")
                         .HasColumnType("int");
 
-                    b.Property<int>("TrainingSessionId")
+                    b.Property<int?>("TrainingSessionId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -1936,13 +1945,13 @@ namespace TheDugout.Migrations
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("GameSaveId")
+                    b.Property<int?>("GameSaveId")
                         .HasColumnType("int");
 
-                    b.Property<int>("SeasonId")
+                    b.Property<int?>("SeasonId")
                         .HasColumnType("int");
 
-                    b.Property<int>("TeamId")
+                    b.Property<int?>("TeamId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -2085,8 +2094,7 @@ namespace TheDugout.Migrations
                     b.HasOne("TheDugout.Models.Seasons.Season", "Season")
                         .WithMany("EuropeanCups")
                         .HasForeignKey("SeasonId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("TheDugout.Models.Competitions.EuropeanCupTemplate", "Template")
                         .WithMany()
@@ -2139,8 +2147,7 @@ namespace TheDugout.Migrations
                     b.HasOne("TheDugout.Models.Teams.Team", "Team")
                         .WithMany("EuropeanCupStandings")
                         .HasForeignKey("TeamId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("EuropeanCup");
 
@@ -2158,8 +2165,7 @@ namespace TheDugout.Migrations
                     b.HasOne("TheDugout.Models.Teams.Team", "Team")
                         .WithMany("EuropeanCupTeams")
                         .HasForeignKey("TeamId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("EuropeanCup");
 
@@ -2171,8 +2177,7 @@ namespace TheDugout.Migrations
                     b.HasOne("TheDugout.Models.Common.Country", "Country")
                         .WithMany()
                         .HasForeignKey("CountryId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("TheDugout.Models.Game.GameSave", "GameSave")
                         .WithMany("Cups")
@@ -2183,8 +2188,7 @@ namespace TheDugout.Migrations
                     b.HasOne("TheDugout.Models.Seasons.Season", "Season")
                         .WithMany("Cups")
                         .HasForeignKey("SeasonId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("TheDugout.Models.Cups.CupTemplate", "Template")
                         .WithMany()
@@ -2206,8 +2210,7 @@ namespace TheDugout.Migrations
                     b.HasOne("TheDugout.Models.Cups.Cup", "Cup")
                         .WithMany("Rounds")
                         .HasForeignKey("CupId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Cup");
                 });
@@ -2217,14 +2220,12 @@ namespace TheDugout.Migrations
                     b.HasOne("TheDugout.Models.Cups.Cup", "Cup")
                         .WithMany("Teams")
                         .HasForeignKey("CupId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("TheDugout.Models.Teams.Team", "Team")
                         .WithMany("CupTeams")
                         .HasForeignKey("TeamId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Cup");
 
@@ -2236,8 +2237,7 @@ namespace TheDugout.Migrations
                     b.HasOne("TheDugout.Models.Teams.Team", "Team")
                         .WithOne("Stadium")
                         .HasForeignKey("TheDugout.Models.Facilities.Stadium", "TeamId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Team");
                 });
@@ -2247,8 +2247,7 @@ namespace TheDugout.Migrations
                     b.HasOne("TheDugout.Models.Teams.Team", "Team")
                         .WithOne("TrainingFacility")
                         .HasForeignKey("TheDugout.Models.Facilities.TrainingFacility", "TeamId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Team");
                 });
@@ -2258,8 +2257,7 @@ namespace TheDugout.Migrations
                     b.HasOne("TheDugout.Models.Teams.Team", "Team")
                         .WithOne("YouthAcademy")
                         .HasForeignKey("TheDugout.Models.Facilities.YouthAcademy", "TeamId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Team");
                 });
@@ -2349,8 +2347,7 @@ namespace TheDugout.Migrations
                     b.HasOne("TheDugout.Models.Seasons.Season", "Season")
                         .WithMany("Fixtures")
                         .HasForeignKey("SeasonId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("TheDugout.Models.Teams.Team", "WinnerTeam")
                         .WithMany()
@@ -2426,8 +2423,7 @@ namespace TheDugout.Migrations
                     b.HasOne("TheDugout.Models.Seasons.Season", "Season")
                         .WithMany("Leagues")
                         .HasForeignKey("SeasonId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("TheDugout.Models.Leagues.LeagueTemplate", "Template")
                         .WithMany()
@@ -2467,8 +2463,7 @@ namespace TheDugout.Migrations
                     b.HasOne("TheDugout.Models.Teams.Team", "Team")
                         .WithMany("LeagueStandings")
                         .HasForeignKey("TeamId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("GameSave");
 
@@ -2589,8 +2584,7 @@ namespace TheDugout.Migrations
                     b.HasOne("TheDugout.Models.Teams.Team", "Team")
                         .WithMany("MatchEvents")
                         .HasForeignKey("TeamId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("EventType");
 
@@ -2608,20 +2602,17 @@ namespace TheDugout.Migrations
                     b.HasOne("TheDugout.Models.Matches.Match", "Match")
                         .WithMany("Penalties")
                         .HasForeignKey("MatchId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("TheDugout.Models.Players.Player", "Player")
                         .WithMany()
                         .HasForeignKey("PlayerId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("TheDugout.Models.Teams.Team", "Team")
                         .WithMany()
                         .HasForeignKey("TeamId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Match");
 
@@ -2671,9 +2662,7 @@ namespace TheDugout.Migrations
 
                     b.HasOne("TheDugout.Models.Players.Position", "Position")
                         .WithMany("Players")
-                        .HasForeignKey("PositionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("PositionId");
 
                     b.HasOne("TheDugout.Models.Teams.Team", "Team")
                         .WithMany("Players")
@@ -2696,14 +2685,12 @@ namespace TheDugout.Migrations
                     b.HasOne("TheDugout.Models.Players.AttributeDefinition", "Attribute")
                         .WithMany("PlayerAttributes")
                         .HasForeignKey("AttributeId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("TheDugout.Models.Players.Player", "Player")
                         .WithMany("Attributes")
                         .HasForeignKey("PlayerId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Attribute");
 
@@ -2747,14 +2734,12 @@ namespace TheDugout.Migrations
                     b.HasOne("TheDugout.Models.Players.Player", "Player")
                         .WithMany("SeasonStats")
                         .HasForeignKey("PlayerId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("TheDugout.Models.Seasons.Season", "Season")
                         .WithMany("PlayerSeasonStats")
                         .HasForeignKey("SeasonId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Competition");
 
@@ -2768,8 +2753,7 @@ namespace TheDugout.Migrations
                     b.HasOne("TheDugout.Models.Players.AttributeDefinition", "Attribute")
                         .WithMany("PositionWeights")
                         .HasForeignKey("AttributeId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("TheDugout.Models.Players.Position", "Position")
                         .WithMany("Weights")
@@ -2869,14 +2853,12 @@ namespace TheDugout.Migrations
                     b.HasOne("TheDugout.Models.Teams.Tactic", "Tactic")
                         .WithMany("TeamTactics")
                         .HasForeignKey("TacticId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("TheDugout.Models.Teams.Team", "Team")
                         .WithOne("TeamTactic")
                         .HasForeignKey("TheDugout.Models.Teams.TeamTactic", "TeamId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Tactic");
 
@@ -2905,20 +2887,17 @@ namespace TheDugout.Migrations
                     b.HasOne("TheDugout.Models.Players.AttributeDefinition", "Attribute")
                         .WithMany()
                         .HasForeignKey("AttributeId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("TheDugout.Models.Players.Player", "Player")
                         .WithMany()
                         .HasForeignKey("PlayerId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("TheDugout.Models.Training.TrainingSession", "TrainingSession")
                         .WithMany("PlayerTrainings")
                         .HasForeignKey("TrainingSessionId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Attribute");
 
@@ -2932,20 +2911,17 @@ namespace TheDugout.Migrations
                     b.HasOne("TheDugout.Models.Game.GameSave", "GameSave")
                         .WithMany("TrainingSessions")
                         .HasForeignKey("GameSaveId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("TheDugout.Models.Seasons.Season", "Season")
                         .WithMany("TrainingSessions")
                         .HasForeignKey("SeasonId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("TheDugout.Models.Teams.Team", "Team")
                         .WithMany("TrainingSessions")
                         .HasForeignKey("TeamId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("GameSave");
 

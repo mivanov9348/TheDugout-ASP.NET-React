@@ -11,7 +11,7 @@ namespace TheDugout.Services.Fixture
     {
         Models.Fixtures.Fixture CreateFixture(
             int gameSaveId,
-            int seasonId,
+            int? seasonId,
             int? homeTeamId,
             int? awayTeamId,
             DateTime date,

@@ -17,7 +17,7 @@ namespace TheDugout.Models.Leagues
         public int LeagueId { get; set; }
         public League League { get; set; } = null!;
 
-        public int TeamId { get; set; }
+        public int? TeamId { get; set; }
         public Team Team { get; set; } = null!;
 
         public int Points { get; set; } = 0;

@@ -6,10 +6,10 @@ namespace TheDugout.Models.Cups
     {
         public int Id { get; set; }
 
-        public int CupId { get; set; }
+        public int? CupId { get; set; }
         public Cup Cup { get; set; } = null!;
 
-        public int TeamId { get; set; }
+        public int? TeamId { get; set; }
         public Team Team { get; set; } = null!;
 
         public bool IsEliminated { get; set; } = false;
