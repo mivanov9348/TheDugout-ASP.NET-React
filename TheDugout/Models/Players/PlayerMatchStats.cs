@@ -1,10 +1,10 @@
-﻿using TheDugout.Models.Common;
-using TheDugout.Models.Enums;
-using TheDugout.Models.Fixtures;
-using TheDugout.Models.Matches;
-
-namespace TheDugout.Models.Players
+﻿namespace TheDugout.Models.Players
 {
+    using TheDugout.Models.Common;
+    using TheDugout.Models.Enums;
+    using TheDugout.Models.Fixtures;
+    using TheDugout.Models.Game;
+    using TheDugout.Models.Matches;
     public class PlayerMatchStats
     {
         public int Id { get; set; }
@@ -14,6 +14,8 @@ namespace TheDugout.Models.Players
         public Match Match { get; set; }
         public int CompetitionId { get; set; }
         public Competition Competition { get; set; } = null!;
+        public int GameSaveId { get; set; }
+        public GameSave GameSave { get; set; } = null!;
         public int Goals { get; set; }
     }
 }

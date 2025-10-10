@@ -1,14 +1,13 @@
-﻿using TheDugout.Models.Competitions;
-using TheDugout.Models.Cups;
-using TheDugout.Models.Enums;
-using TheDugout.Models.Game;
-using TheDugout.Models.Leagues;
-using TheDugout.Models.Matches;
-using TheDugout.Models.Seasons;
-using TheDugout.Models.Teams;
-
-namespace TheDugout.Models.Fixtures
-{      
+﻿namespace TheDugout.Models.Fixtures
+{
+    using TheDugout.Models.Competitions;
+    using TheDugout.Models.Cups;
+    using TheDugout.Models.Enums;
+    using TheDugout.Models.Game;
+    using TheDugout.Models.Leagues;
+    using TheDugout.Models.Matches;
+    using TheDugout.Models.Seasons;
+    using TheDugout.Models.Teams;
 
     public class Fixture
     {

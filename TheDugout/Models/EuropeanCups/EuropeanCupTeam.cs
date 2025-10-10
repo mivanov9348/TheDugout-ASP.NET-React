@@ -1,4 +1,5 @@
-﻿using TheDugout.Models.Teams;
+﻿using TheDugout.Models.Game;
+using TheDugout.Models.Teams;
 
 namespace TheDugout.Models.Competitions
 {
@@ -11,6 +12,9 @@ namespace TheDugout.Models.Competitions
 
         public int? TeamId { get; set; }
         public Team Team { get; set; } = null!;
+
+        public int GameSaveId { get; set; }
+        public GameSave GameSave { get; set; } = null!;
 
         public int CurrentPhaseOrder { get; set; } = 0; 
         public bool IsEliminated { get; set; } = false; 

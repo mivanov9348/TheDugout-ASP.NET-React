@@ -1,8 +1,8 @@
-﻿using TheDugout.Models.Staff;
-using TheDugout.Models.Teams;
-
-namespace TheDugout.Models.Finance
+﻿namespace TheDugout.Models.Finance
 {
+    using TheDugout.Models.Game;
+    using TheDugout.Models.Staff;
+    using TheDugout.Models.Teams;
     public enum TransactionType
     {
         StartingFunds,
@@ -16,14 +16,12 @@ namespace TheDugout.Models.Finance
         Misc,
         FacilityUpgrade
     }
-
     public enum TransactionStatus
     {
         Pending,
         Completed,
         Failed
     }
-
     public class FinancialTransaction
     {
         public int Id { get; set; }
@@ -32,6 +30,8 @@ namespace TheDugout.Models.Finance
         public int? ToTeamId { get; set; }
         public Team? ToTeam { get; set; }
         public int? FromAgencyId { get; set; }
+        public int GameSaveId { get; set; }
+        public GameSave GameSave  { get; set; }
         public Agency? FromAgency { get; set; }
         public int? ToAgencyId { get; set; }
         public Agency? ToAgency { get; set; }

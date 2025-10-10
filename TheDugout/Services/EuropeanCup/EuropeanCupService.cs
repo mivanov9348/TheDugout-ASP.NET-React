@@ -79,6 +79,7 @@ namespace TheDugout.Services.EuropeanCup
                 {
                     EuropeanCupId = euroCup.Id,
                     TeamId = team.Id,
+                    GameSaveId = gameSaveId,
                     CurrentPhaseOrder = template.PhaseTemplates?.OrderBy(p => p.Order).FirstOrDefault()?.Order ?? 1,
                     IsEliminated = false
                 });
@@ -87,13 +88,14 @@ namespace TheDugout.Services.EuropeanCup
                 {
                     EuropeanCupId = euroCup.Id,
                     TeamId = team.Id,
+                    GameSaveId = gameSaveId,
                     Points = 0,
                     Ranking = rankedTeams.IndexOf(team) + 1
                 });
             }
 
             foreach (var pt in template.PhaseTemplates.OrderBy(p => p.Order))
-                _context.Add(new EuropeanCupPhase { EuropeanCupId = euroCup.Id, PhaseTemplateId = pt.Id });
+                _context.Add(new EuropeanCupPhase { EuropeanCupId = euroCup.Id, PhaseTemplateId = pt.Id, GameSaveId = gameSaveId });
 
             await _context.SaveChangesAsync(ct);
 

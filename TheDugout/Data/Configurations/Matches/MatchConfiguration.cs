@@ -1,9 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System.Text.RegularExpressions;
-
-namespace TheDugout.Data.Configurations.Matches
+﻿namespace TheDugout.Data.Configurations.Matches
 {
+    using Microsoft.EntityFrameworkCore;
+    using Microsoft.EntityFrameworkCore.Metadata.Builders;
+    using System.Text.RegularExpressions;
     public class MatchConfiguration : IEntityTypeConfiguration<Models.Matches.Match>
     {
         public void Configure(EntityTypeBuilder<Models.Matches.Match> builder)

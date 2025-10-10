@@ -1,8 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-
-namespace TheDugout.Data.Configurations.Matches
+﻿namespace TheDugout.Data.Configurations.Matches
 {
+    using Microsoft.EntityFrameworkCore;
+    using Microsoft.EntityFrameworkCore.Metadata.Builders;
     public class PenaltyConfiguration : IEntityTypeConfiguration<Models.Matches.Penalty>
     {
         public void Configure(EntityTypeBuilder<Models.Matches.Penalty> builder)
@@ -17,6 +16,11 @@ namespace TheDugout.Data.Configurations.Matches
             builder.HasOne(p => p.Team)
                 .WithMany()
                 .HasForeignKey(p => p.TeamId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasOne(m => m.GameSave)
+                .WithMany(gs => gs.Penalties)
+                .HasForeignKey(m => m.GameSaveId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(p => p.Player)

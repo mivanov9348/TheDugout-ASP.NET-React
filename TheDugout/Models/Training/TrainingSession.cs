@@ -1,9 +1,8 @@
-﻿using TheDugout.Models.Game;
-using TheDugout.Models.Seasons;
-using TheDugout.Models.Teams;
-
-namespace TheDugout.Models.Training
+﻿namespace TheDugout.Models.Training
 {
+    using TheDugout.Models.Game;
+    using TheDugout.Models.Seasons;
+    using TheDugout.Models.Teams;
     public class TrainingSession
     {
         public int Id { get; set; }

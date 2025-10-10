@@ -20,6 +20,11 @@ namespace TheDugout.Data.Configurations
                    .HasForeignKey(e => e.EuropeanCupId)
                    .OnDelete(DeleteBehavior.Restrict);
 
+            builder.HasOne(e => e.GameSave)
+                   .WithMany()
+                   .HasForeignKey(e => e.GameSaveId)
+                   .OnDelete(DeleteBehavior.Restrict);
+
             builder.HasOne(e => e.Team)
                    .WithMany(t => t.EuropeanCupTeams)
                    .HasForeignKey(e => e.TeamId)

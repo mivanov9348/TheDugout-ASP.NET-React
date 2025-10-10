@@ -1,4 +1,5 @@
 ﻿using TheDugout.Models.Fixtures;
+using TheDugout.Models.Game;
 
 namespace TheDugout.Models.Competitions
 {
@@ -8,6 +9,9 @@ namespace TheDugout.Models.Competitions
 
         public int EuropeanCupId { get; set; }
         public EuropeanCup EuropeanCup { get; set; } = null!;
+
+        public int GameSaveId { get; set; }
+        public GameSave GameSave { get; set; } = null!;
 
         public int PhaseTemplateId { get; set; }
         public EuropeanCupPhaseTemplate PhaseTemplate { get; set; } = null!;

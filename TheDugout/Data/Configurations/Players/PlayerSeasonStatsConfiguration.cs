@@ -1,9 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using TheDugout.Models.Players;
-
-namespace TheDugout.Data.Configurations
+﻿namespace TheDugout.Data.Configurations
 {
+    using Microsoft.EntityFrameworkCore;
+    using Microsoft.EntityFrameworkCore.Metadata.Builders;
+    using TheDugout.Models.Players;
+
     public class PlayerSeasonStatsConfiguration : IEntityTypeConfiguration<PlayerSeasonStats>
     {
         public void Configure(EntityTypeBuilder<PlayerSeasonStats> builder)
@@ -24,6 +24,11 @@ namespace TheDugout.Data.Configurations
                    .WithMany()
                    .HasForeignKey(e => e.CompetitionId)
                    .OnDelete(DeleteBehavior.SetNull);
+
+            builder.HasOne(ps => ps.GameSave)
+                   .WithMany(gs => gs.PlayerSeasonStats)
+                   .HasForeignKey(ps => ps.GameSaveId)
+                   .OnDelete(DeleteBehavior.Restrict);
 
             builder.Property(e => e.MatchesPlayed)
                    .HasDefaultValue(0);

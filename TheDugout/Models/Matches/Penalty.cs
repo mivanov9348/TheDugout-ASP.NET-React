@@ -1,4 +1,5 @@
-﻿using TheDugout.Models.Players;
+﻿using TheDugout.Models.Game;
+using TheDugout.Models.Players;
 using TheDugout.Models.Teams;
 
 namespace TheDugout.Models.Matches
@@ -12,6 +13,9 @@ namespace TheDugout.Models.Matches
 
         public int? TeamId { get; set; }
         public Team Team { get; set; } = null!;
+
+        public int GameSaveId { get; set; }
+        public GameSave GameSave { get; set; } = null!;
 
         public int? PlayerId { get; set; }
         public Player Player { get; set; } = null!;

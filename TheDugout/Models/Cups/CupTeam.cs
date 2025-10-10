@@ -1,4 +1,5 @@
-﻿using TheDugout.Models.Teams;
+﻿using TheDugout.Models.Game;
+using TheDugout.Models.Teams;
 
 namespace TheDugout.Models.Cups
 {
@@ -8,6 +9,9 @@ namespace TheDugout.Models.Cups
 
         public int? CupId { get; set; }
         public Cup Cup { get; set; } = null!;
+
+        public int GameSaveId { get; set; }
+        public GameSave GameSave { get; set; } = null!;
 
         public int? TeamId { get; set; }
         public Team Team { get; set; } = null!;

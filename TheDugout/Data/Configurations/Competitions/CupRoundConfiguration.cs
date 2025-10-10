@@ -14,6 +14,11 @@ namespace TheDugout.Data.Configurations
                 .IsRequired()
                 .HasMaxLength(100);
 
+            builder.HasOne(l => l.GameSave)
+                 .WithMany() 
+                 .HasForeignKey(l => l.GameSaveId)
+                 .OnDelete(DeleteBehavior.Restrict);
+
             builder.HasOne(cr => cr.Cup)
                 .WithMany(c => c.Rounds)
                 .HasForeignKey(cr => cr.CupId)

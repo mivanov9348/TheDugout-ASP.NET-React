@@ -16,6 +16,11 @@ namespace TheDugout.Data.Configurations.Matches
                 .HasForeignKey(me => me.MatchId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            builder.HasOne(m => m.GameSave)
+                .WithMany(gs => gs.MatchEvents)
+                .HasForeignKey(m => m.GameSaveId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             builder.HasOne(me => me.Team)
                 .WithMany(t => t.MatchEvents) 
                 .HasForeignKey(me => me.TeamId)

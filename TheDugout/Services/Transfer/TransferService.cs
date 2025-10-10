@@ -1,13 +1,13 @@
-﻿using Microsoft.EntityFrameworkCore;
-using TheDugout.Data;
-using TheDugout.Models.Finance;
-using TheDugout.Models.Messages;
-using TheDugout.Models.Seasons;
-using TheDugout.Services.Finance;
-using TheDugout.Services.Message;
-
-namespace TheDugout.Services.Transfer
+﻿namespace TheDugout.Services.Transfer
 {
+    using Microsoft.EntityFrameworkCore;
+    using TheDugout.Data;
+    using TheDugout.Models.Finance;
+    using TheDugout.Models.Messages;
+    using TheDugout.Models.Seasons;
+    using TheDugout.Services.Finance;
+    using TheDugout.Services.Message;
+
     public class TransferService : ITransferService
     {
         private readonly DugoutDbContext _context;

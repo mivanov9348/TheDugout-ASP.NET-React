@@ -1,15 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
-using TheDugout.Data;
-using TheDugout.Models.Game;
-using TheDugout.Models.Teams;
-using TheDugout.Services.Facilities;
-using TheDugout.Services.Finance;
-using TheDugout.Services.Players;
-using TheDugout.Services.Team;
-using TheDugout.Services.Training;
-
-namespace TheDugout.Services.Team
+﻿namespace TheDugout.Services.Team
 {
+    using Microsoft.EntityFrameworkCore;
+    using TheDugout.Data;
+    using TheDugout.Models.Game;
+    using TheDugout.Models.Teams;
+    using TheDugout.Services.Facilities;
+    using TheDugout.Services.Finance;
+    using TheDugout.Services.Players;
     public class TeamGenerationService : ITeamGenerationService
     {
         private readonly IPlayerGenerationService _playerGenerator;
@@ -38,7 +35,7 @@ namespace TheDugout.Services.Team
 
             foreach (var tt in templates)
             {
-                var team = new Models.Teams.Team
+                var team = new Team
                 {
                     TemplateId = tt.Id,
                     GameSave = gameSave,

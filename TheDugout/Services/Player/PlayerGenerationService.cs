@@ -1,8 +1,6 @@
-﻿using System.IO;
-
-namespace TheDugout.Services.Players
+﻿namespace TheDugout.Services.Players
 {
-    using Bogus;
+    using System.IO;
     using Microsoft.EntityFrameworkCore;
     using Microsoft.AspNetCore.Hosting;
     using System;
@@ -173,7 +171,9 @@ namespace TheDugout.Services.Players
                 LastName = lastName,
                 BirthDate = RandomBirthDate(),
                 Team = team,
+                TeamId = team?.Id,
                 GameSave = save,
+                GameSaveId = save.Id,
                 Position = position,
                 HeightCm = _rng.Next(165, 200),
                 WeightKg = _rng.Next(65, 95),

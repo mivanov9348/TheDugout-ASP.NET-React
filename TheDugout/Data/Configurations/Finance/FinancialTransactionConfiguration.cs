@@ -1,9 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using TheDugout.Models.Finance;
-
-namespace TheDugout.Data.Configurations
+﻿namespace TheDugout.Data.Configurations
 {
+    using Microsoft.EntityFrameworkCore;
+    using Microsoft.EntityFrameworkCore.Metadata.Builders;
+    using TheDugout.Models.Finance;
     public class FinancialTransactionConfiguration : IEntityTypeConfiguration<FinancialTransaction>
     {
         public void Configure(EntityTypeBuilder<FinancialTransaction> builder)
@@ -40,6 +39,11 @@ namespace TheDugout.Data.Configurations
                 .WithMany(b => b.Transactions)
                 .HasForeignKey(ft => ft.BankId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasOne(ft => ft.GameSave)
+               .WithMany(b => b.FinancialTransactions)
+               .HasForeignKey(ft => ft.GameSaveId)
+               .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

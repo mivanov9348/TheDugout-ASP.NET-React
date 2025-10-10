@@ -1,7 +1,7 @@
-﻿using TheDugout.Models.Players;
-
-namespace TheDugout.Models.Training
+﻿namespace TheDugout.Models.Training
 {
+    using TheDugout.Models.Game;
+    using TheDugout.Models.Players;
     public class PlayerTraining
     {
         public int Id { get; set; }
@@ -10,7 +10,9 @@ namespace TheDugout.Models.Training
         public int? PlayerId { get; set; }
         public Player Player { get; set; } = null!;
         public int? AttributeId { get; set; }
-        public Players.AttributeDefinition Attribute { get; set; } = null!;
+        public AttributeDefinition Attribute { get; set; } = null!;
+        public int GameSaveId { get; set; }
+        public GameSave GameSave { get; set; } = null!;
         public int ChangeValue { get; set; }   
     }
 }

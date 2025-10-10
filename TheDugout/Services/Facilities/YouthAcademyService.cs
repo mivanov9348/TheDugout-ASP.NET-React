@@ -25,6 +25,9 @@ namespace TheDugout.Services.Facilities
             var team = await _context.Teams.FindAsync(teamId);
             if (team == null) throw new Exception("Team not found");
 
+            var gameSave = await _context.GameSaves.FindAsync(team.GameSaveId);
+            if (gameSave == null) throw new Exception("Game save not found");
+
             var levelsJson = await File.ReadAllTextAsync(_academyLevelsPath);
             var levels = JsonSerializer.Deserialize<Dictionary<string, YouthAcademyLevelConfig>>(levelsJson);
 
@@ -36,6 +39,7 @@ namespace TheDugout.Services.Facilities
             var academy = new YouthAcademy
             {
                 TeamId = team.Id,
+                GameSaveId = gameSave.Id,
                 Level = 1
             };
 

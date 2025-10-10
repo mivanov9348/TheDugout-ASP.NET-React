@@ -1,13 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System;
-using TheDugout.Data;
-using TheDugout.Models;
-using TheDugout.Models.Common;
-using TheDugout.Models.Matches;
-using TheDugout.Models.Players;
-
-namespace TheDugout.Services.Player
+﻿namespace TheDugout.Services.Player
 {
+    using Microsoft.EntityFrameworkCore;
+    using System;
+    using TheDugout.Data;
+    using TheDugout.Models.Matches;
+    using TheDugout.Models.Players;
+
     public class PlayerStatsService : IPlayerStatsService
     {
         private readonly DugoutDbContext _context;
@@ -54,6 +52,7 @@ namespace TheDugout.Services.Player
                 {
                     PlayerId = player.Id,
                     MatchId = match.Id,
+                    GameSaveId = match.GameSaveId,
                     CompetitionId = match.CompetitionId,
                     Goals = 0,
                 });
@@ -136,6 +135,7 @@ namespace TheDugout.Services.Player
                         PlayerId = playerStat.PlayerId,
                         SeasonId = seasonId,
                         CompetitionId = competition.Id,
+                        GameSaveId = gameSaveId,
                         MatchesPlayed = 1,
                         Goals = playerStat.Goals
                     };

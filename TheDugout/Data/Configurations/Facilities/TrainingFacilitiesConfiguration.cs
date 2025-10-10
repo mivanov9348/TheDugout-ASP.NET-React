@@ -1,9 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using TheDugout.Models.Facilities;
-
-namespace TheDugout.Data.Configurations.Facilities
+﻿namespace TheDugout.Data.Configurations.Facilities
 {
+    using Microsoft.EntityFrameworkCore;
+    using Microsoft.EntityFrameworkCore.Metadata.Builders;
+    using TheDugout.Models.Facilities;
     public class TrainingFacilityConfiguration : IEntityTypeConfiguration<TrainingFacility>
     {
         public void Configure(EntityTypeBuilder<TrainingFacility> builder)
@@ -13,6 +12,11 @@ namespace TheDugout.Data.Configurations.Facilities
             builder.HasOne(tf => tf.Team)
                    .WithOne(t => t.TrainingFacility)
                    .HasForeignKey<TrainingFacility>(tf => tf.TeamId)
+                   .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasOne(l => l.GameSave)
+                   .WithMany() 
+                   .HasForeignKey(l => l.GameSaveId)
                    .OnDelete(DeleteBehavior.Restrict);
 
             builder.Property(tf => tf.Level)

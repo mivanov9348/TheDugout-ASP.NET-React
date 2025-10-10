@@ -1,10 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
-using TheDugout.Data;
-using TheDugout.Models.Game;
-using TheDugout.Models.Seasons;
-
-namespace TheDugout.Services.Season
+﻿namespace TheDugout.Services.Season
 {
+    using Microsoft.EntityFrameworkCore;
+    using TheDugout.Data;
+    using TheDugout.Models.Game;
+    using TheDugout.Models.Seasons;
+
     public class SeasonGenerationService : ISeasonGenerationService
     {
         private readonly DugoutDbContext _context;
@@ -44,6 +44,7 @@ namespace TheDugout.Services.Season
                     Date = currentDate,
                     Type = GetEventType(currentDate, season.StartDate, season.EndDate),
                     Description = GetDescription(currentDate, season.StartDate, season.EndDate),
+                    GameSaveId = gameSave.Id,
                     IsOccupied = false
                 });
                 currentDate = currentDate.AddDays(1);

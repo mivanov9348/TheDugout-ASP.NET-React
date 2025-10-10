@@ -199,6 +199,7 @@ namespace TheDugout.Services.Match
                     MatchId = matchId,
                     Minute = minute,
                     TeamId = team.Id,
+                    GameSaveId = team.GameSaveId,
                     PlayerId = player.Id,
                     EventTypeId = eventType.Id,
                     OutcomeId = outcome.Id,

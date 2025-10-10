@@ -19,6 +19,11 @@ namespace TheDugout.Data.Configurations
                 .WithMany(t => t.CupTeams)
                 .HasForeignKey(ct => ct.TeamId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasOne(l => l.GameSave)
+                .WithMany() 
+                .HasForeignKey(l => l.GameSaveId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

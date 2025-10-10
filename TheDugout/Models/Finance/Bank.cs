@@ -1,7 +1,7 @@
-﻿using TheDugout.Models.Game;
-
-namespace TheDugout.Models.Finance
+﻿namespace TheDugout.Models.Finance
 {
+    using TheDugout.Models.Game;
+
     public class Bank
     {
         public int Id { get; set; }

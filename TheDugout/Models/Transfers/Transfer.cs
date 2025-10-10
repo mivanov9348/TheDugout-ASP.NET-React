@@ -1,10 +1,9 @@
-﻿using TheDugout.Models.Game;
-using TheDugout.Models.Players;
-using TheDugout.Models.Seasons;
-using TheDugout.Models.Teams;
-
-namespace TheDugout.Models.Transfers
+﻿namespace TheDugout.Models.Transfers
 {
+    using TheDugout.Models.Game;
+    using TheDugout.Models.Players;
+    using TheDugout.Models.Seasons;
+    using TheDugout.Models.Teams;
     public class Transfer
     {
         public int Id { get; set; }

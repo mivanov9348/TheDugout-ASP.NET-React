@@ -1,19 +1,18 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System.Linq;
-using TheDugout.Data;
-using TheDugout.Models.Competitions;
-using TheDugout.Models.Game;
-using TheDugout.Services.Cup;
-using TheDugout.Services.EuropeanCup;
-using TheDugout.Services.Finance;
-using TheDugout.Services.League;
-using TheDugout.Services.Players;
-using TheDugout.Services.Season;
-using TheDugout.Services.Staff;
-using TheDugout.Services.Team;
-
-namespace TheDugout.Services.Game
+﻿namespace TheDugout.Services.Game
 {
+    using Microsoft.EntityFrameworkCore;
+    using System.Linq;
+    using TheDugout.Data;
+    using TheDugout.Models.Competitions;
+    using TheDugout.Models.Game;
+    using TheDugout.Services.Cup;
+    using TheDugout.Services.EuropeanCup;
+    using TheDugout.Services.Finance;
+    using TheDugout.Services.League;
+    using TheDugout.Services.Players;
+    using TheDugout.Services.Season;
+    using TheDugout.Services.Staff;
+    using TheDugout.Services.Team;
     public class GameSaveService : IGameSaveService
     {
         private readonly DugoutDbContext _context;
@@ -82,7 +81,6 @@ namespace TheDugout.Services.Game
                     .ThenInclude(s => s.Events)
                 .FirstOrDefaultAsync(gs => gs.Id == saveId && gs.UserId == userId);
         }
-
         public async Task<bool> DeleteGameSaveAsync(int saveId)
         {
             using var transaction = await _context.Database.BeginTransactionAsync();
@@ -90,69 +88,46 @@ namespace TheDugout.Services.Game
             {
                 Console.WriteLine($"=== START DELETE PROCESS for GameSave #{saveId} ===");
 
-                var gameSave = await _context.GameSaves.FirstOrDefaultAsync(gs => gs.Id == saveId);
-                if (gameSave == null)
+                var exists = await _context.GameSaves.AnyAsync(gs => gs.Id == saveId);
+                if (!exists)
                 {
                     Console.WriteLine($"❌ GameSave with Id={saveId} not found.");
                     return false;
                 }
 
-                // === STEP 1: Извличане на ID-та ===
-                var playerIds = await _context.Players
-                    .Where(p => p.GameSaveId == saveId)
-                    .Select(p => p.Id)
-                    .ToListAsync();
+                // === STEP 1: Дълбоки таблици ===
+                Console.WriteLine("Deleting dependent entities...");
 
-                var teamIds = await _context.Teams
-                    .Where(t => t.GameSaveId == saveId)
-                    .Select(t => t.Id)
-                    .ToListAsync();
+                await _context.MatchEvents.Where(e => e.GameSaveId == saveId).ExecuteDeleteAsync();
+                await _context.Penalties.Where(e => e.GameSaveId == saveId).ExecuteDeleteAsync();
+                await _context.PlayerMatchStats.Where(e => e.GameSaveId == saveId).ExecuteDeleteAsync();
+                await _context.PlayerSeasonStats.Where(e => e.GameSaveId == saveId).ExecuteDeleteAsync();
+                await _context.PlayerTrainings.Where(e => e.GameSaveId == saveId).ExecuteDeleteAsync();
+                await _context.FinancialTransactions.Where(e => e.GameSaveId == saveId).ExecuteDeleteAsync();
 
-                var matchIds = await _context.Matches
-                    .Where(m => m.GameSaveId == saveId)
-                    .Select(m => m.Id)
-                    .ToListAsync();
+                // === STEP 2: Средно ниво ===
+                await _context.Matches.Where(e => e.GameSaveId == saveId).ExecuteDeleteAsync();
+                await _context.Fixtures.Where(e => e.GameSaveId == saveId).ExecuteDeleteAsync();
+                await _context.CupRounds.Where(e => e.GameSaveId == saveId).ExecuteDeleteAsync();
+                await _context.EuropeanCupPhases.Where(e => e.GameSaveId == saveId).ExecuteDeleteAsync();
+                await _context.LeagueStandings.Where(e => e.GameSaveId == saveId).ExecuteDeleteAsync();
+                await _context.SeasonEvents.Where(e => e.GameSaveId == saveId).ExecuteDeleteAsync();
+                await _context.Transfers.Where(e => e.GameSaveId == saveId).ExecuteDeleteAsync();
 
-                var cupIds = await _context.Cups
-                    .Where(c => c.GameSaveId == saveId)
-                    .Select(c => c.Id)
-                    .ToListAsync();
+                // === STEP 3: Основни обекти ===
+                await _context.Players.Where(e => e.GameSaveId == saveId).ExecuteDeleteAsync();
+                await _context.Teams.Where(e => e.GameSaveId == saveId).ExecuteDeleteAsync();
+                await _context.Cups.Where(e => e.GameSaveId == saveId).ExecuteDeleteAsync();
+                await _context.Leagues.Where(e => e.GameSaveId == saveId).ExecuteDeleteAsync();
+                await _context.Seasons.Where(e => e.GameSaveId == saveId).ExecuteDeleteAsync();
+                await _context.Agencies.Where(e => e.GameSaveId == saveId).ExecuteDeleteAsync();
 
-                Console.WriteLine($"Loaded: {playerIds.Count} players, {teamIds.Count} teams, {matchIds.Count} matches, {cupIds.Count} cups");
+                // === STEP 4: Банката и др. ===
+                await _context.FinancialTransactions.Where(e => e.GameSaveId == saveId).ExecuteDeleteAsync();
+                await _context.Banks.Where(e => e.GameSaveId == saveId).ExecuteDeleteAsync();
 
-                // === STEP 2: Изтриване на зависими таблици ===
-                Console.WriteLine("Deleting nested entities...");
-
-                await _context.PlayerAttributes.Where(a => playerIds.Contains(a.PlayerId ?? -1)).ExecuteDeleteAsync();
-                await _context.PlayerMatchStats.Where(s => playerIds.Contains(s.PlayerId)).ExecuteDeleteAsync();
-                await _context.PlayerSeasonStats.Where(s => playerIds.Contains(s.PlayerId ?? -1)).ExecuteDeleteAsync();
-                await _context.PlayerTrainings.Where(s => playerIds.Contains(s.PlayerId ?? -1)).ExecuteDeleteAsync();
-
-                await _context.MatchEvents.Where(e => matchIds.Contains(e.MatchId)).ExecuteDeleteAsync();
-                await _context.Penalties.Where(p => matchIds.Contains(p.MatchId ?? -1)).ExecuteDeleteAsync();
-
-                await _context.Stadiums.Where(s => teamIds.Contains(s.TeamId ?? -1)).ExecuteDeleteAsync();
-                await _context.TeamTactics.Where(t => teamIds.Contains(t.TeamId ?? -1)).ExecuteDeleteAsync();
-                await _context.TrainingFacilities.Where(f => teamIds.Contains(f.TeamId ?? -1)).ExecuteDeleteAsync();
-
-                // === STEP 3: Изтриване на основни таблици ===
-                Console.WriteLine("Deleting main linked entities...");
-
-                await _context.Matches.Where(m => matchIds.Contains(m.Id)).ExecuteDeleteAsync();
-                await _context.Players.Where(p => playerIds.Contains(p.Id)).ExecuteDeleteAsync();
-                await _context.Teams.Where(t => teamIds.Contains(t.Id)).ExecuteDeleteAsync();
-                await _context.Cups.Where(c => cupIds.Contains(c.Id)).ExecuteDeleteAsync();
-
-                await _context.Leagues.Where(l => l.GameSaveId == saveId).ExecuteDeleteAsync();
-                await _context.Seasons.Where(s => s.GameSaveId == saveId).ExecuteDeleteAsync();
-                await _context.TrainingSessions.Where(ts => ts.GameSaveId == saveId).ExecuteDeleteAsync();
-                await _context.LeagueStandings.Where(ls => ls.GameSaveId == saveId).ExecuteDeleteAsync();
-                await _context.Agencies.Where(a => a.GameSaveId == saveId).ExecuteDeleteAsync();
-                await _context.Messages.Where(m => m.GameSaveId == saveId).ExecuteDeleteAsync();
-                await _context.Fixtures.Where(f => f.GameSaveId == saveId).ExecuteDeleteAsync();
-
-                // === STEP 4: Изтриване на самия GameSave ===
-                Console.WriteLine($"Deleting GameSave #{saveId}");
+                // === STEP 5: Самият GameSave ===
+                Console.WriteLine($"Deleting GameSave #{saveId}...");
                 await _context.GameSaves.Where(gs => gs.Id == saveId).ExecuteDeleteAsync();
 
                 await transaction.CommitAsync();
@@ -167,10 +142,6 @@ namespace TheDugout.Services.Game
                 return false;
             }
         }
-
-
-
-
 
         public async Task<GameSave> StartNewGameAsync(int userId, CancellationToken ct = default)
         {

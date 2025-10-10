@@ -1,14 +1,13 @@
-﻿using TheDugout.Models.Common;
-using TheDugout.Models.Competitions;
-using TheDugout.Models.Cups;
-using TheDugout.Models.Fixtures;
-using TheDugout.Models.Game;
-using TheDugout.Models.Leagues;
-using TheDugout.Models.Players;
-using TheDugout.Models.Training;
-
-namespace TheDugout.Models.Seasons
+﻿namespace TheDugout.Models.Seasons
 {
+    using TheDugout.Models.Common;
+    using TheDugout.Models.Competitions;
+    using TheDugout.Models.Cups;
+    using TheDugout.Models.Fixtures;
+    using TheDugout.Models.Game;
+    using TheDugout.Models.Leagues;
+    using TheDugout.Models.Players;
+    using TheDugout.Models.Training;
     public class Season
     {
         public int Id { get; set; }

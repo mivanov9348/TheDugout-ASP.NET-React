@@ -1,11 +1,11 @@
-﻿using TheDugout.Models.Common;
-using TheDugout.Models.Fixtures;
-using TheDugout.Models.Game;
-using TheDugout.Models.Seasons;
-using TheDugout.Models.Teams;
-
-namespace TheDugout.Models.Leagues
+﻿namespace TheDugout.Models.Leagues
 {
+    using TheDugout.Models.Common;
+    using TheDugout.Models.Fixtures;
+    using TheDugout.Models.Game;
+    using TheDugout.Models.Seasons;
+    using TheDugout.Models.Teams;
+
     public class League
     {
         public int Id { get; set; }

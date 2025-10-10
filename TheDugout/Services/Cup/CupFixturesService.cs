@@ -130,7 +130,8 @@ namespace TheDugout.Services.Cup
             {
                 CupId = cup.Id,
                 RoundNumber = lastRound.RoundNumber + 1,
-                Name = roundName
+                Name = roundName,
+                GameSaveId = gameSaveId
             };
 
             var shuffledTeams = nextRoundTeams.OrderBy(_ => Guid.NewGuid()).ToList();
@@ -189,6 +190,7 @@ namespace TheDugout.Services.Cup
                 {
                     CupId = cup.Id,
                     RoundNumber = 1,
+                    GameSaveId = gameSaveId,
                     Name = _fixtureHelperService.GetRoundName(teams.Count, 1, (int)Math.Log2(teams.Count), true)
                 };
 
@@ -202,6 +204,7 @@ namespace TheDugout.Services.Cup
                 {
                     CupId = cup.Id,
                     RoundNumber = 1,
+                    GameSaveId = gameSaveId,
                     Name = _fixtureHelperService.GetRoundName(teams.Count, 1, (int)Math.Log2(teams.Count), false)
                 };
 

@@ -1,13 +1,11 @@
-﻿// FixturesHelperService.cs
-using Microsoft.EntityFrameworkCore;
-
-using TheDugout.Data;
-using TheDugout.Models.Cups;
-using TheDugout.Models.Enums;
-using TheDugout.Models.Fixtures;
-
-namespace TheDugout.Services.Fixture
+﻿namespace TheDugout.Services.Fixture
 {
+    using Microsoft.EntityFrameworkCore;    
+    using TheDugout.Data;
+    using TheDugout.Models.Cups;
+    using TheDugout.Models.Enums;
+    using TheDugout.Models.Fixtures;
+
     public class FixturesHelperService : IFixturesHelperService
     {
         private readonly DugoutDbContext _context;
@@ -18,7 +16,7 @@ namespace TheDugout.Services.Fixture
             _context = context;
         }
 
-        public Models.Fixtures.Fixture CreateFixture(
+        public Fixture CreateFixture(
             int gameSaveId,
             int? seasonId,
             int? homeTeamId,

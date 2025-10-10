@@ -1,11 +1,10 @@
-﻿using TheDugout.Models.Common;
-using TheDugout.Models.Game;
-using TheDugout.Models.Matches;
-using TheDugout.Models.Staff;
-using TheDugout.Models.Teams;
-
-namespace TheDugout.Models.Players
+﻿namespace TheDugout.Models.Players
 {
+    using TheDugout.Models.Common;
+    using TheDugout.Models.Game;
+    using TheDugout.Models.Matches;
+    using TheDugout.Models.Staff;
+    using TheDugout.Models.Teams;
     public class Player
     {
         public int Id { get; set; }

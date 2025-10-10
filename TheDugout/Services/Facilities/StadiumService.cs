@@ -26,6 +26,10 @@ namespace TheDugout.Services.Facilities
             var team = await _context.Teams.FindAsync(teamId);
             if (team == null) throw new Exception("Team not found");
 
+            var gameSave = await _context.GameSaves.FindAsync(team.GameSaveId);
+
+            if (gameSave == null) throw new Exception("Game save not found");
+
             var levelsJson = await File.ReadAllTextAsync(_stadiumLevelsPath);
             var levels = JsonSerializer.Deserialize<StadiumLevelsRoot>(levelsJson);
 
@@ -39,6 +43,7 @@ namespace TheDugout.Services.Facilities
                 TeamId = team.Id,
                 Level = 1,
                 Capacity = level1.Capacity,
+                GameSaveId = gameSave.Id,
                 TicketPrice = level1.TicketPrice
             };
 

@@ -1,10 +1,9 @@
-﻿using TheDugout.Models.Common;
-using TheDugout.Models.Finance;
-using TheDugout.Models.Game;
-using TheDugout.Models.Players;
-
-namespace TheDugout.Models.Staff
+﻿namespace TheDugout.Models.Staff
 {
+    using TheDugout.Models.Common;
+    using TheDugout.Models.Finance;
+    using TheDugout.Models.Game;
+    using TheDugout.Models.Players;
     public class Agency
     {
         public int Id { get; set; }

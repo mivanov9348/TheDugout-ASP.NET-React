@@ -1,13 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
-using TheDugout.Data;
-using TheDugout.DTOs.Player;
-using TheDugout.Models.Game;
-using TheDugout.Models.Players;
-using TheDugout.Models.Teams;
-
-namespace TheDugout.Services.Team
+﻿namespace TheDugout.Services.Team
 {
+    using Microsoft.EntityFrameworkCore;
+    using Newtonsoft.Json;
+    using TheDugout.Data;
+    using TheDugout.DTOs.Player;
+    using TheDugout.Models.Game;
+    using TheDugout.Models.Players;
+    using TheDugout.Models.Teams;
     public class TeamPlanService : ITeamPlanService
     {
         private readonly DugoutDbContext _context;
@@ -84,6 +83,7 @@ namespace TheDugout.Services.Team
                 {
                     TeamId = teamId,
                     TacticId = tacticId,
+                    GameSaveId = team.GameSaveId,
                     CustomName = customName ?? "Default Tactic",
                     LineupJson = lineupJson,
                     SubstitutesJson = subsJson

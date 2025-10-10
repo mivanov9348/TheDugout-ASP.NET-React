@@ -1,17 +1,17 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System;
-using System.Xml.Linq;
-using TheDugout.Data;
-using TheDugout.Models.Common;
-using TheDugout.Models.Competitions;
-using TheDugout.Models.Cups;
-using TheDugout.Models.Enums;
-using TheDugout.Models.Game;
-using TheDugout.Models.Matches;
-using TheDugout.Services.Fixture;
-
-namespace TheDugout.Services.Cup
+﻿namespace TheDugout.Services.Cup
 {
+    using Microsoft.EntityFrameworkCore;
+    using System;
+    using System.Xml.Linq;
+    using TheDugout.Data;
+    using TheDugout.Models.Common;
+    using TheDugout.Models.Competitions;
+    using TheDugout.Models.Cups;
+    using TheDugout.Models.Enums;
+    using TheDugout.Models.Game;
+    using TheDugout.Models.Matches;
+    using TheDugout.Services.Fixture;
+
     public class CupService : ICupService
     {
         private readonly DugoutDbContext _context;
@@ -74,7 +74,7 @@ namespace TheDugout.Services.Cup
 
                 // Добавяме участници
                 foreach (var team in teams)
-                    cup.Teams.Add(new CupTeam { TeamId = team.Id });
+                    cup.Teams.Add(new CupTeam { TeamId = team.Id, GameSaveId = gameSave.Id });
 
                 allCups.Add(cup);
             }

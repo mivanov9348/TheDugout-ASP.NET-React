@@ -139,6 +139,7 @@ namespace TheDugout.Services.Match
                 MatchId = match.Id,
                 TeamId = teamId,
                 PlayerId = player.Id,
+                GameSaveId = match.GameSaveId,
                 Order = order,
                 IsScored = scored
             };
