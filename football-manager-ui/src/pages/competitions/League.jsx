@@ -1,122 +1,107 @@
-import React, { useEffect, useState } from "react";
-import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import Standings from "./league/Standings";
-import PlayerStats from "./league/PlayerStats";
+import { useEffect, useState } from "react";
+import { Outlet, NavLink, useNavigate, useLocation } from "react-router-dom";
 
-const League = ({ gameSaveId }) => {
+export default function League({ gameSaveId }) {
   const [leagues, setLeagues] = useState([]);
-  const [selectedLeagueId, setSelectedLeagueId] = useState(null);
-  const [standings, setStandings] = useState([]);
+  const [selectedLeague, setSelectedLeague] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
-  const location = useLocation();
   const navigate = useNavigate();
+  const location = useLocation();
 
-  // 🔹 1. Зареждаме лигите
   useEffect(() => {
     if (!gameSaveId) return;
 
-    const fetchLeagues = async () => {
+    const loadLeagues = async () => {
+      setLoading(true);
       try {
-        setLoading(true);
-        const res = await fetch(`/api/League/${gameSaveId}`);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const res = await fetch(`/api/League/${gameSaveId}`, { credentials: "include" });
+        if (!res.ok) throw new Error("Error fetching leagues");
         const data = await res.json();
-
-        const leaguesList = data.leagues || data.Leagues || [];
-        console.log("📦 Leagues from backend:", leaguesList);
-
-        setLeagues(leaguesList);
-
-        if (leaguesList.length > 0) {
-          const firstLeague = leaguesList[0];
-          setSelectedLeagueId(firstLeague.Id);
-          setStandings(firstLeague.Standings || []);
-
-          // ✅ Ако не сме на /standings, го правим
-          if (!location.pathname.endsWith("standings")) {
-            navigate("standings", { replace: true });
+        if (data?.leagues?.length > 0) {
+          setLeagues(data.leagues);
+          setSelectedLeague(data.leagues[0]);
+          // Ако сме на /league директно, пренасочваме към първата лига
+          if (location.pathname.endsWith("/league")) {
+            navigate(`/competitions/league/standings`, { replace: true });
           }
         }
       } catch (err) {
-        console.error("❌ Error fetching leagues:", err);
-        setError("Грешка при зареждане на лигите.");
+        console.error("❌ Error loading leagues:", err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchLeagues();
+    loadLeagues();
   }, [gameSaveId]);
 
-  // 🔹 2. При промяна на dropdown
-  const handleLeagueChange = (id) => {
-    setSelectedLeagueId(id);
-    const league = leagues.find((l) => l.Id === Number(id));
-    if (league) {
-      console.log("⚽ Selected League:", league);
-      setStandings(league.Standings || []);
-    }
+  const handleLeagueChange = (e) => {
+    const leagueId = Number(e.target.value);
+    const league = leagues.find((l) => l.id === leagueId);
+    setSelectedLeague(league);
+
+    // Взимаме текущия таб (standings / player-stats)
+    const currentTab = location.pathname.includes("player-stats")
+      ? "player-stats"
+      : "standings";
+
+    // Навигираме към същия таб, но новата лига
+    navigate(`/competitions/league/${currentTab}`, { replace: true });
   };
 
-  if (loading)
-    return <p className="text-gray-400 text-center mt-4">⏳ Зареждане...</p>;
-  if (error)
-    return (
-      <p className="text-red-500 text-center mt-4 font-semibold">{error}</p>
-    );
-  if (leagues.length === 0)
-    return (
-      <p className="text-gray-400 text-center mt-4">
-        Няма намерени лиги за този сейв.
-      </p>
-    );
 
-  const isStandings = location.pathname.endsWith("standings");
-  const isPlayerStats = location.pathname.endsWith("player-stats");
+
+  if (loading) return <p>Loading leagues...</p>;
+  if (!leagues.length) return <p>No leagues found.</p>;
 
   return (
-    <div className="text-white bg-gray-900 rounded-xl p-6 shadow-lg space-y-6">
-      {/* Dropdown за избор на лига */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-        <label className="text-gray-300 font-semibold text-lg">
-          Избери лига:
-        </label>
+    <div className="p-4">
+      {/* Header */}
+      <div className="flex items-center justify-center gap-4 mb-6">
+        <img
+          src={selectedLeague.standings[0]?.teamLogo ?? "/competitionsLogos/default.png"}
+          alt={selectedLeague.name}
+          className="w-16 h-16 object-contain border rounded-full shadow-md"
+          onError={(e) => (e.target.src = "/competitionsLogos/default.png")}
+        />
+        <h2 className="text-3xl font-bold text-center">{selectedLeague.name}</h2>
+      </div>
+
+      {/* Dropdown за смяна на лигата */}
+      <div className="flex justify-center mb-4">
         <select
-          value={selectedLeagueId || ""}
-          onChange={(e) => handleLeagueChange(e.target.value)}
-          className="bg-gray-800 text-white px-4 py-2 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-sky-500"
+          className="border rounded px-3 py-1 text-sm"
+          value={selectedLeague.id}
+          onChange={handleLeagueChange}
         >
-          {leagues.map((league) => (
-            <option key={league.Id} value={league.Id}>
-              {league.Name} ({league.Country})
+          {leagues.map((l) => (
+            <option key={l.id} value={l.id}>
+              {l.name} ({l.country})
             </option>
           ))}
         </select>
       </div>
 
-      {/* Табове */}
-      <div className="flex gap-3 border-b border-gray-700 pb-2">
+      {/* Navigation Links (absolute paths) */}
+      <div className="flex justify-center mb-6 gap-2">
         <NavLink
-          to="standings"
+          to="/competitions/league/standings"
           className={({ isActive }) =>
-            `px-4 py-2 rounded-lg font-bold transition ${
-              isActive
-                ? "bg-sky-600 text-white"
-                : "bg-gray-700 hover:bg-gray-600"
+            `px-4 py-2 rounded-md font-medium ${isActive
+              ? "bg-blue-600 text-white"
+              : "bg-slate-200 text-slate-700 hover:bg-slate-300"
             }`
           }
         >
           Standings
         </NavLink>
         <NavLink
-          to="player-stats"
+          to="/competitions/league/player-stats"
           className={({ isActive }) =>
-            `px-4 py-2 rounded-lg font-bold transition ${
-              isActive
-                ? "bg-sky-600 text-white"
-                : "bg-gray-700 hover:bg-gray-600"
+            `px-4 py-2 rounded-md font-medium ${isActive
+              ? "bg-blue-600 text-white"
+              : "bg-slate-200 text-slate-700 hover:bg-slate-300"
             }`
           }
         >
@@ -124,13 +109,8 @@ const League = ({ gameSaveId }) => {
         </NavLink>
       </div>
 
-      {/* Съдържание */}
-      <div className="pt-4">
-        {isStandings && <Standings standings={standings} />}
-        {isPlayerStats && <PlayerStats leagueId={selectedLeagueId} />}
-      </div>
+      {/* Outlet за подстраници с контекст на избраната лига */}
+      <Outlet context={{ gameSaveId, league: selectedLeague }} />
     </div>
   );
-};
-
-export default League;
+}

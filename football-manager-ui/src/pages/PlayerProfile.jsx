@@ -1,7 +1,7 @@
 // src/pages/PlayerProfile.jsx
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Flag, Activity, TrendingUp } from "lucide-react";
 
 const categoryLabels = {
   1: "⚡ Physical",
@@ -10,12 +10,11 @@ const categoryLabels = {
   4: "🧤 Goalkeeping",
 };
 
-// функция за динамичен цвят според стойността
 const getAttributeColor = (value) => {
-  if (value <= 5) return "text-gray-400"; // много слаб
-  if (value <= 10) return "text-yellow-500"; // посредствен
-  if (value <= 15) return "text-green-600"; // добър
-  return "text-red-600 font-bold"; // топ ниво
+  if (value <= 5) return "bg-gray-300";
+  if (value <= 10) return "bg-yellow-400";
+  if (value <= 15) return "bg-green-500";
+  return "bg-red-600";
 };
 
 const PlayerProfile = () => {
@@ -42,7 +41,7 @@ const PlayerProfile = () => {
 
   if (!player)
     return (
-      <div className="min-h-screen flex items-center justify-center text-gray-600">
+      <div className="min-h-screen flex items-center justify-center text-gray-600 text-lg">
         Loading player...
       </div>
     );
@@ -54,8 +53,8 @@ const PlayerProfile = () => {
   }, {});
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 flex justify-center items-start p-6">
-      <div className="bg-white shadow-2xl rounded-2xl max-w-6xl w-full p-8 relative">
+    <div className="min-h-screen bg-gradient-to-br from-slate-100 via-gray-200 to-blue-100 flex justify-center items-start py-10 px-4">
+      <div className="bg-white/90 backdrop-blur-md shadow-2xl rounded-3xl max-w-6xl w-full p-10 relative border border-gray-200 transition-all">
         {/* Back Button */}
         <button
           onClick={() => navigate(-1)}
@@ -66,10 +65,10 @@ const PlayerProfile = () => {
         </button>
 
         {/* Header Section */}
-        <div className="flex flex-col lg:flex-row items-start gap-6 mt-6">
-          {/* Left side - player info */}
+        <div className="flex flex-col lg:flex-row items-start gap-10 mt-10">
+          {/* Player Info */}
           <div className="flex flex-col items-center lg:items-start flex-1">
-            <div className="relative">
+            <div className="relative group">
               <img
                 src={
                   imgError
@@ -78,55 +77,61 @@ const PlayerProfile = () => {
                 }
                 alt={`${player.fullName} avatar`}
                 onError={() => setImgError(true)}
-                className="w-40 h-40 rounded-full object-cover border-4 border-blue-500 shadow-md"
+                className="w-44 h-44 rounded-full object-cover border-4 border-blue-500 shadow-lg group-hover:scale-105 transition-transform duration-300"
               />
-              <div className="absolute -bottom-2 -right-2 bg-blue-600 text-white text-xs px-2 py-1 rounded-md shadow">
+              <div className="absolute -bottom-2 -right-2 bg-gradient-to-r from-blue-600 to-blue-400 text-white text-xs px-3 py-1 rounded-md shadow-lg font-semibold">
                 {player.position}
               </div>
             </div>
-            <div className="mt-4 text-center lg:text-left">
-              <h1 className="text-3xl font-extrabold text-gray-900">
+
+            <div className="mt-6 text-center lg:text-left space-y-1">
+              <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight">
                 {player.fullName}
               </h1>
-              <p className="text-lg text-gray-600">
+              <p className="text-lg text-gray-500 font-medium">
                 {player.teamName || "Free Agent"}
               </p>
-              <div className="mt-2 space-y-1 text-sm text-gray-500">
-                <p>
-                  Age: {player.age} | Country: {player.country}
-                </p>
-                <p>
-                  Height: {player.heightCm} cm | Weight: {player.weightKg} kg
-                </p>
+              <div className="flex flex-wrap gap-4 mt-3 text-sm text-gray-600 justify-center lg:justify-start">
+                <span className="flex items-center gap-1">
+                  <Activity className="w-4 h-4 text-blue-500" /> Age: {player.age}
+                </span>
+                <span className="flex items-center gap-1">
+                  <Flag className="w-4 h-4 text-green-500" /> {player.country}
+                </span>
+                <span>Height: {player.heightCm} cm</span>
+                <span>Weight: {player.weightKg} kg</span>
               </div>
-              <p className="mt-3 text-lg font-semibold text-green-600">
+              <p className="mt-4 text-xl font-bold text-green-600">
                 Market Value: €{player.price.toLocaleString()}
               </p>
             </div>
           </div>
 
-          {/* Right side - attributes */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1">
+          {/* Attributes */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 flex-1">
             {Object.keys(groupedAttributes || {}).map((catKey) => (
               <div
                 key={catKey}
-                className="bg-gray-50 p-4 rounded-xl shadow-sm hover:shadow-md transition"
+                className="bg-gradient-to-br from-gray-50 to-gray-100 p-5 rounded-2xl shadow-md border border-gray-200 hover:shadow-lg hover:-translate-y-1 transition-all"
               >
-                <h3 className="text-md font-bold text-blue-600 mb-3 border-b border-blue-200 pb-1">
+                <h3 className="text-md font-bold text-blue-700 mb-3 border-b border-blue-200 pb-1">
                   {categoryLabels[catKey]}
                 </h3>
                 <div className="space-y-2">
                   {groupedAttributes[catKey].map((attr) => (
-                    <div
-                      key={attr.name}
-                      className="flex justify-between text-sm"
-                    >
-                      <span className="capitalize text-gray-700">
-                        {attr.name}
-                      </span>
-                      <span className={`${getAttributeColor(attr.value)}`}>
-                        {attr.value}
-                      </span>
+                    <div key={attr.name} className="text-sm">
+                      <div className="flex justify-between mb-1 text-gray-700">
+                        <span className="capitalize">{attr.name}</span>
+                        <span className="font-semibold">{attr.value}</span>
+                      </div>
+                      <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div
+                          className={`${getAttributeColor(
+                            attr.value
+                          )} h-full transition-all duration-500 rounded-full`}
+                          style={{ width: `${(attr.value / 20) * 100}%` }}
+                        ></div>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -136,15 +141,15 @@ const PlayerProfile = () => {
         </div>
 
         {/* Season Statistics */}
-        <div className="mt-10">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">
-            Season Statistics
+        <div className="mt-14">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+            <TrendingUp className="w-6 h-6 text-blue-600" /> Season Statistics
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {player.seasonStats?.map((stat) => (
+            {player.seasonStats?.map((stat, i) => (
               <div
                 key={stat.seasonId}
-                className="bg-gradient-to-tr from-gray-50 to-gray-100 p-5 rounded-xl shadow-sm hover:shadow-md transition"
+                className="bg-gradient-to-tr from-blue-50 to-gray-100 p-5 rounded-2xl shadow-md border border-gray-200 hover:shadow-lg hover:-translate-y-1 transition-all"
               >
                 <p className="text-sm text-gray-500 mb-2">
                   Season {stat.seasonId}
@@ -158,13 +163,13 @@ const PlayerProfile = () => {
                   </p>
                   <p>
                     Goals:{" "}
-                    <span className="font-bold text-gray-800">
+                    <span className="font-bold text-blue-700">
                       {stat.goals}
                     </span>
                   </p>
                   <p>
                     Assists:{" "}
-                    <span className="font-bold text-gray-800">
+                    <span className="font-bold text-green-700">
                       {stat.assists}
                     </span>
                   </p>

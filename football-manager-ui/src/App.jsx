@@ -280,29 +280,27 @@ function AppInner() {
 
                     <Route
                       path="/competitions/*"
-                      element={
-                        <Competitions gameSaveId={currentGameSave?.id} />
-                      }
+                      element={<Competitions gameSaveId={currentGameSave?.id} />}
                     >
+                      {/* Default redirect */}
                       <Route index element={<Navigate to="league" replace />} />
 
-                      {/* League */}
+                      {/* --- League --- */}
                       <Route
                         path="league/*"
-                        element={<League gameSaveId={currentGameSave?.id} />}
+                        element={
+                          <League
+                            gameSaveId={currentGameSave?.id}
+                            seasonId={currentGameSave?.seasons?.[0]?.id}
+                          />
+                        }
                       >
-                        <Route
-                          index
-                          element={<Navigate to="standings" replace />}
-                        />
+                        <Route index element={<Navigate to="standings" replace />} />
                         <Route path="standings" element={<LeagueStandings />} />
-                        <Route
-                          path="player-stats"
-                          element={<LeaguePlayerStats />}
-                        />
+                        <Route path="player-stats" element={<LeaguePlayerStats />} />
                       </Route>
 
-                      {/* Cup */}
+                      {/* --- Cup --- */}
                       <Route
                         path="cup/*"
                         element={
@@ -312,15 +310,12 @@ function AppInner() {
                           />
                         }
                       >
-                        <Route
-                          index
-                          element={<Navigate to="knockouts" replace />}
-                        />
+                        <Route index element={<Navigate to="knockouts" replace />} />
                         <Route path="knockouts" element={<CupKnockouts />} />
                         <Route path="player-stats" element={<CupPlayerStats />} />
                       </Route>
 
-                      {/* European Cup */}
+                      {/* --- European Cup --- */}
                       <Route
                         path="europe/*"
                         element={
@@ -330,22 +325,15 @@ function AppInner() {
                           />
                         }
                       >
-                        <Route
-                          index
-                          element={<Navigate to="standings" replace />}
-                        />
-                        <Route
-                          path="groupstage"
-                          element={<EuropeGroupStage />}
-                        />
+                        <Route index element={<Navigate to="standings" replace />} />
+                        <Route path="groupstage" element={<EuropeGroupStage />} />
                         <Route path="knockouts" element={<EuropeKnockouts />} />
-                        <Route
-                          path="player-stats"
-                          element={<EuropePlayerStats />}
-                        />
+                        <Route path="player-stats" element={<EuropePlayerStats />} />
                       </Route>
                     </Route>
 
+
+                    {/* Other main routes */}
                     <Route
                       path="/inbox"
                       element={<Inbox gameSaveId={currentGameSave?.id} />}
@@ -386,29 +374,24 @@ function AppInner() {
                       }
                     />
                     <Route
-                      path="/transfers"
+                      path="/transfers/*"
                       element={<Transfers gameSaveId={currentGameSave?.id} />}
                     >
                       <Route index element={<Navigate to="search" replace />} />
                       <Route
                         path="search"
-                        element={
-                          <SearchPlayers gameSaveId={currentGameSave?.id} />
-                        }
+                        element={<SearchPlayers gameSaveId={currentGameSave?.id} />}
                       />
                       <Route
                         path="negotiations"
-                        element={
-                          <Negotiations gameSaveId={currentGameSave?.id} />
-                        }
+                        element={<Negotiations gameSaveId={currentGameSave?.id} />}
                       />
                       <Route
                         path="history"
-                        element={
-                          <TransferHistory gameSaveId={currentGameSave?.id} />
-                        }
+                        element={<TransferHistory gameSaveId={currentGameSave?.id} />}
                       />
                     </Route>
+
                     <Route
                       path="/facilities"
                       element={
@@ -428,9 +411,7 @@ function AppInner() {
                     />
                     <Route
                       path="/player/:playerId"
-                      element={
-                        <PlayerProfile gameSaveId={currentGameSave?.id} />
-                      }
+                      element={<PlayerProfile gameSaveId={currentGameSave?.id} />}
                     />
                     <Route
                       path="/match"
@@ -440,13 +421,11 @@ function AppInner() {
                       path="/today-matches/:gameSaveId"
                       element={<TodayMatches />}
                     />
-
                     <Route
                       path="/live-match/:fixtureId"
                       element={<MatchPreview />}
                     />
                     <Route path="/match/:matchId" element={<Match />} />
-
                     <Route path="*" element={<div>404 Not Found</div>} />
                   </Routes>
                 </main>
@@ -455,7 +434,8 @@ function AppInner() {
           </ProtectedRoute>
         }
       />
-    </Routes>
+
+    </Routes >
   );
 }
 

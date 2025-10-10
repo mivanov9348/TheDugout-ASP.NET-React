@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { ChevronUp, ChevronDown } from "lucide-react";
 import { useOutletContext } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 export default function CupPlayerStats() {
   const { selectedCup } = useOutletContext();
@@ -147,13 +148,18 @@ export default function CupPlayerStats() {
           {sortedStats.map((player, index) => (
             <tr
               key={player.id}
-              className={`border-b hover:bg-slate-50 transition ${
-                index % 2 === 0 ? "bg-white" : "bg-slate-50/50"
-              }`}
+              className={`border-b hover:bg-slate-50 transition ${index % 2 === 0 ? "bg-white" : "bg-slate-50/50"
+                }`}
             >
               <td className="p-2 font-medium text-slate-600 text-center">{index + 1}</td>
-              <td className="p-2 font-medium text-slate-800">{player.name}</td>
-              <td className="p-2 text-slate-700">{player.teamName}</td>
+              <td className="p-2 font-medium text-slate-800">
+                <Link
+                  to={`/player/${player.id}`}
+                  className="text-blue-500 hover:text-blue-700 transition-colors font-semibold hover:underline"
+                >
+                  {player.name}
+                </Link>
+              </td>              <td className="p-2 text-slate-700">{player.teamName}</td>
               <td className="p-2 text-center font-semibold text-slate-900">{player.goals}</td>
               <td className="p-2 text-center text-slate-600">{player.matches}</td>
             </tr>

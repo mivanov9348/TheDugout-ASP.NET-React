@@ -1,11 +1,16 @@
 import { useState } from "react";
 import { ChevronUp, ChevronDown } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export default function PlayerStats({ cup }) {
   const [sortConfig, setSortConfig] = useState({ key: "goals", direction: "desc" });
 
   if (!cup?.playerStats || cup.playerStats.length === 0)
-    return <p className="text-center text-slate-500 italic">No player stats yet.</p>;
+    return (
+      <div className="text-center text-slate-400 italic py-10 bg-gradient-to-b from-gray-900 to-gray-950 rounded-2xl border border-gray-800 shadow-lg">
+        ⚽ Все още няма статистика за играчите.
+      </div>
+    );
 
   const sortedStats = [...cup.playerStats].sort((a, b) => {
     if (sortConfig.key === "goals") {
@@ -27,68 +32,88 @@ export default function PlayerStats({ cup }) {
   const handleSort = (key) => {
     setSortConfig((prev) => ({
       key,
-      direction:
-        prev.key === key && prev.direction === "asc" ? "desc" : "asc",
+      direction: prev.key === key && prev.direction === "asc" ? "desc" : "asc",
     }));
   };
 
   const SortIcon = ({ column }) => {
-    if (sortConfig.key !== column) return <span className="opacity-20">↕</span>;
+    if (sortConfig.key !== column)
+      return <span className="opacity-30 text-slate-500">↕</span>;
     return sortConfig.direction === "asc" ? (
-      <ChevronUp className="inline w-4 h-4 ml-1 text-slate-600" />
+      <ChevronUp className="inline w-4 h-4 ml-1 text-green-400" />
     ) : (
-      <ChevronDown className="inline w-4 h-4 ml-1 text-slate-600" />
+      <ChevronDown className="inline w-4 h-4 ml-1 text-green-400" />
     );
   };
 
   return (
-    <div className="bg-white shadow-xl rounded-2xl p-5 transition-all">     
-      <table className="w-full text-sm border-collapse">
-        <thead>
-          <tr className="bg-slate-100 text-slate-700">
-            <th className="p-2 text-left w-10">#</th>
-            <th
-              className="p-2 text-left cursor-pointer hover:bg-slate-200"
-              onClick={() => handleSort("name")}
-            >
-              Player <SortIcon column="name" />
-            </th>
-            <th
-              className="p-2 text-left cursor-pointer hover:bg-slate-200"
-              onClick={() => handleSort("teamName")}
-            >
-              Team <SortIcon column="teamName" />
-            </th>
-            <th
-              className="p-2 text-center cursor-pointer hover:bg-slate-200"
-              onClick={() => handleSort("goals")}
-            >
-              Goals <SortIcon column="goals" />
-            </th>
-            <th className="p-2 text-center">Matches</th>
-          </tr>
-        </thead>
-        <tbody>
-          {sortedStats.map((p, i) => (
-            <tr
-              key={p.id}
-              className={`border-b hover:bg-slate-50 transition ${
-                i % 2 === 0 ? "bg-white" : "bg-slate-50/50"
-              }`}
-            >
-              <td className="p-2 font-medium text-slate-600 text-center">
-                {i + 1}
-              </td>
-              <td className="p-2 font-medium text-slate-800">{p.name}</td>
-              <td className="p-2 text-slate-700">{p.teamName}</td>
-              <td className="p-2 text-center font-semibold text-slate-900">
-                {p.goals}
-              </td>
-              <td className="p-2 text-center text-slate-600">{p.matches}</td>
+    <div className="p-6 bg-gradient-to-b from-gray-900 to-gray-950 rounded-2xl shadow-2xl border border-gray-800 max-w-4xl mx-auto">
+      <h2 className="text-3xl font-bold text-center text-white mb-6 tracking-wide">
+        🧩 Играч Статистика —{" "}
+        <span className="text-green-400">{cup?.name || "Купа"}</span>
+      </h2>
+
+      <div className="overflow-x-auto">
+        <table className="min-w-full text-sm text-gray-300 rounded-xl overflow-hidden">
+          <thead>
+            <tr className="bg-gray-800/70 uppercase text-xs tracking-wide">
+              <th className="px-3 py-3 text-center w-10">#</th>
+              <th
+                className="px-3 py-3 text-left cursor-pointer hover:bg-gray-800/50 transition"
+                onClick={() => handleSort("name")}
+              >
+                Играч <SortIcon column="name" />
+              </th>
+              <th
+                className="px-3 py-3 text-left cursor-pointer hover:bg-gray-800/50 transition"
+                onClick={() => handleSort("teamName")}
+              >
+                Отбор <SortIcon column="teamName" />
+              </th>
+              <th
+                className="px-3 py-3 text-center cursor-pointer hover:bg-gray-800/50 transition"
+                onClick={() => handleSort("goals")}
+              >
+                ⚽ Голове <SortIcon column="goals" />
+              </th>
+              <th className="px-3 py-3 text-center">🎯 Мачове</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+
+          <tbody>
+            {sortedStats.map((p, i) => (
+              <tr
+                key={p.id}
+                className={`transition-all duration-150 ${i % 2 === 0 ? "bg-gray-900/60" : "bg-gray-800/60"
+                  } hover:bg-gray-700/60`}
+              >
+                <td className="px-3 py-3 text-center font-semibold text-slate-400">
+                  {i + 1}
+                </td>
+                <td className="p-2 font-medium text-slate-800">
+                  <Link
+                    to={`/player/${p.id}`}
+                    className="text-blue-500 hover:text-blue-700 transition-colors font-semibold hover:underline"
+                  >
+                    {p.name}
+                  </Link>
+                </td>
+                <td className="px-3 py-3 text-slate-400">{p.teamName}</td>
+                <td className="px-3 py-3 text-center font-extrabold text-green-400">
+                  {p.goals}
+                </td>
+                <td className="px-3 py-3 text-center text-slate-400">
+                  {p.matches}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="text-center mt-6 text-sm text-slate-500 italic">
+        📊 Сортирай по колона, за да откриеш топ голмайсторите.
+      </div>
     </div>
   );
 }
