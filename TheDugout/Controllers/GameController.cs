@@ -238,8 +238,7 @@
             {
                 return StatusCode(500, new { message = "Failed to create new game" });
             }
-        }
-        
+        }       
 
         [Authorize]
         [HttpPost("{saveId}/select-team/{teamId}")]

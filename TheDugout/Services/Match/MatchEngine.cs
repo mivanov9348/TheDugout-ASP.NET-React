@@ -1,17 +1,16 @@
-﻿using Microsoft.EntityFrameworkCore;
-using TheDugout.Data;
-using TheDugout.Models.Enums;
-using TheDugout.Models.Fixtures;
-using TheDugout.Models.Game;
-using TheDugout.Models.Matches;
-using TheDugout.Services.League;
-using TheDugout.Services.Match;
-using TheDugout.Services.Player;
-using TheDugout.Services.Standings;
-using TheDugout.Services.Team;
-
-namespace TheDugout.Services.MatchEngine
+﻿namespace TheDugout.Services.MatchEngine
 {
+    using Microsoft.EntityFrameworkCore;
+    using TheDugout.Data;
+    using TheDugout.Models.Enums;
+    using TheDugout.Models.Fixtures;
+    using TheDugout.Models.Game;
+    using TheDugout.Models.Matches;
+    using TheDugout.Services.League;
+    using TheDugout.Services.Match;
+    using TheDugout.Services.Player;
+    using TheDugout.Services.Standings;
+    using TheDugout.Services.Team;
     public class MatchEngine : IMatchEngine
     {
         private readonly Random _random = new Random();

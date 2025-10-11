@@ -1,10 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
-using TheDugout.Data;
-using TheDugout.Models.Matches;
-using TheDugout.Models.Players;
-
-namespace TheDugout.Services.Match
+﻿namespace TheDugout.Services.Match
 {
+    using Microsoft.EntityFrameworkCore;
+    using TheDugout.Data;
+    using TheDugout.Models.Matches;
+    using TheDugout.Models.Players;
     public class MatchEventService : IMatchEventService
     {
         private static readonly Random _random = new Random();
@@ -45,10 +44,7 @@ namespace TheDugout.Services.Match
 
                 double weightedSum = 0;
                 double totalWeight = attributeWeights.Sum(w => w.Weight);
-
-                Console.WriteLine($"--- Calculating outcome for {player.FirstName} {player.LastName} (Age {player.Age}), Event {eventType.Code} ---");
-                Console.WriteLine("Attributes used:");
-
+               
                 foreach (var weight in attributeWeights)
                 {
                     var playerAttr = player.Attributes.FirstOrDefault(a => a.Attribute.Code == weight.AttributeCode);
