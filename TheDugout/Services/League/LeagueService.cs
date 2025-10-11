@@ -1,13 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
-using TheDugout.Data;
-using TheDugout.Models.Common;
-using TheDugout.Models.Enums;
-using TheDugout.Models.Game;
-using TheDugout.Models.Leagues;
-using TheDugout.Services.Team;
-
-namespace TheDugout.Services.League
+﻿namespace TheDugout.Services.League
 {
+    using Microsoft.EntityFrameworkCore;
+    using TheDugout.Data;
+    using TheDugout.Models.Common;
+    using TheDugout.Models.Enums;
+    using TheDugout.Models.Game;
+    using TheDugout.Models.Leagues;
+    using TheDugout.Services.Team;
     public class LeagueService : ILeagueService
     {
         private readonly DugoutDbContext _context;
@@ -18,48 +17,60 @@ namespace TheDugout.Services.League
             _context = context;
             _teamGenerator = teamGenerator;
         }
-        public async Task<List<Models.Leagues.League>> GenerateLeaguesAsync(GameSave gameSave, Models.Seasons.Season season)
+        public async Task<List<League>> GenerateLeaguesAsync(GameSave gameSave, Models.Seasons.Season season)
         {
-            var leagues = new List<Models.Leagues.League>();
+            var leagues = new List<League>();
 
             var leagueTemplates = await _context.LeagueTemplates
                 .Include(lt => lt.TeamTemplates)
+                .AsNoTracking() // няма нужда да се track-ват шаблоните
                 .ToListAsync();
+
+            // turn off tracking to improve performance during bulk operations
+            _context.ChangeTracker.AutoDetectChangesEnabled = false;
 
             foreach (var lt in leagueTemplates)
             {
                 var competition = new Competition
                 {
                     Type = CompetitionTypeEnum.League,
+                    GameSaveId = gameSave.Id,
                     SeasonId = season.Id
                 };
 
-                var league = new Models.Leagues.League
+                var league = new League
                 {
                     TemplateId = lt.Id,
-                    GameSave = gameSave,
+                    GameSaveId = gameSave.Id,
                     Season = season,
                     CountryId = lt.CountryId,
                     Tier = lt.Tier,
                     TeamsCount = lt.TeamsCount,
                     RelegationSpots = lt.RelegationSpots,
                     PromotionSpots = lt.PromotionSpots,
-                    Competition = competition // само това стига
+                    Competition = competition
                 };
 
-                _context.Leagues.Add(league);
-                await _context.SaveChangesAsync();
-
-                // генерираме отборите
-                var teams = await _teamGenerator.GenerateTeamsAsync(gameSave, league, lt.TeamTemplates);
-                league.Teams = teams;
-
-                await _context.SaveChangesAsync();
                 leagues.Add(league);
             }
 
+            _context.Leagues.AddRange(leagues);
+            await _context.SaveChangesAsync();
+
+            // generate teams for each league
+            foreach (var league in leagues)
+            {
+                var lt = leagueTemplates.First(x => x.Id == league.TemplateId);
+                var teams = await _teamGenerator.GenerateTeamsAsync(gameSave, league, lt.TeamTemplates);
+                league.Teams = teams;
+            }
+
+            // turn tracking back on
+            _context.ChangeTracker.AutoDetectChangesEnabled = true;
+
             return leagues;
         }
+
 
         public async Task InitializeStandingsAsync(GameSave gameSave, Models.Seasons.Season season)
         {

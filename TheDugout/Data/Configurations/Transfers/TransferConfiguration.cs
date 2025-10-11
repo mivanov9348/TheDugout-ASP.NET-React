@@ -10,8 +10,11 @@
         {
             builder.HasKey(t => t.Id);
 
+            builder.Property(p => p.Fee)
+                   .HasPrecision(18, 2);
+
             builder.HasOne(t => t.GameSave)
-                .WithMany()
+                .WithMany(t=>t.Transfers)
                 .HasForeignKey(t => t.GameSaveId)
                 .OnDelete(DeleteBehavior.Restrict);
 

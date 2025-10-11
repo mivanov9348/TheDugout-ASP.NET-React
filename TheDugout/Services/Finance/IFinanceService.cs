@@ -1,16 +1,15 @@
-﻿using TheDugout.Models.Finance;
-using TheDugout.Models.Game;
-using TheDugout.Models.Staff;
-
-namespace TheDugout.Services.Finance
+﻿namespace TheDugout.Services.Finance
 {
+    using TheDugout.Models.Finance;
+    using TheDugout.Models.Game;
+    using TheDugout.Models.Staff;
     public interface IFinanceService
     {
-        Task<Bank> CreateBankAsync(GameSave gameSave, decimal initialCapital = 200_000_000);
+        Task<Bank> CreateBankAsync(GameSave gameSave, decimal initialCapital);
         Task InitializeClubFundsAsync(GameSave gameSave, IEnumerable<Models.Leagues.League> leagues);
-        Task<FinancialTransaction> ClubToBankAsync(Models.Teams.Team team, Bank bank, decimal amount, string description, TransactionType type);
         Task<FinancialTransaction> BankToClubAsync(Bank bank, Models.Teams.Team team, decimal amount, string description, TransactionType type);
-        Task<FinancialTransaction> ClubToClubAsync(Models.Teams.Team fromTeam, Models.Teams.Team toTeam, decimal amount, string description, TransactionType type);
+        Task<FinancialTransaction> ClubToClubAsync(Models.Teams.Team from, Models.Teams.Team to, decimal amt, string desc, TransactionType type);
+        Task<FinancialTransaction> ClubToBankAsync(Models.Teams.Team from, Bank bank, decimal amt, string desc, TransactionType type);
         Task<FinancialTransaction> ExecuteTransactionAsync(FinancialTransaction transaction);
         Task InitializeAgencyFundsAsync(GameSave gameSave, Agency agency);
 

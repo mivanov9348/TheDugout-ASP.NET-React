@@ -1,6 +1,7 @@
 ﻿namespace TheDugout.Services.Game
 {
     using Microsoft.EntityFrameworkCore;
+    using System.Diagnostics;
     using System.Linq;
     using TheDugout.Data;
     using TheDugout.Models.Competitions;
@@ -83,11 +84,15 @@
         }
         public async Task<bool> DeleteGameSaveAsync(int saveId)
         {
+            // Увеличаваме timeout-а, защото каскадните изтривания могат да са бавни
+            _context.Database.SetCommandTimeout(180);
+
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                Console.WriteLine($"=== START DELETE PROCESS for GameSave #{saveId} ===");
+                Console.WriteLine($"=== HARD DELETE START for GameSave #{saveId} ===");
 
+                // Проверка дали сейвът съществува
                 var exists = await _context.GameSaves.AnyAsync(gs => gs.Id == saveId);
                 if (!exists)
                 {
@@ -95,43 +100,106 @@
                     return false;
                 }
 
-                // === STEP 1: Дълбоки таблици ===
-                Console.WriteLine("Deleting dependent entities...");
+                // Определяне на SQL кавичките според провайдъра
+                var provider = _context.Database.ProviderName?.ToLower() ?? "";
+                string Quote(string identifier) =>
+                    provider.Contains("sqlserver") ? $"[{identifier}]"
+                    : provider.Contains("sqlite") ? $"\"{identifier}\""
+                    : provider.Contains("mysql") ? $"`{identifier}`"
+                    : provider.Contains("npgsql") ? $"\"{identifier}\""
+                    : identifier;
 
-                await _context.MatchEvents.Where(e => e.GameSaveId == saveId).ExecuteDeleteAsync();
-                await _context.Penalties.Where(e => e.GameSaveId == saveId).ExecuteDeleteAsync();
-                await _context.PlayerMatchStats.Where(e => e.GameSaveId == saveId).ExecuteDeleteAsync();
-                await _context.PlayerSeasonStats.Where(e => e.GameSaveId == saveId).ExecuteDeleteAsync();
-                await _context.PlayerTrainings.Where(e => e.GameSaveId == saveId).ExecuteDeleteAsync();
-                await _context.FinancialTransactions.Where(e => e.GameSaveId == saveId).ExecuteDeleteAsync();
+                // 1️⃣ Изключваме всички foreign key constraint-и (временно)
+                Console.WriteLine("⚙️ Disabling foreign key constraints...");
+                await _context.Database.ExecuteSqlRawAsync("EXEC sp_msforeachtable 'ALTER TABLE ? NOCHECK CONSTRAINT all'");
 
-                // === STEP 2: Средно ниво ===
-                await _context.Matches.Where(e => e.GameSaveId == saveId).ExecuteDeleteAsync();
-                await _context.Fixtures.Where(e => e.GameSaveId == saveId).ExecuteDeleteAsync();
-                await _context.CupRounds.Where(e => e.GameSaveId == saveId).ExecuteDeleteAsync();
-                await _context.EuropeanCupPhases.Where(e => e.GameSaveId == saveId).ExecuteDeleteAsync();
-                await _context.LeagueStandings.Where(e => e.GameSaveId == saveId).ExecuteDeleteAsync();
-                await _context.SeasonEvents.Where(e => e.GameSaveId == saveId).ExecuteDeleteAsync();
-                await _context.Transfers.Where(e => e.GameSaveId == saveId).ExecuteDeleteAsync();
+                // 2️⃣ Нулираме връзките от други таблици към сейфа
+                Console.WriteLine("Clearing foreign key references...");
 
-                // === STEP 3: Основни обекти ===
-                await _context.Players.Where(e => e.GameSaveId == saveId).ExecuteDeleteAsync();
-                await _context.Teams.Where(e => e.GameSaveId == saveId).ExecuteDeleteAsync();
-                await _context.Cups.Where(e => e.GameSaveId == saveId).ExecuteDeleteAsync();
-                await _context.Leagues.Where(e => e.GameSaveId == saveId).ExecuteDeleteAsync();
-                await _context.Seasons.Where(e => e.GameSaveId == saveId).ExecuteDeleteAsync();
-                await _context.Agencies.Where(e => e.GameSaveId == saveId).ExecuteDeleteAsync();
+                var usersSql = $"UPDATE {Quote("Users")} SET {Quote("CurrentSaveId")} = NULL WHERE {Quote("CurrentSaveId")} = @p0;";
+                await _context.Database.ExecuteSqlRawAsync(usersSql, saveId);
 
-                // === STEP 4: Банката и др. ===
-                await _context.FinancialTransactions.Where(e => e.GameSaveId == saveId).ExecuteDeleteAsync();
-                await _context.Banks.Where(e => e.GameSaveId == saveId).ExecuteDeleteAsync();
+                var clearUserTeamSql = $"UPDATE {Quote("GameSaves")} SET {Quote("UserTeamId")} = NULL WHERE {Quote("Id")} = @p0;";
+                await _context.Database.ExecuteSqlRawAsync(clearUserTeamSql, saveId);
 
-                // === STEP 5: Самият GameSave ===
-                Console.WriteLine($"Deleting GameSave #{saveId}...");
-                await _context.GameSaves.Where(gs => gs.Id == saveId).ExecuteDeleteAsync();
+                // 3️⃣ Таблици, които се триeт чрез JOIN (нямат GameSaveId)
+                Console.WriteLine("Deleting dependent tables via JOIN...");
 
+                var joinDeletes = new[]
+                {
+            ("TeamTactics", "TeamId"),
+            ("TrainingFacilities", "TeamId"),
+            ("YouthAcademies", "TeamId")
+        };
+
+                foreach (var (table, fk) in joinDeletes)
+                {
+                    var joinSql = $@"
+DELETE {Quote(table)}
+FROM {Quote(table)} 
+INNER JOIN {Quote("Teams")} T ON {Quote(table)}.{Quote(fk)} = T.{Quote("Id")}
+WHERE T.{Quote("GameSaveId")} = @p0;";
+                    Console.WriteLine($"Deleting from {table} (via TeamId)...");
+                    await _context.Database.ExecuteSqlRawAsync(joinSql, saveId);
+                }
+
+                // 4️⃣ Таблици с GameSaveId — по правилния ред
+                var tables = new[]
+                {
+            // 🔺 Родителските таблици първо
+            "Seasons",
+            "Leagues",
+            "Competitions",
+            "Teams",
+            "Stadiums",
+
+            // 🔹 Всички останали
+            "PlayerAttributes",
+            "MatchEvents",
+            "Penalties",
+            "PlayerMatchStats",
+            "PlayerSeasonStats",
+            "PlayerTrainings",
+            "Transfers",
+            "SeasonEvents",
+            "Messages",
+            "Players",
+            "TrainingSessions",
+            "FinancialTransactions",
+            "Matches",
+            "Fixtures",
+            "CupRounds",
+            "EuropeanCupPhases",
+            "EuropeanCupStandings",
+            "EuropeanCupTeams",
+            "CupTeams",
+            "LeagueStandings",
+            "EuropeanCups",
+            "Cups",
+            "Agencies",
+            "Banks"
+        };
+
+                foreach (var table in tables)
+                {
+                    Console.WriteLine($"Deleting from {table}...");
+                    var sql = $"DELETE FROM {Quote(table)} WHERE {Quote("GameSaveId")} = @p0;";
+                    await _context.Database.ExecuteSqlRawAsync(sql, saveId);
+                }
+
+                // 5️⃣ Изтриваме самия сейв
+                Console.WriteLine("Deleting GameSave record...");
+                var deleteSaveSql = $"DELETE FROM {Quote("GameSaves")} WHERE {Quote("Id")} = @p0;";
+                await _context.Database.ExecuteSqlRawAsync(deleteSaveSql, saveId);
+
+                // 6️⃣ Връщаме constraint-ите обратно
+                Console.WriteLine("✅ Re-enabling foreign key constraints...");
+                await _context.Database.ExecuteSqlRawAsync("EXEC sp_msforeachtable 'ALTER TABLE ? WITH CHECK CHECK CONSTRAINT all'");
+
+                // 7️⃣ Потвърждаваме транзакцията
                 await transaction.CommitAsync();
-                Console.WriteLine("✅ GameSave deleted successfully.");
+
+                Console.WriteLine($"✅ GameSave #{saveId} deleted successfully.");
                 return true;
             }
             catch (Exception ex)
@@ -139,9 +207,18 @@
                 await transaction.RollbackAsync();
                 Console.WriteLine($"❌ ERROR deleting GameSave {saveId}: {ex.Message}");
                 Console.WriteLine(ex.StackTrace);
+
+                // Връщаме constraint-ите, дори при грешка
+                try
+                {
+                    await _context.Database.ExecuteSqlRawAsync("EXEC sp_msforeachtable 'ALTER TABLE ? WITH CHECK CHECK CONSTRAINT all'");
+                }
+                catch { }
+
                 return false;
             }
         }
+
 
         public async Task<GameSave> StartNewGameAsync(int userId, CancellationToken ct = default)
         {
@@ -152,11 +229,20 @@
             if (saveCount >= 3)
                 throw new InvalidOperationException("3 saves max!");
 
-            await using var transaction = await _context.Database.BeginTransactionAsync();
+            await using var transaction = await _context.Database.BeginTransactionAsync(ct);
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
 
             try
             {
-                // 1. Създаваме нов save
+                void LogStep(string step)
+                {
+                    stopwatch.Stop();
+                    Console.WriteLine($"⏱ {step} completed in {stopwatch.ElapsedMilliseconds} ms");
+                    stopwatch.Restart();
+                }
+
+                // 1️⃣ Създаваме нов save
                 var gameSave = new GameSave
                 {
                     UserId = userId,
@@ -165,46 +251,51 @@
                 };
 
                 _context.GameSaves.Add(gameSave);
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(ct);
+                LogStep("Created GameSave");
 
-                // 2. Банка / финанси
-                await _financeService.CreateBankAsync(gameSave);
-                await _context.SaveChangesAsync();
+                // 2️⃣ Банка / финанси
+                await _financeService.CreateBankAsync(gameSave, 20000000);
+                await _context.SaveChangesAsync(ct);
+                LogStep("Created Bank and Finance data");
 
-                // Инициализация на агенции
+                // 3️⃣ Агенции
                 await _agencyService.InitializeAgenciesForGameSaveAsync(gameSave);
+                LogStep("Initialized Agencies");
 
-                // 3. Създаваме първи сезон
+                // 4️⃣ Сезон
                 var startDate = new DateTime(DateTime.UtcNow.Year, 7, 1);
                 var season = await _seasonGenerator.GenerateSeason(gameSave, startDate);
                 gameSave.Seasons.Add(season);
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(ct);
+                LogStep("Generated Season");
 
-                // 4. Генерираме лиги + отбори
+                // 5️⃣ Лиги + отбори
                 var leagues = await _leagueGenerator.GenerateLeaguesAsync(gameSave, season);
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(ct);
+                LogStep("Generated Leagues");
 
                 var independentTeams = await _teamGenerator.GenerateIndependentTeamsAsync(gameSave);
                 foreach (var team in independentTeams)
-                {
                     gameSave.Teams.Add(team);
-                }
 
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(ct);
+                LogStep("Generated Independent Teams");
 
                 await _financeService.InitializeClubFundsAsync(gameSave, leagues);
+                LogStep("Initialized Club Funds");
 
-                // 4.5 Инициализиране на European Cup за първата година (ако имаш шаблон)
+                // 6️⃣ European Cups (ако има шаблони)
                 var euroTemplates = await _context.Set<EuropeanCupTemplate>()
-                                    .Include(t => t.PhaseTemplates)
-                                    .Where(t => t.IsActive)
-                                    .ToListAsync(ct);
+                    .Include(t => t.PhaseTemplates)
+                    .Where(t => t.IsActive)
+                    .ToListAsync(ct);
+                LogStep("Loaded European Cup Templates");
 
                 foreach (var template in euroTemplates)
                 {
                     try
                     {
-                        // 1. Вземаме подходящи отбори: LeagueId == null и същия GameSave
                         var eligibleTeams = await _context.Set<Models.Teams.Team>()
                             .Where(t => t.LeagueId == null && t.GameSaveId == gameSave.Id)
                             .ToListAsync(ct);
@@ -214,19 +305,15 @@
                             _logger.LogWarning(
                                 "Not enough eligible teams ({Eligible}) for European Cup Template '{TemplateName}' ({TemplateId}). Requires {Required}. Skipping.",
                                 eligibleTeams.Count, template.Name, template.Id, template.TeamsCount);
-                            continue; // прескачаме, но не прекъсваме цялото стартиране
+                            continue;
                         }
 
-                        // 2. Създаваме турнир
-                        var cup = await _europeanCupService.InitializeTournamentAsync(
+                        await _europeanCupService.InitializeTournamentAsync(
                             templateId: template.Id,
                             gameSaveId: gameSave.Id,
                             seasonId: season.Id,
                             ct: ct);
 
-                        _logger.LogInformation(
-                            "Successfully initialized European Cup '{TemplateName}' (ID: {CupId}) with {Teams} teams.",
-                            template.Name, cup.Id, template.TeamsCount);
                     }
                     catch (Exception ex)
                     {
@@ -234,36 +321,50 @@
                             template.Name, template.Id);
                     }
                 }
+                LogStep("Initialized European Cups");
 
-                // Generating Cup
+                // 7️⃣ Cups
                 await _cupService.InitializeCupsForGameSaveAsync(gameSave, season.Id);
+                LogStep("Initialized Domestic Cups");
 
-                // 6. Генерираме league fixtures
+                // 8️⃣ Fixtures
                 await _leagueFixturesService.GenerateLeagueFixturesAsync(gameSave.Id, season.Id, startDate);
+                LogStep("Generated League Fixtures");
 
-                // 7. Инициализираме standings (таблици за класиране)
-                await _context.SaveChangesAsync();
+                // 9️⃣ Standings
+                await _context.SaveChangesAsync(ct);
                 await _leagueGenerator.InitializeStandingsAsync(gameSave, season);
+                LogStep("Initialized League Standings");
 
-                // 8. Дефолтни тактики
+                // 🔟 Дефолтни тактики
                 await _teamPlanService.InitializeDefaultTacticsAsync(gameSave);
+                LogStep("Initialized Default Tactics");
 
-                // Commit
-                await transaction.CommitAsync();
+                // ✅ Commit
+                await transaction.CommitAsync(ct);
+                LogStep("Committed Transaction");
 
-                // 9. Връщаме пълния save с данни
-                return await _context.GameSaves
-                    .Include(gs => gs.Leagues).ThenInclude(l => l.Teams).ThenInclude(t => t.Players)
-                    .Include(gs => gs.Seasons).ThenInclude(s => s.Events)
-                    .FirstAsync(gs => gs.Id == gameSave.Id);
+                // 🔁 Зареждаме резултата
+                var result = await _context.GameSaves
+                            .AsSplitQuery()
+                            .Include(gs => gs.Leagues)
+                                .ThenInclude(l => l.Teams)
+                                .ThenInclude(t => t.Players)
+                            .Include(gs => gs.Seasons)
+                                .ThenInclude(s => s.Events)
+                            .FirstAsync(gs => gs.Id == gameSave.Id, ct);
+                LogStep("Loaded Final GameSave");
+
+                Console.WriteLine($"🏁 Total time: {stopwatch.ElapsedMilliseconds} ms");
+                return result;
             }
             catch
             {
-                await transaction.RollbackAsync();
+                await transaction.RollbackAsync(ct);
+                stopwatch.Stop();
+                Console.WriteLine($"❌ ERROR: Transaction rolled back after {stopwatch.ElapsedMilliseconds} ms");
                 throw;
             }
         }
-
-
     }
 }

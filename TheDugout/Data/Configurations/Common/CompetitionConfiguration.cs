@@ -1,13 +1,13 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using TheDugout.Controllers;
-using TheDugout.Models.Common;
-using TheDugout.Models.Competitions;
-using TheDugout.Models.Cups;
-using TheDugout.Models.Leagues;
-
-namespace TheDugout.Data.Configurations.Common
+﻿namespace TheDugout.Data.Configurations.Common
 {
+    using Microsoft.EntityFrameworkCore;
+    using Microsoft.EntityFrameworkCore.Metadata.Builders;
+    using TheDugout.Controllers;
+    using TheDugout.Models.Common;
+    using TheDugout.Models.Competitions;
+    using TheDugout.Models.Cups;
+    using TheDugout.Models.Leagues;
+
     public class CompetitionConfiguration : IEntityTypeConfiguration<Competition>
     {
         public void Configure(EntityTypeBuilder<Competition> builder)
@@ -46,6 +46,11 @@ namespace TheDugout.Data.Configurations.Common
                    .WithOne(ec => ec.Competition)
                    .HasForeignKey<EuropeanCup>(c => c.CompetitionId)
                    .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasOne(c => c.GameSave)
+                     .WithMany(gs => gs.Competitions)
+                     .HasForeignKey(c => c.GameSaveId)
+                     .OnDelete(DeleteBehavior.Restrict);
         }
 
     }

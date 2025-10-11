@@ -13,13 +13,11 @@
         private readonly IPlayerGenerationService _playerGenerationService;
         private readonly IFinanceService _financeService;
         private readonly Random _rng = new();
-        private readonly ILogger<AgencyService> _logger;
-        public AgencyService(DugoutDbContext context, IPlayerGenerationService playerGenerationService, IFinanceService financeService, ILogger<AgencyService> logger)
+        public AgencyService(DugoutDbContext context, IPlayerGenerationService playerGenerationService, IFinanceService financeService)
         {
             _context = context;
             _playerGenerationService = playerGenerationService;
             _financeService = financeService;
-            _logger = logger;
         }
         public async Task InitializeAgenciesForGameSaveAsync(GameSave save, CancellationToken ct = default)
         {
@@ -78,13 +76,7 @@
                     _context.Players.Add(player);
                 }
 
-                _logger.LogInformation(
-                    "Agency {Agency} initialized with {Funds} funds and generated {Count} free agents (final budget {Budget}).",
-                    agency.AgencyTemplate.Name,
-                    agency.Budget,
-                    freeAgents.Count,
-                    agency.Budget
-                );
+                
             }
             await _context.SaveChangesAsync(ct);
 

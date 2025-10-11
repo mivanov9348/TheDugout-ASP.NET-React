@@ -1,9 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using TheDugout.Models.Players;
-
-namespace TheDugout.Data.Configurations
+﻿namespace TheDugout.Data.Configurations
 {
+    using Microsoft.EntityFrameworkCore;
+    using Microsoft.EntityFrameworkCore.Metadata.Builders;
+    using TheDugout.Models.Players;
     public class PlayerAttributesConfiguration : IEntityTypeConfiguration<PlayerAttribute>
     {
         public void Configure(EntityTypeBuilder<PlayerAttribute> builder)
@@ -23,6 +22,11 @@ namespace TheDugout.Data.Configurations
             builder.HasOne(pa => pa.Attribute)
                    .WithMany(a => a.PlayerAttributes)
                    .HasForeignKey(pa => pa.AttributeId)
+                   .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasOne(pa => pa.GameSave)
+                   .WithMany(gs => gs.PlayerAttributes)
+                   .HasForeignKey(pa => pa.GameSaveId)
                    .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasIndex(pa => new { pa.PlayerId, pa.AttributeId })

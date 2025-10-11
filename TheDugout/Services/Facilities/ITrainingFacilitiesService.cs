@@ -1,8 +1,10 @@
 ﻿namespace TheDugout.Services.Facilities
 {
+    using TheDugout.Models.Facilities;
+
     public interface ITrainingFacilitiesService
     {
-        Task AddTrainingFacilityAsync(int teamId);
+        Task<TrainingFacility> AddTrainingFacilityAsync(int teamId);
         Task<bool> UpgradeTrainingFacilityAsync(int teamId);
     }
 }

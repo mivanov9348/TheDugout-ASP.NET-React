@@ -1,12 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System.Text.Json;
-using TheDugout.Data;
-using TheDugout.Models.Facilities;
-using TheDugout.Models.Finance;
-using TheDugout.Services.Finance;
-
-namespace TheDugout.Services.Facilities
+﻿namespace TheDugout.Services.Facilities
 {
+    using Microsoft.EntityFrameworkCore;
+    using System.Text.Json;
+    using TheDugout.Data;
+    using TheDugout.Models.Facilities;
+    using TheDugout.Models.Finance;
+    using TheDugout.Services.Finance;
+
     public class StadiumService : IStadiumService
     {
         private readonly DugoutDbContext _context;
@@ -21,7 +21,7 @@ namespace TheDugout.Services.Facilities
             _financeService = financeService;
         }
 
-        public async Task AddStadiumAsync(int teamId)
+        public async Task<Stadium> AddStadiumAsync(int teamId)
         {
             var team = await _context.Teams.FindAsync(teamId);
             if (team == null) throw new Exception("Team not found");
@@ -40,7 +40,7 @@ namespace TheDugout.Services.Facilities
 
             var stadium = new Stadium
             {
-                TeamId = team.Id,
+                TeamId = teamId,
                 Level = 1,
                 Capacity = level1.Capacity,
                 GameSaveId = gameSave.Id,
@@ -49,6 +49,8 @@ namespace TheDugout.Services.Facilities
 
             _context.Stadiums.Add(stadium);
             await _context.SaveChangesAsync();
+
+            return stadium;
         }
         public async Task<bool> UpgradeStadiumAsync(int teamId)
         {

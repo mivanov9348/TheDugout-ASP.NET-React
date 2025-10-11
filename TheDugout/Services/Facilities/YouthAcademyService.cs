@@ -1,12 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System.Text.Json;
-using TheDugout.Data;
-using TheDugout.Models.Facilities;
-using TheDugout.Models.Finance;
-using TheDugout.Services.Finance;
-
-namespace TheDugout.Services.Facilities
+﻿namespace TheDugout.Services.Facilities
 {
+    using Microsoft.EntityFrameworkCore;
+    using System.Text.Json;
+    using TheDugout.Data;
+    using TheDugout.Models.Facilities;
+    using TheDugout.Models.Finance;
+    using TheDugout.Services.Finance;
     public class YouthAcademyService : IYouthAcademyService
     {
         private readonly DugoutDbContext _context;
@@ -19,8 +18,7 @@ namespace TheDugout.Services.Facilities
             _context = context;
             _financeService = financeService;
         }
-
-        public async Task AddYouthAcademyAsync(int teamId)
+        public async Task<YouthAcademy> AddYouthAcademyAsync(int teamId)
         {
             var team = await _context.Teams.FindAsync(teamId);
             if (team == null) throw new Exception("Team not found");
@@ -38,13 +36,15 @@ namespace TheDugout.Services.Facilities
 
             var academy = new YouthAcademy
             {
-                TeamId = team.Id,
+                TeamId = teamId,
                 GameSaveId = gameSave.Id,
                 Level = 1
             };
 
             _context.YouthAcademies.Add(academy);
             await _context.SaveChangesAsync();
+
+            return academy;
         }
 
         public async Task<bool> UpgradeYouthAcademyAsync(int teamId)

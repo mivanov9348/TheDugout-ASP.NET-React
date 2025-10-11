@@ -28,10 +28,10 @@ namespace TheDugout.Data.Configurations
                 .HasConversion<string>() 
                 .IsRequired();
 
-            builder.HasOne(m => m.GameSave)
-                .WithMany()
-                .HasForeignKey(m => m.GameSaveId)
-                .OnDelete(DeleteBehavior.Restrict);
+            builder.HasOne(p => p.GameSave)
+                   .WithMany(g => g.Messages)
+                   .HasForeignKey(p => p.GameSaveId)
+                   .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(m => m.MessageTemplate)
                 .WithMany()

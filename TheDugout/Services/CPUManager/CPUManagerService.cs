@@ -50,7 +50,7 @@ public class CpuManagerService : ICPUManagerService
             _logger.LogInformation(msg);
             if (progress != null) await progress(msg);
 
-            todayEvents.Add(new SeasonEvent { Type = SeasonEventType.TrainingDay, Date = date });
+            todayEvents.Add(new SeasonEvent { Type = SeasonEventType.TrainingDay, Date = date, GameSaveId = gameSaveId });
         }
 
         var cpuTeams = await _context.Teams

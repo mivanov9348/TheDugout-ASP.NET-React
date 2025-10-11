@@ -1,13 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System.Text.Json;
-using TheDugout.Data;
-using TheDugout.Models.Facilities;
-using TheDugout.Models.Finance;
-using TheDugout.Services.Finance;
-using static TheDugout.Services.Facilities.StadiumService;
-
-namespace TheDugout.Services.Facilities
+﻿namespace TheDugout.Services.Facilities
 {
+    using Microsoft.EntityFrameworkCore;
+    using System.Text.Json;
+    using TheDugout.Data;
+    using TheDugout.Models.Facilities;
+    using TheDugout.Models.Finance;
+    using TheDugout.Services.Finance;
+    using static TheDugout.Services.Facilities.StadiumService;
     public class TrainingFacilitiesService : ITrainingFacilitiesService
     {
         private readonly DugoutDbContext _context;
@@ -19,7 +18,7 @@ namespace TheDugout.Services.Facilities
             _context = context;
             _financeService = financeService;
         }
-        public async Task AddTrainingFacilityAsync(int teamId)
+        public async Task<TrainingFacility> AddTrainingFacilityAsync(int teamId)
         {
             var team = await _context.Teams.FindAsync(teamId);
             if (team == null) throw new Exception("Team not found");
@@ -35,16 +34,18 @@ namespace TheDugout.Services.Facilities
 
             var level1 = levels.TrainingLevels["1"];
 
-            var training = new TrainingFacility
+            var trainingFacility = new TrainingFacility
             {
-                TeamId = team.Id,
+                TeamId = teamId,
                 GameSaveId = game.Id,
                 Level = 1,
                 TrainingQuality = level1.TrainingQuality
             };
 
-            _context.TrainingFacilities.Add(training);
+            _context.TrainingFacilities.Add(trainingFacility);
             await _context.SaveChangesAsync();
+
+            return trainingFacility;
         }
 
         public async Task<bool> UpgradeTrainingFacilityAsync(int teamId)

@@ -220,6 +220,7 @@
                 player.Attributes.Add(new PlayerAttribute
                 {
                     AttributeId = w.AttributeId,
+                    GameSaveId = player.GameSaveId,
                     Value = value
                 });
 

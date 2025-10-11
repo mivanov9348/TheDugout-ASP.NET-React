@@ -1,14 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
-using TheDugout.Data;
-using TheDugout.Models.Common;
-using TheDugout.Models.Competitions;
-using TheDugout.Models.Enums;
-using TheDugout.Models.Fixtures;
-using TheDugout.Services.Fixture;
-
-
-namespace TheDugout.Services.EuropeanCup
+﻿namespace TheDugout.Services.EuropeanCup
 {
+    using Microsoft.EntityFrameworkCore;
+    using TheDugout.Data;
+    using TheDugout.Models.Common;
+    using TheDugout.Models.Competitions;
+    using TheDugout.Models.Enums;
+    using TheDugout.Models.Fixtures;
+    using TheDugout.Services.Fixture;
     public class EuropeanCupService : IEuropeanCupService
     {
         private readonly DugoutDbContext _context;
@@ -51,6 +49,7 @@ namespace TheDugout.Services.EuropeanCup
             var competition = new Competition
             {
                 Type = CompetitionTypeEnum.EuropeanCup,
+                GameSaveId = gameSaveId,
                 SeasonId = seasonId
             };
 

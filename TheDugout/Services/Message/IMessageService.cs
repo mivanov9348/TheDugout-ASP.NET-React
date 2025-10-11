@@ -1,20 +1,20 @@
-﻿using TheDugout.Models.Messages;
-
-namespace TheDugout.Services.Message
+﻿namespace TheDugout.Services.Message
 {
+    using TheDugout.Models.Messages;
+
     public interface IMessageService
     {
-        Task<Models.Messages.Message> CreateMessageAsync(
-MessageCategory category,
-Dictionary<string, string> placeholders,
-int? gameSaveId = null,
-bool strict = false);
-
-
-        Task<Models.Messages.Message> CreateAndSaveMessageAsync(
+        Task<Message> CreateMessageAsync(
         MessageCategory category,
         Dictionary<string, string> placeholders,
-        int? gameSaveId = null,
+        int gameSaveId,
+        bool strict = false);
+
+
+        Task<Message> CreateAndSaveMessageAsync(
+        MessageCategory category,
+        Dictionary<string, string> placeholders,
+        int gameSaveId,
         bool strict = false);
     }
 }

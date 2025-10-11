@@ -2,6 +2,7 @@
 {
     using Microsoft.EntityFrameworkCore;
     using TheDugout.Data;
+    using TheDugout.Models.Facilities;
     using TheDugout.Models.Game;
     using TheDugout.Models.Teams;
     using TheDugout.Services.Facilities;
@@ -26,25 +27,23 @@
             _academyService = youthAcademyService;
         }
 
-        public async Task<List<Models.Teams.Team>> GenerateTeamsAsync(
-        GameSave gameSave,
-        Models.Leagues.League league,
-        IEnumerable<TeamTemplate> templates)
+        public async Task<List<Team>> GenerateTeamsAsync(
+    GameSave gameSave,
+    Models.Leagues.League league,
+    IEnumerable<TeamTemplate> templates)
         {
-            var teams = new List<Models.Teams.Team>();
+            var teams = new List<Team>();
 
             foreach (var tt in templates)
             {
                 var team = new Team
                 {
                     TemplateId = tt.Id,
-                    GameSave = gameSave,
                     GameSaveId = gameSave.Id,
                     League = league,
                     Name = tt.Name,
                     Abbreviation = tt.Abbreviation,
                     CountryId = tt.CountryId,
-                    Country = tt.Country,
                     Popularity = 10,
                     LogoFileName = GenerateLogoFileName(tt.Name)
                 };
@@ -52,27 +51,37 @@
                 var players = _playerGenerator.GenerateTeamPlayers(gameSave, team);
                 foreach (var player in players)
                 {
-                    gameSave.Players.Add(player);
                     team.Players.Add(player);
+                    gameSave.Players.Add(player);
                 }
 
                 team.Popularity = CalculateTeamPopularity(team);
-
                 teams.Add(team);
             }
 
+            // Добавяме наведнъж
             _context.Teams.AddRange(teams);
-            await _context.SaveChangesAsync(); 
+
+            // Отлагаме създаването на стадион и т.н. до след save
+            await _context.SaveChangesAsync();
+
+            // 🔄 Пост-фаза: създаваме съоръжения без SaveChanges вътре
+            var stadiums = new List<Stadium>();
+            var trainings = new List<TrainingFacility>();
+            var academies = new List<YouthAcademy>();
 
             foreach (var team in teams)
             {
-                await _stadiumService.AddStadiumAsync(team.Id);
-                await _trainingService.AddTrainingFacilityAsync(team.Id);
-                await _academyService.AddYouthAcademyAsync(team.Id);
-            }
+                stadiums.Add(await _stadiumService.AddStadiumAsync(team.Id));
+                trainings.Add(await _trainingService.AddTrainingFacilityAsync(team.Id));
+                academies.Add(await _academyService.AddYouthAcademyAsync(team.Id));
+            }            
+
+            await _context.SaveChangesAsync();
 
             return teams;
         }
+
         private int CalculateTeamPopularity(Models.Teams.Team team)
         {
             if (team.Players == null || !team.Players.Any())

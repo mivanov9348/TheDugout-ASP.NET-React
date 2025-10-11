@@ -44,6 +44,7 @@
         {
             var team = await _context.Teams
                 .Include(t => t.TeamTactic)
+                .Include(t => t.GameSave)
                 .FirstOrDefaultAsync(t => t.Id == teamId);
 
             if (team == null)
@@ -149,6 +150,7 @@
                 {
                     TeamId = team.Id,
                     TacticId = defaultTactic.Id,
+                    GameSaveId = gameSave.Id,
                     CustomName = "Default 4-4-2",
                     LineupJson = System.Text.Json.JsonSerializer.Serialize(lineup),
                     SubstitutesJson = System.Text.Json.JsonSerializer.Serialize(subsDict)

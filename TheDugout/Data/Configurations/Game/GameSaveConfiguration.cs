@@ -41,10 +41,21 @@
                    .HasForeignKey(s => s.GameSaveId)
                    .OnDelete(DeleteBehavior.Restrict);
 
+            builder.HasMany(gs => gs.SeasonEvents)
+                     .WithOne(se => se.GameSave)
+                     .HasForeignKey(se => se.GameSaveId)
+                     .OnDelete(DeleteBehavior.Restrict);
+
             // Fixture
             builder.HasMany(gs => gs.Fixtures)
                    .WithOne(f => f.GameSave)
                    .HasForeignKey(f => f.GameSaveId)
+                   .OnDelete(DeleteBehavior.Restrict);
+
+            // Competition
+            builder.HasMany(gs => gs.Competitions)
+                   .WithOne(c => c.GameSave)
+                   .HasForeignKey(c => c.GameSaveId)
                    .OnDelete(DeleteBehavior.Restrict);
 
             // League
@@ -143,6 +154,11 @@
             builder.HasMany(gs => gs.PlayerSeasonStats)
                      .WithOne(pss => pss.GameSave)
                      .HasForeignKey(pss => pss.GameSaveId)
+                     .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasMany(gs => gs.PlayerAttributes)
+                     .WithOne(pa => pa.GameSave)
+                     .HasForeignKey(pa => pa.GameSaveId)
                      .OnDelete(DeleteBehavior.Restrict);
 
             // Teams

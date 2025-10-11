@@ -1,10 +1,8 @@
-﻿
-using Microsoft.EntityFrameworkCore;
-using TheDugout.Data;
-using TheDugout.Models.Seasons;
-
-namespace TheDugout.Services.Season
+﻿namespace TheDugout.Services.Season
 {
+    using Microsoft.EntityFrameworkCore;
+    using TheDugout.Data;
+    using TheDugout.Models.Seasons;
     public class SeasonEventService : ISeasonEventService
     {
         private readonly DugoutDbContext _context;

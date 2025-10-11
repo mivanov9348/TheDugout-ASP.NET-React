@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TheDugout.Data;
 
@@ -11,9 +12,11 @@ using TheDugout.Data;
 namespace TheDugout.Migrations
 {
     [DbContext(typeof(DugoutDbContext))]
-    partial class DugoutDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251011051519_initial")]
+    partial class initial
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1341,7 +1344,10 @@ namespace TheDugout.Migrations
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-                    b.Property<int>("GameSaveId")
+                    b.Property<int?>("GameSaveId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("GameSaveId1")
                         .HasColumnType("int");
 
                     b.Property<bool>("IsRead")
@@ -1363,6 +1369,8 @@ namespace TheDugout.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("GameSaveId");
+
+                    b.HasIndex("GameSaveId1");
 
                     b.HasIndex("MessageTemplateId");
 
@@ -1483,7 +1491,6 @@ namespace TheDugout.Migrations
                         .HasColumnType("int");
 
                     b.Property<decimal>("Price")
-                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int?>("TeamId")
@@ -2060,7 +2067,6 @@ namespace TheDugout.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<decimal>("Fee")
-                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int?>("FromTeamId")
@@ -2070,6 +2076,9 @@ namespace TheDugout.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<int>("GameSaveId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("GameSaveId1")
                         .HasColumnType("int");
 
                     b.Property<bool>("IsFreeAgent")
@@ -2089,6 +2098,8 @@ namespace TheDugout.Migrations
                     b.HasIndex("FromTeamId");
 
                     b.HasIndex("GameSaveId");
+
+                    b.HasIndex("GameSaveId1");
 
                     b.HasIndex("PlayerId");
 
@@ -2801,10 +2812,13 @@ namespace TheDugout.Migrations
             modelBuilder.Entity("TheDugout.Models.Messages.Message", b =>
                 {
                     b.HasOne("TheDugout.Models.Game.GameSave", "GameSave")
-                        .WithMany("Messages")
+                        .WithMany()
                         .HasForeignKey("GameSaveId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("TheDugout.Models.Game.GameSave", null)
+                        .WithMany("Messages")
+                        .HasForeignKey("GameSaveId1");
 
                     b.HasOne("TheDugout.Models.Messages.MessageTemplate", "MessageTemplate")
                         .WithMany()
@@ -2978,7 +2992,7 @@ namespace TheDugout.Migrations
                     b.HasOne("TheDugout.Models.Game.GameSave", "GameSave")
                         .WithMany("SeasonEvents")
                         .HasForeignKey("GameSaveId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("TheDugout.Models.Seasons.Season", "Season")
@@ -3157,10 +3171,14 @@ namespace TheDugout.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("TheDugout.Models.Game.GameSave", "GameSave")
-                        .WithMany("Transfers")
+                        .WithMany()
                         .HasForeignKey("GameSaveId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("TheDugout.Models.Game.GameSave", null)
+                        .WithMany("Transfers")
+                        .HasForeignKey("GameSaveId1");
 
                     b.HasOne("TheDugout.Models.Players.Player", "Player")
                         .WithMany()

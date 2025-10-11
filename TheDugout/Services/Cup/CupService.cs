@@ -53,6 +53,7 @@
                 var competition = new Competition
                 {
                     Type = CompetitionTypeEnum.DomesticCup,
+                    GameSaveId = gameSave.Id,
                     SeasonId = seasonId
                 };
 

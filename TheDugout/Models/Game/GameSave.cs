@@ -1,5 +1,6 @@
 ﻿namespace TheDugout.Models.Game
 {
+    using TheDugout.Models.Common;
     using TheDugout.Models.Competitions;
     using TheDugout.Models.Cups;
     using TheDugout.Models.Facilities;
@@ -19,7 +20,7 @@
     {
         public int Id { get; set; }
 
-        public int UserId { get; set; }
+        public int? UserId { get; set; }
         public User User { get; set; } = null!;
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
@@ -39,7 +40,6 @@
         public ICollection<League> Leagues { get; set; } = new List<League>();
         public ICollection<LeagueStanding> LeagueStandings { get; set; } = new List<LeagueStanding>();
 
-
         // Teams, Players, Staff, Seasons
         public ICollection<Team> Teams { get; set; } = new List<Team>();
         public ICollection<TeamTactic> TeamTactics { get; set; } = new List<TeamTactic>();
@@ -51,6 +51,7 @@
         public ICollection<Player> Players { get; set; } = new List<Player>();
         public ICollection<PlayerMatchStats> PlayerMatchStats { get; set; } = new List<PlayerMatchStats>();
         public ICollection<PlayerSeasonStats> PlayerSeasonStats { get; set; } = new List<PlayerSeasonStats>();
+        public ICollection<PlayerAttribute> PlayerAttributes { get; set; } = new List<PlayerAttribute>();
 
         // Seasons
         public ICollection<Season> Seasons { get; set; } = new List<Season>();
@@ -62,6 +63,9 @@
         // Trainings
         public ICollection<TrainingSession> TrainingSessions { get; set; } = new List<TrainingSession>();
         public ICollection<PlayerTraining> PlayerTrainings { get; set; } = new List<PlayerTraining>();
+
+        // Competitions
+        public ICollection<Competition> Competitions { get; set; } = new List<Competition>();
 
         // Cups
         public ICollection<Cup> Cups { get; set; } = new List<Cup>();
