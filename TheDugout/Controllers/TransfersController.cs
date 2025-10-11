@@ -1,11 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using TheDugout.Data;
-using TheDugout.DTOs.Transfer;
-using TheDugout.Services.Transfer;
-
-namespace TheDugout.Controllers
+﻿namespace TheDugout.Controllers
 {
+    using Microsoft.AspNetCore.Mvc;
+    using Microsoft.EntityFrameworkCore;
+    using TheDugout.Data;
+    using TheDugout.DTOs.Transfer;
+    using TheDugout.Services.Transfer;
+
     [ApiController]
     [Route("api/[controller]")]
     public class TransfersController : ControllerBase
@@ -21,19 +21,25 @@ namespace TheDugout.Controllers
 
         [HttpGet("players")]
         public async Task<IActionResult> GetPlayers(
-            int gameSaveId,
-            string? search = null,
-            string? team = null,
-            string? country = null,
-            string? position = null,
-            bool freeAgent = false,
-            string sortBy = "name",
-            string sortOrder = "asc",
-            int page = 1,
-            int pageSize = 15)
+    int gameSaveId,
+    string? search = null,
+    string? team = null,
+    string? country = null,
+    string? position = null,
+    bool freeAgent = false,
+    string sortBy = "name",
+    string sortOrder = "asc",
+    int page = 1,
+    int pageSize = 15,
+    int? minAge = null,
+    int? maxAge = null,
+    decimal? minPrice = null,
+    decimal? maxPrice = null)
         {
             var result = await _transferService.GetPlayersAsync(
-                gameSaveId, search, team, country, position, freeAgent, sortBy, sortOrder, page, pageSize);
+                gameSaveId, search, team, country, position, freeAgent,
+                sortBy, sortOrder, page, pageSize,
+                minAge, maxAge, minPrice, maxPrice);
 
             return Ok(result);
         }

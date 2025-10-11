@@ -8,10 +8,7 @@ const Transfers = () => {
       {/* Header */}
       <div className="bg-white shadow rounded-2xl p-4 border border-slate-200">
         <h1 className="text-3xl font-bold text-slate-800">Transfers</h1>
-        <p className="text-slate-500 text-sm mt-1">
-          Manage player transfers, ongoing negotiations and your club’s transfer
-          history.
-        </p>
+       
       </div>
 
       {/* Content with tabs */}

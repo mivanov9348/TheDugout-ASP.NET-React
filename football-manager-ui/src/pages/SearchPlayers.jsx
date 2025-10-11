@@ -1,418 +1,346 @@
-// src/pages/SearchPlayers.jsx
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { Loader2, Filter } from "lucide-react";
+import { Link } from "react-router-dom";
 import Swal from "sweetalert2";
-
-function useDebounce(value, delay) {
-  const [debouncedValue, setDebouncedValue] = useState(value);
-  useEffect(() => {
-    const handler = setTimeout(() => setDebouncedValue(value), delay);
-    return () => clearTimeout(handler);
-  }, [value, delay]);
-  return debouncedValue;
-}
 
 export default function SearchPlayers({ gameSaveId }) {
   const [players, setPlayers] = useState([]);
-  const [search, setSearch] = useState("");
-  const [sortBy, setSortBy] = useState("name");
-  const [sortOrder, setSortOrder] = useState("asc");
-  const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [filters, setFilters] = useState({
+    search: "",
+    team: "",
+    country: "",
+    position: "",
+    freeAgent: false,
+    minAge: "",
+    maxAge: "",
+    minPrice: "",
+    maxPrice: "",
+    sortBy: "name",
+    sortOrder: "asc",
+    page: 1,
+    pageSize: 50,
+  });
   const [totalCount, setTotalCount] = useState(0);
-  const [filterTeam, setFilterTeam] = useState("");
-  const [filterCountry, setFilterCountry] = useState("");
-  const [filterPosition, setFilterPosition] = useState("");
-  const [filterFreeAgents, setFilterFreeAgents] = useState(false);
-
-  const [showInfo, setShowInfo] = useState(true);
-
-  const [selectedPlayer, setSelectedPlayer] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const openBuyModal = (player) => {
-    setSelectedPlayer(player);
-    setIsModalOpen(true);
-  };
-  const closeBuyModal = () => {
-    setSelectedPlayer(null);
-    setIsModalOpen(false);
-  };
-
-  const playersPerPage = 15;
-  const debouncedSearch = useDebounce(search, 400);
-  const navigate = useNavigate();
 
   useEffect(() => {
+    fetchPlayers();
+  }, [filters]);
+
+  const fetchPlayers = async () => {
     if (!gameSaveId) return;
-    const controller = new AbortController();
-
-    const queryParams = new URLSearchParams({
-      gameSaveId,
-      search: debouncedSearch,
-      sortBy,
-      sortOrder,
-      page: currentPage,
-      pageSize: playersPerPage,
-      team: filterTeam,
-      country: filterCountry,
-      position: filterPosition,
-      freeAgent: filterFreeAgents,
-    });
-
-    fetch(`/api/transfers/players?${queryParams}`, {
-      signal: controller.signal,
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        setPlayers(data.players || []);
-        setTotalCount(data.totalCount || 0);
-      })
-      .catch((err) => {
-        if (err.name !== "AbortError") {
-          console.error("Failed to load players:", err);
-        }
-      });
-
-    return () => controller.abort();
-  }, [
-    gameSaveId,
-    debouncedSearch,
-    sortBy,
-    sortOrder,
-    currentPage,
-    filterTeam,
-    filterCountry,
-    filterPosition,
-    filterFreeAgents,
-  ]);
-
-  const totalPages = Math.ceil(totalCount / playersPerPage);
-
-  const formatPrice = (value) => {
-    if (value == null) return "-";
-    return value.toLocaleString("en-US");
-  };
-
-  const handleConfirmBuy = async () => {
-    if (!selectedPlayer) return;
+    setLoading(true);
     try {
-      const res = await fetch("/api/transfers/buy", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          gameSaveId,
-          playerId: selectedPlayer.id,
-        }),
+      const params = new URLSearchParams({
+        gameSaveId,
+        ...filters,
       });
+
+      const res = await fetch(`/api/transfers/players?${params.toString()}`);
+      if (!res.ok) throw new Error("Failed to fetch players");
       const data = await res.json();
-      if (!res.ok || !data.success) {
-        Swal.fire({
-          icon: "error",
-          title: "Failed",
-          text: data.error || "Could not complete the transfer.",
-        });
-      } else {
-        Swal.fire({
-          icon: "success",
-          title: "Success",
-          text: `You signed ${selectedPlayer.name}!`,
-        });
-        setPlayers((prev) => prev.filter((p) => p.id !== selectedPlayer.id));
-      }
-    } catch {
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: "Server error occurred.",
-      });
+
+      setPlayers(data.players);
+      setTotalCount(data.totalCount);
+    } catch (err) {
+      console.error("Error fetching players:", err);
     } finally {
-      closeBuyModal();
+      setLoading(false);
     }
   };
 
-  const showAgencyColumn = players.some((p) => p.agency);
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFilters({
+      ...filters,
+      [name]: type === "checkbox" ? checked : value,
+      page: 1,
+    });
+  };
+
+  const handleSort = (column) => {
+    setFilters((prev) => ({
+      ...prev,
+      sortBy: column,
+      sortOrder:
+        prev.sortBy === column && prev.sortOrder === "asc" ? "desc" : "asc",
+    }));
+  };
+
+  const handleSign = async (playerId, playerName) => {
+    if (!gameSaveId) return;
+
+    const result = await Swal.fire({
+      title: `Sign ${playerName}?`,
+      text: "Are you sure you want to sign this free agent?",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Yes, sign him!",
+      cancelButtonText: "Cancel",
+      confirmButtonColor: "#16a34a",
+      cancelButtonColor: "#6b7280",
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      const res = await fetch(`/api/transfers/buy`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ gameSaveId, playerId }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to sign player");
+
+      await Swal.fire({
+        title: "✅ Success!",
+        text: `${playerName} has signed for your team.`,
+        icon: "success",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+
+      fetchPlayers();
+    } catch (err) {
+      Swal.fire({
+        title: "❌ Error",
+        text: err.message,
+        icon: "error",
+      });
+    }
+  };
 
   return (
-    <div className="flex flex-col h-full bg-gray-50 overflow-auto">
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-4 flex-shrink-0 p-4 bg-white border-b">
-        <button
-          onClick={() => navigate(-1)}
-          className="p-2 rounded-full hover:bg-sky-100 text-sky-600 transition"
-        >
-          <ArrowLeft size={22} />
-        </button>
-        <h2 className="text-2xl font-bold text-sky-700">Search Players</h2>
-      </div>
+    <div className="space-y-4">
+      {/* 🔍 Филтри */}
+      <div className="bg-white p-4 rounded-xl shadow border border-slate-200">
+        <h2 className="text-xl font-semibold flex items-center gap-2 mb-4">
+          <Filter size={20} /> Player Filters
+        </h2>
 
-      {/* Filters */}
-      <div className="flex flex-wrap gap-3 mb-4 items-center flex-shrink-0 p-4 bg-white border-b">
-        <input
-          type="text"
-          className="border p-2 rounded-lg flex-1 min-w-[200px] shadow-sm focus:ring-2 focus:ring-sky-400"
-          placeholder="Search by name..."
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setCurrentPage(1);
-          }}
-        />
-        <input
-          type="text"
-          placeholder="Filter by team..."
-          className="border p-2 rounded-lg shadow-sm min-w-[150px]"
-          value={filterTeam}
-          onChange={(e) => setFilterTeam(e.target.value)}
-        />
-        <input
-          type="text"
-          placeholder="Filter by country..."
-          className="border p-2 rounded-lg shadow-sm min-w-[150px]"
-          value={filterCountry}
-          onChange={(e) => setFilterCountry(e.target.value)}
-        />
-        <input
-          type="text"
-          placeholder="Filter by position..."
-          className="border p-2 rounded-lg shadow-sm min-w-[150px]"
-          value={filterPosition}
-          onChange={(e) => setFilterPosition(e.target.value)}
-        />
-        <select
-          className="border p-2 rounded-lg shadow-sm min-w-[120px]"
-          value={sortBy}
-          onChange={(e) => setSortBy(e.target.value)}
-        >
-          <option value="name">Name</option>
-          <option value="team">Team</option>
-          <option value="country">Country</option>
-          <option value="position">Position</option>
-          <option value="age">Age</option>
-          <option value="price">Price</option>
-          <option value="freeagent">Free Agent</option>
-        </select>
-        <select
-          className="border p-2 rounded-lg shadow-sm min-w-[100px]"
-          value={sortOrder}
-          onChange={(e) => setSortOrder(e.target.value)}
-        >
-          <option value="asc">⬆ Asc</option>
-          <option value="desc">⬇ Desc</option>
-        </select>
-        <label className="flex items-center gap-2 ml-3">
+        <div className="grid grid-cols-6 gap-3">
           <input
-            type="checkbox"
-            checked={filterFreeAgents}
-            onChange={(e) => setFilterFreeAgents(e.target.checked)}
+            type="text"
+            name="search"
+            placeholder="Search name..."
+            value={filters.search}
+            onChange={handleChange}
+            className="col-span-2 border rounded-lg px-3 py-2 text-sm"
           />
-          <span className="text-sm">Free Agents</span>
-        </label>
-      </div>
-
-      {/* Section toggles */}
-      <div className="flex gap-6 mb-4 flex-shrink-0 p-4 bg-white border-b">
-        <label className="flex items-center gap-2 text-sm">
           <input
-            type="checkbox"
-            checked={showInfo}
-            onChange={() => setShowInfo(!showInfo)}
+            type="text"
+            name="team"
+            placeholder="Team"
+            value={filters.team}
+            onChange={handleChange}
+            className="border rounded-lg px-3 py-2 text-sm"
           />
-          Player Info
-        </label>
-      </div>
-
-      {/* Table container with integrated pagination */}
-      <div className="flex flex-col border rounded-lg bg-white shadow overflow-hidden mx-0 mb-0 h-full">
-        {/* Scrollable table */}
-        <div className="flex-1 overflow-auto">
-          <table className="min-w-max w-full border-collapse text-xs">
-            <thead className="bg-sky-50 text-sky-700 sticky top-0 z-10">
-              <tr>
-                <th className="p-2 border-r border-b whitespace-nowrap font-medium min-w-[150px]">Name</th>
-                <th className="p-2 border-r border-b whitespace-nowrap font-medium min-w-[100px]">Team</th>
-                <th className="p-2 border-r border-b whitespace-nowrap font-medium min-w-[80px]">Country</th>
-                <th className="p-2 border-r border-b whitespace-nowrap font-medium min-w-[80px]">Position</th>
-                {showInfo && (
-                  <>
-                    <th className="p-2 border-r border-b whitespace-nowrap font-medium min-w-[50px]">Age</th>
-                    <th className="p-2 border-r border-b whitespace-nowrap font-medium min-w-[90px]">Price</th>
-                  </>
-                )}
-                {showAgencyColumn && <th className="p-2 border-r border-b whitespace-nowrap font-medium min-w-[100px]">Agency</th>}
-                <th className="p-2 border-b whitespace-nowrap font-medium min-w-[90px]">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {players.map((p) => (
-                <tr
-                  key={p.id}
-                  className="hover:bg-sky-50 transition-colors"
-                >
-                  <td
-                    className="p-2 border-r font-medium cursor-pointer max-w-[150px] truncate"
-                    title={p.name}
-                    onClick={() => navigate(`/player/${p.id}`)}
-                  >
-                    {p.name}
-                  </td>
-                  <td className="p-2 border-r max-w-[100px] truncate">{p.team || "—"}</td>
-                  <td className="p-2 border-r max-w-[80px] truncate">{p.country}</td>
-                  <td className="p-2 border-r max-w-[80px] truncate">{p.position}</td>
-                  {showInfo && (
-                    <>
-                      <td className="p-2 border-r max-w-[50px] truncate text-center">{p.age}</td>
-                      <td className="p-2 border-r max-w-[90px] truncate text-right pr-2">{formatPrice(p.price)}</td>
-                    </>
-                  )}
-                  {showAgencyColumn && (
-                    <td className="p-2 border-r max-w-[100px]">
-                      {p.agency ? (
-                        <div className="flex flex-col items-center gap-1 py-1">
-                          <img
-                            src={
-                              `/agenciesLogos/${p.agency.logo}` ||
-                              "/default-logo.png"
-                            }
-                            alt="Agency Logo"
-                            className="w-6 h-6 rounded-full object-cover border"
-                            onError={(e) => {
-                              e.target.src = "/default-logo.png";
-                            }}
-                          />
-                          <div className="text-xs text-gray-600 truncate text-center w-full">
-                            {p.agency.name}
-                          </div>
-                          <div className="text-xs bg-blue-100 text-blue-800 px-1 py-0.5 rounded-full">
-                            ★{p.agency.popularity}
-                          </div>
-                        </div>
-                      ) : (
-                        "—"
-                      )}
-                    </td>
-                  )}
-                  <td className="p-2 text-center">
-                    {!p.team ? (
-                      <button
-                        onClick={() => openBuyModal(p)}
-                        className="px-2 py-1 bg-green-500 hover:bg-green-600 text-white rounded text-xs whitespace-nowrap"
-                      >
-                        Buy
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() =>
-                          Swal.fire({
-                            icon: "info",
-                            title: "Not active yet",
-                            text: "Sending offers will be available in a future update.",
-                          })
-                        }
-                        disabled
-                        className="px-2 py-1 bg-gray-400 text-white rounded text-xs cursor-not-allowed"
-                      >
-                        Offer
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <input
+            type="text"
+            name="country"
+            placeholder="Country"
+            value={filters.country}
+            onChange={handleChange}
+            className="border rounded-lg px-3 py-2 text-sm"
+          />
+          <input
+            type="text"
+            name="position"
+            placeholder="Position"
+            value={filters.position}
+            onChange={handleChange}
+            className="border rounded-lg px-3 py-2 text-sm"
+          />
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              name="freeAgent"
+              checked={filters.freeAgent}
+              onChange={handleChange}
+            />
+            Free agents only
+          </label>
         </div>
 
-        {/* Pagination integrated */}
-        {totalPages > 1 && (
-          <div className="flex justify-between items-center p-3 border-t bg-sky-50 flex-shrink-0">
-            <button
-              className="px-3 py-1.5 bg-sky-100 hover:bg-sky-200 text-sky-700 rounded disabled:opacity-50 transition text-sm"
-              disabled={currentPage === 1}
-              onClick={() => setCurrentPage((p) => p - 1)}
-            >
-              Назад
-            </button>
-            <span className="font-medium text-sky-700 text-sm">
-              Страница {currentPage} от {totalPages}
-            </span>
-            <button
-              className="px-3 py-1.5 bg-sky-100 hover:bg-sky-200 text-sky-700 rounded disabled:opacity-50 transition text-sm"
-              disabled={currentPage >= totalPages}
-              onClick={() => setCurrentPage((p) => p + 1)}
-            >
-              Напред
-            </button>
+        {/* 🧮 Допълнителни филтри: възраст и цена */}
+        <div className="grid grid-cols-4 gap-3 mt-4">
+          <div className="flex flex-col">
+            <label className="text-xs text-slate-500">Min Age</label>
+            <input
+              type="number"
+              name="minAge"
+              placeholder="e.g. 18"
+              value={filters.minAge}
+              onChange={handleChange}
+              className="border rounded-lg px-3 py-2 text-sm"
+            />
           </div>
+          <div className="flex flex-col">
+            <label className="text-xs text-slate-500">Max Age</label>
+            <input
+              type="number"
+              name="maxAge"
+              placeholder="e.g. 30"
+              value={filters.maxAge}
+              onChange={handleChange}
+              className="border rounded-lg px-3 py-2 text-sm"
+            />
+          </div>
+          <div className="flex flex-col">
+            <label className="text-xs text-slate-500">Min Price (€)</label>
+            <input
+              type="number"
+              name="minPrice"
+              placeholder="e.g. 1000000"
+              value={filters.minPrice}
+              onChange={handleChange}
+              className="border rounded-lg px-3 py-2 text-sm"
+            />
+          </div>
+          <div className="flex flex-col">
+            <label className="text-xs text-slate-500">Max Price (€)</label>
+            <input
+              type="number"
+              name="maxPrice"
+              placeholder="e.g. 5000000"
+              value={filters.maxPrice}
+              onChange={handleChange}
+              className="border rounded-lg px-3 py-2 text-sm"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* 📋 Таблица */}
+      <div className="bg-white rounded-xl shadow border border-slate-200 overflow-hidden">
+        {loading ? (
+          <div className="flex justify-center items-center h-64 text-slate-500">
+            <Loader2 className="animate-spin mr-2" /> Loading players...
+          </div>
+        ) : (
+          <>
+            <table className="min-w-full text-sm">
+              <thead className="bg-slate-100 text-slate-700">
+                <tr>
+                  {[
+                    { key: "name", label: "Name" },
+                    { key: "team", label: "Team" },
+                    { key: "country", label: "Country" },
+                    { key: "position", label: "Position" },
+                    { key: "age", label: "Age" },
+                    { key: "price", label: "Price (€)" },
+                    { key: "actions", label: "Actions" },
+                  ].map((col) => (
+                    <th
+                      key={col.key}
+                      onClick={
+                        col.key !== "actions"
+                          ? () => handleSort(col.key)
+                          : undefined
+                      }
+                      className={`px-4 py-2 font-medium text-left ${col.key !== "actions"
+                          ? "cursor-pointer hover:bg-slate-200"
+                          : ""
+                        }`}
+                    >
+                      {col.label}
+                      {filters.sortBy === col.key && (
+                        <span className="ml-1 text-xs">
+                          {filters.sortOrder === "asc" ? "▲" : "▼"}
+                        </span>
+                      )}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {players.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan="7"
+                      className="text-center text-slate-500 py-6 italic"
+                    >
+                      No players found.
+                    </td>
+                  </tr>
+                ) : (
+                  players.map((p) => (
+                    <tr
+                      key={p.id}
+                      className="border-t hover:bg-slate-50 transition-colors"
+                    >
+                      <td className="px-4 py-2">
+                        <Link
+                          to={`/player/${p.id}`}
+                          className="text-blue-600 hover:underline font-medium"
+                        >
+                          {p.name}
+                        </Link>
+                      </td>
+                      <td className="px-4 py-2">{p.team || "-"}</td>
+                      <td className="px-4 py-2">{p.country || "-"}</td>
+                      <td className="px-4 py-2">{p.position || "-"}</td>
+                      <td className="px-4 py-2">{p.age}</td>
+                      <td className="px-4 py-2">
+                        {p.price ? `${p.price.toLocaleString()} €` : "-"}
+                      </td>
+                      <td className="px-4 py-2">
+                        {p.team ? (
+                          <button
+                            disabled
+                            className="px-3 py-1 rounded bg-gray-200 text-gray-500 cursor-not-allowed text-xs"
+                          >
+                            Offer
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleSign(p.id, p.name)}
+                            className="px-3 py-1 rounded bg-emerald-600 hover:bg-emerald-700 text-white text-xs"
+                          >
+                            Sign
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+
+            {/* 📄 Пагинация */}
+            <div className="flex justify-between items-center p-3 bg-slate-50 border-t text-sm">
+              <span>
+                Showing {players.length} of {totalCount} players
+              </span>
+              <div className="flex gap-2">
+                <button
+                  className="px-3 py-1 border rounded disabled:opacity-50"
+                  disabled={filters.page === 1}
+                  onClick={() =>
+                    setFilters((f) => ({ ...f, page: f.page - 1 }))
+                  }
+                >
+                  Prev
+                </button>
+                <span>
+                  Page {filters.page} /{" "}
+                  {Math.ceil(totalCount / filters.pageSize) || 1}
+                </span>
+                <button
+                  className="px-3 py-1 border rounded disabled:opacity-50"
+                  disabled={filters.page * filters.pageSize >= totalCount}
+                  onClick={() =>
+                    setFilters((f) => ({ ...f, page: f.page + 1 }))
+                  }
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          </>
         )}
       </div>
-
-      {/* Modal */}
-      {isModalOpen && selectedPlayer && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white rounded-xl shadow-xl max-w-md w-full mx-4 flex flex-col max-h-[80vh] overflow-hidden">
-            {/* Modal header */}
-            <div className="p-4 border-b flex justify-between items-center">
-              <h3 className="text-lg font-bold text-sky-700">Confirm Buy</h3>
-              <button
-                onClick={closeBuyModal}
-                className="text-gray-500 hover:text-black text-xl"
-              >
-                ✕
-              </button>
-            </div>
-
-            {/* Modal content */}
-            <div className="p-4 flex-1 overflow-y-auto">
-              <p className="mb-2 text-sm">
-                Do you want to sign{" "}
-                <span className="font-semibold">{selectedPlayer.name}</span>?
-              </p>
-              <p className="mb-4 text-gray-600 text-sm">
-                Age: {selectedPlayer.age} | Position: {selectedPlayer.position} | Price:{" "}
-                {formatPrice(selectedPlayer.price)}
-              </p>
-              {selectedPlayer.agency && (
-                <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <img
-                      src={
-                        `/agenciesLogos/${selectedPlayer.agency.logo}` ||
-                        "/default-logo.png"
-                      }
-                      alt="Agency"
-                      className="w-5 h-5 rounded-full object-cover"
-                      onError={(e) => {
-                        e.target.src = "/default-logo.png";
-                      }}
-                    />
-                    <span className="text-xs">
-                      Represented by{" "}
-                      <strong>{selectedPlayer.agency.regionName}</strong> agency (★
-                      {selectedPlayer.agency.popularity})
-                    </span>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Modal actions */}
-            <div className="flex justify-end gap-2 p-4 border-t bg-gray-50">
-              <button
-                onClick={closeBuyModal}
-                className="px-3 py-1.5 rounded border hover:bg-gray-100 text-sm"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleConfirmBuy}
-                className="px-3 py-1.5 bg-green-500 hover:bg-green-600 text-white rounded text-sm"
-              >
-                Confirm
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

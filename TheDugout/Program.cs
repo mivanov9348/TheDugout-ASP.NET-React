@@ -102,7 +102,8 @@ builder.Services.AddCors(options =>
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
-    });
+    });   
+
 });
 
 // JWT Auth
@@ -172,6 +173,7 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.UseCors("AllowFrontend");
+
 app.UseAuthentication();
 app.UseAuthorization();
 

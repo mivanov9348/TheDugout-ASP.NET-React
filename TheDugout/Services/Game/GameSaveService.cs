@@ -3,6 +3,7 @@
     using Microsoft.EntityFrameworkCore;
     using System.Diagnostics;
     using System.Linq;
+    using System.Runtime.CompilerServices;
     using TheDugout.Data;
     using TheDugout.Models.Competitions;
     using TheDugout.Models.Game;
@@ -219,152 +220,230 @@ WHERE T.{Quote("GameSaveId")} = @p0;";
             }
         }
 
-
-        public async Task<GameSave> StartNewGameAsync(int userId, CancellationToken ct = default)
+        public async Task<GameSave> StartNewGameAsync(int userId, Func<string, Task>? progress = null, CancellationToken ct = default)
         {
-            if (userId <= 0)
-                throw new ArgumentException("Invalid userId.");
+            if (userId <= 0) throw new ArgumentException("Invalid userId.");
 
-            var saveCount = await _context.GameSaves.CountAsync(gs => gs.UserId == userId);
-            if (saveCount >= 3)
-                throw new InvalidOperationException("3 saves max!");
+            async Task Log(string msg)
+            {
+                Console.WriteLine(msg);
+                if (progress != null)
+                    await progress(msg);
+            }
 
             await using var transaction = await _context.Database.BeginTransactionAsync(ct);
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
 
             try
             {
-                void LogStep(string step)
-                {
-                    stopwatch.Stop();
-                    Console.WriteLine($"⏱ {step} completed in {stopwatch.ElapsedMilliseconds} ms");
-                    stopwatch.Restart();
-                }
-
-                // 1️⃣ Създаваме нов save
-                var gameSave = new GameSave
-                {
-                    UserId = userId,
-                    CreatedAt = DateTime.UtcNow,
-                    Name = $"Save_{userId}_{DateTime.UtcNow:yyyyMMdd_HHmmss}"
-                };
-
+                await Log("🟢 Creating new GameSave...");
+                var gameSave = new GameSave { UserId = userId, CreatedAt = DateTime.UtcNow };
                 _context.GameSaves.Add(gameSave);
                 await _context.SaveChangesAsync(ct);
-                LogStep("Created GameSave");
+                await Log("✅ GameSave created.");
 
-                // 2️⃣ Банка / финанси
                 await _financeService.CreateBankAsync(gameSave, 20000000);
                 await _context.SaveChangesAsync(ct);
-                LogStep("Created Bank and Finance data");
+                await Log("💰 Bank and finances initialized.");
 
-                // 3️⃣ Агенции
                 await _agencyService.InitializeAgenciesForGameSaveAsync(gameSave);
-                LogStep("Initialized Agencies");
+                await Log("🏢 Agencies initialized.");
 
-                // 4️⃣ Сезон
                 var startDate = new DateTime(DateTime.UtcNow.Year, 7, 1);
                 var season = await _seasonGenerator.GenerateSeason(gameSave, startDate);
                 gameSave.Seasons.Add(season);
                 await _context.SaveChangesAsync(ct);
-                LogStep("Generated Season");
+                await Log("📅 Season generated.");
 
-                // 5️⃣ Лиги + отбори
                 var leagues = await _leagueGenerator.GenerateLeaguesAsync(gameSave, season);
                 await _context.SaveChangesAsync(ct);
-                LogStep("Generated Leagues");
+                await Log("🏆 Leagues generated.");
 
                 var independentTeams = await _teamGenerator.GenerateIndependentTeamsAsync(gameSave);
                 foreach (var team in independentTeams)
                     gameSave.Teams.Add(team);
-
                 await _context.SaveChangesAsync(ct);
-                LogStep("Generated Independent Teams");
+                await Log("⚽ Independent teams generated.");
 
                 await _financeService.InitializeClubFundsAsync(gameSave, leagues);
-                LogStep("Initialized Club Funds");
+                await Log("💵 Club funds initialized.");
 
-                // 6️⃣ European Cups (ако има шаблони)
-                var euroTemplates = await _context.Set<EuropeanCupTemplate>()
-                    .Include(t => t.PhaseTemplates)
-                    .Where(t => t.IsActive)
-                    .ToListAsync(ct);
-                LogStep("Loaded European Cup Templates");
-
-                foreach (var template in euroTemplates)
-                {
-                    try
-                    {
-                        var eligibleTeams = await _context.Set<Models.Teams.Team>()
-                            .Where(t => t.LeagueId == null && t.GameSaveId == gameSave.Id)
-                            .ToListAsync(ct);
-
-                        if (eligibleTeams.Count < template.TeamsCount)
-                        {
-                            _logger.LogWarning(
-                                "Not enough eligible teams ({Eligible}) for European Cup Template '{TemplateName}' ({TemplateId}). Requires {Required}. Skipping.",
-                                eligibleTeams.Count, template.Name, template.Id, template.TeamsCount);
-                            continue;
-                        }
-
-                        await _europeanCupService.InitializeTournamentAsync(
-                            templateId: template.Id,
-                            gameSaveId: gameSave.Id,
-                            seasonId: season.Id,
-                            ct: ct);
-
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Failed to initialize European Cup template '{TemplateName}' ({TemplateId})",
-                            template.Name, template.Id);
-                    }
-                }
-                LogStep("Initialized European Cups");
-
-                // 7️⃣ Cups
                 await _cupService.InitializeCupsForGameSaveAsync(gameSave, season.Id);
-                LogStep("Initialized Domestic Cups");
+                await Log("🥇 Domestic cups initialized.");
 
-                // 8️⃣ Fixtures
                 await _leagueFixturesService.GenerateLeagueFixturesAsync(gameSave.Id, season.Id, startDate);
-                LogStep("Generated League Fixtures");
+                await Log("🗓 Fixtures generated.");
 
-                // 9️⃣ Standings
-                await _context.SaveChangesAsync(ct);
                 await _leagueGenerator.InitializeStandingsAsync(gameSave, season);
-                LogStep("Initialized League Standings");
+                await Log("📊 Standings initialized.");
 
-                // 🔟 Дефолтни тактики
                 await _teamPlanService.InitializeDefaultTacticsAsync(gameSave);
-                LogStep("Initialized Default Tactics");
+                await Log("⚙️ Default tactics initialized.");
 
-                // ✅ Commit
                 await transaction.CommitAsync(ct);
-                LogStep("Committed Transaction");
+                await Log("✅ Transaction committed.");
 
-                // 🔁 Зареждаме резултата
+                await Log("🎮 Loading final GameSave...");
                 var result = await _context.GameSaves
-                            .AsSplitQuery()
-                            .Include(gs => gs.Leagues)
-                                .ThenInclude(l => l.Teams)
-                                .ThenInclude(t => t.Players)
-                            .Include(gs => gs.Seasons)
-                                .ThenInclude(s => s.Events)
-                            .FirstAsync(gs => gs.Id == gameSave.Id, ct);
-                LogStep("Loaded Final GameSave");
+                    .Include(gs => gs.Leagues).ThenInclude(l => l.Teams).ThenInclude(t => t.Players)
+                    .Include(gs => gs.Seasons).ThenInclude(s => s.Events)
+                    .FirstAsync(gs => gs.Id == gameSave.Id, ct);
 
-                Console.WriteLine($"🏁 Total time: {stopwatch.ElapsedMilliseconds} ms");
+                await Log("🏁 Game loaded successfully!");
                 return result;
             }
             catch
             {
                 await transaction.RollbackAsync(ct);
-                stopwatch.Stop();
-                Console.WriteLine($"❌ ERROR: Transaction rolled back after {stopwatch.ElapsedMilliseconds} ms");
+                await Log("❌ Error occurred. Rolled back transaction.");
                 throw;
             }
         }
+
+        //public async Task<GameSave> StartNewGameAsync(int userId, CancellationToken ct = default)
+        //{
+        //    if (userId <= 0)
+        //        throw new ArgumentException("Invalid userId.");
+
+        //    var saveCount = await _context.GameSaves.CountAsync(gs => gs.UserId == userId);
+        //    if (saveCount >= 3)
+        //        throw new InvalidOperationException("3 saves max!");
+
+        //    await using var transaction = await _context.Database.BeginTransactionAsync(ct);
+        //    var stopwatch = new Stopwatch();
+        //    stopwatch.Start();
+
+        //    try
+        //    {
+        //        void LogStep(string step)
+        //        {
+        //            stopwatch.Stop();
+        //            Console.WriteLine($"⏱ {step} completed in {stopwatch.ElapsedMilliseconds} ms");
+        //            stopwatch.Restart();
+        //        }
+
+        //        // 1️⃣ Създаваме нов save
+        //        var gameSave = new GameSave
+        //        {
+        //            UserId = userId,
+        //            CreatedAt = DateTime.UtcNow,
+        //            Name = $"Save_{userId}_{DateTime.UtcNow:yyyyMMdd_HHmmss}"
+        //        };
+
+        //        _context.GameSaves.Add(gameSave);
+        //        await _context.SaveChangesAsync(ct);
+        //        LogStep("Created GameSave");
+
+        //        // 2️⃣ Банка / финанси
+        //        await _financeService.CreateBankAsync(gameSave, 20000000);
+        //        await _context.SaveChangesAsync(ct);
+        //        LogStep("Created Bank and Finance data");
+
+        //        // 3️⃣ Агенции
+        //        await _agencyService.InitializeAgenciesForGameSaveAsync(gameSave);
+        //        LogStep("Initialized Agencies");
+
+        //        // 4️⃣ Сезон
+        //        var startDate = new DateTime(DateTime.UtcNow.Year, 7, 1);
+        //        var season = await _seasonGenerator.GenerateSeason(gameSave, startDate);
+        //        gameSave.Seasons.Add(season);
+        //        await _context.SaveChangesAsync(ct);
+        //        LogStep("Generated Season");
+
+        //        // 5️⃣ Лиги + отбори
+        //        var leagues = await _leagueGenerator.GenerateLeaguesAsync(gameSave, season);
+        //        await _context.SaveChangesAsync(ct);
+        //        LogStep("Generated Leagues");
+
+        //        var independentTeams = await _teamGenerator.GenerateIndependentTeamsAsync(gameSave);
+        //        foreach (var team in independentTeams)
+        //            gameSave.Teams.Add(team);
+
+        //        await _context.SaveChangesAsync(ct);
+        //        LogStep("Generated Independent Teams");
+
+        //        await _financeService.InitializeClubFundsAsync(gameSave, leagues);
+        //        LogStep("Initialized Club Funds");
+
+        //        // 6️⃣ European Cups (ако има шаблони)
+        //        var euroTemplates = await _context.Set<EuropeanCupTemplate>()
+        //            .Include(t => t.PhaseTemplates)
+        //            .Where(t => t.IsActive)
+        //            .ToListAsync(ct);
+        //        LogStep("Loaded European Cup Templates");
+
+        //        foreach (var template in euroTemplates)
+        //        {
+        //            try
+        //            {
+        //                var eligibleTeams = await _context.Set<Models.Teams.Team>()
+        //                    .Where(t => t.LeagueId == null && t.GameSaveId == gameSave.Id)
+        //                    .ToListAsync(ct);
+
+        //                if (eligibleTeams.Count < template.TeamsCount)
+        //                {
+        //                    _logger.LogWarning(
+        //                        "Not enough eligible teams ({Eligible}) for European Cup Template '{TemplateName}' ({TemplateId}). Requires {Required}. Skipping.",
+        //                        eligibleTeams.Count, template.Name, template.Id, template.TeamsCount);
+        //                    continue;
+        //                }
+
+        //                await _europeanCupService.InitializeTournamentAsync(
+        //                    templateId: template.Id,
+        //                    gameSaveId: gameSave.Id,
+        //                    seasonId: season.Id,
+        //                    ct: ct);
+
+        //            }
+        //            catch (Exception ex)
+        //            {
+        //                _logger.LogError(ex, "Failed to initialize European Cup template '{TemplateName}' ({TemplateId})",
+        //                    template.Name, template.Id);
+        //            }
+        //        }
+        //        LogStep("Initialized European Cups");
+
+        //        // 7️⃣ Cups
+        //        await _cupService.InitializeCupsForGameSaveAsync(gameSave, season.Id);
+        //        LogStep("Initialized Domestic Cups");
+
+        //        // 8️⃣ Fixtures
+        //        await _leagueFixturesService.GenerateLeagueFixturesAsync(gameSave.Id, season.Id, startDate);
+        //        LogStep("Generated League Fixtures");
+
+        //        // 9️⃣ Standings
+        //        await _context.SaveChangesAsync(ct);
+        //        await _leagueGenerator.InitializeStandingsAsync(gameSave, season);
+        //        LogStep("Initialized League Standings");
+
+        //        // 🔟 Дефолтни тактики
+        //        await _teamPlanService.InitializeDefaultTacticsAsync(gameSave);
+        //        LogStep("Initialized Default Tactics");
+
+        //        // ✅ Commit
+        //        await transaction.CommitAsync(ct);
+        //        LogStep("Committed Transaction");
+
+        //        // 🔁 Зареждаме резултата
+        //        var result = await _context.GameSaves
+        //                    .AsSplitQuery()
+        //                    .Include(gs => gs.Leagues)
+        //                        .ThenInclude(l => l.Teams)
+        //                        .ThenInclude(t => t.Players)
+        //                    .Include(gs => gs.Seasons)
+        //                        .ThenInclude(s => s.Events)
+        //                    .FirstAsync(gs => gs.Id == gameSave.Id, ct);
+        //        LogStep("Loaded Final GameSave");
+
+        //        Console.WriteLine($"🏁 Total time: {stopwatch.ElapsedMilliseconds} ms");
+        //        return result;
+        //    }
+        //    catch
+        //    {
+        //        await transaction.RollbackAsync(ct);
+        //        stopwatch.Stop();
+        //        Console.WriteLine($"❌ ERROR: Transaction rolled back after {stopwatch.ElapsedMilliseconds} ms");
+        //        throw;
+        //    }
+        //}
     }
 }

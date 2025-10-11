@@ -1,17 +1,18 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.SignalR;
-using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
-using TheDugout.Data;
-using TheDugout.Models.Messages;
-using TheDugout.Services.Game;
-using TheDugout.Services.Message;
-using TheDugout.Services.Template;
-using TheDugout.Services.User;
-
-namespace TheDugout.Controllers
+﻿namespace TheDugout.Controllers
 {
+    using Microsoft.AspNetCore.Authorization;
+    using Microsoft.AspNetCore.Cors;
+    using Microsoft.AspNetCore.Mvc;
+    using Microsoft.AspNetCore.SignalR;
+    using Microsoft.EntityFrameworkCore;
+    using Newtonsoft.Json;
+    using TheDugout.Data;
+    using TheDugout.Models.Messages;
+    using TheDugout.Services.Game;
+    using TheDugout.Services.Message;
+    using TheDugout.Services.Template;
+    using TheDugout.Services.User;
+
     [ApiController]
     [Route("api/games")]
     public class GameController : ControllerBase
@@ -238,6 +239,7 @@ namespace TheDugout.Controllers
                 return StatusCode(500, new { message = "Failed to create new game" });
             }
         }
+        
 
         [Authorize]
         [HttpPost("{saveId}/select-team/{teamId}")]

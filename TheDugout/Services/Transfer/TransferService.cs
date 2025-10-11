@@ -23,79 +23,75 @@
         }
 
         public async Task<object> GetPlayersAsync(
-            int gameSaveId,
-            string? search,
-            string? team,
-            string? country,
-            string? position,
-            bool freeAgent,
-            string sortBy,
-            string sortOrder,
-            int page,
-            int pageSize)
+    int gameSaveId,
+    string? search,
+    string? team,
+    string? country,
+    string? position,
+    bool freeAgent,
+    string sortBy,
+    string sortOrder,
+    int page,
+    int pageSize,
+    int? minAge = null,
+    int? maxAge = null,
+    decimal? minPrice = null,
+    decimal? maxPrice = null)
         {
             var query = _context.Players
                 .AsNoTracking()
-                .Include(p => p.Team)
-                .Include(p => p.Position)
-                .Include(p => p.Country)
-                .Include(p => p.Attributes).ThenInclude(pa => pa.Attribute)
-                .Include(p => p.SeasonStats)
-                .Include(p => p.Agency).ThenInclude(a => a.Region)
                 .Where(p => p.GameSaveId == gameSaveId)
                 .AsQueryable();
 
-            // Search filter
+            // ✅ Филтри по текст
             if (!string.IsNullOrWhiteSpace(search))
-            {
-                var lowered = search.ToLower();
-                query = query.Where(p => p.FirstName.ToLower().Contains(lowered) ||
-                                         p.LastName.ToLower().Contains(lowered));
-            }
+                query = query.Where(p =>
+                    p.FirstName.ToLower().Contains(search.ToLower()) ||
+                    p.LastName.ToLower().Contains(search.ToLower()));
 
-            // Team filter
             if (!string.IsNullOrWhiteSpace(team))
                 query = query.Where(p => p.Team != null &&
                                          p.Team.Name.ToLower().Contains(team.ToLower()));
 
-            // Country filter
             if (!string.IsNullOrWhiteSpace(country))
                 query = query.Where(p => p.Country != null &&
                                          p.Country.Name.ToLower().Contains(country.ToLower()));
 
-            // Position filter
             if (!string.IsNullOrWhiteSpace(position))
                 query = query.Where(p => p.Position != null &&
                                          p.Position.Name.ToLower().Contains(position.ToLower()));
 
-            // Free agent filter
             if (freeAgent)
                 query = query.Where(p => p.TeamId == null);
 
-            // Sorting
+            // ✅ Нови диапазони
+            if (maxAge.HasValue)
+            {
+                var maxBirthDate = DateTime.Now.AddYears(-maxAge.Value);
+                query = query.Where(p => p.BirthDate >= maxBirthDate);
+            }
+
+            if (minAge.HasValue)
+            {
+                var minBirthDate = DateTime.Now.AddYears(-minAge.Value);
+                query = query.Where(p => p.BirthDate <= minBirthDate);
+            }
+
+            if (minPrice.HasValue)
+                query = query.Where(p => p.Price >= minPrice.Value);
+
+            if (maxPrice.HasValue)
+                query = query.Where(p => p.Price <= maxPrice.Value);
+
+            // ✅ Сортиране
             query = sortBy.ToLower() switch
             {
-                "team" => sortOrder == "desc"
-                    ? query.OrderByDescending(p => p.Team != null).ThenByDescending(p => p.Team!.Name)
-                    : query.OrderBy(p => p.Team != null).ThenBy(p => p.Team!.Name),
-                "position" => sortOrder == "desc"
-                    ? query.OrderByDescending(p => p.Position.Name)
-                    : query.OrderBy(p => p.Position.Name),
-                "country" => sortOrder == "desc"
-                    ? query.OrderByDescending(p => p.Country!.Name)
-                    : query.OrderBy(p => p.Country!.Name),
-                "age" => sortOrder == "desc"
-                    ? query.OrderByDescending(p => p.Age)
-                    : query.OrderBy(p => p.Age),
-                "price" => sortOrder == "desc"
-                    ? query.OrderByDescending(p => p.Price)
-                    : query.OrderBy(p => p.Price),
-                "freeagent" => sortOrder == "desc"
-                    ? query.OrderByDescending(p => p.TeamId == null)
-                    : query.OrderBy(p => p.TeamId == null),
-                _ => sortOrder == "desc"
-                    ? query.OrderByDescending(p => p.LastName)
-                    : query.OrderBy(p => p.LastName),
+                "team" => sortOrder == "desc" ? query.OrderByDescending(p => p.Team!.Name) : query.OrderBy(p => p.Team!.Name),
+                "position" => sortOrder == "desc" ? query.OrderByDescending(p => p.Position!.Name) : query.OrderBy(p => p.Position!.Name),
+                "country" => sortOrder == "desc" ? query.OrderByDescending(p => p.Country!.Name) : query.OrderBy(p => p.Country!.Name),
+                "age" => sortOrder == "desc" ? query.OrderByDescending(p => p.Age) : query.OrderBy(p => p.Age),
+                "price" => sortOrder == "desc" ? query.OrderByDescending(p => p.Price) : query.OrderBy(p => p.Price),
+                _ => sortOrder == "desc" ? query.OrderByDescending(p => p.LastName) : query.OrderBy(p => p.LastName)
             };
 
             var totalCount = await query.CountAsync();
@@ -111,33 +107,7 @@
                     Country = p.Country != null ? p.Country.Name : "",
                     Position = p.Position != null ? p.Position.Name : "",
                     p.Age,
-                    p.Price,
-                    Attributes = _context.Attributes
-                        .Select(attr => new
-                        {
-                            attr.Code,
-                            attr.Name,
-                            Value = p.Attributes
-                                .Where(pa => pa.AttributeId == attr.Id)
-                                .Select(pa => pa.Value)
-                                .FirstOrDefault()
-                        })
-                        .ToList(),
-                    SeasonStats = p.SeasonStats.Select(s => new
-                    {
-                        s.SeasonId,
-                        s.Goals,
-                        s.MatchesPlayed
-                    }).ToList(),
-                    Agency = p.TeamId == null ? new // ← Само ако е свободен агент
-                    {
-                        p.Agency!.Id,
-                        p.Agency.Logo,
-                        p.Agency.Budget,
-                        p.Agency.Popularity,
-                        RegionName = p.Agency.Region.Name,
-                        name = p.Agency.AgencyTemplate.Name
-                    } : null
+                    p.Price
                 })
                 .ToListAsync();
 
@@ -149,6 +119,8 @@
                 Players = players
             };
         }
+
+
 
         public async Task<IEnumerable<object>> GetTransferHistoryAsync(int gameSaveId, bool onlyMine)
         {
