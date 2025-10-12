@@ -51,7 +51,6 @@
                     if (playerAttr != null)
                     {
                         double contrib = playerAttr.Value * weight.Weight;
-                        Console.WriteLine($" - {weight.AttributeCode}: Value={playerAttr.Value}, Weight={weight.Weight}, Contrib={contrib:F2}");
                         weightedSum += contrib;
                     }
                     else
@@ -79,11 +78,7 @@
                 // 4. Финален скор
                 double finalScore = ageAdjusted + randomOffset;
                 int score = Math.Clamp((int)Math.Round(finalScore), 1, 100);
-
-                Console.WriteLine($"WeightedSum={weightedSum:F2}, TotalWeight={totalWeight:F2}");
-                Console.WriteLine($"AttrScore (1-20)={attrScore:F2}, BaseScore (0-100)={baseScore:F2}");
-                Console.WriteLine($"AgeFactor={ageFactor:F2}, AfterAge={ageAdjusted:F2}");
-                Console.WriteLine($"RandomOffset={randomOffset:F2}, FinalScore={finalScore:F2}, FinalScore Clamped={score}");
+                       
 
                 var outcome = eventType.Outcomes
                     .FirstOrDefault(o => score >= o.RangeMin && score <= o.RangeMax);

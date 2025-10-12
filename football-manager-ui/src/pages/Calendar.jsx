@@ -11,6 +11,14 @@ const Calendar = ({ gameSaveId }) => {
   const season = currentGameSave?.seasons?.[0];
   const seasonCurrentDate = season?.currentDate; // 🔥 винаги актуално
 
+  useEffect(() => {
+    if (seasonCurrentDate) {
+      const parts = seasonCurrentDate.split("-");
+      const [year, month] = parts.map(Number);
+      setCurrentDate(new Date(year, month - 1, 1));
+    }
+  }, [seasonCurrentDate]);
+
   // Зареждане на събитията от бекенда
   useEffect(() => {
     const fetchEvents = async () => {
@@ -119,16 +127,16 @@ const Calendar = ({ gameSaveId }) => {
           ).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 
           const dayEvents = events.filter((e) => e.date === isoDay);
-          const isCurrentDay =
-            seasonCurrentDate && seasonCurrentDate === isoDay;
+          const normalizedSeasonDate = seasonCurrentDate?.split("T")[0];
+          const isCurrentDay = normalizedSeasonDate === isoDay;
 
           return (
             <div
               key={idx}
               className={`h-32 rounded-xl shadow-md flex flex-col items-start p-2 text-gray-200
-                ${dayEvents.length > 0 ? "bg-gray-800" : "bg-gray-700"}
-                ${isCurrentDay ? "border-4 border-red-500" : ""}
-              `}
+        ${dayEvents.length > 0 ? "bg-gray-800" : "bg-gray-700"}
+        ${isCurrentDay ? "border-4 border-red-500 shadow-[0_0_10px_rgba(239,68,68,0.8)]" : ""}
+      `}
             >
               {/* Денят */}
               <div className="w-full flex justify-between items-center mb-1">
@@ -148,19 +156,18 @@ const Calendar = ({ gameSaveId }) => {
                         {parts.map((part, j) => (
                           <div
                             key={j}
-                            className={`px-1 py-0.5 rounded truncate ${
-                              ev.type === "TransferWindow"
-                                ? "bg-yellow-500 text-black font-bold"
-                                : ev.type === "ChampionshipMatch"
+                            className={`px-1 py-0.5 rounded truncate ${ev.type === "TransferWindow"
+                              ? "bg-yellow-500 text-black font-bold"
+                              : ev.type === "ChampionshipMatch"
                                 ? "bg-blue-600"
                                 : ev.type === "EuropeanMatch"
-                                ? "bg-purple-600"
-                                : ev.type === "CupMatch"
-                                ? "bg-green-600"
-                                : ev.type === "TrainingDay"
-                                ? "bg-gray-600"
-                                : "bg-gray-700"
-                            }`}
+                                  ? "bg-purple-600"
+                                  : ev.type === "CupMatch"
+                                    ? "bg-green-600"
+                                    : ev.type === "TrainingDay"
+                                      ? "bg-gray-600"
+                                      : "bg-gray-700"
+                              }`}
                           >
                             {part}
                           </div>

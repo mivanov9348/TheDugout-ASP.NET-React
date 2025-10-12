@@ -1,10 +1,9 @@
-﻿using TheDugout.Models.Common;
-using TheDugout.Models.Fixtures;
-using TheDugout.Models.Game;
-using TheDugout.Models.Players;
-
-namespace TheDugout.Models.Matches
+﻿namespace TheDugout.Models.Matches
 {
+    using TheDugout.Models.Common;
+    using TheDugout.Models.Fixtures;
+    using TheDugout.Models.Game;
+    using TheDugout.Models.Players;
     public enum MatchStatus
     {
         Scheduled = 0,

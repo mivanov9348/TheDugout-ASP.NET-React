@@ -19,7 +19,7 @@ export default function TodayMatches() {
     refreshGameStatus,
   } = useGame();
 
-  const { isProcessing, startProcessing, stopProcessing } = useProcessing();
+  const { isProcessing, startProcessing, stopProcessing, runSimulateMatches } = useProcessing();
   const navigate = useNavigate();
 
   const normalizeMatch = (m) => ({
@@ -73,31 +73,12 @@ export default function TodayMatches() {
   };
 
   const handleSimulate = async () => {
-    startProcessing("Simulating matches...");
     try {
-      const res = await fetch(`/api/matches/simulate/${gameSaveId}`, {
-        method: "POST",
-        credentials: "include",
-      });
+      const data = await runSimulateMatches(gameSaveId); // използвай ProcessingContext функцията
 
-      if (!res.ok) {
-        alert("Failed to simulate matches");
-        return;
-      }
+      if (!data) return;
 
-      const data = await res.json();
-
-      // Ако бекендът връща gameStatus — обнови контекста
-      const status = data.gameStatus ?? data.gameStatus;
-      if (status) {
-        if (status.gameSave) setCurrentGameSave(status.gameSave);
-        setHasUnplayedMatchesToday(Boolean(status.hasUnplayedMatchesToday));
-        setActiveMatch(status.activeMatch ?? null);
-      } else {
-        // иначе опресни централен статус
-        await refreshGameStatus();
-      }
-
+      // обнови състоянието на мачовете (след като симулацията приключи)
       if (data.matches) {
         const normalized = data.matches.map(normalizeMatch);
         setMatches(normalized);
@@ -106,13 +87,24 @@ export default function TodayMatches() {
       } else {
         await loadMatches();
       }
+
+      // ако бекендът връща статус за играта
+      const status = data.gameStatus ?? data.gameStatus;
+      if (status) {
+        if (status.gameSave) setCurrentGameSave(status.gameSave);
+        setHasUnplayedMatchesToday(Boolean(status.hasUnplayedMatchesToday));
+        setActiveMatch(status.activeMatch ?? null);
+      } else {
+        await refreshGameStatus();
+      }
     } catch (err) {
       console.error("Simulation failed:", err);
       alert("Error simulating matches");
     } finally {
-      stopProcessing();
+      stopProcessing(); // спира overlay-а, когато приключи
     }
   };
+
 
   const hasUnplayedMatches = matches.some((m) => m.status === 0);
 
@@ -164,10 +156,9 @@ export default function TodayMatches() {
           onClick={handleToMatch}
           disabled={!userFixtureId}
           className={`flex items-center gap-2 px-6 py-3 rounded-2xl shadow-md font-semibold transition transform
-            ${
-              userFixtureId
-                ? "bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800 text-white hover:scale-105"
-                : "bg-gray-300 text-gray-500 cursor-not-allowed"
+            ${userFixtureId
+              ? "bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800 text-white hover:scale-105"
+              : "bg-gray-300 text-gray-500 cursor-not-allowed"
             }`}
         >
           <Play className="w-5 h-5" />
@@ -179,10 +170,9 @@ export default function TodayMatches() {
             onClick={handleSimulate}
             disabled={isProcessing}
             className={`flex items-center gap-2 px-6 py-3 rounded-2xl shadow-md font-semibold transition transform
-              ${
-                isProcessing
-                  ? "opacity-60 cursor-not-allowed bg-gray-300 text-gray-600"
-                  : "bg-gradient-to-r from-sky-600 to-blue-700 hover:from-sky-700 hover:to-blue-800 text-white hover:scale-105"
+              ${isProcessing
+                ? "opacity-60 cursor-not-allowed bg-gray-300 text-gray-600"
+                : "bg-gradient-to-r from-sky-600 to-blue-700 hover:from-sky-700 hover:to-blue-800 text-white hover:scale-105"
               }`}
           >
             <Play className="w-5 h-5" />
@@ -212,10 +202,9 @@ export default function TodayMatches() {
               <div
                 key={idx}
                 className={`flex items-center justify-between px-6 py-4 rounded-xl border transition shadow-sm hover:shadow-md
-                  ${
-                    m.isUserTeamMatch
-                      ? "bg-sky-50 border-sky-300 animate-pulse"
-                      : "bg-white border-slate-100"
+                  ${m.isUserTeamMatch
+                    ? "bg-sky-50 border-sky-300 animate-pulse"
+                    : "bg-white border-slate-100"
                   }`}
               >
                 <div className="flex-1 flex items-center justify-end gap-2">

@@ -1,7 +1,9 @@
 // src/components/Header.jsx
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useEffect } from "react";
 import { useProcessing } from "../context/ProcessingContext";
 import { useGame } from "../context/GameContext";
+import Swal from "sweetalert2";
 
 function Header({ username }) {
   const { startProcessing, stopProcessing } = useProcessing();
@@ -17,7 +19,38 @@ function Header({ username }) {
   } = useGame();
 
   const navigate = useNavigate();
+  const location = useLocation();
 
+  // 🧠 Автоматично проверява при смяна на страница дали има неизиграни мачове
+  useEffect(() => {
+    const checkStatus = async () => {
+      try {
+        const res = await fetch("/api/games/current/status", {
+          credentials: "include",
+        });
+        if (!res.ok) return;
+        const status = await res.json();
+
+        setHasUnplayedMatchesToday(Boolean(status.hasUnplayedMatchesToday));
+        setActiveMatch(status.activeMatch ?? null);
+
+        // Ако има неизиграни и не сме вече на today-matches — навигирай
+        if (
+          status.hasUnplayedMatchesToday &&
+          !location.pathname.includes("/today-matches")
+        ) {
+          const gid = status.gameSave?.id ?? currentGameSave?.id;
+          navigate(`/today-matches/${gid}`);
+        }
+      } catch (err) {
+        console.error("Status refresh failed:", err);
+      }
+    };
+
+    checkStatus();
+  }, [location.pathname]);
+
+  // 🧩 Loading & fallback
   if (isLoading && !currentGameSave) {
     return (
       <header className="px-6 py-3 bg-slate-800 text-white shadow-md">
@@ -46,65 +79,92 @@ function Header({ username }) {
         })
       : "";
 
+  // 🕒 Бутонът "Next Day"
   const handleNextDay = async () => {
-    // ако вече има неизиграни — отиди в today-matches
-    if (hasUnplayed) {
-      navigate(`/today-matches/${currentGameSave.id}`);
-      return;
-    }
+  if (hasUnplayed) {
+    await Swal.fire({
+      title: "⚽ Match Day!",
+      text: "There are unplayed matches for today!",
+      icon: "info",
+      confirmButtonText: "To Matches",
+      confirmButtonColor: "#f59e0b",
+      background: "#1e293b",
+      color: "#fff",
+    });
+    navigate(`/today-matches/${currentGameSave.id}`);
+    return;
+  }
 
-    startProcessing("Advancing to next day...");
-    try {
-      const res = await fetch("/api/games/current/next-day", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-      });
+  startProcessing("Advancing to next day...");
+  try {
+    const res = await fetch("/api/games/current/next-day", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+    });
 
-      if (!res.ok) {
-        console.error("Next day API failed with status", res.status);
-        // опитай да опресниш статуса директно
-        const fallback = await refreshGameStatus();
-        if (fallback?.hasUnplayedMatchesToday) {
-          navigate(`/today-matches/${fallback.gameSave?.id ?? currentGameSave.id}`);
-        }
+    // 👇 Ако API-то върне 400 с "Cannot advance day..."
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      const message = errorData?.message ?? "Unknown error";
+
+      if (message.includes("unplayed matches")) {
+        await Swal.fire({
+          title: "⚽ Match Day!",
+          text: "There are unplayed matches for today!",
+          icon: "info",
+          confirmButtonText: "To Matches",
+          confirmButtonColor: "#f59e0b",
+          background: "#1e293b",
+          color: "#fff",
+        });
+
+        navigate(`/today-matches/${currentGameSave.id}`);
         return;
       }
 
-      const payload = await res.json();
-      const status = payload.gameStatus ?? payload;
-
-      // Ако backend е включил новия status — обнови контекста
-      if (status) {
-        if (status.gameSave) setCurrentGameSave(status.gameSave);
-        setHasUnplayedMatchesToday(Boolean(status.hasUnplayedMatchesToday));
-        setActiveMatch(status.activeMatch ?? null);
-
-        // веднага навигирай при наличие на неизиграни
-        if (status.hasUnplayedMatchesToday) {
-          const gid = status.gameSave?.id ?? currentGameSave.id;
-          navigate(`/today-matches/${gid}`);
-          return;
-        }
-      } else {
-        // ако няма status в тялото — опресни и провери
-        const fallback = await refreshGameStatus();
-        if (fallback?.hasUnplayedMatchesToday) {
-          navigate(`/today-matches/${fallback.gameSave?.id ?? currentGameSave.id}`);
-          return;
-        }
+      console.error("Next day API failed:", message);
+      const fallback = await refreshGameStatus();
+      if (fallback?.hasUnplayedMatchesToday) {
+        navigate(`/today-matches/${fallback.gameSave?.id ?? currentGameSave.id}`);
       }
-    } catch (err) {
-      console.error("Next Day failed:", err);
-    } finally {
-      stopProcessing();
+      return;
     }
-  };
+
+    const payload = await res.json();
+    const status = payload.gameStatus ?? payload;
+
+    if (status) {
+      if (status.gameSave) setCurrentGameSave(status.gameSave);
+      setHasUnplayedMatchesToday(Boolean(status.hasUnplayedMatchesToday));
+      setActiveMatch(status.activeMatch ?? null);
+
+      // ако след новия ден пак има мачове — пак пращаме натам
+      if (status.hasUnplayedMatchesToday) {
+        const gid = status.gameSave?.id ?? currentGameSave.id;
+        navigate(`/today-matches/${gid}`);
+        return;
+      }
+    } else {
+      const fallback = await refreshGameStatus();
+      if (fallback?.hasUnplayedMatchesToday) {
+        navigate(`/today-matches/${fallback.gameSave?.id ?? currentGameSave.id}`);
+        return;
+      }
+    }
+  } catch (err) {
+    console.error("Next Day failed:", err);
+  } finally {
+    stopProcessing();
+  }
+};
+
 
   const handleGoToMatch = () => activeMatch && navigate(`/match/${activeMatch.id}`);
   const handleGoToTodayMatches = () =>
     currentGameSave && navigate(`/today-matches/${currentGameSave.id}`);
 
+  // 🔘 Определяне на бутона според състоянието
   let buttonLabel = "Next Day →";
   let buttonAction = handleNextDay;
   let buttonTitle = "Continue to next day";

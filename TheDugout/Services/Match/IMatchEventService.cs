@@ -1,8 +1,7 @@
-﻿using TheDugout.Models.Matches;
-using TheDugout.Models.Players;
-
-namespace TheDugout.Services.Match
+﻿namespace TheDugout.Services.Match
 {
+    using TheDugout.Models.Matches;
+    using TheDugout.Models.Players;
     public interface IMatchEventService
     {
         EventType GetRandomEvent();
