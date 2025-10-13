@@ -1,6 +1,7 @@
 ﻿namespace TheDugout.Services.MatchEngine
 {
     using Microsoft.EntityFrameworkCore;
+    using System.Diagnostics;
     using TheDugout.Data;
     using TheDugout.Models.Enums;
     using TheDugout.Models.Fixtures;
@@ -154,21 +155,22 @@
             if (fixture is null) throw new ArgumentNullException(nameof(fixture));
             if (gameSave is null) throw new ArgumentNullException(nameof(gameSave));
 
+            var sw = Stopwatch.StartNew(); // 🕒 стартираме таймера
+
             var dbFixture = await _context.Fixtures
                 .Include(f => f.HomeTeam).ThenInclude(t => t.Players)
                 .Include(f => f.AwayTeam).ThenInclude(t => t.Players)
                 .Include(f => f.EuropeanCupPhase).ThenInclude(p => p.PhaseTemplate)
                 .FirstOrDefaultAsync(f => f.Id == fixture.Id);
 
-
             if (dbFixture is null)
                 throw new InvalidOperationException($"Fixture with Id {fixture.Id} not found in DB.");
 
-            // Сигурен, не-null аргумент за CreateMatchFromFixtureAsync
             var match = await _matchService.CreateMatchFromFixtureAsync(dbFixture, gameSave);
             match.PlayerStats = await _playerStatsService.EnsureMatchStatsAsync(match);
 
-            // Симулация (не променяме логиката ти)
+            int eventCount = 0; // 🧮 броим събитията
+
             while (!IsMatchFinished(match))
             {
                 PlayNextMinute(match);
@@ -188,7 +190,7 @@
                 var player = outfieldPlayers[_random.Next(outfieldPlayers.Count)];
 
                 var eventType = _matchEventService.GetRandomEvent();
-                var outcome = _matchEventService.GetEventOutcome(player, eventType); // поправи името, ако е различно
+                var outcome = _matchEventService.GetEventOutcome(player, eventType);
 
                 if (eventType.Code == "SHT" && outcome.Name == "Goal")
                 {
@@ -197,6 +199,7 @@
 
                 var playerStats = match.PlayerStats.FirstOrDefault(s => s.PlayerId == player.Id);
                 if (playerStats != null)
+                {
                     _playerStatsService.UpdateStats(new Models.Matches.MatchEvent
                     {
                         Minute = match.CurrentMinute,
@@ -206,16 +209,15 @@
                         EventType = eventType,
                         Outcome = outcome
                     }, playerStats);
+                }
 
                 ChangeTurn(match);
+                eventCount++;
             }
 
-            // Финализираме мача (той ще попълни fixture.WinnerTeamId ако има гол)
             await EndMatch(match);
 
-            // Надежден начин да проверим дали това е knockout: използваме match.Fixture (сигурно има стойности)
-            var fixtureAfter = match.Fixture ?? dbFixture; // защита в краен случай
-
+            var fixtureAfter = match.Fixture ?? dbFixture;
             bool isKnockout = fixtureAfter.IsElimination
                               || (fixtureAfter.EuropeanCupPhase?.PhaseTemplate?.IsKnockout == true);
 
@@ -225,10 +227,18 @@
             }
 
             await _standingsDispatcher.UpdateAfterMatchAsync(match.Fixture);
-            //await _playerStatsService.UpdateSeasonStatsAfterMatchAsync(match);
+
+            sw.Stop(); // 🛑 спираме таймера
+
+            Console.WriteLine(
+                $"[SIMULATE] {fixture.HomeTeam?.Name} vs {fixture.AwayTeam?.Name} " +
+                $"→ {fixture.HomeTeamGoals}-{fixture.AwayTeamGoals} " +
+                $"({sw.ElapsedMilliseconds} ms, {eventCount} events)"
+            );
 
             return match;
         }
+
 
         private void UpdateFixtureScore(Models.Matches.Match match, int? currentTeamId, Models.Players.Player player, EventType eventType, EventOutcome outcome)
         {
@@ -237,12 +247,10 @@
                 if (currentTeamId == match.Fixture.HomeTeamId)
                 {
                     match.Fixture.HomeTeamGoals = (match.Fixture.HomeTeamGoals ?? 0) + 1;
-                    Console.WriteLine($"GOAL! {match.Fixture.HomeTeam?.Name} scores! {match.Fixture.HomeTeamGoals}-{match.Fixture.AwayTeamGoals}"); // 👈 ДОБАВИ ЛОГ
                 }
                 else if (currentTeamId == match.Fixture.AwayTeamId)
                 {
                     match.Fixture.AwayTeamGoals = (match.Fixture.AwayTeamGoals ?? 0) + 1;
-                    Console.WriteLine($"GOAL! {match.Fixture.AwayTeam?.Name} scores! {match.Fixture.HomeTeamGoals}-{match.Fixture.AwayTeamGoals}"); // 👈 ДОБАВИ ЛОГ
                 }
             }
         }

@@ -7,6 +7,7 @@
     using Microsoft.EntityFrameworkCore;
     using Newtonsoft.Json;
     using TheDugout.Data;
+    using TheDugout.Models.Enums;
     using TheDugout.Models.Messages;
     using TheDugout.Services.Game;
     using TheDugout.Services.Message;
@@ -86,9 +87,10 @@
                 .Where(f => f.GameSaveId == gameSaveId && f.Date.Date == today)
                 .ToListAsync();
 
-            var activeMatch = matches.FirstOrDefault(m => m.Status == 0);
-            var hasUnplayedMatchesToday = matches.Any(m => m.Status == 0);
+            var hasUnplayedMatchesToday = matches.Any(m => m.Status == FixtureStatusEnum.Scheduled);
+            var activeMatch = matches.FirstOrDefault(m => m.Status == FixtureStatusEnum.Scheduled);
             var hasMatchesToday = matches.Any();
+
 
             return Ok(new
             {
@@ -116,25 +118,34 @@
 
         [Authorize]
         [HttpPost("current/next-day")]
-    public async Task<IActionResult> NextDay()
-    {
-        var userId = _userContext.GetUserId(User);
-        if (userId == null) return Unauthorized();
+        public async Task<IActionResult> NextDay()
+        {
+            var userId = _userContext.GetUserId(User);
+            if (userId == null) return Unauthorized();
 
-        var user = await _context.Users
-            .Include(u => u.CurrentSave)
-                .ThenInclude(s => s.Seasons)
-            .FirstOrDefaultAsync(u => u.Id == userId.Value);
+            var user = await _context.Users
+                .Include(u => u.CurrentSave)
+                    .ThenInclude(s => s.Seasons)
+                .FirstOrDefaultAsync(u => u.Id == userId.Value);
 
-        if (user?.CurrentSave == null)
-            return BadRequest(new { message = "No current save selected." });
+            if (user?.CurrentSave == null)
+                return BadRequest(new { message = "No current save selected." });
 
-        var result = await _gameDayService.ProcessNextDayAndGetResultAsync(user.CurrentSave.Id);
+            var saveId = user.CurrentSave.Id;
+            var save = user.CurrentSave;
+            var season = save.Seasons.FirstOrDefault();
+            if (season == null) return BadRequest("No season found.");
 
-        
-        return Ok(result);
-    }
+            var today = season.CurrentDate.Date;
+            var hasUnplayed = await _context.Fixtures
+                .AnyAsync(f => f.GameSaveId == saveId && f.Date.Date == today && f.Status == FixtureStatusEnum.Scheduled);
 
+            if (hasUnplayed)
+                return BadRequest(new { message = "Cannot advance day: there are unplayed matches today." });
+
+            var result = await _gameDayService.ProcessNextDayAndGetResultAsync(saveId);
+            return Ok(result);
+        }
 
         [HttpGet("current/next-day-stream")]
         public async Task NextDayStream()
@@ -183,8 +194,6 @@
             }
         }
 
-
-
         [HttpGet("teamtemplates")]
         public async Task<IActionResult> GetTeamTemplates()
         {
@@ -210,7 +219,7 @@
             var userId = _userContext.GetUserId(User);
             if (userId == null) return Unauthorized();
 
-            var success = await _gameSaveService.DeleteGameSaveAsync( id);
+            var success = await _gameSaveService.DeleteGameSaveAsync(id);
             return success ? Ok(new { message = "Game save deleted successfully" })
                            : NotFound(new { message = "Save not found" });
         }
@@ -238,7 +247,7 @@
             {
                 return StatusCode(500, new { message = "Failed to create new game" });
             }
-        }       
+        }
 
         [Authorize]
         [HttpPost("{saveId}/select-team/{teamId}")]

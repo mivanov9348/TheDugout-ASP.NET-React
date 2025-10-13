@@ -47,7 +47,6 @@ export function ProcessingProvider({ children }) {
 
     setIsProcessing(false);
     setAllowCancel(true);
-    // ❌ НЕ чистим логовете – оставяме ги за потребителя
   };
 
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
