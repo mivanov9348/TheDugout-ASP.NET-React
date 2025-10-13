@@ -48,10 +48,7 @@ export default function PlayerStats({ cup }) {
 
   return (
     <div className="p-6 bg-gradient-to-b from-gray-900 to-gray-950 rounded-2xl shadow-2xl border border-gray-800 max-w-4xl mx-auto">
-      <h2 className="text-3xl font-bold text-center text-white mb-6 tracking-wide">
-        🧩 Играч Статистика —{" "}
-        <span className="text-green-400">{cup?.name || "Купа"}</span>
-      </h2>
+
 
       <div className="overflow-x-auto">
         <table className="min-w-full text-sm text-gray-300 rounded-xl overflow-hidden">

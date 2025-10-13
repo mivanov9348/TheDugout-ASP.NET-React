@@ -98,6 +98,7 @@
 
         // Transfers
         public ICollection<Transfer> Transfers { get; set; } = new List<Transfer>();
+        public ICollection<TransferOffer> TransferOffers { get; set; } = new List<TransferOffer>();
 
     }
 }

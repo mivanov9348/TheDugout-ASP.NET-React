@@ -68,6 +68,17 @@
             return Ok(new { success = true });
         }
 
+        [HttpPost("offer")]
+        public async Task<IActionResult> SendTransferOffer([FromBody] TransferOfferRequest request)
+        {
+            var result = await _transferService.SendOfferAsync(request);
+            if (!result.Success)
+                return BadRequest(new { success = false, error = result.ErrorMessage });
+
+            return Ok(new { success = true, message = "Offer sent successfully." });
+        }
+
+
         [HttpGet("history")]
         public async Task<IActionResult> GetTransferHistory(int gameSaveId, bool onlyMine = false)
         {

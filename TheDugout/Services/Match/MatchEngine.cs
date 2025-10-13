@@ -85,7 +85,7 @@
         }
         public void PlayNextMinute(Models.Matches.Match match)
         {
-            int increment = _random.Next(1, 6); // по-малки скокове за по-реалистично
+            int increment = _random.Next(1, 6); 
             match.CurrentMinute += increment;
         }
         public void ChangeTurn(Models.Matches.Match match)
@@ -150,7 +150,7 @@
 
             return matchEvent;
         }
-        public async Task<Models.Matches.Match> SimulateMatchAsync(Models.Fixtures.Fixture fixture, GameSave gameSave)
+        public async Task<Match> SimulateMatchAsync(Fixture fixture, GameSave gameSave)
         {
             if (fixture is null) throw new ArgumentNullException(nameof(fixture));
             if (gameSave is null) throw new ArgumentNullException(nameof(gameSave));
@@ -229,13 +229,7 @@
             await _standingsDispatcher.UpdateAfterMatchAsync(match.Fixture);
 
             sw.Stop(); // 🛑 спираме таймера
-
-            Console.WriteLine(
-                $"[SIMULATE] {fixture.HomeTeam?.Name} vs {fixture.AwayTeam?.Name} " +
-                $"→ {fixture.HomeTeamGoals}-{fixture.AwayTeamGoals} " +
-                $"({sw.ElapsedMilliseconds} ms, {eventCount} events)"
-            );
-
+            
             return match;
         }
 

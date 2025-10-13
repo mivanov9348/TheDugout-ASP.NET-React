@@ -29,7 +29,7 @@ public class MatchService : IMatchService
 
         // Проверка дали вече има създаден мач за този fixture
         var existingMatch = await _context.Matches
-            .Include(m => m.Fixture) // включваме Fixture, за да не е null
+            .Include(m => m.Fixture)
             .AsNoTracking()
             .FirstOrDefaultAsync(m => m.FixtureId == fixture.Id && m.GameSaveId == gameSave.Id)
             .ConfigureAwait(false);
@@ -59,10 +59,6 @@ public class MatchService : IMatchService
         return match;
     }
 
-
-    // -------------------------------
-    // GET MATCH VIEW BY FIXTURE
-    // -------------------------------
     public async Task<object?> GetMatchViewAsync(int fixtureId)
     {
         var fixture = await _context.Fixtures
@@ -270,4 +266,5 @@ public class MatchService : IMatchService
             Minute = match.CurrentMinute
         };
     }
+
 }

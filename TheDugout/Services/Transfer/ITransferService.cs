@@ -1,4 +1,6 @@
-﻿namespace TheDugout.Services.Transfer
+﻿using TheDugout.DTOs.Transfer;
+
+namespace TheDugout.Services.Transfer
 {
     public interface ITransferService
     {
@@ -23,5 +25,7 @@
         Task<IEnumerable<object>> GetTransferHistoryAsync(int gameSaveId, bool onlyMine);
 
         Task RunCpuTransfersAsync(int gameSaveId, int seasonId, DateTime date, int teamId);
+
+        Task<(bool Success, string ErrorMessage)> SendOfferAsync(TransferOfferRequest request);
             }
 }

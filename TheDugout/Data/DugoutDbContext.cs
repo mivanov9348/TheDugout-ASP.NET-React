@@ -59,6 +59,7 @@
         public DbSet<TrainingSession> TrainingSessions { get; set; }
         public DbSet<PlayerTraining> PlayerTrainings { get; set; }
         public DbSet<Transfer> Transfers { get; set; }
+        public DbSet<TransferOffer> TransferOffers { get; set; }
         public DbSet<Competition> Competitions { get; set; }
         public DbSet<EuropeanCup> EuropeanCups { get; set; }
         public DbSet<EuropeanCupPhase> EuropeanCupPhases { get; set; }

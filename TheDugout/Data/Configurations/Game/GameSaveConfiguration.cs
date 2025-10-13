@@ -207,6 +207,11 @@
                    .WithOne(t => t.GameSave)
                    .HasForeignKey(t => t.GameSaveId)
                    .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasMany(gs => gs.TransferOffers)
+                   .WithOne(to => to.GameSave)
+                   .HasForeignKey(to => to.GameSaveId)
+                   .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

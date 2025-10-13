@@ -34,6 +34,8 @@
                    .WithMany(a => a.Players)
                    .HasForeignKey(p => p.AgencyId)
                    .OnDelete(DeleteBehavior.Restrict);
+
+
         }
 
     }

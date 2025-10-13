@@ -5,6 +5,8 @@
     using TheDugout.Models.Matches;
     using TheDugout.Models.Staff;
     using TheDugout.Models.Teams;
+    using TheDugout.Models.Transfers;
+
     public class Player
     {
         public int Id { get; set; }
@@ -50,6 +52,8 @@
         public ICollection<PlayerMatchStats> MatchStats { get; set; } = new List<PlayerMatchStats>();
         public ICollection<PlayerSeasonStats> SeasonStats { get; set; } = new List<PlayerSeasonStats>();
         public ICollection<MatchEvent> MatchEvents { get; set; } = new List<MatchEvent>();
+        public ICollection<TransferOffer> TransferOffers { get; set; } = new List<TransferOffer>();
+
 
     }
 }

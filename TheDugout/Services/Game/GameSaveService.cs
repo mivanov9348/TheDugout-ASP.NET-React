@@ -47,7 +47,7 @@
             ICupService cupService,
             IAgencyService agencyService,
             ILeagueFixturesService leagueFixturesService,
-            IEurocupFixturesService eurocupFixturesService,            
+            IEurocupFixturesService eurocupFixturesService,
             IGameSettingsService gameSettings
         )
         {
@@ -166,6 +166,7 @@ WHERE T.{Quote("GameSaveId")} = @p0;";
             "PlayerMatchStats",
             "PlayerSeasonStats",
             "PlayerTrainings",
+             "TransferOffers",
             "Transfers",
             "SeasonEvents",
             "Messages",
@@ -223,7 +224,7 @@ WHERE T.{Quote("GameSaveId")} = @p0;";
 
                 return false;
             }
-        }        
+        }
 
         public async Task<GameSave> StartNewGameAsync(int userId, CancellationToken ct = default)
         {

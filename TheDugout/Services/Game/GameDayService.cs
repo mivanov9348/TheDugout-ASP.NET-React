@@ -1,13 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
-using TheDugout.Data;
-using TheDugout.Models.Enums;
-using TheDugout.Models.Fixtures;
-using TheDugout.Models.Seasons;
-using TheDugout.Services.CPUManager;
-using TheDugout.Services.Season;
-
-namespace TheDugout.Services.Game
+﻿namespace TheDugout.Services.Game
 {
+    using Microsoft.EntityFrameworkCore;
+    using TheDugout.Data;
+    using TheDugout.Models.Enums;
+    using TheDugout.Models.Fixtures;
+    using TheDugout.Models.Seasons;
+    using TheDugout.Services.CPUManager;
+    using TheDugout.Services.Season;
     public class GameDayService : IGameDayService
     {
         private readonly DugoutDbContext _context;

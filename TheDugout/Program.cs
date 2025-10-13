@@ -31,6 +31,7 @@ using TheDugout.Services.Training;
 using TheDugout.Services.Transfer;
 using TheDugout.Services.User;
 using Microsoft.Extensions.Logging;
+using TheDugout.Services.GameSettings;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -91,6 +92,7 @@ builder.Services.AddScoped<ILeagueStandingsService, LeagueStandingsService>();
 builder.Services.AddScoped<IStandingsDispatcherService, StandingsDispatcherService>();
 builder.Services.AddScoped<IEuropeanCupStandingService, EuropeanCupStandingService>();
 builder.Services.AddScoped<IPenaltyShootoutService, PenaltyShootoutService>();
+builder.Services.AddScoped<IGameSettingsService, GameSettingsService>();
 
 
 // CORS
