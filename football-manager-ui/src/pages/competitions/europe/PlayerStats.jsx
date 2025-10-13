@@ -62,19 +62,19 @@ export default function PlayerStats({ cup }) {
                 className="px-3 py-3 text-left cursor-pointer hover:bg-gray-800/50 transition"
                 onClick={() => handleSort("name")}
               >
-                Играч <SortIcon column="name" />
+                Player <SortIcon column="name" />
               </th>
               <th
                 className="px-3 py-3 text-left cursor-pointer hover:bg-gray-800/50 transition"
                 onClick={() => handleSort("teamName")}
               >
-                Отбор <SortIcon column="teamName" />
+                Team <SortIcon column="teamName" />
               </th>
               <th
                 className="px-3 py-3 text-center cursor-pointer hover:bg-gray-800/50 transition"
                 onClick={() => handleSort("goals")}
               >
-                ⚽ Голове <SortIcon column="goals" />
+                ⚽ Goals <SortIcon column="goals" />
               </th>
               <th className="px-3 py-3 text-center">🎯 Мачове</th>
             </tr>

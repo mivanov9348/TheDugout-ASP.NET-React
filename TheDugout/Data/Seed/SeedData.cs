@@ -164,6 +164,38 @@ public static class SeedData
 
         var regionsByCode = await db.Regions.ToDictionaryAsync(x => x.Code, x => x);
 
+        // Settings
+        var settingsPath = Path.Combine(seedDir, "settings.json");
+
+        if (!File.Exists(settingsPath))
+            return;
+
+        var json = await File.ReadAllTextAsync(settingsPath);
+        var settings = JsonSerializer.Deserialize<List<GameSetting>>(json);
+
+        if (settings == null || settings.Count == 0)
+            return;
+
+        foreach (var s in settings)
+        {
+            var existing = await db.Set<GameSetting>().FirstOrDefaultAsync(x => x.Key == s.Key);
+
+            if (existing == null)
+            {
+                db.Set<GameSetting>().Add(new GameSetting
+                {
+                    Key = s.Key,
+                    Value = s.Value
+                });
+            }
+            else if (existing.Value != s.Value)
+            {
+                // Ако стойността е променена в JSON → ъпдейт
+                existing.Value = s.Value;
+            }
+        }
+
+        await db.SaveChangesAsync();
         // 6) Countries
         var countriesPath = Path.Combine(seedDir, "countries.json");
         var countries = await ReadJsonAsync<List<CountryDto>>(countriesPath);

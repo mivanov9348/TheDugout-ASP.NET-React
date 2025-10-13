@@ -17,6 +17,7 @@
     using TheDugout.Models.Teams;
     using TheDugout.Models.Training;
     using TheDugout.Models.Transfers;
+
     public class DugoutDbContext : DbContext
     {
         public DugoutDbContext(DbContextOptions<DugoutDbContext> options) : base(options)
@@ -29,6 +30,7 @@
         public DbSet<Region> Regions { get; set; }
         public DbSet<FirstName> FirstNames { get; set; }
         public DbSet<LastName> LastNames { get; set; }
+        public DbSet<GameSetting> GameSettings { get; set; }
         public DbSet<LeagueTemplate> LeagueTemplates { get; set; }
         public DbSet<League> Leagues { get; set; }
         public DbSet<CupTemplate> CupTemplates { get; set; }

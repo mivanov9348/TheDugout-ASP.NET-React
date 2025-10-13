@@ -1,8 +1,7 @@
-﻿using TheDugout.Models.Matches;
-using TheDugout.Models.Players;
-
-namespace TheDugout.Services.Player
+﻿namespace TheDugout.Services.Player
 {
+    using TheDugout.Models.Matches;
+    using TheDugout.Models.Players;
     public interface IPlayerStatsService
     {
         Task<List<PlayerMatchStats>> InitializeMatchStatsAsync(Models.Matches.Match match);

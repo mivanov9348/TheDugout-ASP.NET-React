@@ -13,19 +13,19 @@ const Tactics = ({ gameSaveId, teamId }) => {
   const getRowClass = (position) => {
     switch (position) {
       case "Goalkeeper":
-        return "bg-yellow-50";
+        return "bg-yellow-50/70";
       case "Defender":
-        return "bg-blue-50";
+        return "bg-blue-50/70";
       case "Midfielder":
-        return "bg-green-50";
+        return "bg-green-50/70";
       case "Attacker":
-        return "bg-red-50";
+        return "bg-red-50/70";
       default:
         return "";
     }
   };
 
-  // Зареждаме играчите
+  // Fetch players
   useEffect(() => {
     const fetchPlayers = async () => {
       try {
@@ -63,7 +63,7 @@ const Tactics = ({ gameSaveId, teamId }) => {
     if (gameSaveId) fetchPlayers();
   }, [gameSaveId]);
 
-  // Зареждаме формациите
+  // Fetch formations
   useEffect(() => {
     const fetchFormations = async () => {
       try {
@@ -75,11 +75,10 @@ const Tactics = ({ gameSaveId, teamId }) => {
         console.error(err);
       }
     };
-
     fetchFormations();
   }, []);
 
-  // Проверяваме дали има вече запазена тактика
+  // Load team tactic if exists
   useEffect(() => {
     const fetchTeamTactic = async () => {
       try {
@@ -89,51 +88,35 @@ const Tactics = ({ gameSaveId, teamId }) => {
           credentials: "include",
         });
 
-        if (!res.ok) {
-          console.log("Няма запазена тактика за отбора.");
-          return;
-        }
+        if (!res.ok) return;
 
         const data = await res.json();
-        console.log("Loaded team tactic:", data);
-
         const tactic = formations.find((f) => f.id === data.tacticId);
         if (tactic) setSelectedFormation(tactic.name);
 
         if (data.lineupJson) {
           try {
-            const parsedLineup = JSON.parse(data.lineupJson);
-            setLineup(parsedLineup);
-          } catch {
-            console.warn("Invalid lineupJson:", data.lineupJson);
-          }
+            setLineup(JSON.parse(data.lineupJson));
+          } catch {}
         }
 
         if (data.substitutesJson) {
           try {
-            const parsedSubs = JSON.parse(data.substitutesJson);
-            setSubstitutes(parsedSubs);
-          } catch {
-            console.warn("Invalid substitutesJson:", data.substitutesJson);
-          }
+            setSubstitutes(JSON.parse(data.substitutesJson));
+          } catch {}
         }
       } catch (err) {
         console.error("Грешка при зареждане на тактиката:", err);
       }
     };
-
     fetchTeamTactic();
   }, [teamId, gameSaveId, formations]);
 
-  // Save
   const handleSave = async () => {
     try {
       const tacticId = formations.find((f) => f.name === selectedFormation)?.id;
-
-      if (!tacticId) {
-        Swal.fire("Грешка", "Моля избери формация преди да запазиш.", "error");
-        return;
-      }
+      if (!tacticId)
+        return Swal.fire("Грешка", "Моля избери формация преди да запазиш.", "error");
 
       const res = await fetch(`/api/tactics/${teamId}`, {
         method: "POST",
@@ -149,20 +132,19 @@ const Tactics = ({ gameSaveId, teamId }) => {
 
       const rawText = await res.text();
       if (!res.ok) {
-        let errorMessage = "Неуспешно запазване";
+        let message = "Неуспешно запазване";
         try {
           const parsed = JSON.parse(rawText);
-          errorMessage = parsed.error || rawText || errorMessage;
+          message = parsed.error || rawText || message;
         } catch {
-          errorMessage = rawText || errorMessage;
+          message = rawText || message;
         }
-        Swal.fire("Грешка", errorMessage, "error");
+        Swal.fire("Грешка", message, "error");
         return;
       }
 
       Swal.fire("Успех!", "Тактиката е запазена!", "success");
     } catch (err) {
-      console.error("Save error:", err);
       Swal.fire("Грешка", err.message, "error");
     }
   };
@@ -176,12 +158,7 @@ const Tactics = ({ gameSaveId, teamId }) => {
     if (!selectedFormation) return { GK: 1, DF: 0, MID: 0, ATT: 0 };
     const form = formations.find((f) => f.name === selectedFormation);
     if (!form) return { GK: 1, DF: 0, MID: 0, ATT: 0 };
-    return {
-      GK: 1,
-      DF: form.defenders,
-      MID: form.midfielders,
-      ATT: form.forwards,
-    };
+    return { GK: 1, DF: form.defenders, MID: form.midfielders, ATT: form.forwards };
   };
   const slots = getPositionSlots();
 
@@ -193,15 +170,14 @@ const Tactics = ({ gameSaveId, teamId }) => {
   const renderSlots = (position, count, availablePlayers) => {
     const slotsArray = [];
     const selectedIds = getSelectedPlayerIds();
-
     for (let i = 1; i <= count; i++) {
       const slotKey = `${position}-${i}`;
       slotsArray.push(
         <tr key={slotKey}>
-          <td className="px-6 py-4 text-sm font-medium text-gray-900">{`${position} ${i}`}</td>
-          <td className="px-6 py-4">
+          <td className="px-6 py-3 text-sm font-semibold text-gray-800">{`${position} ${i}`}</td>
+          <td className="px-6 py-3">
             <select
-              className="block w-full px-3 py-2 border border-gray-300 bg-white rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+              className="block w-full px-3 py-2 border border-gray-300 bg-gray-50 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
               value={lineup[slotKey] || ""}
               onChange={(e) =>
                 setLineup((prev) => ({ ...prev, [slotKey]: e.target.value }))
@@ -230,19 +206,15 @@ const Tactics = ({ gameSaveId, teamId }) => {
   const renderSubstitutes = () => {
     const slots = ["SUB1", "SUB2", "SUB3", "SUB4", "SUB5"];
     const selectedIds = getSelectedPlayerIds();
-
     return slots.map((slotKey) => (
       <tr key={slotKey}>
-        <td className="px-6 py-4 text-sm font-medium text-gray-900">{slotKey}</td>
-        <td className="px-6 py-4">
+        <td className="px-6 py-3 text-sm font-semibold text-gray-800">{slotKey}</td>
+        <td className="px-6 py-3">
           <select
-            className="block w-full px-3 py-2 border border-gray-300 bg-white rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+            className="block w-full px-3 py-2 border border-gray-300 bg-gray-50 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
             value={substitutes[slotKey] || ""}
             onChange={(e) =>
-              setSubstitutes((prev) => ({
-                ...prev,
-                [slotKey]: e.target.value,
-              }))
+              setSubstitutes((prev) => ({ ...prev, [slotKey]: e.target.value }))
             }
           >
             <option value="">Select Player</option>
@@ -265,30 +237,35 @@ const Tactics = ({ gameSaveId, teamId }) => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <span className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600"></span>
+      <div className="flex items-center justify-center h-screen bg-gradient-to-br from-indigo-100 via-white to-indigo-200">
+        <span className="animate-spin rounded-full h-12 w-12 border-4 border-indigo-600 border-t-transparent"></span>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 p-6">
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-4xl font-extrabold text-center mb-8 text-indigo-700">
-          ⚽ Team Tactics
-        </h1>
+    <div className="min-h-screen bg-gradient-to-br from-gray-100 via-white to-indigo-50 p-6">
+      <div className="max-w-7xl mx-auto space-y-8">
+        <div className="text-center">
+          <h1 className="text-5xl font-extrabold text-indigo-700">
+            Team Tactics
+          </h1>
+          <p className="text-gray-600 mt-2 text-lg">
+            Build your perfect lineup and dominate the league.
+          </p>
+        </div>
 
-        {/* Formation selector */}
-        <div className="mb-8">
+        {/* Formation Selector */}
+        <div className="bg-white/70 backdrop-blur-md p-6 rounded-2xl shadow-lg border border-gray-100">
           <label
             htmlFor="formation"
-            className="block text-lg font-medium mb-2 text-gray-700"
+            className="block text-xl font-semibold mb-3 text-gray-700"
           >
             Select Formation
           </label>
           <select
             id="formation"
-            className="block w-full px-4 py-3 border border-gray-300 bg-white rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+            className="block w-full px-4 py-3 border border-gray-300 bg-gray-50 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
             value={selectedFormation}
             onChange={(e) => {
               setSelectedFormation(e.target.value);
@@ -306,15 +283,13 @@ const Tactics = ({ gameSaveId, teamId }) => {
         </div>
 
         {selectedFormation && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Players */}
-            <div className="bg-white shadow-lg rounded-xl p-4">
-              <h2 className="text-2xl font-semibold mb-4 text-indigo-600">
-                All Players
-              </h2>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+            {/* Players Table */}
+            <div className="bg-white/80 backdrop-blur-md shadow-xl rounded-2xl p-5 border border-gray-100">
+              <h2 className="text-2xl font-bold mb-4 text-indigo-600">All Players</h2>
               <div className="overflow-auto max-h-[70vh] rounded-lg">
-                <table className="min-w-full divide-y divide-gray-200 text-sm">
-                  <thead className="bg-gray-50 sticky top-0">
+                <table className="min-w-full text-sm">
+                  <thead className="bg-indigo-50 sticky top-0 shadow-sm">
                     <tr>
                       <th className="px-4 py-2 text-left font-semibold text-gray-700">
                         Name
@@ -328,28 +303,26 @@ const Tactics = ({ gameSaveId, teamId }) => {
                       {allAttributes.map((attr) => (
                         <th
                           key={attr}
-                          className="px-4 py-2 text-left font-semibold text-gray-700"
+                          className="px-4 py-2 text-center font-semibold text-gray-700"
                         >
                           {attr}
                         </th>
                       ))}
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className="divide-y divide-gray-200">
                     {players.map((p) => (
                       <tr
                         key={p.id}
                         className={`${getRowClass(
                           p.position
-                        )} hover:bg-gray-100 transition`}
+                        )} hover:bg-indigo-50 transition`}
                       >
                         <td className="px-4 py-2 font-medium">{p.name}</td>
                         <td className="px-4 py-2">{p.position}</td>
                         <td className="px-4 py-2">{p.age}</td>
                         {allAttributes.map((attr) => {
-                          const found = p.attributes.find(
-                            (a) => a.name === attr
-                          );
+                          const found = p.attributes.find((a) => a.name === attr);
                           return (
                             <td key={attr} className="px-4 py-2 text-center">
                               {found ? found.value : "-"}
@@ -364,60 +337,36 @@ const Tactics = ({ gameSaveId, teamId }) => {
             </div>
 
             {/* Lineup + Subs */}
-            <div className="bg-white shadow-lg rounded-xl p-4">
-              <h2 className="text-2xl font-semibold mb-4 text-indigo-600">
-                Starting Lineup
-              </h2>
+            <div className="bg-white/80 backdrop-blur-md shadow-xl rounded-2xl p-5 border border-gray-100">
+              <h2 className="text-2xl font-bold mb-4 text-indigo-600">Starting Lineup</h2>
               <div className="overflow-auto rounded-lg mb-6">
                 <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50 sticky top-0">
+                  <thead className="bg-indigo-50 sticky top-0">
                     <tr>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
+                      <th className="px-6 py-3 text-left font-semibold text-gray-700">
                         Position
                       </th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
+                      <th className="px-6 py-3 text-left font-semibold text-gray-700">
                         Player
                       </th>
                     </tr>
                   </thead>
                   <tbody>
-                    {renderSlots(
-                      "GK",
-                      slots.GK,
-                      players.filter((p) => p.position === "Goalkeeper")
-                    )}
-                    {renderSlots(
-                      "DF",
-                      slots.DF,
-                      players.filter((p) => p.position === "Defender")
-                    )}
-                    {renderSlots(
-                      "MID",
-                      slots.MID,
-                      players.filter((p) => p.position === "Midfielder")
-                    )}
-                    {renderSlots(
-                      "ATT",
-                      slots.ATT,
-                      players.filter((p) => p.position === "Attacker")
-                    )}
+                    {renderSlots("GK", slots.GK, players.filter((p) => p.position === "Goalkeeper"))}
+                    {renderSlots("DF", slots.DF, players.filter((p) => p.position === "Defender"))}
+                    {renderSlots("MID", slots.MID, players.filter((p) => p.position === "Midfielder"))}
+                    {renderSlots("ATT", slots.ATT, players.filter((p) => p.position === "Attacker"))}
                   </tbody>
                 </table>
               </div>
 
-              <h2 className="text-2xl font-semibold mb-4 text-indigo-600">
-                Substitutes
-              </h2>
+              <h2 className="text-2xl font-bold mb-4 text-indigo-600">Substitutes</h2>
               <div className="overflow-auto rounded-lg">
                 <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
+                  <thead className="bg-indigo-50">
                     <tr>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
-                        Slot
-                      </th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
-                        Player
-                      </th>
+                      <th className="px-6 py-3 text-left font-semibold text-gray-700">Slot</th>
+                      <th className="px-6 py-3 text-left font-semibold text-gray-700">Player</th>
                     </tr>
                   </thead>
                   <tbody>{renderSubstitutes()}</tbody>
@@ -427,13 +376,13 @@ const Tactics = ({ gameSaveId, teamId }) => {
               <div className="mt-6 flex space-x-3">
                 <button
                   onClick={handleSave}
-                  className="flex-1 px-4 py-3 bg-indigo-600 text-white font-semibold rounded-lg shadow hover:bg-indigo-700 transition"
+                  className="flex-1 px-4 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow transition"
                 >
                   Save
                 </button>
                 <button
                   onClick={handleReset}
-                  className="flex-1 px-4 py-3 bg-gray-500 text-white font-semibold rounded-lg shadow hover:bg-gray-600 transition"
+                  className="flex-1 px-4 py-3 bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-lg shadow transition"
                 >
                   Reset
                 </button>

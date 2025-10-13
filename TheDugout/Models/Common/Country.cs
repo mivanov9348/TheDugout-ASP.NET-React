@@ -1,10 +1,9 @@
-﻿using System.Numerics;
-using TheDugout.Models.Leagues;
-using TheDugout.Models.Players;
-using TheDugout.Models.Teams;
-
-namespace TheDugout.Models.Common
+﻿namespace TheDugout.Models.Common
 {
+    using System.Numerics;
+    using TheDugout.Models.Leagues;
+    using TheDugout.Models.Players;
+    using TheDugout.Models.Teams;
     public class Country
     {
         public int Id { get; set; }

@@ -3,6 +3,7 @@
     using Microsoft.EntityFrameworkCore;
     using System.Diagnostics;
     using System.Linq;
+    using System.Runtime;
     using System.Runtime.CompilerServices;
     using TheDugout.Data;
     using TheDugout.Models.Competitions;
@@ -10,6 +11,7 @@
     using TheDugout.Services.Cup;
     using TheDugout.Services.EuropeanCup;
     using TheDugout.Services.Finance;
+    using TheDugout.Services.GameSettings;
     using TheDugout.Services.League;
     using TheDugout.Services.Players;
     using TheDugout.Services.Season;
@@ -30,6 +32,7 @@
         private readonly IEuropeanCupService _europeanCupService;
         private readonly ICupService _cupService;
         private readonly IAgencyService _agencyService;
+        private readonly IGameSettingsService _gameSettings;
 
         public GameSaveService(
             DugoutDbContext context,
@@ -44,7 +47,8 @@
             ICupService cupService,
             IAgencyService agencyService,
             ILeagueFixturesService leagueFixturesService,
-            IEurocupFixturesService eurocupFixturesService
+            IEurocupFixturesService eurocupFixturesService,            
+            IGameSettingsService gameSettings
         )
         {
             _context = context;
@@ -60,6 +64,7 @@
             _agencyService = agencyService;
             _leagueFixturesService = leagueFixturesService;
             _eurocupFixturesService = eurocupFixturesService;
+            _gameSettings = gameSettings;
         }
 
         public async Task<List<object>> GetUserSavesAsync(int userId)
@@ -255,7 +260,8 @@ WHERE T.{Quote("GameSaveId")} = @p0;";
                 LogStep("Created GameSave");
 
                 // 2️⃣ Банка / финанси
-                await _financeService.CreateBankAsync(gameSave, 20000000);
+                var initialBalance = await _gameSettings.GetIntAsync("bankInitial") ?? 200000000;
+                await _financeService.CreateBankAsync(gameSave, initialBalance);
                 await _context.SaveChangesAsync(ct);
                 LogStep("Created Bank and Finance data");
 
