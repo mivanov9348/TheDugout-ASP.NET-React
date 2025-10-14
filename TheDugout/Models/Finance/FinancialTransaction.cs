@@ -5,10 +5,11 @@
     using TheDugout.Models.Teams;
     public enum TransactionType
     {
-        StartingFunds,
+        StartingFunds,       
         TransferIn,
         TransferOut,
         TransferFee,
+        BankFee,
         Wage,
         Prize,
         LoanPayment,

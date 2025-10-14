@@ -10,20 +10,17 @@ using TheDugout.Services.Transfer;
 public class CpuManagerService : ICPUManagerService
 {
     private readonly ITrainingService _trainingService;
-    private readonly ITransferService _transferService;
     private readonly ITeamPlanService _teamPlanService;
     private readonly DugoutDbContext _context;
     private readonly ILogger<CpuManagerService> _logger;
 
     public CpuManagerService(
         ITrainingService trainingService,
-        ITransferService transferService,
         ITeamPlanService teamPlanService,
         DugoutDbContext context,
         ILogger<CpuManagerService> logger)
     {
         _trainingService = trainingService;
-        _transferService = transferService;
         _teamPlanService = teamPlanService;
         _context = context;
         _logger = logger;
@@ -67,7 +64,7 @@ public class CpuManagerService : ICPUManagerService
                         try
                         {
                             if (progress != null) await progress($"🔄 CPU team {team.Name} is checking transfers...");
-                            await _transferService.RunCpuTransfersAsync(gameSaveId, seasonId, date, team.Id);
+                            //await _transferService.RunCpuTransfersAsync(gameSaveId, seasonId, date, team.Id);
                             if (progress != null) await progress($"✅ CPU team {team.Name} finished transfer checks");
                         }
                         catch (Exception ex)

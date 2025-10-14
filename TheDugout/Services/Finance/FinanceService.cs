@@ -1,20 +1,22 @@
 ﻿namespace TheDugout.Services.Finance
-{
-    using Microsoft.EntityFrameworkCore;
-    using Microsoft.Extensions.Logging;
+{ 
     using TheDugout.Data;
     using TheDugout.Models.Finance;
     using TheDugout.Models.Game;
     using TheDugout.Models.Staff;
     using TheDugout.Models.Teams;
+    using TheDugout.Services.GameSettings;
+
     public class FinanceService : IFinanceService
     {
         private readonly DugoutDbContext _context;
+        private readonly IGameSettingsService _gameSettings;
         private readonly Random _rng = new();
 
-        public FinanceService(DugoutDbContext context)
+        public FinanceService(DugoutDbContext context, IGameSettingsService gameSettings)
         {
             _context = context;
+            _gameSettings = gameSettings;
         }
 
         // 🔹 1️⃣ Създаване на банка
@@ -29,7 +31,7 @@
             gameSave.Bank = bank;
             _context.Banks.Add(bank);
 
-            await _context.SaveChangesAsync();     
+            await _context.SaveChangesAsync();
 
             return bank;
         }
@@ -160,17 +162,62 @@
                 Status = TransactionStatus.Pending
             });
 
-        public Task<FinancialTransaction> ClubToClubAsync(Team from, Team to, decimal amt, string desc, TransactionType type)
-            => ExecuteTransactionAsync(new FinancialTransaction
+        public async Task<(bool Success, string ErrorMessage)> ClubToClubWithFeeAsync(
+                    Team buyer,
+                    Team seller,
+                    Bank bank,
+                    decimal transferAmount,
+                    string description)
+        {
+            if (buyer == null || seller == null || bank == null)
+                return (false, "Invalid transfer participants.");
+
+            if (transferAmount <= 0)
+                return (false, "Invalid transfer amount.");
+
+            // bankFeePercent
+            var feePercent = await _gameSettings.GetDecimalAsync("bankFeePercent") ?? 0.10m;
+            decimal bankFee = Math.Round(transferAmount * feePercent, 2);
+            decimal sellerAmount = transferAmount - bankFee;
+
+            // 1️⃣ Купувачът плаща цялата сума към банката
+            var toBank = await ClubToBankAsync(
+                buyer,
+                bank,
+                transferAmount,
+                $"{description} (transfer payment to bank)",
+                TransactionType.TransferFee);
+
+            if (toBank.Status != TransactionStatus.Completed)
+                return (false, "Buyer payment to bank failed.");
+
+            // 2️⃣ Банката плаща на продавача 90%
+            var toSeller = await BankToClubAsync(
+                bank,
+                seller,
+                sellerAmount,
+                $"{description} (${feePercent} To Bank!)",
+                TransactionType.TransferIn);
+
+            if (toSeller.Status != TransactionStatus.Completed)
+                return (false, "Bank failed to send funds to seller.");
+
+            // 3️⃣ Банката запазва 10% като такса
+            var feeTx = new FinancialTransaction
             {
-                FromTeamId = from.Id,
-                ToTeamId = to.Id,
-                GameSaveId = from.GameSaveId,
-                Amount = amt,
-                Description = desc,
-                Type = type,
-                Status = TransactionStatus.Pending
-            });
+                BankId = bank.Id,
+                GameSaveId = buyer.GameSaveId,
+                Amount = bankFee,
+                Description = $"Bank fee (${feePercent}) from transfer: {description}",
+                Type = TransactionType.BankFee,
+                Status = TransactionStatus.Completed
+            };
+
+            _context.FinancialTransactions.Add(feeTx);
+            await _context.SaveChangesAsync();
+
+            return (true, "");
+        }
 
         public Task<FinancialTransaction> ClubToBankAsync(Team from, Bank bank, decimal amt, string desc, TransactionType type)
     => ExecuteTransactionAsync(new FinancialTransaction

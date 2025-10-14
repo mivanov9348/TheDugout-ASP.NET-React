@@ -11,12 +11,12 @@ namespace TheDugout.Controllers
     public class DashboardController : ControllerBase
     {
         private readonly DugoutDbContext _context;
-        private readonly ITransferService _transferService;
+        private readonly ITransferQueryService _transferQueryService;
 
-        public DashboardController(DugoutDbContext context, ITransferService _transferService)
+        public DashboardController(DugoutDbContext context, ITransferQueryService transferQueryService)
         {
             _context = context;
-            this._transferService = _transferService;
+            _transferQueryService = transferQueryService;
         }
 
         [HttpGet("{gameSaveId}")]
@@ -60,7 +60,7 @@ namespace TheDugout.Controllers
                 .ToList();
 
             // Трансфери
-            var transfers = await _transferService.GetTransferHistoryAsync(gameSaveId, true);
+            var transfers = await _transferQueryService.GetTransferHistoryAsync(gameSaveId, true);
 
             // Текуща дата на сезона
             var season = gameSave.Seasons

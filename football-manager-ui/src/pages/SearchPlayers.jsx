@@ -6,6 +6,8 @@ import Swal from "sweetalert2";
 export default function SearchPlayers({ gameSaveId }) {
   const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [userTeamId, setUserTeamId] = useState(null);
+  const [totalCount, setTotalCount] = useState(0);
   const [filters, setFilters] = useState({
     search: "",
     team: "",
@@ -21,8 +23,8 @@ export default function SearchPlayers({ gameSaveId }) {
     page: 1,
     pageSize: 50,
   });
-  const [totalCount, setTotalCount] = useState(0);
 
+  // 🟢 Зареждаме играчите
   useEffect(() => {
     fetchPlayers();
   }, [filters]);
@@ -49,6 +51,24 @@ export default function SearchPlayers({ gameSaveId }) {
     }
   };
 
+  // 🟢 Зареждаме твоя отбор (UserTeamId)
+  useEffect(() => {
+    const fetchUserTeam = async () => {
+      if (!gameSaveId) return;
+      try {
+        const res = await fetch(`/api/transfers/userteam/${gameSaveId}`);
+
+        if (!res.ok) throw new Error("Failed to load game save");
+        const data = await res.json();
+        setUserTeamId(data.userTeamId);
+      } catch (err) {
+        console.error("Error loading user team:", err);
+      }
+    };
+    fetchUserTeam();
+  }, [gameSaveId]);
+
+  // 🧭 Филтри и сортиране
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFilters({
@@ -67,6 +87,7 @@ export default function SearchPlayers({ gameSaveId }) {
     }));
   };
 
+  // ⚽️ Подписване на свободен агент
   const handleSign = async (playerId, playerName) => {
     if (!gameSaveId) return;
 
@@ -111,9 +132,80 @@ export default function SearchPlayers({ gameSaveId }) {
     }
   };
 
+  // 💰 Изпращане на трансферна оферта
+  const handleOffer = async (player) => {
+    if (!gameSaveId || !userTeamId) {
+      Swal.fire({
+        icon: "error",
+        title: "❌ Missing data",
+        text: "User team or game save not loaded yet.",
+      });
+      return;
+    }
+
+    const { value: amount } = await Swal.fire({
+      title: `💰 Offer for ${player.name}`,
+      html: `
+        <div style="text-align: left;">
+          <p><b>Team:</b> ${player.team || "Free agent"}</p>
+          <p><b>Current Price:</b> ${player.price ? player.price.toLocaleString() : "-"
+        } €</p>
+          <label style="display:block;margin-top:10px;">Enter your offer (€):</label>
+          <input type="number" id="offerAmount" class="swal2-input" placeholder="Enter amount">
+        </div>
+      `,
+      focusConfirm: false,
+      showCancelButton: true,
+      confirmButtonText: "Send Offer",
+      cancelButtonText: "Cancel",
+      preConfirm: () => {
+        const input = document.getElementById("offerAmount").value;
+        if (!input || isNaN(input) || Number(input) <= 0) {
+          Swal.showValidationMessage("Enter a valid offer amount!");
+          return false;
+        }
+        return Number(input);
+      },
+    });
+
+    if (!amount) return;
+
+    try {
+      const res = await fetch(`/api/transfers/offer`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          gameSaveId,
+          playerId: player.id,
+          fromTeamId: userTeamId,
+          toTeamId: player.teamId,
+          offerAmount: amount,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Offer failed");
+
+      Swal.fire({
+        icon: "success",
+        title: "✅ Offer sent!",
+        text: `You offered €${amount.toLocaleString()} for ${player.name}.`,
+        timer: 2500,
+        showConfirmButton: false,
+      });
+    } catch (err) {
+      Swal.fire({
+        icon: "error",
+        title: "❌ Error",
+        text: err.message,
+      });
+    }
+  };
+
+  // 🧾 UI
   return (
     <div className="space-y-4">
-      {/* 🔍 Филтри */}
+      {/* 🔍 Filters */}
       <div className="bg-white p-4 rounded-xl shadow border border-slate-200">
         <h2 className="text-xl font-semibold flex items-center gap-2 mb-4">
           <Filter size={20} /> Player Filters
@@ -163,56 +255,29 @@ export default function SearchPlayers({ gameSaveId }) {
           </label>
         </div>
 
-        {/* 🧮 Допълнителни филтри: възраст и цена */}
+        {/* 🧮 Age & Price Filters */}
         <div className="grid grid-cols-4 gap-3 mt-4">
-          <div className="flex flex-col">
-            <label className="text-xs text-slate-500">Min Age</label>
-            <input
-              type="number"
-              name="minAge"
-              placeholder="e.g. 18"
-              value={filters.minAge}
-              onChange={handleChange}
-              className="border rounded-lg px-3 py-2 text-sm"
-            />
-          </div>
-          <div className="flex flex-col">
-            <label className="text-xs text-slate-500">Max Age</label>
-            <input
-              type="number"
-              name="maxAge"
-              placeholder="e.g. 30"
-              value={filters.maxAge}
-              onChange={handleChange}
-              className="border rounded-lg px-3 py-2 text-sm"
-            />
-          </div>
-          <div className="flex flex-col">
-            <label className="text-xs text-slate-500">Min Price (€)</label>
-            <input
-              type="number"
-              name="minPrice"
-              placeholder="e.g. 1000000"
-              value={filters.minPrice}
-              onChange={handleChange}
-              className="border rounded-lg px-3 py-2 text-sm"
-            />
-          </div>
-          <div className="flex flex-col">
-            <label className="text-xs text-slate-500">Max Price (€)</label>
-            <input
-              type="number"
-              name="maxPrice"
-              placeholder="e.g. 5000000"
-              value={filters.maxPrice}
-              onChange={handleChange}
-              className="border rounded-lg px-3 py-2 text-sm"
-            />
-          </div>
+          {[
+            ["minAge", "Min Age"],
+            ["maxAge", "Max Age"],
+            ["minPrice", "Min Price (€)"],
+            ["maxPrice", "Max Price (€)"],
+          ].map(([name, label]) => (
+            <div key={name} className="flex flex-col">
+              <label className="text-xs text-slate-500">{label}</label>
+              <input
+                type="number"
+                name={name}
+                value={filters[name]}
+                onChange={handleChange}
+                className="border rounded-lg px-3 py-2 text-sm"
+              />
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* 📋 Таблица */}
+      {/* 📋 Table */}
       <div className="bg-white rounded-xl shadow border border-slate-200 overflow-hidden">
         {loading ? (
           <div className="flex justify-center items-center h-64 text-slate-500">
@@ -288,19 +353,27 @@ export default function SearchPlayers({ gameSaveId }) {
                       <td className="px-4 py-2">
                         {p.team ? (
                           <button
-                            disabled
-                            className="px-3 py-1 rounded bg-gray-200 text-gray-500 cursor-not-allowed text-xs"
+                            disabled={!userTeamId}
+                            onClick={() => handleOffer(p)}
+                            className={`px-3 py-1 rounded text-white text-xs ${userTeamId
+                                ? "bg-blue-600 hover:bg-blue-700"
+                                : "bg-gray-400 cursor-not-allowed"
+                              }`}
                           >
                             Offer
                           </button>
                         ) : (
                           <button
+                            disabled={!userTeamId}
                             onClick={() => handleSign(p.id, p.name)}
-                            className="px-3 py-1 rounded bg-emerald-600 hover:bg-emerald-700 text-white text-xs"
+                            className={`px-3 py-1 rounded text-white text-xs ${userTeamId
+                                ? "bg-emerald-600 hover:bg-emerald-700"
+                                : "bg-gray-400 cursor-not-allowed"
+                              }`}
                           >
                             Sign
                           </button>
-                        )}
+                        )}  
                       </td>
                     </tr>
                   ))
@@ -308,7 +381,7 @@ export default function SearchPlayers({ gameSaveId }) {
               </tbody>
             </table>
 
-            {/* 📄 Пагинация */}
+            {/* Pagination */}
             <div className="flex justify-between items-center p-3 bg-slate-50 border-t text-sm">
               <span>
                 Showing {players.length} of {totalCount} players
