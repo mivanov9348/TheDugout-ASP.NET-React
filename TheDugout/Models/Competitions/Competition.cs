@@ -1,6 +1,5 @@
-﻿namespace TheDugout.Models.Common
+﻿namespace TheDugout.Models.Competitions
 {
-    using TheDugout.Models.Competitions;
     using TheDugout.Models.Cups;
     using TheDugout.Models.Enums;
     using TheDugout.Models.Game;

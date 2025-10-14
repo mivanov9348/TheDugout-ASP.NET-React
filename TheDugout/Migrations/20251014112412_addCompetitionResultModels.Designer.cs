@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TheDugout.Data;
 
@@ -11,9 +12,11 @@ using TheDugout.Data;
 namespace TheDugout.Migrations
 {
     [DbContext(typeof(DugoutDbContext))]
-    partial class DugoutDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251014112412_addCompetitionResultModels")]
+    partial class addCompetitionResultModels
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -212,7 +215,7 @@ namespace TheDugout.Migrations
                     b.Property<int>("CompetitionSeasonResultId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("GameSaveId")
+                    b.Property<int>("GameSaveId")
                         .HasColumnType("int");
 
                     b.Property<int>("TeamId")
@@ -226,7 +229,7 @@ namespace TheDugout.Migrations
 
                     b.HasIndex("TeamId");
 
-                    b.ToTable("CompetitionEuropeanQualifiedTeams");
+                    b.ToTable("CompetitionEuropeanQualifiedTeam");
                 });
 
             modelBuilder.Entity("TheDugout.Models.Competitions.CompetitionPromotedTeam", b =>
@@ -254,7 +257,7 @@ namespace TheDugout.Migrations
 
                     b.HasIndex("TeamId");
 
-                    b.ToTable("CompetitionPromotedTeams");
+                    b.ToTable("CompetitionPromotedTeam");
                 });
 
             modelBuilder.Entity("TheDugout.Models.Competitions.CompetitionRelegatedTeam", b =>
@@ -282,7 +285,7 @@ namespace TheDugout.Migrations
 
                     b.HasIndex("TeamId");
 
-                    b.ToTable("CompetitionRelegatedTeams");
+                    b.ToTable("CompetitionRelegatedTeam");
                 });
 
             modelBuilder.Entity("TheDugout.Models.Competitions.CompetitionSeasonResult", b =>
@@ -327,7 +330,7 @@ namespace TheDugout.Migrations
 
                     b.HasIndex("SeasonId");
 
-                    b.ToTable("CompetitionSeasonResults");
+                    b.ToTable("CompetitionSeasonResult");
                 });
 
             modelBuilder.Entity("TheDugout.Models.Competitions.EuropeanCup", b =>
@@ -2380,7 +2383,8 @@ namespace TheDugout.Migrations
                     b.HasOne("TheDugout.Models.Game.GameSave", "GameSave")
                         .WithMany("CompetitionEuropeanQualifiedTeams")
                         .HasForeignKey("GameSaveId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("TheDugout.Models.Teams.Team", "Team")
                         .WithMany()

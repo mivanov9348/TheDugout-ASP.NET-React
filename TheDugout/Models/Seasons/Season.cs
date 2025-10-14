@@ -1,6 +1,5 @@
 ﻿namespace TheDugout.Models.Seasons
 {
-    using TheDugout.Models.Common;
     using TheDugout.Models.Competitions;
     using TheDugout.Models.Cups;
     using TheDugout.Models.Fixtures;
@@ -27,6 +26,8 @@
         public ICollection<EuropeanCup> EuropeanCups { get; set; } = new List<EuropeanCup>();
         public ICollection<Cup> Cups { get; set; } = new List<Cup>();
         public ICollection<Competition> Competitions { get; set; } = new List<Competition>();
+        public ICollection<CompetitionSeasonResult> CompetitionSeasonResults { get; set; } = new List<CompetitionSeasonResult>();
+     
     }
 
 }

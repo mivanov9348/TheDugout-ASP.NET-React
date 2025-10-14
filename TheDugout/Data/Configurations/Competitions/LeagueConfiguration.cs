@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using TheDugout.Models.Common;
+using TheDugout.Models.Competitions;
 using TheDugout.Models.Leagues;
 
 namespace TheDugout.Data.Configurations

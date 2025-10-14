@@ -1,9 +1,9 @@
-﻿using TheDugout.Models.Common;
-using TheDugout.Models.Game;
-using TheDugout.Models.Seasons;
-
-namespace TheDugout.Models.Cups
+﻿namespace TheDugout.Models.Cups
 {
+    using TheDugout.Models.Common;
+    using TheDugout.Models.Competitions;
+    using TheDugout.Models.Game;
+    using TheDugout.Models.Seasons;
     public class Cup
     {
         public int Id { get; set; }

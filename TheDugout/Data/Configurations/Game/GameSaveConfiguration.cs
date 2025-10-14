@@ -58,6 +58,26 @@
                    .HasForeignKey(c => c.GameSaveId)
                    .OnDelete(DeleteBehavior.Restrict);
 
+            builder.HasMany(gs=>gs.CompetitionSeasonResults)
+                   .WithOne(csr => csr.GameSave)
+                   .HasForeignKey(csr => csr.GameSaveId)
+                   .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasMany(gs=>gs.CompetitionPromotedTeams)
+                   .WithOne(cpt => cpt.GameSave)
+                   .HasForeignKey(cpt => cpt.GameSaveId)
+                   .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasMany(gs=>gs.CompetitionRelegatedTeams)
+                   .WithOne(crt => crt.GameSave)
+                   .HasForeignKey(crt => crt.GameSaveId)
+                   .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasMany(gs=>gs.CompetitionEuropeanQualifiedTeams)
+                   .WithOne(cqt => cqt.GameSave)
+                   .HasForeignKey(cqt => cqt.GameSaveId)
+                   .OnDelete(DeleteBehavior.Restrict);
+
             // League
             builder.HasMany(gs => gs.Leagues)
                    .WithOne(l => l.GameSave)

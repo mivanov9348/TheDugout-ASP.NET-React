@@ -11,13 +11,13 @@
     {
         private readonly DugoutDbContext _context;
         private readonly IPlayerGenerationService _playerGenerationService;
-        private readonly IFinanceService _financeService;
+        private readonly IAgencyFinanceService _agencyFinanceService;
         private readonly Random _rng = new();
-        public AgencyService(DugoutDbContext context, IPlayerGenerationService playerGenerationService, IFinanceService financeService)
+        public AgencyService(DugoutDbContext context, IPlayerGenerationService playerGenerationService, IAgencyFinanceService agencyFinanceService)
         {
             _context = context;
             _playerGenerationService = playerGenerationService;
-            _financeService = financeService;
+            _agencyFinanceService = agencyFinanceService;
         }
         public async Task InitializeAgenciesForGameSaveAsync(GameSave save, CancellationToken ct = default)
         {
@@ -59,7 +59,7 @@
 
             foreach (var agency in agencies)
             {
-                await _financeService.InitializeAgencyFundsAsync(save, agency);
+                await _agencyFinanceService.InitializeAgencyFundsAsync(save, agency);
             }
 
             foreach (var agency in agencies)
@@ -75,12 +75,8 @@
                     freeAgents.Add(player);
                     _context.Players.Add(player);
                 }
-
-                
             }
             await _context.SaveChangesAsync(ct);
-
         }
     }
-
 }

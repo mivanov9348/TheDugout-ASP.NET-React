@@ -12,16 +12,16 @@
     public class ClubToClubTransferService : IClubToClubTransferService
     {
         private readonly DugoutDbContext _context;
-        private readonly IFinanceService _financeService;
+        private readonly ITeamFinanceService _teamFinanceService;
         private readonly IMessageOrchestrator _messageOrchestrator;
 
         public ClubToClubTransferService(
             DugoutDbContext context,
-            IFinanceService financeService,
+            ITeamFinanceService teamFinanceService,
             IMessageOrchestrator messageOrchestrator)
         {
             _context = context;
-            _financeService = financeService;
+            _teamFinanceService = teamFinanceService;
             _messageOrchestrator = messageOrchestrator;
         }
 
@@ -116,7 +116,7 @@
                 return (false, "Bank not found.");
 
             // 💸 1️⃣ Финансова операция с 10% такса за банката
-            var (ok, err) = await _financeService.ClubToClubWithFeeAsync(
+            var (ok, err) = await _teamFinanceService.ClubToClubWithFeeAsync(
                 buyer,
                 seller,
                 bank,

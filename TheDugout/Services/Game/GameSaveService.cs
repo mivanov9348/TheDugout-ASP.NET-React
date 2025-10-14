@@ -26,7 +26,8 @@
         private readonly ILeagueFixturesService _leagueFixturesService;
         private readonly IEurocupFixturesService _eurocupFixturesService;
         private readonly IPlayerGenerationService _playerGenerator;
-        private readonly IFinanceService _financeService;
+        private readonly IBankService _bankService;
+        private readonly ITeamFinanceService _teamFinanceService;
         private readonly ITeamGenerationService _teamGenerator;
         private readonly ITeamPlanService _teamPlanService;
         private readonly IEuropeanCupService _europeanCupService;
@@ -40,7 +41,8 @@
             ILeagueService leagueGenerator,
             ISeasonGenerationService seasonGenerator,
             IPlayerGenerationService playerGenerator,
-            IFinanceService financeService,
+            IBankService bankService,
+            ITeamFinanceService teamFinanceService,
             ITeamPlanService teamPlanService,
             IEuropeanCupService europeanCupService,
             ITeamGenerationService teamGenerator,
@@ -56,7 +58,8 @@
             _leagueGenerator = leagueGenerator;
             _seasonGenerator = seasonGenerator;
             _playerGenerator = playerGenerator;
-            _financeService = financeService;
+            _bankService = bankService;
+            _teamFinanceService = teamFinanceService;
             _teamPlanService = teamPlanService;
             _europeanCupService = europeanCupService;
             _teamGenerator = teamGenerator;
@@ -184,7 +187,11 @@ WHERE T.{Quote("GameSaveId")} = @p0;";
             "EuropeanCups",
             "Cups",
             "Agencies",
-            "Banks"
+            "Banks",
+            "CompetitionEuropeanQualifiedTeams",
+            "CompetitionPromotedTeams",
+            "CompetitionRelegatedTeams",
+            "CompetitionSeasonResults"
         };
 
                 foreach (var table in tables)
@@ -262,7 +269,7 @@ WHERE T.{Quote("GameSaveId")} = @p0;";
 
                 // 2️⃣ Банка / финанси
                 var initialBalance = await _gameSettings.GetIntAsync("bankInitial") ?? 200000000;
-                await _financeService.CreateBankAsync(gameSave, initialBalance);
+                await _bankService.CreateBankAsync(gameSave, initialBalance);
                 await _context.SaveChangesAsync(ct);
                 LogStep("Created Bank and Finance data");
 
@@ -289,7 +296,7 @@ WHERE T.{Quote("GameSaveId")} = @p0;";
                 await _context.SaveChangesAsync(ct);
                 LogStep("Generated Independent Teams");
 
-                await _financeService.InitializeClubFundsAsync(gameSave, leagues);
+                await _teamFinanceService.InitializeClubFundsAsync(gameSave, leagues);
                 LogStep("Initialized Club Funds");
 
                 // 6️⃣ European Cups (ако има шаблони)

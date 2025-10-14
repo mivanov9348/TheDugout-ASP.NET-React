@@ -80,6 +80,7 @@
                     TeamId = p.TeamId,
                     Country = p.Country != null ? p.Country.Name : "",
                     Position = p.Position != null ? p.Position.Name : "",
+                    p.AvatarFileName,
                     p.Age,
                     p.Price
                 })

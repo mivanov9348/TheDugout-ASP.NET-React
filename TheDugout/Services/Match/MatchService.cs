@@ -2,7 +2,7 @@
 using System.Text.Json;
 using TheDugout;
 using TheDugout.Data;
-using TheDugout.Models.Common;
+using TheDugout.Models.Competitions;
 using TheDugout.Models.Enums;
 using TheDugout.Models.Fixtures;
 using TheDugout.Models.Game;

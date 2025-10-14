@@ -1,9 +1,7 @@
-﻿using TheDugout.Models.Common;
-using TheDugout.Models.Game;
-using TheDugout.Models.Seasons;
-
-namespace TheDugout.Models.Competitions
+﻿namespace TheDugout.Models.Competitions
 {
+    using TheDugout.Models.Game;
+    using TheDugout.Models.Seasons;
     public class EuropeanCup
     {
         public int Id { get; set; }

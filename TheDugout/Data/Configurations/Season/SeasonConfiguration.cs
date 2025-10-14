@@ -44,7 +44,12 @@
                    .HasForeignKey(c => c.SeasonId)
                    .OnDelete(DeleteBehavior.Restrict);
 
-            // ДОБАВИ ТЕЗИ ЛИПСВАЩИ ВРЪЗКИ:
+            builder.HasMany(s => s.CompetitionSeasonResults)
+                     .WithOne(csr => csr.Season)
+                     .HasForeignKey(csr => csr.SeasonId)
+                     .OnDelete(DeleteBehavior.Restrict);           
+                 
+
             builder.HasMany(s => s.Leagues)
                    .WithOne(l => l.Season)
                    .HasForeignKey(l => l.SeasonId)

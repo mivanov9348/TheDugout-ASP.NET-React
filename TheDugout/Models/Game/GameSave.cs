@@ -1,6 +1,5 @@
 ﻿namespace TheDugout.Models.Game
 {
-    using TheDugout.Models.Common;
     using TheDugout.Models.Competitions;
     using TheDugout.Models.Cups;
     using TheDugout.Models.Facilities;
@@ -66,6 +65,10 @@
 
         // Competitions
         public ICollection<Competition> Competitions { get; set; } = new List<Competition>();
+        public ICollection<CompetitionSeasonResult> CompetitionSeasonResults { get; set; } = new List<CompetitionSeasonResult>();
+        public ICollection<CompetitionPromotedTeam> CompetitionPromotedTeams { get; set; } = new List<CompetitionPromotedTeam>();
+        public ICollection<CompetitionRelegatedTeam> CompetitionRelegatedTeams { get; set; } = new List<CompetitionRelegatedTeam>();
+        public ICollection<CompetitionEuropeanQualifiedTeam> CompetitionEuropeanQualifiedTeams { get; set; } = new List<CompetitionEuropeanQualifiedTeam>();
 
         // Cups
         public ICollection<Cup> Cups { get; set; } = new List<Cup>();

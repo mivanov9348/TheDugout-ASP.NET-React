@@ -61,6 +61,10 @@
         public DbSet<Transfer> Transfers { get; set; }
         public DbSet<TransferOffer> TransferOffers { get; set; }
         public DbSet<Competition> Competitions { get; set; }
+        public DbSet<CompetitionSeasonResult> CompetitionSeasonResults { get; set; }
+        public DbSet<CompetitionRelegatedTeam> CompetitionRelegatedTeams { get; set; }
+        public DbSet<CompetitionPromotedTeam> CompetitionPromotedTeams { get; set; }
+        public DbSet<CompetitionEuropeanQualifiedTeam> CompetitionEuropeanQualifiedTeams { get; set; }
         public DbSet<EuropeanCup> EuropeanCups { get; set; }
         public DbSet<EuropeanCupPhase> EuropeanCupPhases { get; set; }
         public DbSet<EuropeanCupTeam> EuropeanCupTeams { get; set; }

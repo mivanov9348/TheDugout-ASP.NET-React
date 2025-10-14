@@ -15,4 +15,10 @@
         public int PlayerId { get; set; }
         public decimal OfferAmount { get; set; }
     }
+
+    public class ReleasePlayerRequest
+    {
+        public int GameSaveId { get; set; }
+        public int PlayerId { get; set; }
+    }
 }

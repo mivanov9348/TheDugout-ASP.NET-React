@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Loader2, Filter } from "lucide-react";
 import { Link } from "react-router-dom";
 import Swal from "sweetalert2";
-
+import PlayerAvatar from "../components/PlayerAvatar";
 export default function SearchPlayers({ gameSaveId }) {
   const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -24,7 +24,6 @@ export default function SearchPlayers({ gameSaveId }) {
     pageSize: 50,
   });
 
-  // 🟢 Зареждаме играчите
   useEffect(() => {
     fetchPlayers();
   }, [filters]);
@@ -51,13 +50,11 @@ export default function SearchPlayers({ gameSaveId }) {
     }
   };
 
-  // 🟢 Зареждаме твоя отбор (UserTeamId)
   useEffect(() => {
     const fetchUserTeam = async () => {
       if (!gameSaveId) return;
       try {
         const res = await fetch(`/api/transfers/userteam/${gameSaveId}`);
-
         if (!res.ok) throw new Error("Failed to load game save");
         const data = await res.json();
         setUserTeamId(data.userTeamId);
@@ -68,7 +65,6 @@ export default function SearchPlayers({ gameSaveId }) {
     fetchUserTeam();
   }, [gameSaveId]);
 
-  // 🧭 Филтри и сортиране
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFilters({
@@ -87,7 +83,6 @@ export default function SearchPlayers({ gameSaveId }) {
     }));
   };
 
-  // ⚽️ Подписване на свободен агент
   const handleSign = async (playerId, playerName) => {
     if (!gameSaveId) return;
 
@@ -132,7 +127,6 @@ export default function SearchPlayers({ gameSaveId }) {
     }
   };
 
-  // 💰 Изпращане на трансферна оферта
   const handleOffer = async (player) => {
     if (!gameSaveId || !userTeamId) {
       Swal.fire({
@@ -148,8 +142,9 @@ export default function SearchPlayers({ gameSaveId }) {
       html: `
         <div style="text-align: left;">
           <p><b>Team:</b> ${player.team || "Free agent"}</p>
-          <p><b>Current Price:</b> ${player.price ? player.price.toLocaleString() : "-"
-        } €</p>
+          <p><b>Current Price:</b> ${
+            player.price ? player.price.toLocaleString() : "-"
+          } €</p>
           <label style="display:block;margin-top:10px;">Enter your offer (€):</label>
           <input type="number" id="offerAmount" class="swal2-input" placeholder="Enter amount">
         </div>
@@ -202,15 +197,15 @@ export default function SearchPlayers({ gameSaveId }) {
     }
   };
 
-  // 🧾 UI
   return (
     <div className="space-y-4">
-      {/* 🔍 Filters */}
+      {/* Filters */}
       <div className="bg-white p-4 rounded-xl shadow border border-slate-200">
         <h2 className="text-xl font-semibold flex items-center gap-2 mb-4">
           <Filter size={20} /> Player Filters
         </h2>
 
+        {/* Филтри */}
         <div className="grid grid-cols-6 gap-3">
           <input
             type="text"
@@ -255,7 +250,6 @@ export default function SearchPlayers({ gameSaveId }) {
           </label>
         </div>
 
-        {/* 🧮 Age & Price Filters */}
         <div className="grid grid-cols-4 gap-3 mt-4">
           {[
             ["minAge", "Min Age"],
@@ -277,7 +271,7 @@ export default function SearchPlayers({ gameSaveId }) {
         </div>
       </div>
 
-      {/* 📋 Table */}
+      {/* Table */}
       <div className="bg-white rounded-xl shadow border border-slate-200 overflow-hidden">
         {loading ? (
           <div className="flex justify-center items-center h-64 text-slate-500">
@@ -288,6 +282,7 @@ export default function SearchPlayers({ gameSaveId }) {
             <table className="min-w-full text-sm">
               <thead className="bg-slate-100 text-slate-700">
                 <tr>
+                  <th className="px-3 py-2 text-left">Logo</th> {/* 🟢 Новата колона */}
                   {[
                     { key: "name", label: "Name" },
                     { key: "team", label: "Team" },
@@ -304,10 +299,11 @@ export default function SearchPlayers({ gameSaveId }) {
                           ? () => handleSort(col.key)
                           : undefined
                       }
-                      className={`px-4 py-2 font-medium text-left ${col.key !== "actions"
+                      className={`px-4 py-2 font-medium text-left ${
+                        col.key !== "actions"
                           ? "cursor-pointer hover:bg-slate-200"
                           : ""
-                        }`}
+                      }`}
                     >
                       {col.label}
                       {filters.sortBy === col.key && (
@@ -319,11 +315,12 @@ export default function SearchPlayers({ gameSaveId }) {
                   ))}
                 </tr>
               </thead>
+
               <tbody>
                 {players.length === 0 ? (
                   <tr>
                     <td
-                      colSpan="7"
+                      colSpan="8"
                       className="text-center text-slate-500 py-6 italic"
                     >
                       No players found.
@@ -335,6 +332,15 @@ export default function SearchPlayers({ gameSaveId }) {
                       key={p.id}
                       className="border-t hover:bg-slate-50 transition-colors"
                     >
+                      {/* 🟢 Лого (аватар) */}
+                      <td className="px-3 py-2">
+                        <PlayerAvatar
+                          playerName={p.name}
+                          imageFileName={p.аvatarFileName}
+                          className="w-8 h-8"
+                        />
+                      </td>
+
                       <td className="px-4 py-2">
                         <Link
                           to={`/player/${p.id}`}
@@ -355,10 +361,11 @@ export default function SearchPlayers({ gameSaveId }) {
                           <button
                             disabled={!userTeamId}
                             onClick={() => handleOffer(p)}
-                            className={`px-3 py-1 rounded text-white text-xs ${userTeamId
+                            className={`px-3 py-1 rounded text-white text-xs ${
+                              userTeamId
                                 ? "bg-blue-600 hover:bg-blue-700"
                                 : "bg-gray-400 cursor-not-allowed"
-                              }`}
+                            }`}
                           >
                             Offer
                           </button>
@@ -366,14 +373,15 @@ export default function SearchPlayers({ gameSaveId }) {
                           <button
                             disabled={!userTeamId}
                             onClick={() => handleSign(p.id, p.name)}
-                            className={`px-3 py-1 rounded text-white text-xs ${userTeamId
+                            className={`px-3 py-1 rounded text-white text-xs ${
+                              userTeamId
                                 ? "bg-emerald-600 hover:bg-emerald-700"
                                 : "bg-gray-400 cursor-not-allowed"
-                              }`}
+                            }`}
                           >
                             Sign
                           </button>
-                        )}  
+                        )}
                       </td>
                     </tr>
                   ))
@@ -381,7 +389,6 @@ export default function SearchPlayers({ gameSaveId }) {
               </tbody>
             </table>
 
-            {/* Pagination */}
             <div className="flex justify-between items-center p-3 bg-slate-50 border-t text-sm">
               <span>
                 Showing {players.length} of {totalCount} players

@@ -1,6 +1,6 @@
 ﻿namespace TheDugout.Models.Players
 {
-    using TheDugout.Models.Common;
+    using TheDugout.Models.Competitions;
     using TheDugout.Models.Game;
     using TheDugout.Models.Seasons;
     public class PlayerSeasonStats

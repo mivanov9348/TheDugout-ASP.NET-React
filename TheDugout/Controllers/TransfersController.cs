@@ -94,6 +94,28 @@
             return Ok(new { success = true });
         }
 
+        [HttpPost("release")]
+        public async Task<IActionResult> ReleasePlayer([FromBody] ReleasePlayerRequest request)
+        {
+            var gameSave = await _context.GameSaves.FirstOrDefaultAsync(g => g.Id == request.GameSaveId);
+            if (gameSave == null)
+                return NotFound(new { success = false, error = "Game save not found." });
+
+            if (gameSave.UserTeamId == null)
+                return BadRequest(new { success = false, error = "This save has no assigned team." });
+
+            var (success, errorMessage) = await _freeAgentTransferService.ReleasePlayerAsync(
+                request.GameSaveId,
+                gameSave.UserTeamId.Value,
+                request.PlayerId
+            );
+
+            if (!success)
+                return BadRequest(new { success = false, error = errorMessage });
+
+            return Ok(new { success = true });
+        }
+
         [HttpPost("offer")]
         public async Task<IActionResult> SendTransferOffer([FromBody] TransferOfferRequest request)
         {

@@ -9,14 +9,14 @@
     public class YouthAcademyService : IYouthAcademyService
     {
         private readonly DugoutDbContext _context;
-        private readonly IFinanceService _financeService;
+        private readonly ITransactionService _transactionService;
         private readonly string _academyLevelsPath = "Data/SeedFiles/youthAcademyTalent.json";
         private readonly string _facilityCostsPath = "Data/SeedFiles/facilitiesUpgradeCost.json";
 
-        public YouthAcademyService(DugoutDbContext context, IFinanceService financeService)
+        public YouthAcademyService(DugoutDbContext context, ITransactionService transactionService)
         {
             _context = context;
-            _financeService = financeService;
+            _transactionService = transactionService;
         }
         public async Task<YouthAcademy> AddYouthAcademyAsync(int teamId)
         {
@@ -84,7 +84,7 @@
 
             // Finance
             var bank = await _context.Banks.FirstAsync();
-            var transaction = await _financeService.ClubToBankAsync(
+            var transaction = await _transactionService.ClubToBankAsync(
                 team,
                 bank,
                 upgradeCost,

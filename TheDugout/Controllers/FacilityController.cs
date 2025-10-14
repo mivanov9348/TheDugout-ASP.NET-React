@@ -1,11 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using TheDugout.Data;
-using TheDugout.DTOs.Facility;
-using TheDugout.Services.Facilities;
-
-namespace TheDugout.Controllers
+﻿namespace TheDugout.Controllers
 {
+    using Microsoft.AspNetCore.Mvc;
+    using Microsoft.EntityFrameworkCore;
+    using TheDugout.Data;
+    using TheDugout.DTOs.Facility;
+    using TheDugout.Services.Facilities;
+
     [ApiController]
     [Route("api/[controller]")]
     public class FacilityController : ControllerBase

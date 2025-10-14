@@ -6,21 +6,18 @@
     using TheDugout.Models.Game;
     using TheDugout.Models.Teams;
     using TheDugout.Services.Facilities;
-    using TheDugout.Services.Finance;
     using TheDugout.Services.Players;
     public class TeamGenerationService : ITeamGenerationService
     {
         private readonly IPlayerGenerationService _playerGenerator;
-        private readonly IFinanceService _financeService;
         private readonly IStadiumService _stadiumService;
         private readonly ITrainingFacilitiesService _trainingService;
         private readonly IYouthAcademyService _academyService;
         private readonly DugoutDbContext _context;
 
-        public TeamGenerationService(IPlayerGenerationService playerGenerator, IFinanceService financeService, DugoutDbContext context, IStadiumService stadiumService, ITrainingFacilitiesService trainingFacilitiesService, IYouthAcademyService youthAcademyService)
+        public TeamGenerationService(IPlayerGenerationService playerGenerator,  DugoutDbContext context, IStadiumService stadiumService, ITrainingFacilitiesService trainingFacilitiesService, IYouthAcademyService youthAcademyService)
         {
             _playerGenerator = playerGenerator;
-            _financeService = financeService;
             _context = context;
             _stadiumService = stadiumService;
             _trainingService = trainingFacilitiesService;

@@ -1,6 +1,6 @@
 ﻿namespace TheDugout.Models.Matches
 {
-    using TheDugout.Models.Common;
+    using TheDugout.Models.Competitions;
     using TheDugout.Models.Fixtures;
     using TheDugout.Models.Game;
     using TheDugout.Models.Players;

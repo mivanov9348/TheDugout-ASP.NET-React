@@ -3,6 +3,7 @@
     using Microsoft.EntityFrameworkCore;
     using TheDugout.Data;
     using TheDugout.Models.Common;
+    using TheDugout.Models.Competitions;
     using TheDugout.Models.Enums;
     using TheDugout.Models.Game;
     using TheDugout.Models.Leagues;

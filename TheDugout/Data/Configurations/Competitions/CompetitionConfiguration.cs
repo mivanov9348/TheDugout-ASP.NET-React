@@ -1,9 +1,8 @@
-﻿namespace TheDugout.Data.Configurations.Common
+﻿namespace TheDugout.Data.Configurations.Competitions
 {
     using Microsoft.EntityFrameworkCore;
     using Microsoft.EntityFrameworkCore.Metadata.Builders;
     using TheDugout.Controllers;
-    using TheDugout.Models.Common;
     using TheDugout.Models.Competitions;
     using TheDugout.Models.Cups;
     using TheDugout.Models.Leagues;

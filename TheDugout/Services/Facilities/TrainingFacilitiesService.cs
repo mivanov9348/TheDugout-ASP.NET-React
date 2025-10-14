@@ -10,13 +10,13 @@
     public class TrainingFacilitiesService : ITrainingFacilitiesService
     {
         private readonly DugoutDbContext _context;
-        private readonly IFinanceService _financeService;
+        private readonly ITransactionService _transactionService;
         private readonly string _trainingLevelsPath = "Data/SeedFiles/trainingQuality.json";
         private readonly string _facilityCostsPath = "Data/SeedFiles/facilitiesUpgradeCost.json";
-        public TrainingFacilitiesService(DugoutDbContext context, IFinanceService financeService)
+        public TrainingFacilitiesService(DugoutDbContext context, ITransactionService transactionService)
         {
             _context = context;
-            _financeService = financeService;
+            _transactionService = transactionService;
         }
         public async Task<TrainingFacility> AddTrainingFacilityAsync(int teamId)
         {
@@ -79,7 +79,7 @@
             var newLevelData = levels.TrainingLevels[(currentLevel + 1).ToString()];
 
             var bank = await _context.Banks.FirstAsync();
-            var transaction = await _financeService.ClubToBankAsync(
+            var transaction = await _transactionService.ClubToBankAsync(
                 team,
                 bank,
                 upgradeCost,
