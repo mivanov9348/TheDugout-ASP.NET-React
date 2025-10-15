@@ -5,6 +5,5 @@
     {
         Task<bool> AreAllCompetitionsFinishedAsync(int seasonId);
         Task<List<CompetitionSeasonResult>> GenerateSeasonResultAsync(int seasonId);
-        Task ProcessPromotionAndRelegationAsync(int seasonId);
     }
 }

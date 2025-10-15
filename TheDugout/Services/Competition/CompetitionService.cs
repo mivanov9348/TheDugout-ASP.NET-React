@@ -3,12 +3,12 @@
     using Microsoft.EntityFrameworkCore;
     using TheDugout.Data;
     using TheDugout.Models.Competitions;
+    using TheDugout.Models.Enums;
     using TheDugout.Models.Seasons;
     using TheDugout.Services.Competition.Interfaces;
     using TheDugout.Services.Cup.Interfaces;
     using TheDugout.Services.EuropeanCup.Interfaces;
     using TheDugout.Services.League.Interfaces;
-
     public class CompetitionService : ICompetitionService
     {
         private readonly DugoutDbContext _context;
@@ -34,35 +34,60 @@
 
             var results = await Task.WhenAll(tasks);
             return results.All(r => r);
-
         }
-
-        // Генерира финални резултати за дадено състезание
         public async Task<List<CompetitionSeasonResult>> GenerateSeasonResultAsync(int seasonId)
         {
+            // 1️⃣ Взимаме резултатите от всички типове турнири
             var leagueResults = await _leagueService.GenerateLeagueResultsAsync(seasonId);
             var cupResults = await _cupService.GenerateCupResultsAsync(seasonId);
             var euroResults = await _euroService.GenerateEuropeanCupResultsAsync(seasonId);
 
+            // Обединяваме всички резултати
             var allResults = new List<CompetitionSeasonResult>();
             allResults.AddRange(leagueResults);
             allResults.AddRange(cupResults);
             allResults.AddRange(euroResults);
 
-            return allResults;
-        }
+            // 2️⃣ За всеки турнир намираме топ голмайстора и създаваме награда
+            foreach (var result in allResults)
+            {
+                var competitionId = result.CompetitionId;
+                var competition = await _context.Competitions
+                    .FirstOrDefaultAsync(c => c.Id == competitionId);
 
-        // Управлява промоции и изпадания след приключване на сезона
-        public async Task ProcessPromotionAndRelegationAsync(int seasonId)
-        {
-            // TODO: 
-            // 1️⃣ Извлечи всички лиги в сезона
-            // 2️⃣ Намери завършилите (IsFinished = true)
-            // 3️⃣ Извикай LeagueResultBuilder → връща резултати (кой изпада/кой се качва)
-            // 4️⃣ Актуализирай следващия сезон:
-            //     - премести отборите между лиги
-            //     - създай CompetitionSeasonResult записи
-            throw new NotImplementedException();
-        }
+                if (competition == null) continue;
+
+                var topScorer = await _context.PlayerSeasonStats
+                    .Include(p => p.Player)
+                    .Where(p => p.SeasonId == seasonId && p.CompetitionId == competition.Id)
+                    .OrderByDescending(p => p.Goals)
+                    .ThenBy(p => p.Player!.LastName)
+                    .FirstOrDefaultAsync();
+
+                if (topScorer != null && topScorer.Goals > 0)
+                {
+                    var award = new CompetitionAward
+                    {
+                        AwardType = CompetitionAwardType.TopScorer,
+                        PlayerId = topScorer.PlayerId!.Value,
+                        Value = topScorer.Goals,
+                        CompetitionSeasonResult = result,
+                        CompetitionId = competition.Id,
+                        GameSaveId = competition.GameSaveId!.Value,
+                        SeasonId = seasonId
+                    };
+
+                    result.Awards.Add(award);
+                    _context.CompetitionAwards.Add(award);
+                }
+
+                _context.CompetitionSeasonResults.Add(result);
+            }
+
+            // 3️⃣ Запазваме всички промени
+            await _context.SaveChangesAsync();
+
+            return allResults;
+        }        
     }
 }

@@ -13,16 +13,17 @@
     using TheDugout.Services.Finance;
     using TheDugout.Services.GameSettings;
     using TheDugout.Services.League.Interfaces;
-    using TheDugout.Services.Players;
+    using TheDugout.Services.Player.Interfaces;
     using TheDugout.Services.Season.Interfaces;
     using TheDugout.Services.Staff;
-    using TheDugout.Services.Team;
+    using TheDugout.Services.Team.Interfaces;
+
     public class GameSaveService : IGameSaveService
     {
         private readonly DugoutDbContext _context;
         private readonly ILogger<GameSaveService> _logger;
         private readonly ILeagueService _leagueGenerator;
-        private readonly ISeasonGenerationService _seasonGenerator;
+        private readonly INewSeasonService _seasonGenerator;
         private readonly ILeagueFixturesService _leagueFixturesService;
         private readonly IEurocupFixturesService _eurocupFixturesService;
         private readonly IPlayerGenerationService _playerGenerator;
@@ -39,7 +40,7 @@
             DugoutDbContext context,
             ILogger<GameSaveService> logger,
             ILeagueService leagueGenerator,
-            ISeasonGenerationService seasonGenerator,
+            INewSeasonService seasonGenerator,
             IPlayerGenerationService playerGenerator,
             IBankService bankService,
             ITeamFinanceService teamFinanceService,
@@ -187,11 +188,12 @@ WHERE T.{Quote("GameSaveId")} = @p0;";
             "EuropeanCups",
             "Cups",
             "Agencies",
-            "Banks",
+            "Banks",            
             "CompetitionEuropeanQualifiedTeams",
             "CompetitionPromotedTeams",
             "CompetitionRelegatedTeams",
-            "CompetitionSeasonResults"
+            "CompetitionSeasonResults",
+            "CompetitionAwards",
         };
 
                 foreach (var table in tables)

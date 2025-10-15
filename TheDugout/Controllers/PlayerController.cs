@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using TheDugout.Services.Interfaces;
+using TheDugout.Services.Player.Interfaces;
 
 namespace TheDugout.Controllers
 {

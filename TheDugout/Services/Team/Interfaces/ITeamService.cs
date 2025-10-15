@@ -1,7 +1,7 @@
 ﻿using TheDugout.DTOs.DtoGameSave;
 using TheDugout.DTOs.Player;
 
-namespace TheDugout.Services.Team
+namespace TheDugout.Services.Team.Interfaces
 {
     public interface ITeamService
     {

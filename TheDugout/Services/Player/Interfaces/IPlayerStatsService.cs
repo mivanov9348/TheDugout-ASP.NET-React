@@ -1,4 +1,4 @@
-﻿namespace TheDugout.Services.Player
+﻿namespace TheDugout.Services.Player.Interfaces
 {
     using TheDugout.Models.Matches;
     using TheDugout.Models.Players;
@@ -8,6 +8,6 @@
         void UpdateStats(MatchEvent matchEvent, PlayerMatchStats stats);
         Task<List<PlayerMatchStats>> EnsureMatchStatsAsync(Match match);
         Task UpdateSeasonStatsAfterMatchAsync(Match match);
-        Task<Dictionary<int, PlayerSeasonStats>> GetTopScorersByCompetitionAsync(int seasonId);
+        Task<List<(int CompetitionId, int PlayerId, int Goals)>> GetTopScorersByCompetitionAsync(int seasonId);
     }
 }

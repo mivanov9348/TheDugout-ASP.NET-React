@@ -1,4 +1,4 @@
-﻿namespace TheDugout.Services.Match
+﻿namespace TheDugout.Services.Match.Interfaces
 {
     public interface IPenaltyShootoutService
     {

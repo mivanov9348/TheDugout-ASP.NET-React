@@ -3,7 +3,8 @@
     using Microsoft.EntityFrameworkCore;
     using TheDugout.Data;
     using TheDugout.DTOs.Player;
-    using TheDugout.Services.Interfaces;
+    using TheDugout.Services.Player.Interfaces;
+
     public class PlayerInfoService : IPlayerInfoService
     {
         private readonly DugoutDbContext _context;

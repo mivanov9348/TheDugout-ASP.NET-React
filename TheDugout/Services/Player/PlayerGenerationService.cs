@@ -12,7 +12,8 @@
     using TheDugout.Models.Players;
     using TheDugout.Models.Staff;
     using TheDugout.Models.Teams;
-    using TheDugout.Services.Team;
+    using TheDugout.Services.Player.Interfaces;
+    using TheDugout.Services.Team.Interfaces;
 
     public class PlayerGenerationService : IPlayerGenerationService
     {

@@ -8,10 +8,11 @@
     using TheDugout.Models.Game;
     using TheDugout.Models.Matches;
     using TheDugout.Services.League.Interfaces;
-    using TheDugout.Services.Match;
-    using TheDugout.Services.Player;
+    using TheDugout.Services.Match.Interfaces;
+    using TheDugout.Services.Player.Interfaces;
     using TheDugout.Services.Standings;
-    using TheDugout.Services.Team;
+    using TheDugout.Services.Team.Interfaces;
+
     public class MatchEngine : IMatchEngine
     {
         private readonly Random _random = new Random();
@@ -85,7 +86,7 @@
         }
         public void PlayNextMinute(Models.Matches.Match match)
         {
-            int increment = _random.Next(1, 6); 
+            int increment = _random.Next(1, 11);
             match.CurrentMinute += increment;
         }
         public void ChangeTurn(Models.Matches.Match match)
@@ -155,21 +156,22 @@
             if (fixture is null) throw new ArgumentNullException(nameof(fixture));
             if (gameSave is null) throw new ArgumentNullException(nameof(gameSave));
 
-            var sw = Stopwatch.StartNew(); // 🕒 стартираме таймера
+            var sw = Stopwatch.StartNew();
 
             var dbFixture = await _context.Fixtures
-                .Include(f => f.HomeTeam).ThenInclude(t => t.Players)
-                .Include(f => f.AwayTeam).ThenInclude(t => t.Players)
-                .Include(f => f.EuropeanCupPhase).ThenInclude(p => p.PhaseTemplate)
-                .FirstOrDefaultAsync(f => f.Id == fixture.Id);
+                            .Include(f => f.HomeTeam).ThenInclude(t => t.Players)
+                            .Include(f => f.AwayTeam).ThenInclude(t => t.Players)
+                            .Include(f => f.EuropeanCupPhase).ThenInclude(p => p.PhaseTemplate)
+                            .FirstOrDefaultAsync(f => f.Id == fixture.Id);
 
             if (dbFixture is null)
                 throw new InvalidOperationException($"Fixture with Id {fixture.Id} not found in DB.");
 
             var match = await _matchService.CreateMatchFromFixtureAsync(dbFixture, gameSave);
+
             match.PlayerStats = await _playerStatsService.EnsureMatchStatsAsync(match);
 
-            int eventCount = 0; // 🧮 броим събитията
+            int eventCount = 0;
 
             while (!IsMatchFinished(match))
             {
@@ -200,7 +202,7 @@
                 var playerStats = match.PlayerStats.FirstOrDefault(s => s.PlayerId == player.Id);
                 if (playerStats != null)
                 {
-                    _playerStatsService.UpdateStats(new Models.Matches.MatchEvent
+                    _playerStatsService.UpdateStats(new MatchEvent
                     {
                         Minute = match.CurrentMinute,
                         Player = player,
@@ -228,23 +230,22 @@
 
             await _standingsDispatcher.UpdateAfterMatchAsync(match.Fixture);
 
-            sw.Stop(); // 🛑 спираме таймера
-            
+            sw.Stop();
+
             return match;
         }
-
-
-        private void UpdateFixtureScore(Models.Matches.Match match, int? currentTeamId, Models.Players.Player player, EventType eventType, EventOutcome outcome)
+        private void UpdateFixtureScore(Match match, int? currentTeamId, Models.Players.Player player, EventType eventType, EventOutcome outcome)
         {
             if (eventType.Code == "SHT" && outcome.Name == "Goal")
             {
-                if (currentTeamId == match.Fixture.HomeTeamId)
+                var fixture = match.Fixture;
+                if (currentTeamId == fixture.HomeTeamId)
                 {
-                    match.Fixture.HomeTeamGoals = (match.Fixture.HomeTeamGoals ?? 0) + 1;
+                    fixture.HomeTeamGoals = (fixture.HomeTeamGoals ?? 0) + 1;
                 }
-                else if (currentTeamId == match.Fixture.AwayTeamId)
+                else if (currentTeamId == fixture.AwayTeamId)
                 {
-                    match.Fixture.AwayTeamGoals = (match.Fixture.AwayTeamGoals ?? 0) + 1;
+                    fixture.AwayTeamGoals = (fixture.AwayTeamGoals ?? 0) + 1;
                 }
             }
         }

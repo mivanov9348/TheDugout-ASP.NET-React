@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TheDugout.Data;
 using TheDugout.DTOs.Team;
-using TheDugout.Services.Team;
+using TheDugout.Services.Team.Interfaces;
 
 [ApiController]
 [Route("api/tactics")]

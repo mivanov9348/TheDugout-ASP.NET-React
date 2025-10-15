@@ -15,7 +15,6 @@ using TheDugout.Services.Facilities;
 using TheDugout.Services.Finance;
 using TheDugout.Services.Fixture;
 using TheDugout.Services.Game;
-using TheDugout.Services.Interfaces;
 using TheDugout.Services.League;
 using TheDugout.Services.Match;
 using TheDugout.Services.MatchEngine;
@@ -36,6 +35,11 @@ using TheDugout.Services.Season.Interfaces;
 using TheDugout.Services.League.Interfaces;
 using TheDugout.Services.Cup.Interfaces;
 using TheDugout.Services.EuropeanCup.Interfaces;
+using TheDugout.Services.Player.Interfaces;
+using TheDugout.Services.Team.Interfaces;
+using TheDugout.Services.Match.Interfaces;
+using TheDugout.Services.Competition.Interfaces;
+using TheDugout.Services.Competition;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -63,7 +67,7 @@ builder.Services.AddScoped<IPlayerGenerationService, PlayerGenerationService>();
 builder.Services.AddScoped<ITeamPlanService, TeamPlanService>();
 builder.Services.AddScoped<ITeamGenerationService, TeamGenerationService>();
 builder.Services.AddScoped<ILeagueService, LeagueService>();
-builder.Services.AddScoped<ISeasonGenerationService, SeasonGenerationService>();
+builder.Services.AddScoped<INewSeasonService, NewSeasonService>();
 builder.Services.AddScoped<IPlayerInfoService, PlayerInfoService>();
 builder.Services.AddScoped<ITeamService, TeamService>();
 builder.Services.AddScoped<IBankService, BankService>();
@@ -102,7 +106,9 @@ builder.Services.AddScoped<IStandingsDispatcherService, StandingsDispatcherServi
 builder.Services.AddScoped<IEuropeanCupStandingService, EuropeanCupStandingService>();
 builder.Services.AddScoped<IPenaltyShootoutService, PenaltyShootoutService>();
 builder.Services.AddScoped<IGameSettingsService, GameSettingsService>();
-
+builder.Services.AddScoped<ICompetitionService, CompetitionService>();
+builder.Services.AddScoped<INewSeasonService, NewSeasonService>();
+builder.Services.AddScoped<IEndSeasonService, EndSeasonService>();
 
 // CORS
 builder.Services.AddCors(options =>

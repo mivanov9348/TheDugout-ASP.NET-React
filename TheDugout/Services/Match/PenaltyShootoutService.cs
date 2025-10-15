@@ -1,8 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TheDugout.Data;
 using TheDugout.Models.Matches;
-using TheDugout.Services.Player;
-using TheDugout.Services.Team;
+using TheDugout.Services.Match.Interfaces;
+using TheDugout.Services.Player.Interfaces;
+using TheDugout.Services.Team.Interfaces;
 
 namespace TheDugout.Services.Match
 {

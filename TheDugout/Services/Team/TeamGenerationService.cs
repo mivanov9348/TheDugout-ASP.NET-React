@@ -6,7 +6,9 @@
     using TheDugout.Models.Game;
     using TheDugout.Models.Teams;
     using TheDugout.Services.Facilities;
-    using TheDugout.Services.Players;
+    using TheDugout.Services.Player.Interfaces;
+    using TheDugout.Services.Team.Interfaces;
+
     public class TeamGenerationService : ITeamGenerationService
     {
         private readonly IPlayerGenerationService _playerGenerator;

@@ -2,7 +2,7 @@
 using TheDugout.Models.Players;
 using TheDugout.Models.Staff;
 
-namespace TheDugout.Services.Players
+namespace TheDugout.Services.Player.Interfaces
 {
     public interface IPlayerGenerationService
     {

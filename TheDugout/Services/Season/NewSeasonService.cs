@@ -6,17 +6,16 @@
     using TheDugout.Models.Seasons;
     using TheDugout.Services.Season.Interfaces;
 
-    public class SeasonGenerationService : ISeasonGenerationService
+    public class NewSeasonService : INewSeasonService
     {
         private readonly DugoutDbContext _context;
-        public SeasonGenerationService(DugoutDbContext context)
+        public NewSeasonService(DugoutDbContext context)
         {
             _context = context;
         }
-
-        public async Task<Models.Seasons.Season> GenerateSeason(GameSave gameSave, DateTime startDate)
+        public async Task<Season> GenerateSeason(GameSave gameSave, DateTime startDate)
         {
-            var season = new Models.Seasons.Season
+            var season = new Season
             {
                 GameSaveId = gameSave.Id,
                 StartDate = startDate,
@@ -25,15 +24,15 @@
                 IsActive = true
             };
 
-            // 1. Запиши сезона в базата
+            // Save the new season to get its ID
             _context.Seasons.Add(season);
             await _context.SaveChangesAsync();
 
-            // 2. Актуализирай CurrentSeasonId в GameSave
+            // Update the GameSave with the new season ID
             gameSave.CurrentSeasonId = season.Id;
             await _context.SaveChangesAsync();
 
-            // 3. Създай събитията за сезона
+            // Create season events
             var events = new List<SeasonEvent>();
             var currentDate = season.StartDate;
 
@@ -56,8 +55,6 @@
 
             return season;
         }
-
-
         private SeasonEventType GetEventType(DateTime date, DateTime seasonStart, DateTime seasonEnd)
         {
             if (date.Date == seasonStart.Date)
@@ -66,16 +63,16 @@
             if (date.Date == seasonEnd.Date)
                 return SeasonEventType.EndOfSeason;
 
-            // първите 7 дни трансферен прозорец
+            // First 7 days of the season = transfer window
             if (date >= seasonStart && date < seasonStart.AddDays(7))
                 return SeasonEventType.TransferWindow;
 
-            // средата на сезона = 7 дни трансферен прозорец
+            // Middle 7 days of the season = transfer window
             var midSeason = seasonStart.AddDays((seasonEnd - seasonStart).Days / 2);
             if (date >= midSeason && date < midSeason.AddDays(7))
                 return SeasonEventType.TransferWindow;
 
-            // седмични събития
+            // Weekly events
             return date.DayOfWeek switch
             {
                 DayOfWeek.Tuesday => SeasonEventType.EuropeanMatch,
@@ -84,7 +81,6 @@
                 _ => SeasonEventType.TrainingDay
             };
         }
-
         private string GetDescription(DateTime date, DateTime seasonStart, DateTime seasonEnd) =>
             GetEventType(date, seasonStart, seasonEnd) switch
             {

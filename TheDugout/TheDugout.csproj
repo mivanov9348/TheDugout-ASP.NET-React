@@ -461,8 +461,4 @@
     <None Include="wwwroot\Avatars\99.jpg" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Logs\" />
-  </ItemGroup>
-
 </Project>

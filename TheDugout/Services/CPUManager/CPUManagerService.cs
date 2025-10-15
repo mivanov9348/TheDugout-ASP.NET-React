@@ -3,7 +3,7 @@ using TheDugout.Data;
 using TheDugout.Models.Seasons;
 using TheDugout.Models.Teams;
 using TheDugout.Services.CPUManager;
-using TheDugout.Services.Team;
+using TheDugout.Services.Team.Interfaces;
 using TheDugout.Services.Training;
 using TheDugout.Services.Transfer;
 

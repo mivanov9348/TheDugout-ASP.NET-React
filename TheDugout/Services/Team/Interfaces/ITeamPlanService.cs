@@ -3,7 +3,7 @@ using TheDugout.Models.Game;
 using TheDugout.Models.Players;
 using TheDugout.Models.Teams;
 
-namespace TheDugout.Services.Team
+namespace TheDugout.Services.Team.Interfaces
 {
     public interface ITeamPlanService
     {

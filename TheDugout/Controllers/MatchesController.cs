@@ -7,9 +7,8 @@ using TheDugout.DTOs.Match;
 using TheDugout.Models.Enums;
 using TheDugout.Models.Fixtures;
 using TheDugout.Models.Matches;
-using TheDugout.Services.Match;
-using TheDugout.Services.MatchEngine;
-using TheDugout.Services.Player;
+using TheDugout.Services.Match.Interfaces;
+using TheDugout.Services.Player.Interfaces;
 
 [ApiController]
 [Route("api/matches")]
@@ -127,14 +126,6 @@ public class MatchesController : ControllerBase
                 match = await _matchService.CreateMatchFromFixtureAsync(fixture, gameSave);
                 fixture.Matches.Add(match);
             }
-
-            var stats = await _playerStatsService.EnsureMatchStatsAsync(match);
-            if (stats.Any())
-            {
-                _context.PlayerMatchStats.AddRange(stats);
-                await _context.SaveChangesAsync();
-            }
-
             await _matchEngine.SimulateMatchAsync(fixture, gameSave);
 
             match.Status = MatchStatus.Played;

@@ -1,7 +1,9 @@
 ﻿// Services/Interfaces/IPlayerInfoService.cs
+
+// Services/Interfaces/IPlayerInfoService.cs
 using TheDugout.DTOs.Player;
 
-namespace TheDugout.Services.Interfaces
+namespace TheDugout.Services.Player.Interfaces
 {
     public interface IPlayerInfoService
     {

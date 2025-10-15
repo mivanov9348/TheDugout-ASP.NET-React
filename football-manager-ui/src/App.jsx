@@ -13,7 +13,7 @@ import Swal from "sweetalert2";
 
 import Home from "./pages/Home";
 import Inbox from "./pages/Inbox";
-import Calendar from "./pages/Calendar";
+import Calendar from "./pages/Season/Calendar";
 import Squad from "./pages/Squad";
 import Tactics from "./pages/Tactics";
 import Training from "./pages/Training";
@@ -29,6 +29,7 @@ import Facilities from "./pages/Facilities";
 import Match from "./pages/Match";
 import TodayMatches from "./pages/TodayMatches";
 import MatchPreview from "./pages/MatchPreview";
+import SeasonReview from "./pages/Season/SeasonReview";
 
 import Competitions from "./pages/competitions/Competitions";
 import Cup from "./pages/competitions/Cup";
@@ -44,6 +45,7 @@ import CupKnockouts from "./pages/competitions/cup/Knockouts";
 import EuropeGroupStage from "./pages/competitions/europe/GroupStage";
 import EuropeKnockouts from "./pages/competitions/europe/Knockouts";
 import EuropePlayerStats from "./pages/competitions/europe/PlayerStats";
+
 
 // 👉 Context
 import { GameProvider, useGame } from "./context/GameContext";
@@ -471,6 +473,10 @@ function AppInner() {
                         <Route
                           path="/live-match/:fixtureId"
                           element={<MatchPreview />}
+                        />
+                        <Route
+                          path="/season-review"
+                          element={<SeasonReview gameSaveId={currentGameSave?.id} />}
                         />
                         <Route path="/match/:matchId" element={<Match />} />
                         <Route path="*" element={<div>404 Not Found</div>} />

@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using TheDugout.Models.Teams;
 using TheDugout.Models.Game;
 
-namespace TheDugout.Services.Team
+namespace TheDugout.Services.Team.Interfaces
 {
     public interface ITeamGenerationService
     {

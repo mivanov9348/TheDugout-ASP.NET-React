@@ -1,6 +1,6 @@
 ﻿namespace TheDugout.Services.Season.Interfaces
 {
-    public interface ISeasonEndService
+    public interface IEndSeasonService
     {
         Task<bool> ProcessSeasonEndAsync(int seasonId);
     }

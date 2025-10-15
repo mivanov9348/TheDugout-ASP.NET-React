@@ -8,7 +8,8 @@
     using TheDugout.Models.Game;
     using TheDugout.Models.Leagues;
     using TheDugout.Services.League.Interfaces;
-    using TheDugout.Services.Team;
+    using TheDugout.Services.Team.Interfaces;
+
     public class LeagueService : ILeagueService
     {
         private readonly DugoutDbContext _context;

@@ -5,6 +5,7 @@
     using TheDugout.Data;
     using TheDugout.Models.Matches;
     using TheDugout.Models.Players;
+    using TheDugout.Services.Player.Interfaces;
 
     public class PlayerStatsService : IPlayerStatsService
     {
@@ -80,7 +81,6 @@
                     // Тук можеш да добавиш и други събития (асистенции, пасове, дрибъл и т.н.)
             }
         }
-
         /// Check if PlayerMatchStats exist for the match; if not, initialize them
         public async Task<List<PlayerMatchStats>> EnsureMatchStatsAsync(Models.Matches.Match match)
         {
@@ -150,18 +150,23 @@
 
             await _context.SaveChangesAsync();
         }
-        public async Task<Dictionary<int, PlayerSeasonStats>> GetTopScorersByCompetitionAsync(int seasonId)
+        public async Task<List<(int CompetitionId, int PlayerId, int Goals)>> GetTopScorersByCompetitionAsync(int seasonId)
         {
-            return await _context.PlayerSeasonStats
+            var topScorers = await _context.PlayerSeasonStats
                 .Include(p => p.Player)
-                .Include(p => p.Competition)
                 .Where(p => p.SeasonId == seasonId && p.CompetitionId != null)
                 .GroupBy(p => p.CompetitionId!.Value)
                 .Select(g => g
                     .OrderByDescending(x => x.Goals)
                     .ThenBy(x => x.Player!.LastName)
+                    .Select(x => new { x.CompetitionId, x.PlayerId, x.Goals })
                     .First())
-                .ToDictionaryAsync(x => x.CompetitionId!.Value, x => x);
+                .ToListAsync();
+
+            return topScorers
+                .Select(x => (x.CompetitionId!.Value, x.PlayerId!.Value, x.Goals))
+                .ToList();
         }
+
     }
 }

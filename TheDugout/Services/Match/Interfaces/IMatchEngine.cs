@@ -1,7 +1,7 @@
 ﻿using TheDugout.Models.Game;
 using TheDugout.Models.Matches;
 
-namespace TheDugout.Services.MatchEngine
+namespace TheDugout.Services.Match.Interfaces
 {
     public interface IMatchEngine
     {
