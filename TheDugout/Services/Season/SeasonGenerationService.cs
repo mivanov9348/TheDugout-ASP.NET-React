@@ -4,6 +4,7 @@
     using TheDugout.Data;
     using TheDugout.Models.Game;
     using TheDugout.Models.Seasons;
+    using TheDugout.Services.Season.Interfaces;
 
     public class SeasonGenerationService : ISeasonGenerationService
     {
@@ -59,6 +60,12 @@
 
         private SeasonEventType GetEventType(DateTime date, DateTime seasonStart, DateTime seasonEnd)
         {
+            if (date.Date == seasonStart.Date)
+                return SeasonEventType.StartSeason;
+
+            if (date.Date == seasonEnd.Date)
+                return SeasonEventType.EndOfSeason;
+
             // първите 7 дни трансферен прозорец
             if (date >= seasonStart && date < seasonStart.AddDays(7))
                 return SeasonEventType.TransferWindow;
@@ -81,6 +88,8 @@
         private string GetDescription(DateTime date, DateTime seasonStart, DateTime seasonEnd) =>
             GetEventType(date, seasonStart, seasonEnd) switch
             {
+                SeasonEventType.StartSeason => "Start of New Season",
+                SeasonEventType.EndOfSeason => "End of the Season",
                 SeasonEventType.TransferWindow => "Transfer Window",
                 SeasonEventType.ChampionshipMatch => "League Matchday",
                 SeasonEventType.CupMatch => "Cup Match",

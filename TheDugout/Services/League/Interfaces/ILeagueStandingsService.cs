@@ -1,4 +1,4 @@
-﻿namespace TheDugout.Services.League
+﻿namespace TheDugout.Services.League.Interfaces
 {
     public interface ILeagueStandingsService
     {

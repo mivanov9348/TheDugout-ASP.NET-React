@@ -21,6 +21,7 @@
         public ICollection<CompetitionRelegatedTeam> RelegatedTeams { get; set; } = new List<CompetitionRelegatedTeam>();
         public ICollection<CompetitionPromotedTeam> PromotedTeams { get; set; } = new List<CompetitionPromotedTeam>();
         public ICollection<CompetitionEuropeanQualifiedTeam> EuropeanQualifiedTeams { get; set; } = new List<CompetitionEuropeanQualifiedTeam>();
+        public ICollection<CompetitionAward> Awards { get; set; } = new List<CompetitionAward>();
         public string? Notes { get; set; }
     }
 }

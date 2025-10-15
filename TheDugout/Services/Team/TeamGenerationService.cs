@@ -15,7 +15,7 @@
         private readonly IYouthAcademyService _academyService;
         private readonly DugoutDbContext _context;
 
-        public TeamGenerationService(IPlayerGenerationService playerGenerator,  DugoutDbContext context, IStadiumService stadiumService, ITrainingFacilitiesService trainingFacilitiesService, IYouthAcademyService youthAcademyService)
+        public TeamGenerationService(IPlayerGenerationService playerGenerator, DugoutDbContext context, IStadiumService stadiumService, ITrainingFacilitiesService trainingFacilitiesService, IYouthAcademyService youthAcademyService)
         {
             _playerGenerator = playerGenerator;
             _context = context;
@@ -72,13 +72,12 @@
                 stadiums.Add(await _stadiumService.AddStadiumAsync(team.Id));
                 trainings.Add(await _trainingService.AddTrainingFacilityAsync(team.Id));
                 academies.Add(await _academyService.AddYouthAcademyAsync(team.Id));
-            }            
+            }
 
             await _context.SaveChangesAsync();
 
             return teams;
         }
-
         private int CalculateTeamPopularity(Models.Teams.Team team)
         {
             if (team.Players == null || !team.Players.Any())
@@ -94,14 +93,6 @@
 
             return Math.Clamp(popularity, 1, 100);
         }
-
-        private decimal CalculateInitialFunds(int popularity)
-        {
-            const decimal baseAmount = 50_000m;
-            decimal bonus = popularity * 1_000m;
-            return baseAmount + bonus;
-        }
-
         private string GenerateLogoFileName(string teamName)
         {
 
@@ -114,22 +105,22 @@
             return $"{cleanName}.png";
         }
 
-        public async Task<List<Models.Teams.Team>> GenerateIndependentTeamsAsync(GameSave gameSave)
+        public async Task<List<Team>> GenerateIndependentTeamsAsync(GameSave gameSave)
         {
             var templates = await _context.TeamTemplates
-                .Where(tt => tt.LeagueId == null) 
+                .Where(tt => tt.LeagueId == null)
                 .ToListAsync();
 
-            var teams = new List<Models.Teams.Team>();
+            var teams = new List<Team>();
 
             foreach (var tt in templates)
             {
-                var team = new Models.Teams.Team
+                var team = new Team
                 {
                     TemplateId = tt.Id,
                     GameSave = gameSave,
                     GameSaveId = gameSave.Id,
-                    League = null, 
+                    League = null,
                     Name = tt.Name,
                     Abbreviation = tt.Abbreviation,
                     CountryId = tt.CountryId,

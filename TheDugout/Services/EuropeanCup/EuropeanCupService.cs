@@ -6,6 +6,7 @@
     using TheDugout.Models.Competitions;
     using TheDugout.Models.Enums;
     using TheDugout.Models.Fixtures;
+    using TheDugout.Services.EuropeanCup.Interfaces;
     using TheDugout.Services.Fixture;
     public class EuropeanCupService : IEuropeanCupService
     {
@@ -100,8 +101,7 @@
 
             await _eurocupFixturesService.GenerateEuropeanLeaguePhaseFixturesAsync(euroCup.Id, seasonId, ct);
             return euroCup;
-        }
-
+        }        
         public async Task UpdateStandingsForPhaseAsync(int europeanCupPhaseId, CancellationToken ct = default)
         {
             // Recalculate standings from scratch for a cup/phase's fixtures (useful for recompute)
@@ -182,6 +182,118 @@
 
             _context.UpdateRange(ranked);
             await _context.SaveChangesAsync(ct);
+        }
+        public async Task<bool> IsEuropeanCupFinishedAsync(int europeanCupId)
+        {
+            var euroCup = await _context.EuropeanCups
+                .Include(c => c.Phases)
+                    .ThenInclude(p => p.Fixtures)
+                .Include(c => c.Teams)
+                .FirstOrDefaultAsync(c => c.Id == europeanCupId);
+
+            if (euroCup == null)
+                throw new Exception("European Cup not found");
+
+            // Check if the cup has already been marked as finished
+            bool allPhasesFinished = euroCup.Phases?
+                .SelectMany(p => p.Fixtures)
+                .Where(f => f.Status != FixtureStatusEnum.Cancelled)
+                .All(f => f.Status == FixtureStatusEnum.Played) ?? false;
+
+            // Check if only one team is left (not eliminated)
+            bool onlyOneTeamLeft = euroCup.Teams.Count(t => !t.IsEliminated) <= 1;
+
+            // If all phases are finished or only one team is left, mark the cup as finished
+            if ((allPhasesFinished || onlyOneTeamLeft) && !euroCup.IsFinished)
+            {
+                euroCup.IsFinished = true;
+                euroCup.IsActive = false;
+                await _context.SaveChangesAsync();
+            }
+
+            return euroCup.IsFinished;
+        }
+
+        public async Task<List<CompetitionSeasonResult>> GenerateEuropeanCupResultsAsync(int seasonId)
+        {
+            var europeanCups = await _context.EuropeanCups
+                .Include(e => e.Template)
+                .Include(e => e.Phases)
+                    .ThenInclude(p => p.Fixtures)
+                        .ThenInclude(f => f.HomeTeam)
+                .Include(e => e.Phases)
+                    .ThenInclude(p => p.Fixtures)
+                        .ThenInclude(f => f.AwayTeam)
+                .Where(e => e.SeasonId == seasonId && e.IsFinished)
+                .ToListAsync();
+
+            var results = new List<CompetitionSeasonResult>();
+
+            foreach (var euro in europeanCups)
+            {
+                // Намираме последната фаза (финала)
+                var finalPhase = euro.Phases
+                    .OrderByDescending(p => p.PhaseTemplate.Order)
+                    .FirstOrDefault();
+
+                if (finalPhase == null)
+                    continue;
+
+                // Взимаме финалния мач
+                var finalMatch = finalPhase.Fixtures
+                    .Where(f => f.Status == FixtureStatusEnum.Played)
+                    .OrderByDescending(f => f.Date)
+                    .FirstOrDefault();
+
+                if (finalMatch == null)
+                    continue;
+
+                // Определяме шампиона и финалиста по WinnerTeamId
+                int? championTeamId = finalMatch.WinnerTeamId;
+                int? runnerUpTeamId = null;
+
+                if (championTeamId == finalMatch.HomeTeamId)
+                    runnerUpTeamId = finalMatch.AwayTeamId;
+                else if (championTeamId == finalMatch.AwayTeamId)
+                    runnerUpTeamId = finalMatch.HomeTeamId;
+
+                // fallback, ако WinnerTeamId липсва, ползвай головете
+                if (championTeamId == null)
+                {
+                    if (finalMatch.HomeTeamGoals > finalMatch.AwayTeamGoals)
+                    {
+                        championTeamId = finalMatch.HomeTeamId;
+                        runnerUpTeamId = finalMatch.AwayTeamId;
+                    }
+                    else
+                    {
+                        championTeamId = finalMatch.AwayTeamId;
+                        runnerUpTeamId = finalMatch.HomeTeamId;
+                    }
+                }
+
+                // Създаваме резултата
+                var result = new CompetitionSeasonResult
+                {
+                    SeasonId = seasonId,
+                    CompetitionType = CompetitionTypeEnum.EuropeanCup,
+                    CompetitionId = euro.CompetitionId,
+                    GameSaveId = euro.GameSaveId,
+                    ChampionTeamId = championTeamId,
+                    RunnerUpTeamId = runnerUpTeamId,
+                    Notes = $"Еврокупа {euro.Template.Name} - Финал: {finalMatch.HomeTeam?.Name} {finalMatch.HomeTeamGoals}:{finalMatch.AwayTeamGoals} {finalMatch.AwayTeam?.Name}"
+                };
+
+                results.Add(result);
+            }
+
+            if (results.Any())
+            {
+                await _context.CompetitionSeasonResults.AddRangeAsync(results);
+                await _context.SaveChangesAsync();
+            }
+
+            return results;
         }
 
     }

@@ -1,8 +1,8 @@
-﻿using TheDugout.Models.Game;
-using TheDugout.Models.Teams;
-
-namespace TheDugout.Models.Cups
+﻿namespace TheDugout.Models.Cups
 {
+    using TheDugout.Models.Game;
+    using TheDugout.Models.Teams;
+
     public class CupTeam
     {
         public int Id { get; set; }

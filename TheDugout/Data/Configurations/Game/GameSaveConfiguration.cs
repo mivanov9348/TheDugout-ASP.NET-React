@@ -78,6 +78,11 @@
                    .HasForeignKey(cqt => cqt.GameSaveId)
                    .OnDelete(DeleteBehavior.Restrict);
 
+            builder.HasMany(c => c.Awards)
+                    .WithOne(a => a.GameSave)
+                    .HasForeignKey(a => a.GameSaveId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
             // League
             builder.HasMany(gs => gs.Leagues)
                    .WithOne(l => l.GameSave)

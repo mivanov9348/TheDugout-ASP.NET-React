@@ -1,8 +1,7 @@
-﻿using TheDugout.Models.Game;
-using TheDugout.Models.Teams;
-
-namespace TheDugout.Models.Competitions
+﻿namespace TheDugout.Models.Competitions
 {
+    using TheDugout.Models.Game;
+    using TheDugout.Models.Teams;
     public class EuropeanCupStanding
     {
         public int Id { get; set; }

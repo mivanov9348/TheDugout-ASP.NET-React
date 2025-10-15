@@ -10,5 +10,29 @@
   {
     "Key": "SignFreePlayerBankTax",
     "Value": "0.10"
+  },
+  {
+    "Key": "startingGoalkeepers",
+    "Value": "1"
+  },
+  {
+    "Key": "startingDefenders",
+    "Value": "4"
+  },
+  {
+    "Key": "startingMidfielder",
+    "Value": "4"
+  },
+  {
+    "Key": "startingAttackers",
+    "Value": "2"
+  },
+  {
+    "Key": "StartingAny",
+    "Value": "5"
+  },
+  {
+    "Key": "InitialAgencyBudget",
+    "Value": "1000000"
   }
 ]

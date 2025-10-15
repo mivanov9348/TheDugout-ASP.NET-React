@@ -5,7 +5,8 @@ using TheDugout.Models.Enums;
 using TheDugout.Models.Fixtures;
 using TheDugout.Models.Seasons;
 using TheDugout.Services.Fixture;
-using TheDugout.Services.Season;
+using TheDugout.Services.League.Interfaces;
+using TheDugout.Services.Season.Interfaces;
 
 namespace TheDugout.Services.League
 {

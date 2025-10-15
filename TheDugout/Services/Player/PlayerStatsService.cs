@@ -150,6 +150,18 @@
 
             await _context.SaveChangesAsync();
         }
-
+        public async Task<Dictionary<int, PlayerSeasonStats>> GetTopScorersByCompetitionAsync(int seasonId)
+        {
+            return await _context.PlayerSeasonStats
+                .Include(p => p.Player)
+                .Include(p => p.Competition)
+                .Where(p => p.SeasonId == seasonId && p.CompetitionId != null)
+                .GroupBy(p => p.CompetitionId!.Value)
+                .Select(g => g
+                    .OrderByDescending(x => x.Goals)
+                    .ThenBy(x => x.Player!.LastName)
+                    .First())
+                .ToDictionaryAsync(x => x.CompetitionId!.Value, x => x);
+        }
     }
 }

@@ -1,8 +1,8 @@
-﻿using TheDugout.Models.Fixtures;
-using TheDugout.Models.Game;
-
-namespace TheDugout.Models.Competitions
+﻿namespace TheDugout.Models.Competitions
 {
+    using TheDugout.Models.Fixtures;
+    using TheDugout.Models.Game;
+
     public class EuropeanCupPhase
     {
         public int Id { get; set; }

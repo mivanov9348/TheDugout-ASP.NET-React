@@ -3,7 +3,8 @@ using TheDugout.Data;
 using TheDugout.Models.Competitions;
 using TheDugout.Models.Enums;
 using TheDugout.Models.Fixtures;
-using TheDugout.Services.Season;
+using TheDugout.Services.EuropeanCup.Interfaces;
+using TheDugout.Services.Season.Interfaces;
 
 namespace TheDugout.Services.EuropeanCup
 {

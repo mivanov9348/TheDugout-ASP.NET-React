@@ -4,8 +4,9 @@ using TheDugout.Data;
 using TheDugout.Models.Cups;
 using TheDugout.Models.Enums;
 using TheDugout.Models.Fixtures;
+using TheDugout.Services.Cup.Interfaces;
 using TheDugout.Services.Fixture;
-using TheDugout.Services.Season;
+using TheDugout.Services.Season.Interfaces;
 
 namespace TheDugout.Services.Cup
 {

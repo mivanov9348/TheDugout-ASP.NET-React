@@ -1,8 +1,7 @@
-﻿using TheDugout.Models.Fixtures;
-using TheDugout.Models.Game;
-
-namespace TheDugout.Models.Cups
+﻿namespace TheDugout.Models.Cups
 {
+    using TheDugout.Models.Fixtures;
+    using TheDugout.Models.Game;
     public class CupRound
     {
         public int Id { get; set; }

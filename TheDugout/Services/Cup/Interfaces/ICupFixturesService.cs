@@ -1,6 +1,6 @@
 ﻿using TheDugout.Models.Cups;
 
-namespace TheDugout.Services.Cup
+namespace TheDugout.Services.Cup.Interfaces
 {
     public interface ICupFixturesService
     {

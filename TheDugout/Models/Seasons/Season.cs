@@ -16,7 +16,6 @@
         public DateTime EndDate { get; set; }
         public DateTime CurrentDate { get; set; }
         public bool IsActive { get; set; }
-
         public ICollection<SeasonEvent> Events { get; set; } = new List<SeasonEvent>();
         public ICollection<PlayerSeasonStats> PlayerSeasonStats { get; set; } = new List<PlayerSeasonStats>();
         public ICollection<Fixture> Fixtures { get; set; } = new List<Fixture>();
@@ -27,7 +26,6 @@
         public ICollection<Cup> Cups { get; set; } = new List<Cup>();
         public ICollection<Competition> Competitions { get; set; } = new List<Competition>();
         public ICollection<CompetitionSeasonResult> CompetitionSeasonResults { get; set; } = new List<CompetitionSeasonResult>();
-     
+        public ICollection<CompetitionAward> Awards { get; set; } = new List<CompetitionAward>();
     }
-
 }

@@ -3,12 +3,14 @@
     using TheDugout.Models.Game;
     public enum SeasonEventType
     {
+        StartSeason,
         ChampionshipMatch,
         CupMatch,
         EuropeanMatch,
         FriendlyMatch,
         TransferWindow,
         TrainingDay,
+        EndOfSeason,
         Other
     }
     public class SeasonEvent

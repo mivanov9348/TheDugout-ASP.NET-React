@@ -1,7 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
-using TheDugout.Models.Common;
-
-namespace TheDugout.Models.Cups
+﻿namespace TheDugout.Models.Cups
 {
     public class CupTemplate
     {

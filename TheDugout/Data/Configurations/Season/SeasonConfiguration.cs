@@ -47,9 +47,8 @@
             builder.HasMany(s => s.CompetitionSeasonResults)
                      .WithOne(csr => csr.Season)
                      .HasForeignKey(csr => csr.SeasonId)
-                     .OnDelete(DeleteBehavior.Restrict);           
+                     .OnDelete(DeleteBehavior.Restrict);         
                  
-
             builder.HasMany(s => s.Leagues)
                    .WithOne(l => l.Season)
                    .HasForeignKey(l => l.SeasonId)
@@ -69,6 +68,11 @@
                    .WithOne(ts => ts.Season)
                    .HasForeignKey(ts => ts.SeasonId)
                    .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasMany(c => c.Awards)
+                    .WithOne(a => a.Season)
+                    .HasForeignKey(a => a.SeasonId)
+                    .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

@@ -91,7 +91,6 @@
             var activeMatch = matches.FirstOrDefault(m => m.Status == FixtureStatusEnum.Scheduled);
             var hasMatchesToday = matches.Any();
 
-
             return Ok(new
             {
                 gameSave = new

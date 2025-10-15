@@ -32,6 +32,10 @@ using TheDugout.Services.Transfer;
 using TheDugout.Services.User;
 using Microsoft.Extensions.Logging;
 using TheDugout.Services.GameSettings;
+using TheDugout.Services.Season.Interfaces;
+using TheDugout.Services.League.Interfaces;
+using TheDugout.Services.Cup.Interfaces;
+using TheDugout.Services.EuropeanCup.Interfaces;
 
 
 var builder = WebApplication.CreateBuilder(args);

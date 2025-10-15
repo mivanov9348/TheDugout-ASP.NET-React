@@ -20,6 +20,7 @@
         public int TeamsCount { get; set; }     
         public int RoundsCount { get; set; }    
         public bool IsActive { get; set; } = true;
+        public bool IsFinished { get; set; } = false;
         public string? LogoFileName { get; set; }
         public ICollection<CupTeam> Teams { get; set; } = new List<CupTeam>();
         public ICollection<CupRound> Rounds { get; set; } = new List<CupRound>();

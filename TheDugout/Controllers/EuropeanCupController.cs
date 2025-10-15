@@ -5,7 +5,7 @@ using TheDugout.DTOs.Player;
 using TheDugout.Models.Competitions;
 using TheDugout.Models.Matches;
 using TheDugout.Models.Players;
-using TheDugout.Services.EuropeanCup;
+using TheDugout.Services.EuropeanCup.Interfaces;
 
 namespace TheDugout.Controllers
 {

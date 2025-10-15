@@ -1,4 +1,4 @@
-﻿namespace TheDugout.Services.Season
+﻿namespace TheDugout.Services.Season.Interfaces
 {
     public interface ISeasonEventService
     {

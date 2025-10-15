@@ -50,6 +50,11 @@
                      .WithMany(gs => gs.Competitions)
                      .HasForeignKey(c => c.GameSaveId)
                      .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasMany(c => c.Awards)
+                     .WithOne(a => a.Competition)
+                     .HasForeignKey(a => a.CompetitionId)
+                     .OnDelete(DeleteBehavior.Restrict);
         }
 
     }

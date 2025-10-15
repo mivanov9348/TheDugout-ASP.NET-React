@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore;
 using TheDugout.Data;
 using TheDugout.Models.Enums;
 using TheDugout.Models.Fixtures;
-using TheDugout.Services.Cup;
-using TheDugout.Services.EuropeanCup;
-using TheDugout.Services.League;
+using TheDugout.Services.Cup.Interfaces;
+using TheDugout.Services.EuropeanCup.Interfaces;
+using TheDugout.Services.League.Interfaces;
 
 namespace TheDugout.Services.Standings
 {

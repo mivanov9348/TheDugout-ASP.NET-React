@@ -20,8 +20,10 @@
         public EuropeanCup? EuropeanCup { get; set; } = null!;
         public int? EuropeanCupId { get; set; }
         public int? GameSaveId { get; set; }
-        public GameSave GameSave { get; set; }
+        public GameSave GameSave { get; set; } = null!;
         public ICollection<Match> Matches { get; set; } = new List<Match>();
         public ICollection<PlayerMatchStats> PlayerStats { get; set; } = new List<PlayerMatchStats>();
+        public ICollection<CompetitionAward> Awards { get; set; } = new List<CompetitionAward>();
+
     }
 }

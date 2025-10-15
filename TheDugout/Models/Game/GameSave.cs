@@ -14,7 +14,6 @@
     using TheDugout.Models.Teams;
     using TheDugout.Models.Training;
     using TheDugout.Models.Transfers;
-
     public class GameSave
     {
         public int Id { get; set; }
@@ -69,6 +68,7 @@
         public ICollection<CompetitionPromotedTeam> CompetitionPromotedTeams { get; set; } = new List<CompetitionPromotedTeam>();
         public ICollection<CompetitionRelegatedTeam> CompetitionRelegatedTeams { get; set; } = new List<CompetitionRelegatedTeam>();
         public ICollection<CompetitionEuropeanQualifiedTeam> CompetitionEuropeanQualifiedTeams { get; set; } = new List<CompetitionEuropeanQualifiedTeam>();
+        public ICollection<CompetitionAward> Awards { get; set; } = new List<CompetitionAward>();
 
         // Cups
         public ICollection<Cup> Cups { get; set; } = new List<Cup>();

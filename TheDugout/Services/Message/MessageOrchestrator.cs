@@ -1,9 +1,8 @@
-﻿using System.Text.RegularExpressions;
-using TheDugout.Models;
-using TheDugout.Models.Messages;
-
-namespace TheDugout.Services.Message
+﻿namespace TheDugout.Services.Message
 {
+    using System.Text.RegularExpressions;
+    using TheDugout.Models;
+    using TheDugout.Models.Messages;
     public class MessageOrchestrator : IMessageOrchestrator
     {
         private readonly IMessageService _messageService;

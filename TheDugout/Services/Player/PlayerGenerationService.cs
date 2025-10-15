@@ -320,8 +320,6 @@
 
             return Math.Round((decimal)price, 0);
         }
-
-
         public string GetRandomAvatarFileName()
         {
             var randomFile = _avatarFiles[_rng.Next(_avatarFiles.Length)];

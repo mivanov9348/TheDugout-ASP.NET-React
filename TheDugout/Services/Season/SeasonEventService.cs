@@ -3,6 +3,8 @@
     using Microsoft.EntityFrameworkCore;
     using TheDugout.Data;
     using TheDugout.Models.Seasons;
+    using TheDugout.Services.Season.Interfaces;
+
     public class SeasonEventService : ISeasonEventService
     {
         private readonly DugoutDbContext _context;

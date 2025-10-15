@@ -34,6 +34,11 @@
                    .HasForeignKey(csr => csr.RunnerUpTeamId)
                    .OnDelete(DeleteBehavior.Restrict);
 
+            builder.HasMany(c => c.Awards)
+                     .WithOne(a => a.CompetitionSeasonResult)
+                     .HasForeignKey(a => a.CompetitionSeasonResultId)
+                     .OnDelete(DeleteBehavior.Restrict);
+
             builder.Property(csr => csr.CompetitionType)
                    .IsRequired();
 

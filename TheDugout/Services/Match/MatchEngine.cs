@@ -7,7 +7,7 @@
     using TheDugout.Models.Fixtures;
     using TheDugout.Models.Game;
     using TheDugout.Models.Matches;
-    using TheDugout.Services.League;
+    using TheDugout.Services.League.Interfaces;
     using TheDugout.Services.Match;
     using TheDugout.Services.Player;
     using TheDugout.Services.Standings;

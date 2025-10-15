@@ -10,6 +10,7 @@
     using TheDugout.Models.Enums;
     using TheDugout.Models.Game;
     using TheDugout.Models.Matches;
+    using TheDugout.Services.Cup.Interfaces;
     using TheDugout.Services.Fixture;
 
     public class CupService : ICupService
@@ -85,7 +86,128 @@
 
             await _context.SaveChangesAsync();
         }
+        public async Task<bool> IsCupFinishedAsync(int cupId)
+        {
+            // Getting the cup with its rounds and fixtures
+            var cup = await _context.Cups
+                .Include(c => c.Rounds)
+                    .ThenInclude(r => r.Fixtures)
+                .Include(c => c.Teams)
+                .FirstOrDefaultAsync(c => c.Id == cupId);
 
+            if (cup == null)
+                throw new Exception("Cup not found");
 
+            // Check if all rounds are finished
+            bool allRoundsFinished = cup.Rounds
+                .SelectMany(r => r.Fixtures)
+                .Where(f => f.Status != FixtureStatusEnum.Cancelled)
+                .All(f => f.Status == FixtureStatusEnum.Played);
+
+            // Check if only one team is left (not eliminated)
+            bool onlyOneTeamLeft = cup.Teams.Count(t => !t.IsEliminated) <= 1;
+
+            // If either condition is met, mark the cup as finished
+            if ((allRoundsFinished || onlyOneTeamLeft) && !cup.IsFinished)
+            {
+                cup.IsFinished = true;
+                cup.IsActive = false; // Deactivate the cup
+                await _context.SaveChangesAsync();
+            }
+
+            return cup.IsFinished;
+        }
+        public async Task<List<CompetitionSeasonResult>> GenerateCupResultsAsync(int seasonId)
+        {
+            var cups = await _context.Cups
+                .Include(c => c.Country)
+                .Include(c => c.Template)
+                .Include(c => c.Rounds)
+                    .ThenInclude(r => r.Fixtures)
+                        .ThenInclude(f => f.HomeTeam)
+                .Include(c => c.Rounds)
+                    .ThenInclude(r => r.Fixtures)
+                        .ThenInclude(f => f.AwayTeam)
+                .Where(c => c.SeasonId == seasonId && c.IsFinished)
+                .ToListAsync();
+
+            var results = new List<CompetitionSeasonResult>();
+
+            foreach (var cup in cups)
+            {
+                // Намираме финалния рунд
+                var finalRound = cup.Rounds
+                    .OrderByDescending(r => r.RoundNumber)
+                    .FirstOrDefault();
+
+                if (finalRound == null)
+                    continue;
+
+                // Взимаме финалния мач
+                var finalMatch = finalRound.Fixtures
+                    .Where(f => f.Status == FixtureStatusEnum.Played)
+                    .OrderByDescending(f => f.Date)
+                    .FirstOrDefault();
+
+                if (finalMatch == null)
+                    continue;
+
+                // Определяме шампиона и финалиста чрез WinnerTeamId
+                int? championTeamId = finalMatch.WinnerTeamId;
+                int? runnerUpTeamId = null;
+
+                if (championTeamId == finalMatch.HomeTeamId)
+                    runnerUpTeamId = finalMatch.AwayTeamId;
+                else if (championTeamId == finalMatch.AwayTeamId)
+                    runnerUpTeamId = finalMatch.HomeTeamId;
+
+                // fallback ако WinnerTeamId липсва
+                if (championTeamId == null)
+                {
+                    if (finalMatch.HomeTeamGoals > finalMatch.AwayTeamGoals)
+                    {
+                        championTeamId = finalMatch.HomeTeamId;
+                        runnerUpTeamId = finalMatch.AwayTeamId;
+                    }
+                    else
+                    {
+                        championTeamId = finalMatch.AwayTeamId;
+                        runnerUpTeamId = finalMatch.HomeTeamId;
+                    }
+                }
+
+                // Създаваме CompetitionSeasonResult
+                var result = new CompetitionSeasonResult
+                {
+                    SeasonId = seasonId,
+                    CompetitionType = CompetitionTypeEnum.DomesticCup,
+                    CompetitionId = cup.CompetitionId,
+                    GameSaveId = cup.GameSaveId,
+                    ChampionTeamId = championTeamId,
+                    RunnerUpTeamId = runnerUpTeamId,
+                    Notes = $"Купа {cup.Template.Name} ({cup.Country.Name}) - Финал: {finalMatch.HomeTeam?.Name} {finalMatch.HomeTeamGoals}:{finalMatch.AwayTeamGoals} {finalMatch.AwayTeam?.Name}"
+                };
+
+                // Купата носи квота за Европа
+                if (championTeamId.HasValue)
+                {
+                    result.EuropeanQualifiedTeams.Add(new CompetitionEuropeanQualifiedTeam
+                    {
+                        TeamId = championTeamId.Value,
+                        GameSaveId = cup.GameSaveId
+                    });
+                }
+
+                results.Add(result);
+            }
+
+            if (results.Any())
+            {
+                await _context.CompetitionSeasonResults.AddRangeAsync(results);
+                await _context.SaveChangesAsync();
+            }
+
+            return results;
+        }
     }
 }

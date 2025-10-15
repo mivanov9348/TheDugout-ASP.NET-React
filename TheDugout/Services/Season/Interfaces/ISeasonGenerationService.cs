@@ -1,6 +1,6 @@
 ﻿using TheDugout.Models.Game;
 
-namespace TheDugout.Services.Season
+namespace TheDugout.Services.Season.Interfaces
 {
     public interface ISeasonGenerationService
     {

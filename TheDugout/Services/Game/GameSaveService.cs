@@ -8,13 +8,13 @@
     using TheDugout.Data;
     using TheDugout.Models.Competitions;
     using TheDugout.Models.Game;
-    using TheDugout.Services.Cup;
-    using TheDugout.Services.EuropeanCup;
+    using TheDugout.Services.Cup.Interfaces;
+    using TheDugout.Services.EuropeanCup.Interfaces;
     using TheDugout.Services.Finance;
     using TheDugout.Services.GameSettings;
-    using TheDugout.Services.League;
+    using TheDugout.Services.League.Interfaces;
     using TheDugout.Services.Players;
-    using TheDugout.Services.Season;
+    using TheDugout.Services.Season.Interfaces;
     using TheDugout.Services.Staff;
     using TheDugout.Services.Team;
     public class GameSaveService : IGameSaveService
