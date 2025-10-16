@@ -7,7 +7,7 @@
     using TheDugout.Models.Seasons;
     using TheDugout.Models.Transfers;
     using TheDugout.Services.Finance;
-    using TheDugout.Services.Message;
+    using TheDugout.Services.Message.Interfaces;
 
     public class ClubToClubTransferService : IClubToClubTransferService
     {
@@ -145,11 +145,16 @@
             _context.Transfers.Add(transfer);
             await _context.SaveChangesAsync();
 
-            // 📨 4️⃣ Изпращаме съобщение
+            var fullTransfer = await _context.Transfers
+                              .Include(t => t.Player)
+                              .Include(t => t.FromTeam)
+                              .Include(t => t.ToTeam)
+                              .FirstAsync(t => t.Id == transfer.Id);
+
             await _messageOrchestrator.SendMessageAsync(
                 MessageCategory.Transfer,
                 gameSaveId,
-                transfer);
+                fullTransfer);
 
             return (true, "");
         }

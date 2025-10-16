@@ -1,12 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
-using TheDugout.Data;
-using TheDugout.Models.Matches;
-using TheDugout.Services.Match.Interfaces;
-using TheDugout.Services.Player.Interfaces;
-using TheDugout.Services.Team.Interfaces;
-
-namespace TheDugout.Services.Match
+﻿namespace TheDugout.Services.Match
 {
+    using Microsoft.EntityFrameworkCore;
+    using TheDugout.Data;
+    using TheDugout.Models.Matches;
+    using TheDugout.Services.Match.Interfaces;
+    using TheDugout.Services.Player.Interfaces;
+    using TheDugout.Services.Team.Interfaces;
     public class PenaltyShootoutService : IPenaltyShootoutService
     {
         private readonly DugoutDbContext _context;
@@ -26,7 +25,7 @@ namespace TheDugout.Services.Match
             _teamPlanService = teamPlanService;
         }
 
-        public async Task<Models.Matches.Match> RunPenaltyShootoutAsync(Models.Matches.Match match)
+        public async Task<Match> RunPenaltyShootoutAsync(Match match)
         {
             var homeLineup = (await _teamPlanService.GetStartingLineupAsync(match.Fixture.HomeTeam)).ToList();
             var awayLineup = (await _teamPlanService.GetStartingLineupAsync(match.Fixture.AwayTeam)).ToList();
@@ -77,13 +76,11 @@ namespace TheDugout.Services.Match
 
             return match;
         }
-
         private static bool IsDecided(int homeScore, int awayScore, int round)
         {
             return homeScore > awayScore + (5 - round) ||
                    awayScore > homeScore + (5 - round);
         }
-
         private async Task<int> TakePenaltyKick(
             Models.Matches.Match match,
             int teamId,
@@ -129,8 +126,10 @@ namespace TheDugout.Services.Match
 
             match.Events.Add(matchEvent);
 
+           
             // PlayerStats
             var playerStats = match.PlayerStats.FirstOrDefault(s => s.PlayerId == player.Id);
+
             if (playerStats != null)
                 _playerStatsService.UpdateStats(matchEvent, playerStats);
 

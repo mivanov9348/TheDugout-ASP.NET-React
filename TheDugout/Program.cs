@@ -1,7 +1,5 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Text.Json;
@@ -29,7 +27,6 @@ using TheDugout.Services.Template;
 using TheDugout.Services.Training;
 using TheDugout.Services.Transfer;
 using TheDugout.Services.User;
-using Microsoft.Extensions.Logging;
 using TheDugout.Services.GameSettings;
 using TheDugout.Services.Season.Interfaces;
 using TheDugout.Services.League.Interfaces;
@@ -40,7 +37,8 @@ using TheDugout.Services.Team.Interfaces;
 using TheDugout.Services.Match.Interfaces;
 using TheDugout.Services.Competition.Interfaces;
 using TheDugout.Services.Competition;
-
+using TheDugout.Services.Message.Interfaces;
+using Scrutor;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -94,6 +92,12 @@ builder.Services.AddScoped<IYouthAcademyService, YouthAcademyService>();
 builder.Services.AddScoped<IStadiumService, StadiumService>();
 builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddScoped<IMessageOrchestrator, MessageOrchestrator>();
+builder.Services.Scan(scan => scan
+    .FromAssemblyOf<IMessagePlaceholderBuilder>() 
+    .AddClasses(classes => classes.AssignableTo<IMessagePlaceholderBuilder>())
+    .AsImplementedInterfaces()
+    .WithScopedLifetime());
+
 builder.Services.AddScoped<IGameDayService, GameDayService>();
 builder.Services.AddScoped<ISeasonEventService, SeasonEventService>();
 builder.Services.AddScoped<ICPUManagerService, CpuManagerService>();

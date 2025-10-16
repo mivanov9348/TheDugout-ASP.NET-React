@@ -28,14 +28,15 @@
             if (fixture == null) throw new ArgumentNullException(nameof(fixture));
             if (gameSave == null) throw new ArgumentNullException(nameof(gameSave));
 
-            // Проверка дали вече има създаден мач за този fixture
             var existingMatch = await _context.Matches
                 .Include(m => m.Fixture)
-                .ThenInclude(f => f.HomeTeam)
-                .ThenInclude(t => t.Players)
+                    .ThenInclude(f => f.HomeTeam)
+                        .ThenInclude(t => t.Players)
+                            .ThenInclude(p => p.Position)
                 .Include(m => m.Fixture)
-                .ThenInclude(f => f.AwayTeam)
-                .ThenInclude(t => t.Players)
+                    .ThenInclude(f => f.AwayTeam)
+                        .ThenInclude(t => t.Players)
+                            .ThenInclude(p => p.Position)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(m => m.FixtureId == fixture.Id && m.GameSaveId == gameSave.Id)
                 .ConfigureAwait(false);
@@ -43,12 +44,10 @@
             if (existingMatch != null)
                 return existingMatch;
 
-            // Зареждане на Competition
             var competition = await GetCompetitionForFixtureAsync(fixture).ConfigureAwait(false);
             if (competition == null)
                 throw new InvalidOperationException("Competition not found for this fixture.");
 
-            // Създаваме мача с вече напълно зареден Fixture
             var match = new Match
             {
                 GameSaveId = gameSave.Id,
@@ -65,12 +64,17 @@
             await _context.Entry(match)
                 .Reference(m => m.Fixture)
                 .Query()
-                .Include(f => f.HomeTeam).ThenInclude(t => t.Players)
-                .Include(f => f.AwayTeam).ThenInclude(t => t.Players)
+                .Include(f => f.HomeTeam)
+                    .ThenInclude(t => t.Players)
+                        .ThenInclude(p => p.Position)
+                .Include(f => f.AwayTeam)
+                    .ThenInclude(t => t.Players)
+                        .ThenInclude(p => p.Position)
                 .LoadAsync();
 
             return match;
         }
+
         public async Task<object?> GetMatchViewAsync(int fixtureId)
         {
             var fixture = await _context.Fixtures
@@ -152,9 +156,15 @@
         public async Task<Match> GetOrCreateMatchAsync(Fixture fixture, GameSave gameSave)
         {
             var existing = await _context.Matches
-                .Include(m => m.Fixture).ThenInclude(f => f.HomeTeam).ThenInclude(t => t.Players)
-                .Include(m => m.Fixture).ThenInclude(f => f.AwayTeam).ThenInclude(t => t.Players)
-                .FirstOrDefaultAsync(m => m.FixtureId == fixture.Id && m.GameSaveId == gameSave.Id);
+         .Include(m => m.Fixture)
+             .ThenInclude(f => f.HomeTeam)
+                 .ThenInclude(t => t.Players)
+                     .ThenInclude(p => p.Position)
+         .Include(m => m.Fixture)
+             .ThenInclude(f => f.AwayTeam)
+                 .ThenInclude(t => t.Players)
+                     .ThenInclude(p => p.Position)
+         .FirstOrDefaultAsync(m => m.FixtureId == fixture.Id && m.GameSaveId == gameSave.Id);
 
             if (existing != null)
                 return existing;

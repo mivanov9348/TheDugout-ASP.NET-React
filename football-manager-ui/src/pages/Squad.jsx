@@ -21,9 +21,7 @@ const Squad = ({ gameSaveId }) => {
 
   const allAttributeNames = useMemo(() => {
     const names = new Set();
-    players.forEach((p) => {
-      p.attributes?.forEach((a) => names.add(a.name));
-    });
+    players.forEach((p) => p.attributes?.forEach((a) => names.add(a.name)));
     return Array.from(names);
   }, [players]);
 
@@ -45,15 +43,10 @@ const Squad = ({ gameSaveId }) => {
 
   const filteredPlayers = useMemo(() => {
     let result = [...players];
-    if (search) {
+    if (search)
       result = result.filter((p) => p.fullName.toLowerCase().includes(search.toLowerCase()));
-    }
-    if (positionFilter) {
-      result = result.filter((p) => p.position === positionFilter);
-    }
-    if (countryFilter) {
-      result = result.filter((p) => p.country === countryFilter);
-    }
+    if (positionFilter) result = result.filter((p) => p.position === positionFilter);
+    if (countryFilter) result = result.filter((p) => p.country === countryFilter);
 
     result.sort((a, b) => {
       const { key, direction } = sortConfig;
@@ -105,12 +98,12 @@ const Squad = ({ gameSaveId }) => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-4 md:p-6">
       <div className="max-w-7xl mx-auto">
-        {/* Team Header */}
+        {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-blue-600 to-sky-500 bg-clip-text text-transparent mb-2">
             {teamName || "Loading Squad..."}
           </h1>
-          <p className="text-gray-500 text-lg">Click any player to view full profile</p>
+          <p className="text-gray-500 text-lg">Click a player to view full profile</p>
         </div>
 
         {/* Filters */}
@@ -178,10 +171,11 @@ const Squad = ({ gameSaveId }) => {
           ].map((toggle, idx) => (
             <label
               key={idx}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium cursor-pointer transition-all duration-200 border-2 ${toggle.checked
-                ? "bg-blue-500 text-white border-blue-500 shadow-md"
-                : "bg-white text-gray-700 border-gray-300 hover:border-gray-400"
-                }`}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium cursor-pointer transition-all duration-200 border-2 ${
+                toggle.checked
+                  ? "bg-blue-500 text-white border-blue-500 shadow-md"
+                  : "bg-white text-gray-700 border-gray-300 hover:border-gray-400"
+              }`}
             >
               <input
                 type="checkbox"
@@ -194,46 +188,80 @@ const Squad = ({ gameSaveId }) => {
           ))}
         </div>
 
-        {/* Player Table */}
+        {/* Table */}
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200 text-sm">
               <thead className="bg-gradient-to-r from-blue-50 to-sky-50">
                 <tr>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase">Player</th>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase">Position</th>
+                  <th
+                    className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase cursor-pointer hover:text-blue-600"
+                    onClick={() => sortPlayers("fullName")}
+                  >
+                    Player {getSortIndicator("fullName")}
+                  </th>
+                  <th
+                    className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase cursor-pointer hover:text-blue-600"
+                    onClick={() => sortPlayers("position")}
+                  >
+                    Position {getSortIndicator("position")}
+                  </th>
 
                   {showInfo && (
                     <>
-                      <th className="px-6 py-4 text-center text-xs font-bold text-gray-700 uppercase">Age</th>
-                      <th className="px-6 py-4 text-center text-xs font-bold text-gray-700 uppercase">Country</th>
-                      <th className="px-6 py-4 text-center text-xs font-bold text-gray-700 uppercase">Height</th>
-                      <th className="px-6 py-4 text-center text-xs font-bold text-gray-700 uppercase">Weight</th>
-                      <th className="px-6 py-4 text-right text-xs font-bold text-gray-700 uppercase">Value</th>
+                      {["age", "country", "heightCm", "weightKg", "price"].map((key, i) => (
+                        <th
+                          key={i}
+                          className="px-6 py-4 text-center text-xs font-bold text-gray-700 uppercase cursor-pointer hover:text-blue-600"
+                          onClick={() => sortPlayers(key)}
+                        >
+                          {key === "heightCm"
+                            ? "Height"
+                            : key === "weightKg"
+                            ? "Weight"
+                            : key === "price"
+                            ? "Value"
+                            : key.charAt(0).toUpperCase() + key.slice(1)}
+                          {getSortIndicator(key)}
+                        </th>
+                      ))}
                     </>
                   )}
 
                   {showAttributes &&
                     allAttributeNames.map((attr) => (
-                      <th key={attr} className="px-3 py-4 text-center text-xs font-bold text-gray-700 uppercase">
+                      <th
+                        key={attr}
+                        onClick={() => sortPlayers(attr)}
+                        className="px-3 py-4 text-center text-xs font-bold text-gray-700 uppercase cursor-pointer hover:text-blue-600"
+                      >
                         {attr}
+                        {getSortIndicator(attr)}
                       </th>
                     ))}
 
                   {showStats && (
-                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase">Season Stats</th>
+                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase">
+                      Season Stats
+                    </th>
                   )}
 
-                  {/* NEW COLUMN */}
-                  <th className="px-6 py-4 text-center text-xs font-bold text-gray-700 uppercase">Release</th>
+                  <th className="px-6 py-4 text-center text-xs font-bold text-gray-700 uppercase">
+                    Release
+                  </th>
                 </tr>
               </thead>
 
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredPlayers.map((p) => (
-                  <tr key={p.id} className="hover:bg-blue-50 transition-colors duration-150 cursor-pointer group">
-                    {/* Player */}
-                    <td className="px-6 py-4 whitespace-nowrap">{p.fullName}</td>
+                  <tr
+                    key={p.id}
+                    className="hover:bg-blue-50 transition-colors duration-150 cursor-pointer"
+                    onClick={() => navigate(`/player/${p.id}`)}
+                  >
+                    <td className="px-6 py-4 whitespace-nowrap text-blue-600 hover:text-blue-800 font-medium">
+                      {p.fullName}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap">{p.position}</td>
 
                     {showInfo && (
@@ -248,20 +276,28 @@ const Squad = ({ gameSaveId }) => {
 
                     {showAttributes &&
                       allAttributeNames.map((attr) => {
-                        const attribute = p.attributes?.find((a) => a.name === attr);
+                        const a = p.attributes?.find((x) => x.name === attr);
                         return (
-                          <td key={attr} className={`px-3 py-4 text-center ${attribute ? getAttributeColor(attribute.value) : "text-gray-400"}`}>
-                            {attribute ? attribute.value : "-"}
+                          <td
+                            key={attr}
+                            className={`px-3 py-4 text-center ${
+                              a ? getAttributeColor(a.value) : "text-gray-400"
+                            }`}
+                          >
+                            {a ? a.value : "-"}
                           </td>
                         );
                       })}
 
                     {showStats && (
                       <td className="px-6 py-4">
-                        {p.seasonStats && p.seasonStats.length > 0 ? (
+                        {p.seasonStats?.length > 0 ? (
                           <div className="flex flex-wrap gap-2">
                             {p.seasonStats.map((s, i) => (
-                              <span key={i} className="bg-gray-100 text-gray-700 px-2 py-1 rounded-md text-xs">
+                              <span
+                                key={i}
+                                className="bg-gray-100 text-gray-700 px-2 py-1 rounded-md text-xs"
+                              >
                                 S{s.seasonId}: {s.goals}G {s.assists}A
                               </span>
                             ))}
@@ -272,13 +308,11 @@ const Squad = ({ gameSaveId }) => {
                       </td>
                     )}
 
-                    {/* NEW RELEASE BUTTON */}
                     <td className="px-6 py-4 text-center">
                       <button
                         className="bg-red-500 hover:bg-red-600 text-white text-xs font-semibold px-4 py-2 rounded-full shadow-sm transition"
                         onClick={async (e) => {
                           e.stopPropagation();
-
                           const result = await Swal.fire({
                             title: `Release ${p.fullName}?`,
                             text: "Are you sure you want to release this player?",
@@ -289,9 +323,7 @@ const Squad = ({ gameSaveId }) => {
                             confirmButtonText: "Yes, release",
                             cancelButtonText: "Cancel",
                           });
-
                           if (!result.isConfirmed) return;
-
                           try {
                             const res = await fetch("/api/transfers/release", {
                               method: "POST",
@@ -299,29 +331,22 @@ const Squad = ({ gameSaveId }) => {
                               credentials: "include",
                               body: JSON.stringify({ gameSaveId, playerId: p.id }),
                             });
-
                             const data = await res.json();
-
                             if (res.ok && data.success) {
                               await Swal.fire({
                                 title: "Released!",
                                 text: `${p.fullName} has been successfully released.`,
                                 icon: "success",
-                                confirmButtonColor: "#3085d6",
                               });
-
-                              // Маха го от UI
                               setPlayers((prev) => prev.filter((x) => x.id !== p.id));
                             } else {
                               await Swal.fire({
                                 title: "Error",
                                 text: data.error || "Error releasing player.",
                                 icon: "error",
-                                confirmButtonColor: "#3085d6",
                               });
                             }
-                          } catch (err) {
-                            console.error(err);
+                          } catch {
                             await Swal.fire({
                               title: "Error",
                               text: "Unexpected error while releasing player.",
@@ -338,7 +363,10 @@ const Squad = ({ gameSaveId }) => {
 
                 {filteredPlayers.length === 0 && (
                   <tr>
-                    <td colSpan={100} className="px-6 py-12 text-center text-gray-500 text-lg font-medium">
+                    <td
+                      colSpan={100}
+                      className="px-6 py-12 text-center text-gray-500 text-lg font-medium"
+                    >
                       🔍 No players match your filters.
                     </td>
                   </tr>
@@ -353,3 +381,4 @@ const Squad = ({ gameSaveId }) => {
 };
 
 export default Squad;
+// src/pages/Squad.jsx

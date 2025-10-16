@@ -1,13 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
-using TheDugout.Data;
-using TheDugout.Models.Competitions;
-using TheDugout.Models.Enums;
-using TheDugout.Models.Fixtures;
-using TheDugout.Services.EuropeanCup.Interfaces;
-using TheDugout.Services.Season.Interfaces;
-
-namespace TheDugout.Services.EuropeanCup
+﻿namespace TheDugout.Services.EuropeanCup
 {
+    using Microsoft.EntityFrameworkCore;
+    using TheDugout.Data;
+    using TheDugout.Models.Competitions;
+    using TheDugout.Models.Enums;
+    using TheDugout.Models.Fixtures;
+    using TheDugout.Services.EuropeanCup.Interfaces;
+    using TheDugout.Services.Season.Interfaces;
     public class EurocupKnockoutService : IEurocupKnockoutService
     {
         private readonly DugoutDbContext _context;
@@ -72,7 +71,6 @@ namespace TheDugout.Services.EuropeanCup
 
             await _context.SaveChangesAsync();
         }
-
         public async Task GeneratePlayoffRoundAsync(int europeanCupId)
         {
             var cup = await _context.EuropeanCups
@@ -228,7 +226,6 @@ namespace TheDugout.Services.EuropeanCup
                 })
             });
         }
-
         public async Task GenerateNextKnockoutPhaseAsync(int europeanCupId, int currentOrder)
         {
             var cup = await _context.EuropeanCups
@@ -269,6 +266,25 @@ namespace TheDugout.Services.EuropeanCup
                 .Where(f => f.WinnerTeamId.HasValue)
                 .Select(f => f.WinnerTeamId!.Value)
                 .ToList();
+
+            var eliminatedTeamIds = lastFixtures
+                .Where(f => f.Status == FixtureStatusEnum.Played)
+                .SelectMany(f => new[] { f.HomeTeamId, f.AwayTeamId })
+                .Where(id => id.HasValue && !winners.Contains(id.Value))
+                .Select(id => id!.Value)
+                .ToList();
+
+            if (eliminatedTeamIds.Any())
+            {
+                var eliminatedTeams = await _context.EuropeanCupTeams
+                    .Where(t => t.EuropeanCupId == europeanCupId && eliminatedTeamIds.Contains(t.TeamId ?? -1))
+                    .ToListAsync();
+
+                foreach (var t in eliminatedTeams)
+                    t.IsEliminated = true;
+
+                await _context.SaveChangesAsync();
+            }
 
             if (nextPhaseTemplate.Order == 3)
             {

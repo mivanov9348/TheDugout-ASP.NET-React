@@ -1,7 +1,6 @@
-﻿using TheDugout.Models.Game;
-
-namespace TheDugout.Models.Messages
+﻿namespace TheDugout.Models.Messages
 {
+    using TheDugout.Models.Game;
     public enum MessageCategory
     {
         Welcome,

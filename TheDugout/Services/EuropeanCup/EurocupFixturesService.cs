@@ -1,16 +1,14 @@
-﻿
-using Microsoft.EntityFrameworkCore;
-using System;
-using TheDugout.Data;
-using TheDugout.Models.Competitions;
-using TheDugout.Models.Enums;
-using TheDugout.Models.Fixtures;
-using TheDugout.Services.EuropeanCup.Interfaces;
-using TheDugout.Services.Fixture;
-using TheDugout.Services.Season.Interfaces;
-
-namespace TheDugout.Services.EuropeanCup
+﻿namespace TheDugout.Services.EuropeanCup
 {
+    using Microsoft.EntityFrameworkCore;
+    using System;
+    using TheDugout.Data;
+    using TheDugout.Models.Competitions;
+    using TheDugout.Models.Enums;
+    using TheDugout.Models.Fixtures;
+    using TheDugout.Services.EuropeanCup.Interfaces;
+    using TheDugout.Services.Fixture;
+    using TheDugout.Services.Season.Interfaces;
     public class EurocupFixturesService : IEurocupFixturesService
     {
         private readonly DugoutDbContext _context;
@@ -32,7 +30,7 @@ namespace TheDugout.Services.EuropeanCup
                 int seasonId,
                 CancellationToken ct = default)
         {
-            var cup = await _context.Set<Models.Competitions.EuropeanCup>()
+            var cup = await _context.Set<EuropeanCup>()
                 .Include(x => x.Template).ThenInclude(t => t.PhaseTemplates)
                 .Include(x => x.Teams)
                 .Include(x => x.Phases).ThenInclude(p => p.PhaseTemplate)
@@ -134,8 +132,7 @@ namespace TheDugout.Services.EuropeanCup
 
             _logger.LogInformation("Generated {Count} league fixtures for cup {CupId}", fixturesToAdd.Count, cup.Id);
         }
-
-        public async Task<List<Models.Fixtures.Fixture>> GetAllFixturesForCupAsync(int europeanCupId)
+        public async Task<List<Fixture>> GetAllFixturesForCupAsync(int europeanCupId)
         {
             var phaseIds = await _context.EuropeanCupPhases
                 .Where(p => p.EuropeanCupId == europeanCupId)
@@ -148,7 +145,6 @@ namespace TheDugout.Services.EuropeanCup
                 .Where(f => f.EuropeanCupPhaseId.HasValue && phaseIds.Contains(f.EuropeanCupPhaseId.Value))
                 .ToListAsync();
         }
-
         public async Task<IEnumerable<object>> GetGroupFixturesAsync(int europeanCupId)
         {
             var groupPhase = await _context.EuropeanCupPhases

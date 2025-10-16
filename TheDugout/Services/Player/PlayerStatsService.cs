@@ -6,44 +6,53 @@
     using TheDugout.Models.Matches;
     using TheDugout.Models.Players;
     using TheDugout.Services.Player.Interfaces;
+    using TheDugout.Services.Team.Interfaces;
 
     public class PlayerStatsService : IPlayerStatsService
     {
         private readonly DugoutDbContext _context;
+        private readonly ITeamPlanService _teamPlanService;
 
-        public PlayerStatsService(DugoutDbContext context)
+        public PlayerStatsService(DugoutDbContext context, ITeamPlanService teamPlanService)
         {
             _context = context;
+            _teamPlanService = teamPlanService;
         }
 
         /// Create PlayerMatchStats for all active players in the match
-        public async Task<List<PlayerMatchStats>> InitializeMatchStatsAsync(Models.Matches.Match match)
+        public async Task<List<PlayerMatchStats>> InitializeMatchStatsAsync(Match match)
         {
             if (match.Fixture == null)
                 throw new InvalidOperationException("Match Fixture is missing.");
 
-            var compType = match.Fixture.CompetitionType;
             var allPlayers = new List<Models.Players.Player>();
 
-            if (match.Fixture.HomeTeam?.Players != null)
-                allPlayers.AddRange(match.Fixture.HomeTeam.Players.Where(p => p.IsActive));
+            // Вземаме стартовите състави и за двата отбора
+            if (match.Fixture.HomeTeam != null)
+            {
+                var homeLineup = await _teamPlanService.GetStartingLineupAsync(match.Fixture.HomeTeam, includeDetails: true);
+                allPlayers.AddRange(homeLineup);
+            }
 
-            if (match.Fixture.AwayTeam?.Players != null)
-                allPlayers.AddRange(match.Fixture.AwayTeam.Players.Where(p => p.IsActive));
+            if (match.Fixture.AwayTeam != null)
+            {
+                var awayLineup = await _teamPlanService.GetStartingLineupAsync(match.Fixture.AwayTeam, includeDetails: true);
+                allPlayers.AddRange(awayLineup);
+            }
 
             if (!allPlayers.Any())
                 return new List<PlayerMatchStats>();
 
             var playerIds = allPlayers.Select(p => p.Id).ToList();
 
-            // Вземаме вече записаните PlayerMatchStats (ако има)
+            // Проверяваме дали вече има статистики за тези играчи
             var existingStats = await _context.PlayerMatchStats
                 .Where(ps => ps.MatchId == match.Id && playerIds.Contains(ps.PlayerId))
                 .ToListAsync();
 
             var newStats = new List<PlayerMatchStats>();
 
-            // Добавяме само липсващите записи
+            // Добавяме само липсващите
             foreach (var player in allPlayers)
             {
                 if (existingStats.Any(ps => ps.PlayerId == player.Id))
@@ -65,24 +74,34 @@
                 await _context.SaveChangesAsync();
             }
 
-            // Връщаме комбинирания списък (нови + вече съществуващи)
             return existingStats.Concat(newStats).ToList();
         }
 
         /// Update PlayerMatchStats based on a MatchEvent
         public void UpdateStats(MatchEvent matchEvent, PlayerMatchStats stats)
         {
-            switch (matchEvent.EventType.Code)
+            if (matchEvent.EventTypeId == 0)
+                return;
+
+            var code = _context.EventTypes
+                .Where(e => e.Id == matchEvent.EventTypeId)
+                .Select(e => e.Code)
+                .FirstOrDefault();
+
+            if (code == null)
+                return;
+
+            switch (code)
             {
-                case "SHT": // Shot
-                    if (matchEvent.Outcome.Name == "Goal")
+                case "SHT":
+                    if (matchEvent.Outcome?.Name == "Goal")
                         stats.Goals++;
                     break;
-                    // Тук можеш да добавиш и други събития (асистенции, пасове, дрибъл и т.н.)
             }
         }
+
         /// Check if PlayerMatchStats exist for the match; if not, initialize them
-        public async Task<List<PlayerMatchStats>> EnsureMatchStatsAsync(Models.Matches.Match match)
+        public async Task<List<PlayerMatchStats>> EnsureMatchStatsAsync(Match match)
         {
             if (match.PlayerStats == null || !match.PlayerStats.Any())
             {
@@ -95,7 +114,7 @@
         }
 
         /// After the match, update PlayerSeasonStats based on PlayerMatchStats
-        public async Task UpdateSeasonStatsAfterMatchAsync(Models.Matches.Match match)
+        public async Task UpdateSeasonStatsAfterMatchAsync(Match match)
         {
             if (match.Fixture == null)
                 throw new InvalidOperationException("Fixture is missing for match.");

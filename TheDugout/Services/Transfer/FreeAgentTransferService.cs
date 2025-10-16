@@ -9,7 +9,7 @@
     using TheDugout.Models.Transfers;
     using TheDugout.Services.Finance;
     using TheDugout.Services.GameSettings;
-    using TheDugout.Services.Message;
+    using TheDugout.Services.Message.Interfaces;
 
     public class FreeAgentTransferService : IFreeAgentTransferService
     {
@@ -106,7 +106,15 @@
             _context.Transfers.Add(transfer);
             await _context.SaveChangesAsync();
 
-            await _messageOrchestrator.SendMessageAsync(MessageCategory.Transfer, gameSaveId, transfer);
+            var fullTransfer = await _context.Transfers
+                               .Include(t => t.Player)
+                               .Include(t => t.ToTeam)
+                               .FirstAsync(t => t.Id == transfer.Id);
+
+            await _messageOrchestrator.SendMessageAsync(
+                MessageCategory.Transfer,
+                gameSaveId,
+                fullTransfer);
 
             return (true, "");
 

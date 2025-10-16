@@ -38,7 +38,7 @@
         public Agency? ToAgency { get; set; }
         public int? BankId { get; set; }
         public Bank? Bank { get; set; }
-        public DateTime Date { get; set; } = DateTime.UtcNow;
+        public DateTime Date { get; set; }
         public decimal Amount { get; set; }
         public decimal Fee { get; set; } = 0m;
         public string Description { get; set; } = string.Empty;

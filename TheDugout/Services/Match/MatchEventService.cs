@@ -168,14 +168,16 @@
 
             string template = templates[_random.Next(templates.Count)];
 
-            var team = player.Team ?? throw new InvalidOperationException($"Player {player.Id} has no team assigned.");
+            var playerTeam = _context.Teams
+                .AsNoTracking()
+                .FirstOrDefault(t => t.Id == player.TeamId);
 
             return template
                 .Replace("{PlayerName}", $"{player.FirstName} {player.LastName}")
-                .Replace("{TeamAbbr}", team.Abbreviation ?? team.Name);
+                .Replace("{TeamAbbr}", playerTeam.Abbreviation ?? playerTeam.Name);
         }
 
-        public async Task<MatchEvent> CreateMatchEvent(int matchId, int minute, Models.Teams.Team team, Models.Players.Player player, EventType eventType, EventOutcome outcome, string commentary)
+        public async Task<MatchEvent> CreateMatchEvent(int matchId, int minute, Models.Teams.Team team, Player player, EventType eventType, EventOutcome outcome, string commentary)
         {
             var matchEvent = new MatchEvent
             {
@@ -186,7 +188,7 @@
                 PlayerId = player.Id,
                 EventTypeId = eventType.Id,
                 OutcomeId = outcome.Id,
-                Commentary = commentary
+                Commentary = commentary,
             };
 
             _context.MatchEvents.Add(matchEvent);

@@ -44,7 +44,7 @@
             _penaltyService = penaltyService;
             _context = context;
         }
-        public async Task StartMatch(Models.Matches.Match match)
+        public async Task StartMatch(Match match)
         {
             match.Status = MatchStatus.Live;
             match.CurrentMinute = 0;
@@ -55,7 +55,7 @@
             if (match.PlayerStats == null || !match.PlayerStats.Any())
                 match.PlayerStats = await _playerStatsService.InitializeMatchStatsAsync(match);
         }
-        public async Task EndMatch(Models.Matches.Match match)
+        public async Task EndMatch(Match match)
         {
             match.Status = MatchStatus.Played;
 
@@ -82,7 +82,6 @@
             {
                 await _playerStatsService.UpdateSeasonStatsAfterMatchAsync(match);
             }
-
         }
         public void PlayNextMinute(Match match)
         {
@@ -219,6 +218,7 @@
                         Team = currentTeam,
                         TeamId = currentTeam.Id,
                         EventType = eventType,
+                        EventTypeId = eventType.Id,
                         Outcome = outcome
                     }, stats);
                 }
@@ -255,17 +255,16 @@
                 fixture.AwayTeamGoals = (fixture.AwayTeamGoals ?? 0) + 1;
             }
         }
-
-        private async Task HandlePenaltyShootoutAsync(Models.Matches.Match match)
+        private async Task HandlePenaltyShootoutAsync(Match match)
         {
-            match = await _penaltyService.RunPenaltyShootoutAsync(match);
+            await _penaltyService.RunPenaltyShootoutAsync(match);
 
-            if (match.Fixture.HomeTeamGoals > match.Fixture.AwayTeamGoals)
-                match.Fixture.WinnerTeamId = match.Fixture.HomeTeamId;
-            else
-                match.Fixture.WinnerTeamId = match.Fixture.AwayTeamId;
+            //if (match.Fixture.HomeTeamGoals > match.Fixture.AwayTeamGoals)
+            //    match.Fixture.WinnerTeamId = match.Fixture.HomeTeamId;
+            //else
+            //    match.Fixture.WinnerTeamId = match.Fixture.AwayTeamId;
         }
-        public async Task RunMatch(Models.Matches.Match match)
+        public async Task RunMatch(Match match)
         {
             StartMatch(match);
             while (!IsMatchFinished(match))

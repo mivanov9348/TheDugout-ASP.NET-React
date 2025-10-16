@@ -10,7 +10,7 @@
     using TheDugout.Models.Enums;
     using TheDugout.Models.Messages;
     using TheDugout.Services.Game;
-    using TheDugout.Services.Message;
+    using TheDugout.Services.Message.Interfaces;
     using TheDugout.Services.Template;
     using TheDugout.Services.User;
 
@@ -276,15 +276,13 @@
 
             // User и Team инфо
             var user = await _context.Users.FirstAsync(u => u.Id == userId.Value);
-            team = save.Teams.First(t => t.Id == teamId);
+            var selectedTeam = await _context.Teams
+                              .Include(t => t.Country)
+                              .FirstAsync(t => t.Id == teamId);
 
-            await _messageOrchestrator.SendMessageAsync(
-           MessageCategory.Welcome,
-            save.Id,
-         (user, team)
-        );
+            await _messageOrchestrator.SendMessageAsync(MessageCategory.Welcome, save.Id, (user, selectedTeam));
 
-            var full = await _context.GameSaves
+            var fullSave = await _context.GameSaves
                 .AsSplitQuery()
                 .Include(gs => gs.UserTeam).ThenInclude(t => t.Country)
                 .Include(gs => gs.Leagues).ThenInclude(l => l.Country)
@@ -293,7 +291,7 @@
                 .Include(gs => gs.Seasons)
                 .FirstAsync(gs => gs.Id == save.Id);
 
-            return Ok(full.ToDto());
+            return Ok(fullSave.ToDto());
         }
 
         [Authorize]

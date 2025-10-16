@@ -3,30 +3,43 @@ import { Loader2, Filter } from "lucide-react";
 import { Link } from "react-router-dom";
 import Swal from "sweetalert2";
 import PlayerAvatar from "../components/PlayerAvatar";
+
 export default function SearchPlayers({ gameSaveId }) {
   const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [userTeamId, setUserTeamId] = useState(null);
   const [totalCount, setTotalCount] = useState(0);
-  const [filters, setFilters] = useState({
-    search: "",
-    team: "",
-    country: "",
-    position: "",
-    freeAgent: false,
-    minAge: "",
-    maxAge: "",
-    minPrice: "",
-    maxPrice: "",
-    sortBy: "name",
-    sortOrder: "asc",
-    page: 1,
-    pageSize: 50,
-  });
+
+  // 🟢 Възстановяваме филтрите от sessionStorage (ако има)
+  const savedFilters =
+    JSON.parse(sessionStorage.getItem("playerFilters")) || null;
+
+  const [filters, setFilters] = useState(
+    savedFilters || {
+      search: "",
+      team: "",
+      country: "",
+      position: "",
+      freeAgent: false,
+      minAge: "",
+      maxAge: "",
+      minPrice: "",
+      maxPrice: "",
+      sortBy: "name",
+      sortOrder: "asc",
+      page: 1,
+      pageSize: 50,
+    }
+  );
+
+  // 🟢 Всеки път, когато filters се промени — го записваме в sessionStorage
+  useEffect(() => {
+    sessionStorage.setItem("playerFilters", JSON.stringify(filters));
+  }, [filters]);
 
   useEffect(() => {
     fetchPlayers();
-  }, [filters]);
+  }, [filters, gameSaveId]);
 
   const fetchPlayers = async () => {
     if (!gameSaveId) return;
@@ -36,7 +49,6 @@ export default function SearchPlayers({ gameSaveId }) {
         gameSaveId,
         ...filters,
       });
-
       const res = await fetch(`/api/transfers/players?${params.toString()}`);
       if (!res.ok) throw new Error("Failed to fetch players");
       const data = await res.json();
@@ -205,7 +217,6 @@ export default function SearchPlayers({ gameSaveId }) {
           <Filter size={20} /> Player Filters
         </h2>
 
-        {/* Филтри */}
         <div className="grid grid-cols-6 gap-3">
           <input
             type="text"
@@ -282,7 +293,7 @@ export default function SearchPlayers({ gameSaveId }) {
             <table className="min-w-full text-sm">
               <thead className="bg-slate-100 text-slate-700">
                 <tr>
-                  <th className="px-3 py-2 text-left">Logo</th> {/* 🟢 Новата колона */}
+                  <th className="px-3 py-2 text-left">Logo</th>
                   {[
                     { key: "name", label: "Name" },
                     { key: "team", label: "Team" },
@@ -332,7 +343,6 @@ export default function SearchPlayers({ gameSaveId }) {
                       key={p.id}
                       className="border-t hover:bg-slate-50 transition-colors"
                     >
-                      {/* 🟢 Лого (аватар) */}
                       <td className="px-3 py-2">
                         <PlayerAvatar
                           playerName={p.name}

@@ -2,6 +2,7 @@
 {
     using TheDugout.Data;
     using TheDugout.Models.Finance;
+    using TheDugout.Models.Game;
     using TheDugout.Models.Staff;
     using TheDugout.Models.Teams;
 
@@ -83,6 +84,7 @@
                 Amount = amt,
                 Description = desc,
                 Type = type,
+                Date = GetGameDateOrNow(t.GameSave),
                 Status = TransactionStatus.Pending
             });
         public Task<FinancialTransaction> ClubToBankAsync(Team from, Bank bank, decimal amt, string desc, TransactionType type)
@@ -94,6 +96,7 @@
                 Amount = amt,
                 Description = desc,
                 Type = type,
+                Date = GetGameDateOrNow(from.GameSave),
                 Status = TransactionStatus.Pending
             });
         public Task<FinancialTransaction> ClubToAgencyAsync(Team from, Agency to, decimal amt, string desc, TransactionType type)
@@ -105,6 +108,7 @@
             Amount = amt,
             Description = desc,
             Type = type,
+            Date = GetGameDateOrNow(from.GameSave),
             Status = TransactionStatus.Pending
         });
         public Task<FinancialTransaction> BankToAgencyAsync(Bank from, Agency to, decimal amt, string desc, TransactionType type)
@@ -116,6 +120,7 @@
                 Amount = amt,
                 Description = desc,
                 Type = type,
+                Date = GetGameDateOrNow(from.GameSave),
                 Status = TransactionStatus.Pending
             });
         public Task<FinancialTransaction> AgencyToClubAsync(Agency from, Team to, decimal amt, string desc, TransactionType type)
@@ -127,6 +132,7 @@
                 Amount = amt,
                 Description = desc,
                 Type = type,
+                Date = GetGameDateOrNow(from.GameSave),
                 Status = TransactionStatus.Pending
             });
 
@@ -139,7 +145,16 @@
                 Amount = amt,
                 Description = desc,
                 Type = type,
+                Date = GetGameDateOrNow(from.GameSave),
                 Status = TransactionStatus.Pending
             });
+
+        private static DateTime GetGameDateOrNow(GameSave? gameSave)
+        {
+            return gameSave?.CurrentSeason?.CurrentDate
+                   ?? gameSave?.CurrentSeason?.StartDate
+                   ?? DateTime.Now;
+        }
+
     }
 }
