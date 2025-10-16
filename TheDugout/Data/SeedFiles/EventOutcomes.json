@@ -23,22 +23,22 @@
   },
   {
     "Name": "Saved",
-    "RangeMin": 11,
+    "RangeMin": 16,
     "RangeMax": 20,
     "ChangesPossession": true,
     "EventTypeCode": "SHT"
   },
   {
     "Name": "Blocked",
-    "RangeMin": 6,
-    "RangeMax": 10,
+    "RangeMin": 11,
+    "RangeMax": 15,
     "ChangesPossession": true,
     "EventTypeCode": "SHT"
   },
   {
     "Name": "Out",
     "RangeMin": 0,
-    "RangeMax": 5,
+    "RangeMax": 10,
     "ChangesPossession": true,
     "EventTypeCode": "SHT"
   },

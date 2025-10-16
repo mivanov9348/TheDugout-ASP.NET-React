@@ -98,7 +98,6 @@
             await _context.SaveChangesAsync();
             return team.TeamTactic!;
         }
-
         public async Task InitializeDefaultTacticsAsync(GameSave gameSave)
         {
             var teams = await _context.Teams
@@ -228,34 +227,39 @@
                 subsDict
             );
         }
-
-        public async Task<List<Models.Players.Player>> GetStartingLineupAsync(Models.Teams.Team team)
+        public async Task<List<Player>> GetStartingLineupAsync(Team team, bool includeDetails = true)
         {
             var teamTactic = await _context.TeamTactics
+                .AsNoTracking()
                 .FirstOrDefaultAsync(t => t.TeamId == team.Id);
 
             if (teamTactic == null || string.IsNullOrWhiteSpace(teamTactic.LineupJson))
-                return new List<Models.Players.Player>();
+                return new List<Player>();
 
             var lineupDict = JsonConvert.DeserializeObject<Dictionary<string, string>>(teamTactic.LineupJson)
                              ?? new Dictionary<string, string>();
 
             var lineupIds = lineupDict.Values
-                                      .Select(v => int.TryParse(v, out var id) ? id : 0)
-                                      .Where(id => id > 0)
-                                      .ToList();
+                .Select(v => int.TryParse(v, out var id) ? id : 0)
+                .Where(id => id > 0)
+                .ToList();
 
-            var startingPlayers = await _context.Players
-                .Include(p => p.Position)
-                .Include(p => p.Attributes).ThenInclude(a => a.Attribute)
-                .Include(p => p.SeasonStats)
-                .Where(p => lineupIds.Contains(p.Id) && p.TeamId == team.Id)
-                .ToListAsync();
+            var query = _context.Players
+                        .AsNoTracking()
+                        .Where(p => lineupIds.Contains(p.Id) && p.TeamId == team.Id)
+                        .Include(p => p.Position)
+                        .Include(p => p.Attributes)
+                            .ThenInclude(a => a.Attribute)
+                        as IQueryable<Player>;
 
-            return startingPlayers;
+            if (includeDetails)
+            {
+                query = query
+                    .Include(p => p.SeasonStats);
+            }
+
+            return await query.ToListAsync();
         }
-
-
 
     }
 }

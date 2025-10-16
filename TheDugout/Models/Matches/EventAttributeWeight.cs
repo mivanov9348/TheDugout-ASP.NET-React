@@ -1,8 +1,8 @@
-﻿using System.ComponentModel.DataAnnotations;
-using TheDugout.Models.Players;
-
-namespace TheDugout.Models.Matches
+﻿namespace TheDugout.Models.Matches
 {
+    using System.ComponentModel.DataAnnotations;
+    using TheDugout.Models.Players;
+
     public class EventAttributeWeight
     {
         public int Id { get; set; }

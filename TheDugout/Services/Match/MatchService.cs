@@ -71,8 +71,6 @@
 
             return match;
         }
-
-
         public async Task<object?> GetMatchViewAsync(int fixtureId)
         {
             var fixture = await _context.Fixtures
@@ -150,6 +148,18 @@
             _context.Entry(match).State = EntityState.Modified;
 
             await _context.SaveChangesAsync().ConfigureAwait(false);
+        }
+        public async Task<Match> GetOrCreateMatchAsync(Fixture fixture, GameSave gameSave)
+        {
+            var existing = await _context.Matches
+                .Include(m => m.Fixture).ThenInclude(f => f.HomeTeam).ThenInclude(t => t.Players)
+                .Include(m => m.Fixture).ThenInclude(f => f.AwayTeam).ThenInclude(t => t.Players)
+                .FirstOrDefaultAsync(m => m.FixtureId == fixture.Id && m.GameSaveId == gameSave.Id);
+
+            if (existing != null)
+                return existing;
+
+            return await CreateMatchFromFixtureAsync(fixture, gameSave);
         }
 
         // -------------------------------

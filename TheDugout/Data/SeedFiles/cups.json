@@ -37,7 +37,7 @@
   {
     "Name": "Coupe de France",
     "CountryCode": "FRA",
-    "IsActive": true,
+    "IsActive": false,
     "MinTeams": 32,
     "MaxTeams": 128
   }

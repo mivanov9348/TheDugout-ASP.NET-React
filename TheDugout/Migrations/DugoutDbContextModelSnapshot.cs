@@ -1243,6 +1243,9 @@ namespace TheDugout.Migrations
                     b.Property<int>("CountryId")
                         .HasColumnType("int");
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
                     b.Property<string>("LeagueCode")
                         .IsRequired()
                         .HasMaxLength(10)

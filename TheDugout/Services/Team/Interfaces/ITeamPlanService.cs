@@ -1,10 +1,9 @@
-﻿using TheDugout.DTOs.Player;
-using TheDugout.Models.Game;
-using TheDugout.Models.Players;
-using TheDugout.Models.Teams;
-
-namespace TheDugout.Services.Team.Interfaces
+﻿namespace TheDugout.Services.Team.Interfaces
 {
+    using TheDugout.DTOs.Player;
+    using TheDugout.Models.Game;
+    using TheDugout.Models.Players;
+    using TheDugout.Models.Teams;
     public interface ITeamPlanService
     {
         Dictionary<string, int> GetDefaultRosterPlan();
@@ -17,9 +16,6 @@ namespace TheDugout.Services.Team.Interfaces
     Dictionary<string, string?>? substitutes = null);
         Task InitializeDefaultTacticsAsync(GameSave gameSave);
         Task<TeamTactic> AutoPickTacticAsync(int teamId, int gameSaveId);
-
-        Task<List<Models.Players.Player>> GetStartingLineupAsync(Models.Teams.Team team);
+        Task<List<Models.Players.Player>> GetStartingLineupAsync(Models.Teams.Team team, bool includeDetails = true);
     }
-
-
 }

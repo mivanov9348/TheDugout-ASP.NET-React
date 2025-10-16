@@ -363,7 +363,8 @@ namespace TheDugout.Migrations
                     Tier = table.Column<int>(type: "int", nullable: false),
                     TeamsCount = table.Column<int>(type: "int", nullable: false),
                     RelegationSpots = table.Column<int>(type: "int", nullable: false),
-                    PromotionSpots = table.Column<int>(type: "int", nullable: false)
+                    PromotionSpots = table.Column<int>(type: "int", nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {

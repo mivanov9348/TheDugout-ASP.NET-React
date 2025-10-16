@@ -6,7 +6,6 @@
     using TheDugout.Models.Staff;
     using TheDugout.Models.Teams;
     using TheDugout.Models.Transfers;
-
     public class Player
     {
         public int Id { get; set; }
@@ -35,25 +34,21 @@
         public double HeightCm { get; set; }
         public double WeightKg { get; set; }
         public bool IsActive { get; set; }
-
         public int GameSaveId { get; set; }
         public GameSave GameSave { get; set; } = null!;
         public decimal Price { get; set; }
         public string AvatarFileName { get; set; } = null!;
-
         public int CurrentAbility
         {
             get;set;
         }
 
         public int PotentialAbility { get; set; }
-
         public ICollection<PlayerAttribute> Attributes { get; set; } = new List<PlayerAttribute>();
         public ICollection<PlayerMatchStats> MatchStats { get; set; } = new List<PlayerMatchStats>();
         public ICollection<PlayerSeasonStats> SeasonStats { get; set; } = new List<PlayerSeasonStats>();
         public ICollection<MatchEvent> MatchEvents { get; set; } = new List<MatchEvent>();
         public ICollection<TransferOffer> TransferOffers { get; set; } = new List<TransferOffer>();
-
 
     }
 }

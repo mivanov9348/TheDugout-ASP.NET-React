@@ -6,6 +6,7 @@ using TheDugout.Data;
 using TheDugout.DTOs.Match;
 using TheDugout.Models.Enums;
 using TheDugout.Models.Fixtures;
+using TheDugout.Models.Game;
 using TheDugout.Models.Matches;
 using TheDugout.Services.Match.Interfaces;
 using TheDugout.Services.Player.Interfaces;
@@ -19,7 +20,7 @@ public class MatchesController : ControllerBase
     private readonly IMatchEngine _matchEngine;
     private readonly IPlayerStatsService _playerStatsService;
 
-    public MatchesController(DugoutDbContext context,  IMatchService matchService, IMatchEngine matchEngine, IPlayerStatsService playerStatsService)
+    public MatchesController(DugoutDbContext context, IMatchService matchService, IMatchEngine matchEngine, IPlayerStatsService playerStatsService)
     {
         _context = context;
         _matchService = matchService;
@@ -123,7 +124,7 @@ public class MatchesController : ControllerBase
             var match = fixture.Matches.FirstOrDefault();
             if (match == null)
             {
-                match = await _matchService.CreateMatchFromFixtureAsync(fixture, gameSave);
+                match = await _matchService.GetOrCreateMatchAsync(fixture, gameSave); 
                 fixture.Matches.Add(match);
             }
             await _matchEngine.SimulateMatchAsync(fixture, gameSave);
@@ -295,7 +296,7 @@ public class MatchesController : ControllerBase
             if (gameSave == null)
                 return NotFound(new { error = "GameSave not found" });
 
-            match = await _matchService.CreateMatchFromFixtureAsync(fixture, gameSave);
+            match = await _matchService.GetOrCreateMatchAsync(fixture, gameSave);
         }
 
         var view = await _matchService.GetMatchViewByIdAsync(match.Id);

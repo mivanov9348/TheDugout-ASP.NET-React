@@ -65,13 +65,18 @@
                     weightedSum += attrValue * weight.Weight;
                     totalWeight += weight.Weight;
                 }
-            }
+            }   
 
             if (totalWeight == 0)
                 totalWeight = 1; // предпазна мярка
 
             double attrScore = weightedSum / totalWeight;
-            double baseScore = Math.Pow(attrScore / 20.0, 0.7) * 100.0;
+            double baseScore = Math.Pow(attrScore / 20.0, 0.85) * 100.0;
+
+            if (eventType.Code == "SHT")
+            {
+                baseScore *= 1.15;
+            }
 
             // age factor
             const int ageRef = 27;
@@ -80,7 +85,7 @@
             ageFactor = Math.Clamp(ageFactor, 0.8, 1.0);
 
             // random variability
-            double variability = 4 + Math.Abs(player.Age - ageRef) * 0.3;
+            double variability = 6 + Math.Abs(player.Age - 27) * 0.3;
             double randomOffset = (_random.NextDouble() * 2 - 1) * variability;
 
             int score = Math.Clamp((int)Math.Round(baseScore * ageFactor + randomOffset), 1, 100);

@@ -305,7 +305,8 @@ public static class SeedData
                     Tier = l.Tier,
                     TeamsCount = l.Teams,
                     RelegationSpots = l.RelegationSpots,
-                    PromotionSpots = l.PromotionSpots
+                    PromotionSpots = l.PromotionSpots,
+                    IsActive = l.IsActive
                 });
             }
             else

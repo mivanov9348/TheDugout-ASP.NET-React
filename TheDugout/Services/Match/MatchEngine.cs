@@ -84,22 +84,22 @@
             }
 
         }
-        public void PlayNextMinute(Models.Matches.Match match)
+        public void PlayNextMinute(Match match)
         {
             int increment = _random.Next(1, 11);
             match.CurrentMinute += increment;
         }
-        public void ChangeTurn(Models.Matches.Match match)
+        public void ChangeTurn(Match match)
         {
             match.CurrentTurn = match.CurrentTurn == MatchTurn.Home
                 ? MatchTurn.Away
                 : MatchTurn.Home;
         }
-        public bool IsMatchFinished(Models.Matches.Match match)
+        public bool IsMatchFinished(Match match)
         {
             return match.CurrentMinute >= 90;
         }
-        public async Task<MatchEvent?> PlayStep(Models.Matches.Match match)
+        public async Task<MatchEvent?> PlayStep(Match match)
         {
             if (IsMatchFinished(match))
             {
@@ -132,7 +132,7 @@
 
             var matchEvent = await _matchEventService.CreateMatchEvent(match.Id, match.CurrentMinute, currentTeam, player, eventType, outcome, commentary);
 
-            UpdateFixtureScore(match, currentTeam.Id, player, eventType, outcome);
+            UpdateFixtureScore(match.Fixture,currentTeamId);
 
             // 4. Ъпдейт на статистики
             var playerStats = match.PlayerStats.FirstOrDefault(s => s.PlayerId == player.Id);
@@ -167,7 +167,7 @@
             if (dbFixture is null)
                 throw new InvalidOperationException($"Fixture with Id {fixture.Id} not found in DB.");
 
-            var match = await _matchService.CreateMatchFromFixtureAsync(dbFixture, gameSave);
+            var match = await _matchService.GetOrCreateMatchAsync(fixture, gameSave);
 
             match.PlayerStats = await _playerStatsService.EnsureMatchStatsAsync(match);
 
@@ -178,15 +178,24 @@
                 PlayNextMinute(match);
 
                 var currentTeamId = match.CurrentTurn == MatchTurn.Home
-                    ? match.Fixture.HomeTeamId
-                    : match.Fixture.AwayTeamId;
+                                    ? match.Fixture.HomeTeamId
+                                    : match.Fixture.AwayTeamId;
 
-                var currentTeam = _context.Teams.FirstOrDefault(t => t.Id == currentTeamId)
-                    ?? throw new InvalidOperationException($"Team {currentTeamId} not found.");
+                var currentTeam = match.CurrentTurn == MatchTurn.Home
+                                ? match.Fixture.HomeTeam
+                                : match.Fixture.AwayTeam;
 
-                var lineup = await _teamPlanService.GetStartingLineupAsync(currentTeam);
-                var outfieldPlayers = lineup.Where(p => p.Position.Code != "GK").ToList();
-                if (!outfieldPlayers.Any())
+                if (currentTeam == null)
+                    throw new InvalidOperationException($"Team {currentTeamId} not found.");
+
+                var lineup = await _teamPlanService.GetStartingLineupAsync(currentTeam, includeDetails: false);
+
+                var outfieldPlayers = lineup
+                    .Where(p => p.Position.Code != "GK")
+                    .ToList(); if (!outfieldPlayers.Any())
+                    throw new InvalidOperationException($"No outfield players found for team {currentTeam.Id}");
+
+                if (outfieldPlayers.Count == 0)
                     throw new InvalidOperationException($"No outfield players found for team {currentTeam.Id}");
 
                 var player = outfieldPlayers[_random.Next(outfieldPlayers.Count)];
@@ -196,11 +205,12 @@
 
                 if (eventType.Code == "SHT" && outcome.Name == "Goal")
                 {
-                    UpdateFixtureScore(match, currentTeamId, player, eventType, outcome);
+                    UpdateFixtureScore(dbFixture, currentTeamId);
+                    await _context.SaveChangesAsync();
                 }
 
-                var playerStats = match.PlayerStats.FirstOrDefault(s => s.PlayerId == player.Id);
-                if (playerStats != null)
+                var playerStatsMap = match.PlayerStats.ToDictionary(s => s.PlayerId);
+                if (playerStatsMap.TryGetValue(player.Id, out var stats))
                 {
                     _playerStatsService.UpdateStats(new MatchEvent
                     {
@@ -210,7 +220,7 @@
                         TeamId = currentTeam.Id,
                         EventType = eventType,
                         Outcome = outcome
-                    }, playerStats);
+                    }, stats);
                 }
 
                 ChangeTurn(match);
@@ -234,21 +244,18 @@
 
             return match;
         }
-        private void UpdateFixtureScore(Match match, int? currentTeamId, Models.Players.Player player, EventType eventType, EventOutcome outcome)
+        private void UpdateFixtureScore(Fixture fixture, int? currentTeamId)
         {
-            if (eventType.Code == "SHT" && outcome.Name == "Goal")
+            if (currentTeamId == fixture.HomeTeamId)
             {
-                var fixture = match.Fixture;
-                if (currentTeamId == fixture.HomeTeamId)
-                {
-                    fixture.HomeTeamGoals = (fixture.HomeTeamGoals ?? 0) + 1;
-                }
-                else if (currentTeamId == fixture.AwayTeamId)
-                {
-                    fixture.AwayTeamGoals = (fixture.AwayTeamGoals ?? 0) + 1;
-                }
+                fixture.HomeTeamGoals = (fixture.HomeTeamGoals ?? 0) + 1;
+            }
+            else if (currentTeamId == fixture.AwayTeamId)
+            {
+                fixture.AwayTeamGoals = (fixture.AwayTeamGoals ?? 0) + 1;
             }
         }
+
         private async Task HandlePenaltyShootoutAsync(Models.Matches.Match match)
         {
             match = await _penaltyService.RunPenaltyShootoutAsync(match);

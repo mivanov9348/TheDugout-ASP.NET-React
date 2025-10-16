@@ -6,7 +6,6 @@
     using TheDugout.Models.Game;
     using TheDugout.Models.Seasons;
     using TheDugout.Models.Teams;
-
     public class League
     {
         public int Id { get; set; }

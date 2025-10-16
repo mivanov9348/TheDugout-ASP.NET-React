@@ -17,7 +17,8 @@ namespace TheDugout.Data.Seed
             int Tier,
             int Teams,
             int RelegationSpots,
-            int PromotionSpots
+            int PromotionSpots,
+            bool IsActive
         );
 
         public record CupTemplateDto(

@@ -19,7 +19,7 @@
             _context = context;
             _teamGenerator = teamGenerator;
         }
-               
+
         public async Task<List<League>> GenerateLeaguesAsync(GameSave gameSave, Models.Seasons.Season season)
         {
             var leagues = new List<League>();
@@ -27,6 +27,7 @@
             var leagueTemplates = await _context.LeagueTemplates
                 .Include(lt => lt.TeamTemplates)
                 .AsNoTracking()
+                .Where(lt => lt.IsActive)
                 .ToListAsync();
 
             // turn off tracking to improve performance during bulk operations
@@ -126,7 +127,7 @@
 
             // Check if all non-cancelled matches are played
             bool allMatchesPlayed = league.Fixtures
-                .Where(f => f.Status != FixtureStatusEnum.Cancelled) 
+                .Where(f => f.Status != FixtureStatusEnum.Cancelled)
                 .All(f => f.Status == FixtureStatusEnum.Played);
 
             // If all matches are played and the league is not marked as finished, update it
