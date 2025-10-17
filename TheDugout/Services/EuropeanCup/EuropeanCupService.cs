@@ -12,16 +12,18 @@
     {
         private readonly DugoutDbContext _context;
         private readonly IEurocupFixturesService _eurocupFixturesService;
+        private readonly IEuroCupTeamService _euroCupTeamService;
         private readonly ILogger<EuropeanCupService> _logger;
         private readonly Random _rng = new Random();
-        public EuropeanCupService(DugoutDbContext context, IEurocupFixturesService eurocupFixturesService, ILogger<EuropeanCupService> logger)
+        public EuropeanCupService(DugoutDbContext context, IEurocupFixturesService eurocupFixturesService, IEuroCupTeamService euroCupTeamService, ILogger<EuropeanCupService> logger)
         {
             _context = context;
             _eurocupFixturesService = eurocupFixturesService;
+            _euroCupTeamService = euroCupTeamService;
             _logger = logger;
         }
 
-        public async Task<Models.Competitions.EuropeanCup> InitializeTournamentAsync(
+        public async Task<EuropeanCup> InitializeTournamentAsync(
     int templateId,
     int gameSaveId,
     int seasonId,
@@ -54,7 +56,7 @@
                 SeasonId = seasonId
             };
 
-            var euroCup = new Models.Competitions.EuropeanCup
+            var euroCup = new EuropeanCup
             {
                 TemplateId = template.Id,
                 GameSaveId = gameSaveId,
@@ -75,14 +77,8 @@
 
             foreach (var team in rankedTeams)
             {
-                _context.Add(new EuropeanCupTeam
-                {
-                    EuropeanCupId = euroCup.Id,
-                    TeamId = team.Id,
-                    GameSaveId = gameSaveId,
-                    CurrentPhaseOrder = template.PhaseTemplates?.OrderBy(p => p.Order).FirstOrDefault()?.Order ?? 1,
-                    IsEliminated = false
-                });
+
+                await _euroCupTeamService.CreateTeamsForCupAsync(euroCup, rankedTeams, ct);
 
                 _context.Add(new EuropeanCupStanding
                 {
@@ -101,7 +97,7 @@
 
             await _eurocupFixturesService.GenerateEuropeanLeaguePhaseFixturesAsync(euroCup.Id, seasonId, ct);
             return euroCup;
-        }        
+        }
         public async Task UpdateStandingsForPhaseAsync(int europeanCupPhaseId, CancellationToken ct = default)
         {
             // Recalculate standings from scratch for a cup/phase's fixtures (useful for recompute)
@@ -213,7 +209,6 @@
 
             return euroCup.IsFinished;
         }
-
         public async Task<List<CompetitionSeasonResult>> GenerateEuropeanCupResultsAsync(int seasonId)
         {
             var europeanCups = await _context.EuropeanCups
@@ -295,6 +290,36 @@
 
             return results;
         }
+        public async Task HandleFinalMatchCompletionAsync(int europeanCupId, Fixture finalMatch, CancellationToken ct = default)
+        {
+            if (finalMatch == null)
+                throw new ArgumentNullException(nameof(finalMatch));
+
+            int? loserTeamId = null;
+
+            if (finalMatch.WinnerTeamId == finalMatch.HomeTeamId)
+                loserTeamId = finalMatch.AwayTeamId;
+            else if (finalMatch.WinnerTeamId == finalMatch.AwayTeamId)
+                loserTeamId = finalMatch.HomeTeamId;
+
+            // fallback, ако WinnerTeamId липсва (напр. няма penalties, но има резултат)
+            if (loserTeamId == null)
+            {
+                if (finalMatch.HomeTeamGoals > finalMatch.AwayTeamGoals)
+                    loserTeamId = finalMatch.AwayTeamId;
+                else
+                    loserTeamId = finalMatch.HomeTeamId;
+            }
+
+            if (loserTeamId != null)
+            {
+                await _euroCupTeamService.MarkTeamEliminatedAsync(europeanCupId, loserTeamId.Value, ct);
+                _logger.LogInformation("Final loser team {TeamId} eliminated from European Cup {CupId}.", loserTeamId, europeanCupId);
+            }
+
+            await IsEuropeanCupFinishedAsync(europeanCupId);
+        }
+
 
     }
 }

@@ -4,18 +4,19 @@
     using TheDugout.Data;
     using TheDugout.Models.Competitions;
     using TheDugout.Models.Enums;
-    using TheDugout.Models.Fixtures;
     using TheDugout.Services.EuropeanCup.Interfaces;
     using TheDugout.Services.Season.Interfaces;
     public class EurocupKnockoutService : IEurocupKnockoutService
     {
         private readonly DugoutDbContext _context;
         private readonly IEurocupScheduleService _eurocupScheduleService;
+        private readonly IEuroCupTeamService _euroCupTeamService;
 
-        public EurocupKnockoutService(DugoutDbContext context, IEurocupScheduleService eurocupScheduleService)
+        public EurocupKnockoutService(DugoutDbContext context, IEurocupScheduleService eurocupScheduleService, IEuroCupTeamService euroCupTeamService)
         {
             _context = context;
             _eurocupScheduleService = eurocupScheduleService;
+            _euroCupTeamService = euroCupTeamService;
         }
 
         public async Task DeterminePostGroupAdvancementAsync(int europeanCupId)
@@ -176,7 +177,6 @@
 
             await _context.SaveChangesAsync();
         }
-
         public async Task<object> GetKnockoutFixturesAsync(int europeanCupId)
         {
             var knockoutPhases = await _context.EuropeanCupPhases
@@ -276,14 +276,7 @@
 
             if (eliminatedTeamIds.Any())
             {
-                var eliminatedTeams = await _context.EuropeanCupTeams
-                    .Where(t => t.EuropeanCupId == europeanCupId && eliminatedTeamIds.Contains(t.TeamId ?? -1))
-                    .ToListAsync();
-
-                foreach (var t in eliminatedTeams)
-                    t.IsEliminated = true;
-
-                await _context.SaveChangesAsync();
+                await _euroCupTeamService.MarkTeamsEliminatedAsync(europeanCupId, eliminatedTeamIds);
             }
 
             if (nextPhaseTemplate.Order == 3)

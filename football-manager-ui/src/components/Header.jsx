@@ -11,8 +11,6 @@ function Header({ username }) {
     currentGameSave,
     hasUnplayedMatchesToday: hasUnplayed,
     setHasUnplayedMatchesToday,
-    activeMatch,
-    setActiveMatch,
     isLoading,
     refreshGameStatus,
     setCurrentGameSave,
@@ -21,7 +19,7 @@ function Header({ username }) {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // 🧠 Автоматично проверява при смяна на страница дали има неизиграни мачове
+  // 🔄 Проверка при смяна на страница дали има неизиграни мачове
   useEffect(() => {
     const checkStatus = async () => {
       try {
@@ -32,9 +30,8 @@ function Header({ username }) {
         const status = await res.json();
 
         setHasUnplayedMatchesToday(Boolean(status.hasUnplayedMatchesToday));
-        setActiveMatch(status.activeMatch ?? null);
 
-        // Ако има неизиграни и не сме вече на today-matches — навигирай
+        // ако има неизиграни мачове, прехвърли към TodayMatches
         if (
           status.hasUnplayedMatchesToday &&
           !location.pathname.includes("/today-matches")
@@ -50,7 +47,92 @@ function Header({ username }) {
     checkStatus();
   }, [location.pathname]);
 
-  // 🧩 Loading & fallback
+  // 🕒 Бутон "Next Day"
+  const handleNextDay = async () => {
+    if (hasUnplayed) {
+      await Swal.fire({
+        title: "⚽ Match Day!",
+        text: "There are unplayed matches for today!",
+        icon: "info",
+        confirmButtonText: "To Matches",
+        confirmButtonColor: "#f59e0b",
+        background: "#1e293b",
+        color: "#fff",
+      });
+      navigate(`/today-matches/${currentGameSave.id}`);
+      return;
+    }
+
+    startProcessing("Advancing to next day...");
+    try {
+      const res = await fetch("/api/games/current/next-day", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        const message = errorData?.message ?? "Unknown error";
+
+        if (message.includes("unplayed matches")) {
+          await Swal.fire({
+            title: "⚽ Match Day!",
+            text: "There are unplayed matches for today!",
+            icon: "info",
+            confirmButtonText: "To Matches",
+            confirmButtonColor: "#f59e0b",
+            background: "#1e293b",
+            color: "#fff",
+          });
+          navigate(`/today-matches/${currentGameSave.id}`);
+          return;
+        }
+
+        console.error("Next day API failed:", message);
+        const fallback = await refreshGameStatus();
+        if (fallback?.hasUnplayedMatchesToday) {
+          navigate(`/today-matches/${fallback.gameSave?.id ?? currentGameSave.id}`);
+        }
+        return;
+      }
+
+      const payload = await res.json();
+      const status = payload.gameStatus ?? payload;
+
+      if (status) {
+        if (status.gameSave) setCurrentGameSave(status.gameSave);
+        setHasUnplayedMatchesToday(Boolean(status.hasUnplayedMatchesToday));
+
+        if (status.hasUnplayedMatchesToday) {
+          const gid = status.gameSave?.id ?? currentGameSave.id;
+          navigate(`/today-matches/${gid}`);
+          return;
+        }
+      } else {
+        const fallback = await refreshGameStatus();
+        if (fallback?.hasUnplayedMatchesToday) {
+          navigate(`/today-matches/${fallback.gameSave?.id ?? currentGameSave.id}`);
+          return;
+        }
+      }
+    } catch (err) {
+      console.error("Next Day failed:", err);
+    } finally {
+      stopProcessing();
+    }
+  };
+
+  // 🧩 UI helper-и
+  const formatDate = (dateStr) =>
+    dateStr
+      ? new Date(dateStr).toLocaleDateString("en-GB", {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+        })
+      : "";
+
   if (isLoading && !currentGameSave) {
     return (
       <header className="px-6 py-3 bg-slate-800 text-white shadow-md">
@@ -70,114 +152,10 @@ function Header({ username }) {
   const season = currentGameSave.seasons?.[0];
   const team = currentGameSave.userTeam;
 
-  const formatDate = (dateStr) =>
-    dateStr
-      ? new Date(dateStr).toLocaleDateString("en-GB", {
-          day: "numeric",
-          month: "short",
-          year: "numeric",
-        })
-      : "";
-
-  // 🕒 Бутонът "Next Day"
-  const handleNextDay = async () => {
-  if (hasUnplayed) {
-    await Swal.fire({
-      title: "⚽ Match Day!",
-      text: "There are unplayed matches for today!",
-      icon: "info",
-      confirmButtonText: "To Matches",
-      confirmButtonColor: "#f59e0b",
-      background: "#1e293b",
-      color: "#fff",
-    });
-    navigate(`/today-matches/${currentGameSave.id}`);
-    return;
-  }
-
-  startProcessing("Advancing to next day...");
-  try {
-    const res = await fetch("/api/games/current/next-day", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-    });
-
-    // 👇 Ако API-то върне 400 с "Cannot advance day..."
-    if (!res.ok) {
-      const errorData = await res.json().catch(() => ({}));
-      const message = errorData?.message ?? "Unknown error";
-
-      if (message.includes("unplayed matches")) {
-        await Swal.fire({
-          title: "⚽ Match Day!",
-          text: "There are unplayed matches for today!",
-          icon: "info",
-          confirmButtonText: "To Matches",
-          confirmButtonColor: "#f59e0b",
-          background: "#1e293b",
-          color: "#fff",
-        });
-
-        navigate(`/today-matches/${currentGameSave.id}`);
-        return;
-      }
-
-      console.error("Next day API failed:", message);
-      const fallback = await refreshGameStatus();
-      if (fallback?.hasUnplayedMatchesToday) {
-        navigate(`/today-matches/${fallback.gameSave?.id ?? currentGameSave.id}`);
-      }
-      return;
-    }
-
-    const payload = await res.json();
-    const status = payload.gameStatus ?? payload;
-
-    if (status) {
-      if (status.gameSave) setCurrentGameSave(status.gameSave);
-      setHasUnplayedMatchesToday(Boolean(status.hasUnplayedMatchesToday));
-      setActiveMatch(status.activeMatch ?? null);
-
-      // ако след новия ден пак има мачове — пак пращаме натам
-      if (status.hasUnplayedMatchesToday) {
-        const gid = status.gameSave?.id ?? currentGameSave.id;
-        navigate(`/today-matches/${gid}`);
-        return;
-      }
-    } else {
-      const fallback = await refreshGameStatus();
-      if (fallback?.hasUnplayedMatchesToday) {
-        navigate(`/today-matches/${fallback.gameSave?.id ?? currentGameSave.id}`);
-        return;
-      }
-    }
-  } catch (err) {
-    console.error("Next Day failed:", err);
-  } finally {
-    stopProcessing();
-  }
-};
-
-
-  const handleGoToMatch = () => activeMatch && navigate(`/match/${activeMatch.id}`);
-  const handleGoToTodayMatches = () =>
-    currentGameSave && navigate(`/today-matches/${currentGameSave.id}`);
-
-  // 🔘 Определяне на бутона според състоянието
-  let buttonLabel = "Next Day →";
-  let buttonAction = handleNextDay;
-  let buttonTitle = "Continue to next day";
-
-  if (activeMatch) {
-    buttonLabel = "To Match";
-    buttonAction = handleGoToMatch;
-    buttonTitle = "Continue active match";
-  } else if (hasUnplayed) {
-    buttonLabel = "Match Day";
-    buttonAction = handleGoToTodayMatches;
-    buttonTitle = "You have unplayed matches today";
-  }
+  const buttonLabel = hasUnplayed ? "Match Day" : "Next Day →";
+  const buttonColor = hasUnplayed
+    ? "bg-amber-600 hover:bg-amber-700"
+    : "bg-sky-600 hover:bg-sky-700";
 
   return (
     <header className="flex justify-between items-center px-6 py-3 bg-slate-800 text-white shadow-md">
@@ -204,15 +182,9 @@ function Header({ username }) {
           {team ? `€${team.balance.toLocaleString()}` : "€0"}
         </span>
         <button
-          onClick={buttonAction}
-          title={buttonTitle}
-          className={`px-4 py-2 rounded-lg font-medium transition ${
-            activeMatch
-              ? "bg-green-600 hover:bg-green-700"
-              : hasUnplayed
-              ? "bg-amber-600 hover:bg-amber-700"
-              : "bg-sky-600 hover:bg-sky-700"
-          }`}
+          onClick={handleNextDay}
+          className={`px-4 py-2 rounded-lg font-medium transition ${buttonColor}`}
+          title={hasUnplayed ? "Go to today's matches" : "Advance to next day"}
         >
           {buttonLabel}
         </button>

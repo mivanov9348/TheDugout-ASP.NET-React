@@ -8,7 +8,7 @@ export default function PlayerStats({ cup }) {
   if (!cup?.playerStats || cup.playerStats.length === 0)
     return (
       <div className="text-center text-slate-400 italic py-10 bg-gradient-to-b from-gray-900 to-gray-950 rounded-2xl border border-gray-800 shadow-lg">
-        ⚽ Все още няма статистика за играчите.
+        ⚽ Loading....
       </div>
     );
 
@@ -73,7 +73,7 @@ export default function PlayerStats({ cup }) {
               >
                 ⚽ Goals <SortIcon column="goals" />
               </th>
-              <th className="px-3 py-3 text-center">🎯 Мачове</th>
+              <th className="px-3 py-3 text-center">🎯 Matches</th>
             </tr>
           </thead>
 
@@ -109,7 +109,7 @@ export default function PlayerStats({ cup }) {
       </div>
 
       <div className="text-center mt-6 text-sm text-slate-500 italic">
-        📊 Сортирай по колона, за да откриеш топ голмайсторите.
+        📊 Sort by column.
       </div>
     </div>
   );

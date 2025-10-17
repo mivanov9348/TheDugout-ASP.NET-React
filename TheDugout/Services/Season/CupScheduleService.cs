@@ -1,15 +1,15 @@
-﻿using TheDugout.Models.Seasons;
-using TheDugout.Services.Season.Interfaces;
-
-namespace TheDugout.Services.Season
+﻿namespace TheDugout.Services.Season
 {
+    using TheDugout.Models.Seasons;
+    using TheDugout.Models.Fixtures;
+    using TheDugout.Services.Season.Interfaces;
     public class CupScheduleService : ICupScheduleService
     {
         public CupScheduleService()
         {
         }
 
-        public void AssignCupFixtures(List<Models.Fixtures.Fixture> fixtures, Models.Seasons.Season season)
+        public void AssignCupFixtures(List<Fixture> fixtures, Season season)
         {
             var candidateDates = season.Events
                 .Where(e => e.Type == SeasonEventType.CupMatch && !e.IsOccupied)

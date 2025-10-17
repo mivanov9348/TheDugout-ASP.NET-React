@@ -79,18 +79,22 @@ namespace TheDugout.Services.Season
             }
             else
             {
-                // равномерно разпределяне по оста на датите
+                if (remainingPhases <= 1)
+                {
+                    distributedDates.Add(candidateDates.First().Date);
+                    return distributedDates;
+                }
+
                 double step = (double)(available - 1) / (remainingPhases - 1);
 
                 HashSet<int> usedIndexes = new();
 
                 for (int i = 0; i < remainingPhases; i++)
                 {
-                    // изчисляваме плаващ индекс
                     double floatIndex = i * step;
                     int index = (int)Math.Round(floatIndex);
+                    index = Math.Min(index, available - 1); // <- предпазва от out of range
 
-                    // за всеки случай — избягваме дублиране при закръгляне
                     while (usedIndexes.Contains(index) && index < available - 1)
                         index++;
 
@@ -98,6 +102,7 @@ namespace TheDugout.Services.Season
                     distributedDates.Add(candidateDates[index].Date);
                 }
             }
+
 
             // Отбелязваме избраните като заети
             foreach (var date in distributedDates)

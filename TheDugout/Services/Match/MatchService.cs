@@ -300,6 +300,15 @@
                 Minute = match.CurrentMinute
             };
         }
+        public async Task SaveMatchProgressAsync(Match match)
+        {
+            if (match == null)
+                throw new ArgumentNullException(nameof(match));
 
+            _context.Matches.Update(match);
+            _context.Fixtures.Update(match.Fixture);
+
+            await _context.SaveChangesAsync();
+        }
     }
 }

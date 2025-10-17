@@ -1,10 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using TheDugout.Data;
-using TheDugout.Models.Competitions;
-
-namespace TheDugout.Controllers
+﻿namespace TheDugout.Controllers
 {
+    using Microsoft.AspNetCore.Mvc;
+    using Microsoft.EntityFrameworkCore;
+    using TheDugout.Data;
+    using TheDugout.Models.Competitions;
+
     [ApiController]
     [Route("api/[controller]")]
     public class CupController : ControllerBase
@@ -35,25 +35,29 @@ namespace TheDugout.Controllers
 
             foreach (var c in cups)
             {
-                // Зареждаме всички fixtures от тази купа
+                // Всички fixtures от тази купа
                 var fixtureIds = c.Rounds.SelectMany(r => r.Fixtures).Select(f => f.Id).ToList();
 
-                // ЗАРЕЖДАНЕ НА МАЧОВЕТЕ за тези fixtures
-                var matchIds = await _context.Matches
+                // Зареждаме всички мачове (включително дузпите)
+                var matches = await _context.Matches
                     .Where(m => fixtureIds.Contains(m.FixtureId) && m.CompetitionId == c.CompetitionId)
-                    .Select(m => m.Id)
+                    .Include(m => m.Penalties)
                     .ToListAsync();
 
                 // Зареждаме голмайсторите за всички тези мачове
+                var matchIds = matches.Select(m => m.Id).ToList();
+
                 var goalScorersLookup = await _context.PlayerMatchStats
                     .Where(ps => matchIds.Contains(ps.MatchId) && ps.Goals > 0)
                     .Include(ps => ps.Player).ThenInclude(p => p.Team)
                     .ToListAsync();
 
+                // Общо голове в турнира
                 var totalGoals = c.Rounds
                     .SelectMany(r => r.Fixtures)
                     .Sum(f => (f.HomeTeamGoals ?? 0) + (f.AwayTeamGoals ?? 0));
 
+                // Играческа статистика за турнира
                 var cupPlayerStats = await _context.PlayerSeasonStats
                     .Where(p => p.CompetitionId == c.CompetitionId && p.SeasonId == seasonId)
                     .Include(p => p.Player).ThenInclude(pl => pl.Team)
@@ -61,7 +65,7 @@ namespace TheDugout.Controllers
                     {
                         PlayerId = p.PlayerId,
                         PlayerName = p.Player.FirstName,
-                        TeamName = p.Player.Team.Name != null ? p.Player.Team.Name : "Unknown",
+                        TeamName = p.Player.Team.Name ?? "Unknown",
                         Goals = p.Goals,
                         Matches = p.MatchesPlayed
                     })
@@ -69,6 +73,7 @@ namespace TheDugout.Controllers
                     .ThenBy(p => p.PlayerName)
                     .ToListAsync();
 
+                // Сглобяваме финалния резултат
                 result.Add(new
                 {
                     c.Id,
@@ -95,10 +100,17 @@ namespace TheDugout.Controllers
                             r.Id,
                             r.RoundNumber,
                             r.Name,
-                            Fixtures = r.Fixtures.Select(f => {
-                                // Намираме matchId за този fixture
-                                var matchId = _context.Matches
-                                    .FirstOrDefault(m => m.FixtureId == f.Id && m.CompetitionId == c.CompetitionId)?.Id ?? 0;
+                            Fixtures = r.Fixtures.Select(f =>
+                            {
+                                var match = matches.FirstOrDefault(m => m.FixtureId == f.Id);
+
+                                string? penaltiesResult = null;
+                                if (match != null && match.Penalties.Any())
+                                {
+                                    var homePenalties = match.Penalties.Count(p => p.TeamId == f.HomeTeamId && p.IsScored);
+                                    var awayPenalties = match.Penalties.Count(p => p.TeamId == f.AwayTeamId && p.IsScored);
+                                    penaltiesResult = $"({homePenalties} - {awayPenalties} п.)";
+                                }
 
                                 return new
                                 {
@@ -106,17 +118,28 @@ namespace TheDugout.Controllers
                                     f.Round,
                                     f.Date,
                                     f.Status,
-                                    HomeTeam = new { f.HomeTeamId, f.HomeTeam.Name, LogoFileName = f.HomeTeam.LogoFileName },
-                                    AwayTeam = new { f.AwayTeamId, f.AwayTeam.Name, LogoFileName = f.AwayTeam.LogoFileName },
+                                    HomeTeam = new
+                                    {
+                                        f.HomeTeamId,
+                                        f.HomeTeam.Name,
+                                        LogoFileName = f.HomeTeam.LogoFileName
+                                    },
+                                    AwayTeam = new
+                                    {
+                                        f.AwayTeamId,
+                                        f.AwayTeam.Name,
+                                        LogoFileName = f.AwayTeam.LogoFileName
+                                    },
                                     f.HomeTeamGoals,
                                     f.AwayTeamGoals,
-                                    MatchId = matchId, 
+                                    MatchId = match?.Id,
+                                    PenaltiesResult = penaltiesResult,
                                     GoalScorers = goalScorersLookup
-                                        .Where(g => g.MatchId == matchId)
+                                        .Where(g => g.MatchId == match?.Id)
                                         .Select(g => new
                                         {
                                             g.Player.FirstName,
-                                            TeamName = g.Player.Team.Name != null ? g.Player.Team.Name : "Unknown",
+                                            TeamName = g.Player.Team.Name ?? "Unknown",
                                             g.Goals
                                         })
                                         .ToList()
@@ -129,6 +152,7 @@ namespace TheDugout.Controllers
 
             return Ok(result);
         }
+
 
 
         [HttpGet("{cupId}/player-stats")]

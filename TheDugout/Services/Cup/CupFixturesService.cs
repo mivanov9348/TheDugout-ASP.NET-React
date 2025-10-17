@@ -149,12 +149,25 @@ namespace TheDugout.Services.Cup
                     homeId,
                     awayId,
                     DateTime.MinValue,
-                    1,
+                    nextRound.RoundNumber ?? 1,
                     CompetitionTypeEnum.DomesticCup,
                     nextRound
                 );
 
                 fixtures.Add(fixture);
+            }
+
+
+            if (fixtures.Any())
+            {
+                var season = await _context.Seasons
+                    .Include(s => s.Events)
+                    .FirstOrDefaultAsync(s => s.GameSaveId == gameSaveId && s.IsActive);
+
+                if (season != null)
+                {
+                    _cupScheduleService.AssignCupFixtures(fixtures, season);
+                }
             }
 
             nextRound.Fixtures = fixtures;

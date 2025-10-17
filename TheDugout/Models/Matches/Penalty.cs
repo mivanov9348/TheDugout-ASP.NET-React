@@ -1,9 +1,8 @@
-﻿using TheDugout.Models.Game;
-using TheDugout.Models.Players;
-using TheDugout.Models.Teams;
-
-namespace TheDugout.Models.Matches
+﻿namespace TheDugout.Models.Matches
 {
+    using TheDugout.Models.Game;
+    using TheDugout.Models.Players;
+    using TheDugout.Models.Teams;
     public class Penalty
     {
         public int Id { get; set; }

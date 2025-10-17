@@ -69,7 +69,7 @@ export default function Knockouts({ cup }) {
                         (m.homeTeamPenalties != null ||
                           m.awayTeamPenalties != null) && (
                           <span className="text-xs text-slate-400 block mt-1">
-                            (пен. {m.homeTeamPenalties} : {m.awayTeamPenalties})
+                            (pen. {m.homeTeamPenalties} : {m.awayTeamPenalties})
                           </span>
                         )}
                     </>
@@ -100,7 +100,7 @@ export default function Knockouts({ cup }) {
       ))}
 
       <div className="text-center mt-8 text-sm text-slate-500 italic">
-        ⚔️ Елиминационна фаза на турнира — {cup?.seasonName || "сезон"}
+        ⚔️ Elimination Phase — {cup?.seasonName || "сезон"}
       </div>
     </div>
   );

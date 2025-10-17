@@ -44,17 +44,6 @@
             _penaltyService = penaltyService;
             _context = context;
         }
-        public async Task StartMatch(Match match)
-        {
-            match.Status = MatchStatus.Live;
-            match.CurrentMinute = 0;
-            match.Fixture.HomeTeamGoals = 0;
-            match.Fixture.AwayTeamGoals = 0;
-            match.CurrentTurn = MatchTurn.Home;
-
-            if (match.PlayerStats == null || !match.PlayerStats.Any())
-                match.PlayerStats = await _playerStatsService.InitializeMatchStatsAsync(match);
-        }
         public async Task EndMatch(Match match)
         {
             match.Status = MatchStatus.Played;
@@ -85,7 +74,7 @@
         }
         public void PlayNextMinute(Match match)
         {
-            int increment = _random.Next(1, 11);
+            int increment = _random.Next(1, 26);
             match.CurrentMinute += increment;
         }
         public void ChangeTurn(Match match)
@@ -98,58 +87,101 @@
         {
             return match.CurrentMinute >= 90;
         }
-        public async Task<MatchEvent?> PlayStep(Match match)
-        {
-            if (IsMatchFinished(match))
-            {
-                EndMatch(match);
-                return null;
-            }
+        //public async Task<Match> SimulateMatchAsync(Fixture fixture, GameSave gameSave)
+        //{
+        //    if (fixture is null) throw new ArgumentNullException(nameof(fixture));
+        //    if (gameSave is null) throw new ArgumentNullException(nameof(gameSave));
 
-            // 1. Минутка
-            PlayNextMinute(match);
+        //    var sw = Stopwatch.StartNew();
 
-            // 2. Определи отбора в атака
-            var currentTeamId = match.CurrentTurn == MatchTurn.Home
-                ? match.Fixture.HomeTeamId
-                : match.Fixture.AwayTeamId;
+        //    var dbFixture = await _context.Fixtures
+        //                    .Include(f => f.HomeTeam).ThenInclude(t => t.Players)
+        //                    .Include(f => f.AwayTeam).ThenInclude(t => t.Players)
+        //                    .Include(f => f.EuropeanCupPhase).ThenInclude(p => p.PhaseTemplate)
+        //                    .FirstOrDefaultAsync(f => f.Id == fixture.Id);
 
-            var currentTeam = _context.Teams.FirstOrDefault(t => t.Id == currentTeamId)
-                ?? throw new InvalidOperationException($"Team {currentTeamId} not found.");
+        //    if (dbFixture is null)
+        //        throw new InvalidOperationException($"Fixture with Id {fixture.Id} not found in DB.");
 
-            var lineup = await _teamPlanService.GetStartingLineupAsync(currentTeam);
-            var outfieldPlayers = lineup.Where(p => p.Position.Code != "GK").ToList();
-            if (!outfieldPlayers.Any())
-                throw new InvalidOperationException($"No outfield players found for team {currentTeam.Id}");
+        //    var match = await _matchService.GetOrCreateMatchAsync(fixture, gameSave);
 
-            var player = outfieldPlayers[_random.Next(outfieldPlayers.Count)];
+        //    match.PlayerStats = await _playerStatsService.EnsureMatchStatsAsync(match);
 
-            // 3. Евент
-            var eventType = _matchEventService.GetRandomEvent();
-            var outcome = _matchEventService.GetEventOutcome(player, eventType);
-            var commentary = _matchEventService.GetRandomCommentary(outcome, player);
+        //    int eventCount = 0;
 
-            var matchEvent = await _matchEventService.CreateMatchEvent(match.Id, match.CurrentMinute, currentTeam, player, eventType, outcome, commentary);
+        //    while (!IsMatchFinished(match))
+        //    {
+        //        PlayNextMinute(match);
 
-            UpdateFixtureScore(match.Fixture,currentTeamId);
+        //        var currentTeamId = match.CurrentTurn == MatchTurn.Home
+        //                            ? match.Fixture.HomeTeamId
+        //                            : match.Fixture.AwayTeamId;
 
-            // 4. Ъпдейт на статистики
-            var playerStats = match.PlayerStats.FirstOrDefault(s => s.PlayerId == player.Id);
-            if (playerStats != null)
-                _playerStatsService.UpdateStats(matchEvent, playerStats);
+        //        var currentTeam = match.CurrentTurn == MatchTurn.Home
+        //                        ? match.Fixture.HomeTeam
+        //                        : match.Fixture.AwayTeam;
 
-            // 5. Смяна на притежание
-            ChangeTurn(match);
+        //        if (currentTeam == null)
+        //            throw new InvalidOperationException($"Team {currentTeamId} not found.");
 
-            // 6. Ако вече е минало 90' → край
-            if (IsMatchFinished(match))
-            {
-                await EndMatch(match);
-                await _standingsDispatcher.UpdateAfterMatchAsync(match.Fixture);
-            }
+        //        var lineup = await _teamPlanService.GetStartingLineupAsync(currentTeam, includeDetails: false);
 
-            return matchEvent;
-        }
+        //        var outfieldPlayers = lineup
+        //            .Where(p => p.Position.Code != "GK")
+        //            .ToList(); if (!outfieldPlayers.Any())
+        //            throw new InvalidOperationException($"No outfield players found for team {currentTeam.Id}");
+
+        //        if (outfieldPlayers.Count == 0)
+        //            throw new InvalidOperationException($"No outfield players found for team {currentTeam.Id}");
+
+        //        var player = outfieldPlayers[_random.Next(outfieldPlayers.Count)];
+
+        //        var eventType = _matchEventService.GetRandomEvent();
+        //        var outcome = _matchEventService.GetEventOutcome(player, eventType);
+
+        //        if (eventType.Code == "SHT" && outcome.Name == "Goal")
+        //        {
+        //            UpdateFixtureScore(dbFixture, currentTeamId);
+        //            await _context.SaveChangesAsync();
+        //        }
+
+        //        var playerStatsMap = match.PlayerStats.ToDictionary(s => s.PlayerId);
+        //        if (playerStatsMap.TryGetValue(player.Id, out var stats))
+        //        {
+        //            _playerStatsService.UpdateStats(new MatchEvent
+        //            {
+        //                Minute = match.CurrentMinute,
+        //                Player = player,
+        //                Team = currentTeam,
+        //                TeamId = currentTeam.Id,
+        //                EventType = eventType,
+        //                EventTypeId = eventType.Id,
+        //                Outcome = outcome
+        //            }, stats);
+        //        }
+
+        //        ChangeTurn(match);
+        //        eventCount++;
+        //    }
+
+        //    await EndMatch(match);
+
+        //    var fixtureAfter = match.Fixture ?? dbFixture;
+        //    bool isKnockout = fixtureAfter.IsElimination
+        //                      || (fixtureAfter.EuropeanCupPhase?.PhaseTemplate?.IsKnockout == true);
+
+        //    if (isKnockout && fixtureAfter.WinnerTeamId == null)
+        //    {
+        //        await HandlePenaltyShootoutAsync(match);
+        //    }
+
+        //    await _standingsDispatcher.UpdateAfterMatchAsync(match.Fixture);
+
+        //    sw.Stop();
+
+        //    return match;
+        //}
+
         public async Task<Match> SimulateMatchAsync(Fixture fixture, GameSave gameSave)
         {
             if (fixture is null) throw new ArgumentNullException(nameof(fixture));
@@ -158,10 +190,10 @@
             var sw = Stopwatch.StartNew();
 
             var dbFixture = await _context.Fixtures
-                            .Include(f => f.HomeTeam).ThenInclude(t => t.Players)
-                            .Include(f => f.AwayTeam).ThenInclude(t => t.Players)
-                            .Include(f => f.EuropeanCupPhase).ThenInclude(p => p.PhaseTemplate)
-                            .FirstOrDefaultAsync(f => f.Id == fixture.Id);
+                .Include(f => f.HomeTeam).ThenInclude(t => t.Players)
+                .Include(f => f.AwayTeam).ThenInclude(t => t.Players)
+                .Include(f => f.EuropeanCupPhase).ThenInclude(p => p.PhaseTemplate)
+                .FirstOrDefaultAsync(f => f.Id == fixture.Id);
 
             if (dbFixture is null)
                 throw new InvalidOperationException($"Fixture with Id {fixture.Id} not found in DB.");
@@ -177,24 +209,20 @@
                 PlayNextMinute(match);
 
                 var currentTeamId = match.CurrentTurn == MatchTurn.Home
-                                    ? match.Fixture.HomeTeamId
-                                    : match.Fixture.AwayTeamId;
+                    ? match.Fixture.HomeTeamId
+                    : match.Fixture.AwayTeamId;
 
                 var currentTeam = match.CurrentTurn == MatchTurn.Home
-                                ? match.Fixture.HomeTeam
-                                : match.Fixture.AwayTeam;
+                    ? match.Fixture.HomeTeam
+                    : match.Fixture.AwayTeam;
 
                 if (currentTeam == null)
                     throw new InvalidOperationException($"Team {currentTeamId} not found.");
 
                 var lineup = await _teamPlanService.GetStartingLineupAsync(currentTeam, includeDetails: false);
+                var outfieldPlayers = lineup.Where(p => p.Position.Code != "GK").ToList();
 
-                var outfieldPlayers = lineup
-                    .Where(p => p.Position.Code != "GK")
-                    .ToList(); if (!outfieldPlayers.Any())
-                    throw new InvalidOperationException($"No outfield players found for team {currentTeam.Id}");
-
-                if (outfieldPlayers.Count == 0)
+                if (!outfieldPlayers.Any())
                     throw new InvalidOperationException($"No outfield players found for team {currentTeam.Id}");
 
                 var player = outfieldPlayers[_random.Next(outfieldPlayers.Count)];
@@ -205,7 +233,6 @@
                 if (eventType.Code == "SHT" && outcome.Name == "Goal")
                 {
                     UpdateFixtureScore(dbFixture, currentTeamId);
-                    await _context.SaveChangesAsync();
                 }
 
                 var playerStatsMap = match.PlayerStats.ToDictionary(s => s.PlayerId);
@@ -223,11 +250,18 @@
                     }, stats);
                 }
 
+                // 💾 Ново: сейвваме прогреса на всеки няколко стъпки (например на всеки 5)
+                if (eventCount % 5 == 0)
+                {
+                    await _matchService.SaveMatchProgressAsync(match);
+                }
+
                 ChangeTurn(match);
                 eventCount++;
             }
 
             await EndMatch(match);
+            await _matchService.SaveMatchProgressAsync(match); // 💾 крайно сейвване
 
             var fixtureAfter = match.Fixture ?? dbFixture;
             bool isKnockout = fixtureAfter.IsElimination
@@ -241,9 +275,9 @@
             await _standingsDispatcher.UpdateAfterMatchAsync(match.Fixture);
 
             sw.Stop();
-
             return match;
         }
+
         private void UpdateFixtureScore(Fixture fixture, int? currentTeamId)
         {
             if (currentTeamId == fixture.HomeTeamId)
@@ -266,11 +300,7 @@
         }
         public async Task RunMatch(Match match)
         {
-            StartMatch(match);
-            while (!IsMatchFinished(match))
-                await PlayStep(match);
-
-            await EndMatch(match);
+            await SimulateMatchAsync(match.Fixture, match.Fixture.GameSave);
         }
     }
 }

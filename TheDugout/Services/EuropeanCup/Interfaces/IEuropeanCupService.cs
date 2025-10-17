@@ -1,9 +1,10 @@
 ﻿namespace TheDugout.Services.EuropeanCup.Interfaces
 {
     using TheDugout.Models.Competitions;
+    using TheDugout.Models.Fixtures;
     public interface IEuropeanCupService
     {        
-            Task<Models.Competitions.EuropeanCup> InitializeTournamentAsync(
+            Task<EuropeanCup> InitializeTournamentAsync(
                 int templateId,
                 int gameSaveId,
                 int seasonId,
@@ -12,6 +13,7 @@
         Task UpdateStandingsForPhaseAsync(int europeanCupPhaseId, CancellationToken ct = default);
         Task<bool> IsEuropeanCupFinishedAsync(int euroCupId);
         Task<List<CompetitionSeasonResult>> GenerateEuropeanCupResultsAsync(int seasonId);
+        Task HandleFinalMatchCompletionAsync(int europeanCupId, Fixture finalMatch, CancellationToken ct = default);
 
     }
 }

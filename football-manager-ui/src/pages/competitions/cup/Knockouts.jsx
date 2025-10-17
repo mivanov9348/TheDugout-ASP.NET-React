@@ -30,9 +30,16 @@ export default function Knockouts() {
                     </div>
 
                     <span className="font-bold text-sky-600">
-                      {match.status === "Played"
-                        ? `${match.homeTeamGoals} - ${match.awayTeamGoals}`
-                        : "—"}
+                      {match.status === "Played" ? (
+                        <>
+                          {match.homeTeamGoals} - {match.awayTeamGoals}{" "}
+                          {match.penaltiesResult && (
+                            <span className="text-gray-500 text-sm">{match.penaltiesResult}</span>
+                          )}
+                        </>
+                      ) : (
+                        "—"
+                      )}
                     </span>
 
                     <div className="flex items-center gap-2 flex-1 justify-end">
@@ -44,6 +51,17 @@ export default function Knockouts() {
                       />
                     </div>
                   </div>
+
+                  {/* 🔹 Дата на мача */}
+                  {match.date && (
+                    <div className="text-center text-sm text-gray-500 mt-2">
+                      {new Date(match.date).toLocaleDateString("bg-BG", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                      })}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

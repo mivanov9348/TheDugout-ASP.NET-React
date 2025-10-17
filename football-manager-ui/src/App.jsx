@@ -28,7 +28,6 @@ import PlayerProfile from "./pages/PlayerProfile";
 import Facilities from "./pages/Facilities";
 import Match from "./pages/Match";
 import TodayMatches from "./pages/TodayMatches";
-import MatchPreview from "./pages/MatchPreview";
 import SeasonReview from "./pages/Season/SeasonReview";
 
 import Competitions from "./pages/competitions/Competitions";
@@ -470,10 +469,7 @@ function AppInner() {
                           path="/today-matches/:gameSaveId"
                           element={<TodayMatches />}
                         />
-                        <Route
-                          path="/live-match/:fixtureId"
-                          element={<MatchPreview />}
-                        />
+                      
                         <Route
                           path="/season-review"
                           element={<SeasonReview gameSaveId={currentGameSave?.id} />}

@@ -77,6 +77,7 @@ builder.Services.AddScoped<ITransferQueryService, TransferQueryService>();
 builder.Services.AddScoped<IClubToClubTransferService, ClubToClubTransferService>();
 builder.Services.AddScoped<IFreeAgentTransferService, FreeAgentTransferService>();
 builder.Services.AddScoped<IEuropeanCupService, EuropeanCupService>();
+builder.Services.AddScoped<IEuroCupTeamService, EuroCupTeamService>();
 builder.Services.AddScoped<ICupService, CupService>();
 builder.Services.AddScoped<IAgencyService, AgencyService>();
 builder.Services.AddScoped<IFixturesHelperService, FixturesHelperService>();

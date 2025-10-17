@@ -5,6 +5,7 @@ using TheDugout.Data;
 using TheDugout.Models.Enums;
 using TheDugout.Models.Fixtures;
 using TheDugout.Services.Cup.Interfaces;
+using TheDugout.Services.EuropeanCup;
 using TheDugout.Services.EuropeanCup.Interfaces;
 using TheDugout.Services.League.Interfaces;
 
@@ -17,9 +18,11 @@ namespace TheDugout.Services.Standings
         private readonly ILeagueStandingsService _leagueStandingsService;
         private readonly ICupFixturesService _cupFixturesService;
         private readonly IEuropeanCupStandingService _eurocupStandingsService;
+        private readonly IEuroCupTeamService _euroCupTeamService;
+        private readonly IEuropeanCupService _europeanCupService;
         private readonly IEurocupKnockoutService _eurocupKnockoutService;
 
-        public StandingsDispatcherService(ILogger<StandingsDispatcherService> logger, DugoutDbContext context, ILeagueStandingsService leagueStandingsService, ICupFixturesService cupFixturesService, IEuropeanCupStandingService eurocupStandingsService, IEurocupKnockoutService eurocupKnockoutService)
+        public StandingsDispatcherService(ILogger<StandingsDispatcherService> logger, DugoutDbContext context, ILeagueStandingsService leagueStandingsService, ICupFixturesService cupFixturesService, IEuropeanCupStandingService eurocupStandingsService, IEurocupKnockoutService eurocupKnockoutService, IEuroCupTeamService euroCupTeamService, IEuropeanCupService europeanCupService)
         {
             _logger = logger;
             _context = context;
@@ -27,6 +30,8 @@ namespace TheDugout.Services.Standings
             _cupFixturesService = cupFixturesService;
             _eurocupStandingsService = eurocupStandingsService;
             _eurocupKnockoutService = eurocupKnockoutService;
+            _euroCupTeamService = euroCupTeamService;
+            _europeanCupService = europeanCupService;
         }
 
         public async Task UpdateAfterMatchAsync(Models.Fixtures.Fixture fixture, CancellationToken ct = default)
@@ -83,11 +88,14 @@ namespace TheDugout.Services.Standings
                     if (fixture.EuropeanCupPhaseId.HasValue)
                     {
                         var phase = await _context.EuropeanCupPhases
-                            .Include(p => p.PhaseTemplate)
-                            .Include(p => p.EuropeanCup)
-                                .ThenInclude(c => c.Phases)
-                                    .ThenInclude(p => p.Fixtures)
-                            .FirstOrDefaultAsync(p => p.Id == fixture.EuropeanCupPhaseId.Value, ct);
+    .Include(p => p.PhaseTemplate)
+    .Include(p => p.EuropeanCup)
+        .ThenInclude(c => c.Phases)
+            .ThenInclude(p => p.PhaseTemplate)  
+    .Include(p => p.EuropeanCup)
+        .ThenInclude(c => c.Phases)
+            .ThenInclude(p => p.Fixtures)
+    .FirstOrDefaultAsync(p => p.Id == fixture.EuropeanCupPhaseId.Value, ct);
 
                         if (phase?.PhaseTemplate?.IsKnockout == false)
                         {
@@ -103,9 +111,28 @@ namespace TheDugout.Services.Standings
                         else
                         {
                             bool allMatchesFinished = phase.Fixtures.All(f => f.Status == FixtureStatusEnum.Played);
+
                             if (allMatchesFinished)
                             {
-                                await _eurocupKnockoutService.GenerateNextKnockoutPhaseAsync(phase.EuropeanCupId, phase.PhaseTemplate.Order);
+                                bool isFinalPhase = !phase.EuropeanCup.Phases
+                                    .Any(p => p.PhaseTemplate.Order > phase.PhaseTemplate.Order);
+
+                                if (isFinalPhase)
+                                {
+                                    var finalMatch = phase.Fixtures
+                                        .OrderByDescending(f => f.Date)
+                                        .FirstOrDefault();
+
+                                    if (finalMatch != null)
+                                        await _europeanCupService.HandleFinalMatchCompletionAsync(phase.EuropeanCupId, finalMatch, ct);
+                                }
+                                else
+                                {
+                                    await _eurocupKnockoutService.GenerateNextKnockoutPhaseAsync(
+                                        phase.EuropeanCupId,
+                                        phase.PhaseTemplate.Order
+                                    );
+                                }
                             }
                         }
                     }

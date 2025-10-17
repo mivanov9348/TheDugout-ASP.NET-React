@@ -1,11 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using TheDugout.Data;
-using TheDugout.DTOs.Dashboard;
-using TheDugout.Services.Transfer;
-
-namespace TheDugout.Controllers
+﻿namespace TheDugout.Controllers
 {
+    using Microsoft.AspNetCore.Mvc;
+    using Microsoft.EntityFrameworkCore;
+    using TheDugout.Data;
+    using TheDugout.DTOs.Dashboard;
+    using TheDugout.Services.Transfer;
+
     [ApiController]
     [Route("api/[controller]")]
     public class DashboardController : ControllerBase

@@ -1,6 +1,6 @@
 // src/pages/TodayMatches.jsx
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { Trophy, Play } from "lucide-react";
 import TeamLogo from "../components/TeamLogo";
 import { useProcessing } from "../context/ProcessingContext";
@@ -9,8 +9,6 @@ import { useGame } from "../context/GameContext";
 export default function TodayMatches() {
   const { gameSaveId } = useParams();
   const [matches, setMatches] = useState([]);
-  const [userFixtureId, setUserFixtureId] = useState(null);
-  const [activeMatchLocal, setActiveMatchLocal] = useState(null);
 
   const {
     setCurrentGameSave,
@@ -19,8 +17,7 @@ export default function TodayMatches() {
     refreshGameStatus,
   } = useGame();
 
-  const { isProcessing, startProcessing, stopProcessing, runSimulateMatches } = useProcessing();
-  const navigate = useNavigate();
+  const { isProcessing, stopProcessing, runSimulateMatches } = useProcessing();
 
   const normalizeMatch = (m) => ({
     fixtureId: m.fixtureId ?? m.FixtureId,
@@ -29,17 +26,18 @@ export default function TodayMatches() {
     away: m.away ?? m.Away,
     homeGoals: m.homeGoals ?? m.HomeGoals,
     awayGoals: m.awayGoals ?? m.AwayGoals,
-    status: m.status ?? m.Status ?? 0,
+    status: Number(m.status ?? m.Status ?? 0), // 👈 гарантираме, че е число
     isUserTeamMatch:
       typeof m.isUserTeamMatch !== "undefined"
         ? m.isUserTeamMatch
         : m.IsUserTeamMatch ?? false,
     homeLogoFileName: m.homeLogoFileName ?? m.HomeLogoFileName,
     awayLogoFileName: m.awayLogoFileName ?? m.AwayLogoFileName,
-
-    homePenalties: m.homePenalties ?? m.HomePenalties ?? null,
-    awayPenalties: m.awayPenalties ?? m.AwayPenalties ?? null,
+    homePenalties: m.homePenalties ?? m.HomePenalties ?? 0,
+    awayPenalties: m.awayPenalties ?? m.AwayPenalties ?? 0,
+    isElimination: m.isElimination ?? m.IsElimination ?? false, // 👈 ново
   });
+
 
   const loadMatches = async () => {
     try {
@@ -53,12 +51,10 @@ export default function TodayMatches() {
       const data = await res.json();
       const normalized = (data.matches ?? []).map(normalizeMatch);
       setMatches(normalized);
+
       if (data.activeMatch) {
-        setActiveMatchLocal(data.activeMatch);
         setActiveMatch(data.activeMatch);
       }
-      const userMatch = normalized.find((m) => m.isUserTeamMatch);
-      setUserFixtureId(userMatch?.fixtureId ?? null);
     } catch (err) {
       console.error("Failed to fetch matches", err);
     }
@@ -68,27 +64,19 @@ export default function TodayMatches() {
     loadMatches();
   }, [gameSaveId]);
 
-  const handleToMatch = () => {
-    if (userFixtureId) navigate(`/live-match/${userFixtureId}`);
-  };
-
   const handleSimulate = async () => {
     try {
-      const data = await runSimulateMatches(gameSaveId); // използвай ProcessingContext функцията
+      const data = await runSimulateMatches(gameSaveId);
 
       if (!data) return;
 
-      // обнови състоянието на мачовете (след като симулацията приключи)
       if (data.matches) {
         const normalized = data.matches.map(normalizeMatch);
         setMatches(normalized);
-        const userMatch = normalized.find((m) => m.isUserTeamMatch);
-        setUserFixtureId(userMatch?.fixtureId ?? null);
       } else {
         await loadMatches();
       }
 
-      // ако бекендът връща статус за играта
       const status = data.gameStatus ?? data.gameStatus;
       if (status) {
         if (status.gameSave) setCurrentGameSave(status.gameSave);
@@ -101,10 +89,9 @@ export default function TodayMatches() {
       console.error("Simulation failed:", err);
       alert("Error simulating matches");
     } finally {
-      stopProcessing(); // спира overlay-а, когато приключи
+      stopProcessing();
     }
   };
-
 
   const hasUnplayedMatches = matches.some((m) => m.status === 0);
 
@@ -152,19 +139,6 @@ export default function TodayMatches() {
   return (
     <div className="p-6 sm:p-8 space-y-10 max-w-5xl mx-auto">
       <div className="flex justify-center gap-4 mb-6">
-        <button
-          onClick={handleToMatch}
-          disabled={!userFixtureId}
-          className={`flex items-center gap-2 px-6 py-3 rounded-2xl shadow-md font-semibold transition transform
-            ${userFixtureId
-              ? "bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800 text-white hover:scale-105"
-              : "bg-gray-300 text-gray-500 cursor-not-allowed"
-            }`}
-        >
-          <Play className="w-5 h-5" />
-          To Match
-        </button>
-
         {hasUnplayedMatches && (
           <button
             onClick={handleSimulate}
@@ -220,10 +194,13 @@ export default function TodayMatches() {
                     {m.homeGoals != null && m.awayGoals != null
                       ? `${m.homeGoals} : ${m.awayGoals}`
                       : "vs"}
-                    {m.homePenalties > 0 || m.awayPenalties > 0
-                      ? ` (${m.homePenalties} : ${m.awayPenalties} pens)`
-                      : ""}
+                    {m.isElimination &&
+                      m.homeGoals === m.awayGoals &&
+                      (m.homePenalties > 0 || m.awayPenalties > 0) && (
+                        <> ({m.homePenalties} : {m.awayPenalties} pens)</>
+                      )}
                   </span>
+
                   {renderStatus(m.status)}
                 </div>
                 <div className="flex-1 flex items-center justify-start gap-2">
