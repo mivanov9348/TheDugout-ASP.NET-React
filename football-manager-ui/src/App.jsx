@@ -26,9 +26,9 @@ import TransferHistory from "./pages/TransferHistory";
 import Fixtures from "./pages/Fixtures";
 import PlayerProfile from "./pages/PlayerProfile";
 import Facilities from "./pages/Facilities";
-import Match from "./pages/Match";
 import TodayMatches from "./pages/TodayMatches";
 import SeasonReview from "./pages/Season/SeasonReview";
+import Match from "./pages/Match";
 
 import Competitions from "./pages/competitions/Competitions";
 import Cup from "./pages/competitions/Cup";
@@ -462,19 +462,18 @@ function AppInner() {
                           element={<PlayerProfile gameSaveId={currentGameSave?.id} />}
                         />
                         <Route
-                          path="/match"
-                          element={<Match gameSaveId={currentGameSave?.id} />}
+                          path="/match/:matchId"
+                          element={<Match />}
                         />
                         <Route
                           path="/today-matches/:gameSaveId"
                           element={<TodayMatches />}
                         />
-                      
+
                         <Route
                           path="/season-review"
                           element={<SeasonReview gameSaveId={currentGameSave?.id} />}
                         />
-                        <Route path="/match/:matchId" element={<Match />} />
                         <Route path="*" element={<div>404 Not Found</div>} />
                       </Routes>
                     </main>

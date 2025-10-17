@@ -1,269 +1,329 @@
-import { useState, useEffect, useRef } from "react";
-import { useParams } from "react-router-dom";
+// src/pages/Match.jsx
+import React, { useEffect, useState } from "react";
+import { useParams, useNavigate, Link } from "react-router-dom";
+import { ArrowLeft, Trophy, Clock, MapPin, Calendar, Users, AlertCircle } from "lucide-react";
 
-export default function Match() {
+/**
+ * Match.jsx
+ * Взима данни от: GET /api/matches/{matchId}
+ *
+ * Очаквана структура (пример):
+ * {
+ *   id,
+ *   date,
+ *   competition,
+ *   stadium,
+ *   status,
+ *   homeTeam: { name, logo, goals: [{ minute, scorer, playerId? }], penalties?: [{isScored, teamId, shooterName}] },
+ *   awayTeam: { name, logo, goals: [...] , penalties?: [...] }
+ * }
+ *
+ * Ако бекендът връща playerId в събитията - линкваме към /player/:playerId
+ */
+
+const placeholderLogo = "https://via.placeholder.com/128x128.png?text=No+Logo";
+
+const formatDate = (iso) => {
+  try {
+    const d = new Date(iso);
+    return d.toLocaleString(undefined, {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  } catch {
+    return iso ?? "";
+  }
+};
+
+const Match = () => {
   const { matchId } = useParams();
-  const [match, setMatch] = useState(null);
-  const [isRunning, setIsRunning] = useState(false);
-  const intervalRef = useRef(null);
+  const navigate = useNavigate();
 
-  // Load match initially
+  const [match, setMatch] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   useEffect(() => {
-    fetch(`/api/matches/${matchId}`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-    })
-      .then(async (res) => {
+    let cancelled = false;
+
+    const fetchMatch = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await fetch(`/api/matches/${matchId}`, {
+          credentials: "include",
+        });
+
         if (!res.ok) {
           const text = await res.text();
-          throw new Error(`Failed to load match: ${res.status} ${text}`);
+          throw new Error(text || `HTTP ${res.status}`);
         }
-        return res.json();
-      })
-      .then((data) => {
-        const matchData = data.view;
 
-        setMatch({
-          home: {
-            name: matchData.homeTeam?.name ?? "Unknown",
-            score: matchData.score?.home ?? 0,
-            starters: matchData.homeTeam?.starters || [],
-            subs: matchData.homeTeam?.subs || [],
-          },
-          away: {
-            name: matchData.awayTeam?.name ?? "Unknown",
-            score: matchData.score?.away ?? 0,
-            starters: matchData.awayTeam?.starters || [],
-            subs: matchData.awayTeam?.subs || [],
-          },
-          minute: matchData.minute ?? 0,
-          status: matchData.status ?? "Unknown",
-          commentary:
-            data.events?.map((e) => ({
-              minute: e.minute,
-              text: e.text,
-              team: e.team,
-              player: e.player,
-              type: e.eventType,
-              outcome: e.outcome,
-            })) || [],
-        });
-      })
+        const data = await res.json();
+        if (!cancelled) {
+          setMatch(data);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          console.error("Error loading match:", err);
+          setError(err.message || "Грешка при зареждане на мача");
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
 
-      .catch((err) => console.error("Error loading match", err));
+    fetchMatch();
+
+    return () => {
+      cancelled = true;
+    };
   }, [matchId]);
 
-  // Step function
-  const playStep = async () => {
-    try {
-      const res = await fetch(`/api/matches/${matchId}/step`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
-      const data = await res.json();
-
-      setMatch((prev) => {
-        if (!prev) return prev;
-
-        const newComment = data.matchEvent
-          ? {
-              minute: data.matchEvent.minute,
-              text: data.matchEvent.description,
-            }
-          : null;
-
-        return {
-          ...prev,
-          home: {
-            ...prev.home,
-            score: data.HomeScore ?? prev.home.score,
-          },
-          away: {
-            ...prev.away,
-            score: data.matchEvent?.awayScore ?? prev.away.score,
-          },
-          minute: data.minute,
-          status: data.matchStatus,
-          currentPlayerId: data.matchEvent?.playerId ?? null,
-          commentary: data.events.map((e) => ({
-            minute: e.minute,
-            text: e.description,
-          })),
-        };
-      });
-
-      // Ако е свършил мача → стоп
-      if (data.finished) {
-        clearInterval(intervalRef.current);
-        setIsRunning(false);
-      }
-    } catch (err) {
-      console.error("Step error:", err);
-      clearInterval(intervalRef.current);
-      setIsRunning(false);
-    }
-  };
-
-  // Start button logic
-  const handleStart = () => {
-    if (!isRunning) {
-      setIsRunning(true);
-      intervalRef.current = setInterval(playStep, 5000); // 5 сек на стъпка
-    }
-  };
-
-  if (!match) {
+  if (loading)
     return (
-      <div className="min-h-screen flex items-center justify-center text-white">
-        Loading match...
+      <div className="min-h-screen flex items-center justify-center bg-slate-900 text-white text-lg animate-pulse">
+        Зареждане на мач...
       </div>
     );
-  }
 
-  const { home, away, minute, commentary } = match;
+  if (error)
+    return (
+      <div className="min-h-screen bg-slate-900 text-white flex items-center justify-center p-6">
+        <div className="max-w-xl bg-white/5 p-8 rounded-2xl border border-white/10 text-center">
+          <AlertCircle className="mx-auto mb-4 w-12 h-12 text-red-400" />
+          <h2 className="text-lg font-bold">Неуспешно зареждане</h2>
+          <p className="mt-2 text-gray-300">{error}</p>
+          <div className="mt-6">
+            <button
+              onClick={() => navigate(-1)}
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-md font-semibold"
+            >
+              Назад
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+
+  // safety: normalize shape
+  const dateText = match.date ? formatDate(match.date) : "—";
+  const competition = match.competition ?? "—";
+  const stadium = match.stadium ?? "—";
+  const status = match.status ?? "Unknown";
+
+  const home = match.homeTeam ?? { name: "Home", logo: placeholderLogo, goals: [], penalties: [] };
+  const away = match.awayTeam ?? { name: "Away", logo: placeholderLogo, goals: [], penalties: [] };
+
+  const homeGoalsCount = Array.isArray(home.goals) ? home.goals.length : 0;
+  const awayGoalsCount = Array.isArray(away.goals) ? away.goals.length : 0;
+
+  const hasPenalties =
+    (Array.isArray(home.penalties) && home.penalties.length > 0) ||
+    (Array.isArray(away.penalties) && away.penalties.length > 0);
+
+  // Render helper for a goal line (optionally link to player profile if playerId provided)
+  const GoalLine = ({ goal, team }) => {
+    // goal: { minute, scorer, playerId? }
+    return (
+      <li className="flex justify-between items-center text-gray-200 text-sm">
+        <div className="truncate">
+          {goal.playerId ? (
+            <Link
+              to={`/player/${goal.playerId}`}
+              className="font-medium hover:underline hover:text-white transition-colors"
+            >
+              {goal.scorer}
+            </Link>
+          ) : (
+            <span className="font-medium">{goal.scorer}</span>
+          )}
+        </div>
+        <div className="ml-4 text-xs font-semibold">
+          <span className={team === "home" ? "text-blue-400" : "text-red-400"}>
+            {goal.minute}'
+          </span>{" "}
+          <span className="ml-1">⚽</span>
+        </div>
+      </li>
+    );
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-white p-6 flex flex-col">
-      {/* Control Buttons */}
-      <div className="w-full flex justify-center gap-4 mb-4">
-        {/* Start button */}
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 text-gray-100 flex justify-center items-start py-14 px-6 relative overflow-hidden">
+      <div className="absolute inset-0 bg-[url('https://i.imgur.com/Q7m5F1W.jpg')] bg-cover bg-center opacity-8 blur-sm"></div>
+      <div className="absolute inset-0 bg-gradient-to-b from-slate-900/90 via-slate-800/80 to-blue-900/90"></div>
+
+      <div className="relative z-10 bg-white/10 backdrop-blur-lg shadow-2xl rounded-3xl max-w-5xl w-full p-6 md:p-10 border border-white/20 transition-all">
+        {/* Back */}
         <button
-          onClick={handleStart}
-          disabled={isRunning}
-          className={`px-6 py-2 rounded-xl shadow-md text-lg font-bold transition ${
-            isRunning
-              ? "bg-gray-600 cursor-not-allowed"
-              : "bg-sky-600 hover:bg-sky-500"
-          }`}
+          onClick={() => navigate(-1)}
+          className="absolute top-6 left-6 flex items-center text-gray-300 hover:text-white transition-colors"
         >
-          {isRunning ? "Running..." : "Start"}
+          <ArrowLeft className="w-5 h-5 mr-2" />
+          <span className="hidden sm:inline font-medium">Назад</span>
         </button>
 
-        {/* Next Step button */}
-        <button
-          onClick={playStep}
-          disabled={isRunning} // деактивиран ако тече автоматичен режим
-          className={`px-6 py-2 rounded-xl shadow-md text-lg font-bold transition ${
-            isRunning
-              ? "bg-gray-600 cursor-not-allowed"
-              : "bg-emerald-600 hover:bg-emerald-500"
-          }`}
-        >
-          Next Step
-        </button>
-      </div>
+        {/* Top info */}
+        <div className="text-center pt-6">
+          <h1 className="text-2xl md:text-3xl font-extrabold text-white drop-shadow-lg flex justify-center items-center gap-3">
+            <Trophy className="text-yellow-400 w-6 h-6" />
+            Детайли за мача
+          </h1>
 
-      {/* Scoreboard */}
-      <div className="w-full flex flex-col items-center bg-gray-800 rounded-2xl shadow-lg p-4 border border-gray-700">
-        <div className="w-full flex justify-between items-center text-2xl font-bold">
-          <span className="truncate">{home.name}</span>
-          <span className="text-4xl text-sky-400 drop-shadow-lg">
-            {home.score} : {away.score}
-          </span>
-          <span className="truncate">{away.name}</span>
+          <div className="mt-3 flex flex-col sm:flex-row items-center justify-center gap-4 text-gray-300 text-sm">
+            <div className="flex items-center gap-2">
+              <Calendar className="w-4 h-4 text-blue-400" />
+              <span>{dateText}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <MapPin className="w-4 h-4 text-green-400" />
+              <span>{stadium}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Users className="w-4 h-4 text-indigo-400" />
+              <span>{competition}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Clock className="w-4 h-4 text-emerald-400" />
+              <span>{status}</span>
+            </div>
+          </div>
         </div>
-        <div className="text-sm mt-2">
-          <span className="px-3 py-1 rounded-full bg-gray-700 text-sky-300 font-semibold shadow-sm">
-            {minute}&apos;
-          </span>
+
+        {/* Scoreboard */}
+        <div className="mt-8 md:mt-10 flex flex-col md:flex-row justify-between items-center gap-6">
+          {/* Home */}
+          <div className="flex flex-col items-center w-full md:w-1/3">
+            <img
+              src={home.logo || placeholderLogo}
+              alt={home.name}
+              onError={(e) => (e.currentTarget.src = placeholderLogo)}
+              className="w-20 h-20 object-contain drop-shadow-[0_0_20px_rgba(37,99,235,0.45)]"
+            />
+            <h2 className="text-lg md:text-xl font-bold mt-3 text-white text-center">
+              {home.name}
+            </h2>
+          </div>
+
+          {/* Score */}
+          <div className="text-center w-full md:w-auto">
+            <div className="text-5xl md:text-6xl font-extrabold text-white tracking-wider drop-shadow-lg">
+              {homeGoalsCount} <span className="text-blue-400">:</span> {awayGoalsCount}
+            </div>
+            <div className="mt-2 flex justify-center items-center gap-2 text-gray-300 text-sm">
+              <Clock className="w-4 h-4 text-emerald-400" />
+              <span>{status === "Live" ? `${match.currentMinute ?? ""}'` : "Full Time"}</span>
+            </div>
+          </div>
+
+          {/* Away */}
+          <div className="flex flex-col items-center w-full md:w-1/3">
+            <img
+              src={away.logo || placeholderLogo}
+              alt={away.name}
+              onError={(e) => (e.currentTarget.src = placeholderLogo)}
+              className="w-20 h-20 object-contain drop-shadow-[0_0_20px_rgba(239,68,68,0.45)]"
+            />
+            <h2 className="text-lg md:text-xl font-bold mt-3 text-white text-center">
+              {away.name}
+            </h2>
+          </div>
         </div>
-      </div>
 
-      {/* Content */}
-      <div className="flex flex-1 mt-6 gap-6">
-        <TeamStats team={home} currentPlayerId={match.currentPlayerId} />
+        {/* Goal scorers & penalties */}
+        <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Home goals */}
+          <div className="bg-white/5 rounded-2xl p-6 border border-white/10 shadow-lg hover:bg-white/10 transition-all">
+            <h3 className="text-lg font-semibold text-blue-300 mb-4 border-b border-blue-400/30 pb-2">
+              {home.name} — Голмайстори
+            </h3>
 
-        <div className="w-2/4 bg-gray-900 rounded-xl p-4 flex flex-col shadow-inner border border-gray-700">
-          <h2 className="text-center font-bold text-xl mb-3 text-sky-300">
-            Live Commentary
-          </h2>
-          <div className="flex-1 overflow-y-auto space-y-3">
-            {commentary?.length ? (
-              commentary.map((c, i) => (
-                <div
-                  key={i}
-                  className="flex items-start gap-3 bg-gray-800/50 rounded-lg p-2 hover:bg-gray-800/70 transition"
-                >
-                  <div className="flex-shrink-0">
-                    <span className="flex items-center justify-center w-10 h-10 rounded-full bg-sky-700 text-sky-200 font-bold shadow">
-                      {c.minute}'
-                    </span>
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm text-gray-200 leading-snug">
-                      {c.text}
-                    </p>
-                  </div>
-                </div>
-              ))
+            {Array.isArray(home.goals) && home.goals.length > 0 ? (
+              <ul className="space-y-3">
+                {home.goals.map((g, idx) => (
+                  <GoalLine key={idx} goal={g} team="home" />
+                ))}
+              </ul>
             ) : (
-              <p className="italic text-gray-500">No events yet...</p>
+              <p className="text-gray-400 italic">Няма отбелязани голове.</p>
+            )}
+
+            {/* Home penalties (ако има) */}
+            {Array.isArray(home.penalties) && home.penalties.length > 0 && (
+              <div className="mt-4">
+                <h4 className="text-sm font-semibold text-gray-300 mb-2">Дузпи</h4>
+                <ul className="text-sm text-gray-200 space-y-2">
+                  {home.penalties.map((p, i) => (
+                    <li key={i} className="flex justify-between">
+                      <span>{p.shooterName ?? p.shooter ?? "Играч"}</span>
+                      <span className={p.isScored ? "text-emerald-400 font-bold" : "text-red-400 font-semibold"}>
+                        {p.isScored ? "⚽" : "✖"}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+
+          {/* Away goals */}
+          <div className="bg-white/5 rounded-2xl p-6 border border-white/10 shadow-lg hover:bg-white/10 transition-all">
+            <h3 className="text-lg font-semibold text-red-300 mb-4 border-b border-red-400/30 pb-2">
+              {away.name} — Голмайстори
+            </h3>
+
+            {Array.isArray(away.goals) && away.goals.length > 0 ? (
+              <ul className="space-y-3">
+                {away.goals.map((g, idx) => (
+                  <GoalLine key={idx} goal={g} team="away" />
+                ))}
+              </ul>
+            ) : (
+              <p className="text-gray-400 italic">Няма отбелязани голове.</p>
+            )}
+
+            {/* Away penalties (ако има) */}
+            {Array.isArray(away.penalties) && away.penalties.length > 0 && (
+              <div className="mt-4">
+                <h4 className="text-sm font-semibold text-gray-300 mb-2">Дузпи</h4>
+                <ul className="text-sm text-gray-200 space-y-2">
+                  {away.penalties.map((p, i) => (
+                    <li key={i} className="flex justify-between">
+                      <span>{p.shooterName ?? p.shooter ?? "Играч"}</span>
+                      <span className={p.isScored ? "text-emerald-400 font-bold" : "text-red-400 font-semibold"}>
+                        {p.isScored ? "⚽" : "✖"}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             )}
           </div>
         </div>
 
-        <TeamStats team={away} currentPlayerId={match.currentPlayerId} />
+        {/* Optional: penalties summary */}
+        {hasPenalties && (
+          <div className="mt-6">
+            <div className="bg-white/4 p-4 rounded-xl border border-white/8 text-sm text-gray-300">
+              <strong>Резултат след дузпи:</strong>{" "}
+              <span className="ml-2">
+                {Array.isArray(home.penalties) ? home.penalties.filter(p => p.isScored).length : 0} -{" "}
+                {Array.isArray(away.penalties) ? away.penalties.filter(p => p.isScored).length : 0}
+              </span>
+              <span className="ml-4 text-xs text-gray-400">(Ако има)</span>
+            </div>
+          </div>
+        )}
+
+        {/* Footer */}
+        <div className="mt-8 text-center text-gray-400 text-sm">
+          Match ID: {match.id ?? matchId}
+        </div>
       </div>
     </div>
   );
-}
+};
 
-function TeamStats({ team, currentPlayerId }) {
-  return (
-    <div className="w-1/4 bg-gray-800 rounded-xl p-3 overflow-y-auto shadow-lg border border-gray-700">
-      <h2 className="text-center font-bold text-lg mb-3 text-sky-400">
-        {team.name}
-      </h2>
-      <h3 className="text-green-400 text-sm font-semibold mt-2 mb-1 uppercase tracking-wide">
-        Starters
-      </h3>
-      <PlayerTable players={team.starters} currentPlayerId={currentPlayerId} />
-      <h3 className="text-yellow-400 text-sm font-semibold mt-4 mb-1 uppercase tracking-wide">
-        Substitutes
-      </h3>
-      <PlayerTable players={team.subs} currentPlayerId={currentPlayerId} />
-    </div>
-  );
-}
-
-function PlayerTable({ players, currentPlayerId }) {
-  return (
-    <table className="w-full text-xs md:text-sm mb-2 border-collapse">
-      <thead>
-        <tr className="text-gray-400 border-b border-gray-700 text-left">
-          {players.some((p) => p.slot) && <th className="py-1 px-2">Slot</th>}
-          <th className="py-1 px-2">#</th>
-          <th className="py-1 px-2">Pos</th>
-          <th className="py-1 px-2">Name</th>
-          <th className="py-1 px-2 text-center">G</th>
-          <th className="py-1 px-2 text-center">P</th>
-          <th className="py-1 px-2 text-center">A</th>
-        </tr>
-      </thead>
-      <tbody>
-        {players.map((p, i) => {
-          const isActive = p.id === currentPlayerId;
-          return (
-            <tr
-              key={i}
-              className={`border-b border-gray-700 hover:bg-gray-700/40 transition ${
-                i % 2 === 0 ? "bg-gray-800/40" : "bg-gray-900/40"
-              } ${
-                isActive ? "bg-yellow-500/30 font-bold text-yellow-300" : ""
-              }`}
-            >
-              {p.slot && <td className="py-1 px-2">{p.slot}</td>}
-              <td className="py-1 px-2">{p.number}</td>
-              <td className="py-1 px-2">{p.position}</td>
-              <td className="py-1 px-2">{p.name}</td>
-              <td className="py-1 px-2 text-center">{p.goals ?? 0}</td>
-              <td className="py-1 px-2 text-center">{p.passes ?? 0}</td>
-              <td className="py-1 px-2 text-center">{p.assists ?? 0}</td>
-            </tr>
-          );
-        })}
-      </tbody>
-    </table>
-  );
-}
+export default Match;

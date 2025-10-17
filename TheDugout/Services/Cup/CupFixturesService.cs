@@ -1,15 +1,15 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System.Linq;
-using TheDugout.Data;
-using TheDugout.Models.Cups;
-using TheDugout.Models.Enums;
-using TheDugout.Models.Fixtures;
-using TheDugout.Services.Cup.Interfaces;
-using TheDugout.Services.Fixture;
-using TheDugout.Services.Season.Interfaces;
-
-namespace TheDugout.Services.Cup
+﻿namespace TheDugout.Services.Cup
 {
+    using Microsoft.EntityFrameworkCore;
+    using System.Linq;
+    using TheDugout.Data;
+    using TheDugout.Models.Cups;
+    using TheDugout.Models.Enums;
+    using TheDugout.Models.Fixtures;
+    using TheDugout.Models.Seasons;
+    using TheDugout.Services.Cup.Interfaces;
+    using TheDugout.Services.Fixture;
+    using TheDugout.Services.Season.Interfaces;
     public class CupFixturesService : ICupFixturesService
     {
         private readonly DugoutDbContext _context;
@@ -45,6 +45,12 @@ namespace TheDugout.Services.Cup
                     .Where(t => t != null)
                     .Cast<Models.Teams.Team>()
                     .OrderBy(_ => _random.Next())
+                    .ToList();
+
+                var cupMatchDates = season.Events
+                    .Where(e => e.Type == SeasonEventType.CupMatch)
+                    .OrderBy(e => e.Date)
+                    .Select(e => e.Date)
                     .ToList();
 
                 if (activeTeams.Count < 2)
@@ -118,7 +124,7 @@ namespace TheDugout.Services.Cup
             // Взимаме участниците за следващия кръг
             var nextRoundTeams = GetNextRoundTeams(cup, lastRound, winners);
 
-            var totalRounds = (int)Math.Log2(cup.Teams.Count(t => !t.IsEliminated));
+            var totalRounds = cup.RoundsCount;
             var roundNumber = (lastRound.RoundNumber ?? 0) + 1;
 
             var roundName = _fixtureHelperService.GetRoundName(

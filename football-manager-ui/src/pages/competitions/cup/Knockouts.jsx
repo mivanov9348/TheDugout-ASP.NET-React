@@ -1,6 +1,7 @@
 import React from 'react';
 import { useOutletContext } from "react-router-dom";
 import TeamLogo from "../../../components/TeamLogo";
+import { Link } from "react-router-dom";
 
 export default function Knockouts() {
   const { selectedCup } = useOutletContext();
@@ -31,16 +32,21 @@ export default function Knockouts() {
 
                     <span className="font-bold text-sky-600">
                       {match.status === "Played" ? (
-                        <>
+                        <Link
+                          to={`/match/${match.matchId}`}
+                          className="hover:text-sky-400 transition-colors underline underline-offset-4"
+                        >
                           {match.homeTeamGoals} - {match.awayTeamGoals}{" "}
                           {match.penaltiesResult && (
                             <span className="text-gray-500 text-sm">{match.penaltiesResult}</span>
                           )}
-                        </>
+                        </Link>
+
                       ) : (
                         "—"
                       )}
                     </span>
+
 
                     <div className="flex items-center gap-2 flex-1 justify-end">
                       <span>{match.awayTeam.name}</span>

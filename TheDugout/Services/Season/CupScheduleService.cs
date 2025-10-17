@@ -12,27 +12,23 @@
         public void AssignCupFixtures(List<Fixture> fixtures, Season season)
         {
             var candidateDates = season.Events
-                .Where(e => e.Type == SeasonEventType.CupMatch && !e.IsOccupied)
+                .Where(e => e.Type == SeasonEventType.CupMatch)
                 .OrderBy(e => e.Date)
                 .ToList();
 
             if (!candidateDates.Any())
                 throw new InvalidOperationException("No dates available for cup matches.");
 
+            // групираме по рунд (RoundNumber)
             var groupedByRound = fixtures.GroupBy(f => f.Round).OrderBy(g => g.Key);
-            var dateQueue = new Queue<SeasonEvent>(candidateDates);
 
             foreach (var roundFixtures in groupedByRound)
             {
-                if (dateQueue.Count == 0)
-                    throw new InvalidOperationException("Not enough free dates for cup matches.");
-
-                var nextDate = dateQueue.Dequeue();
+                var roundIndex = roundFixtures.Key - 1;
+                var date = candidateDates[Math.Min(roundIndex, candidateDates.Count - 1)];
 
                 foreach (var fixture in roundFixtures)
-                    fixture.Date = nextDate.Date;
-
-                nextDate.IsOccupied = true;
+                    fixture.Date = date.Date;
             }
         }
     }
