@@ -16,47 +16,33 @@
             _context = context;
         }
 
+
         [Authorize]
         [HttpGet("{gameSaveId}/{seasonId}")]
-
         public async Task<IActionResult> GetFixtures(
-        int gameSaveId,
-        int seasonId,
-        [FromQuery] int? round = 1,
-        [FromQuery] int? leagueId = null
-    )
+    int gameSaveId,
+    int seasonId,
+    [FromQuery] int? round = 1,
+    [FromQuery] int? leagueId = null)
         {
-            // Базов филтър – винаги по GameSaveId
+            // Базов филтър – винаги по GameSaveId и Season
             var query = _context.Fixtures
                 .Include(f => f.League).ThenInclude(l => l.Template)
                 .Include(f => f.HomeTeam)
                 .Include(f => f.AwayTeam)
-                .Where(f => f.GameSaveId == gameSaveId);
-
-            // Филтрирай по сезон, ако съществува (възможно е да е null)
-            query = query.Where(f => f.SeasonId == seasonId || f.SeasonId == null);
+                .Where(f => f.GameSaveId == gameSaveId && f.SeasonId == seasonId);
 
             // Филтрирай по кръг
             if (round.HasValue && round.Value > 0)
                 query = query.Where(f => f.Round == round.Value);
 
-            // Ако има избрана лига — директно по нея
+            // Ако има избрана лига — филтрирай по нея
             if (leagueId.HasValue && leagueId.Value > 0)
             {
                 query = query.Where(f => f.LeagueId == leagueId.Value);
             }
-            else
-            {
-                // Ако няма избрана лига, вземи всички от GameSave-а (първата по tier)
-                var firstLeagueId = await _context.Leagues
-                    .Where(l => l.GameSaveId == gameSaveId)
-                    .OrderBy(l => l.Tier)
-                    .Select(l => l.Id)
-                    .FirstOrDefaultAsync();
-
-                if (firstLeagueId != 0)
-                    query = query.Where(f => f.LeagueId == firstLeagueId);
-            }
+            // АКО НЯМА ИЗБРАНА ЛИГА - ВРЪЩАМЕ ВСИЧКИ МАЧОВЕ ЗА ТОЗИ SEASON
+            // Не филтрираме автоматично по първата лига!
 
             var fixtures = await query
                 .OrderBy(f => f.League.Tier)
@@ -79,11 +65,7 @@
                 })
                 .ToListAsync();
 
-            if (fixtures.Count == 0)
-                return Ok(new List<object>());
-
             return Ok(fixtures);
         }
     }
 }
-

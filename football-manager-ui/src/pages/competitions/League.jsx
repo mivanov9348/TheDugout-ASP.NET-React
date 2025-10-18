@@ -10,31 +10,48 @@ export default function League({ gameSaveId }) {
   const location = useLocation();
 
   useEffect(() => {
-    if (!gameSaveId) return;
+  if (!gameSaveId) return;
 
-    const loadLeagues = async () => {
-      setLoading(true);
-      try {
-        const res = await fetch(`/api/League/${gameSaveId}`, { credentials: "include" });
-        if (!res.ok) throw new Error("Error fetching leagues");
-        const data = await res.json();
-        if (data?.leagues?.length > 0) {
-          setLeagues(data.leagues);
-          setSelectedLeague(data.leagues[0]);
-          // Ако сме на /league директно, пренасочваме към първата лига
-          if (location.pathname.endsWith("/league")) {
-            navigate(`/competitions/league/standings`, { replace: true });
-          }
+  const loadLeagues = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/League/${gameSaveId}`, { credentials: "include" });
+      if (!res.ok) throw new Error("Error fetching leagues");
+      const data = await res.json();
+
+      if (data?.leagues?.length > 0) {
+        setLeagues(data.leagues);
+        const firstLeague = data.leagues[0];
+
+        // Вземи standings чрез втория endpoint
+        const res2 = await fetch(
+          `/api/League/current?gameSaveId=${gameSaveId}&seasonId=${data.seasonId}`,
+          { credentials: "include" }
+        );
+        const leagueData = await res2.json();
+
+        // комбинираме базовата инфо + standings
+        setSelectedLeague(
+          leagueData.exists
+            ? { ...firstLeague, standings: leagueData.standings }
+            : firstLeague
+        );
+
+        // redirect ако сме на /league директно
+        if (location.pathname.endsWith("/league")) {
+          navigate(`/competitions/league/standings`, { replace: true });
         }
-      } catch (err) {
-        console.error("❌ Error loading leagues:", err);
-      } finally {
-        setLoading(false);
       }
-    };
+    } catch (err) {
+      console.error("❌ Error loading leagues:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    loadLeagues();
-  }, [gameSaveId]);
+  loadLeagues();
+}, [gameSaveId]);
+
 
   const handleLeagueChange = (e) => {
     const leagueId = Number(e.target.value);
@@ -60,8 +77,8 @@ export default function League({ gameSaveId }) {
       {/* Header */}
       <div className="flex items-center justify-center gap-4 mb-6">
         <img
-          src={selectedLeague.standings[0]?.teamLogo ?? "/competitionsLogos/default.png"}
-          alt={selectedLeague.name}
+          src={selectedLeague?.standings?.[0]?.teamLogo ?? "/competitionsLogos/default.png"}
+          alt={selectedLeague?.name ?? "League"}s
           className="w-16 h-16 object-contain border rounded-full shadow-md"
           onError={(e) => (e.target.src = "/competitionsLogos/default.png")}
         />

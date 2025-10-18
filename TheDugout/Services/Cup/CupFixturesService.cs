@@ -27,7 +27,6 @@
             _fixtureHelperService = fixtureHelperService;
             _cupScheduleService = cupScheduleService;
         }
-
         public async Task GenerateInitialFixturesAsync(int seasonId, int gameSaveId, List<Cup> cups)
         {
             var season = await _context.Seasons

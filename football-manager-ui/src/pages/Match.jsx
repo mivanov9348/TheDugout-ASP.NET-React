@@ -1,25 +1,16 @@
 // src/pages/Match.jsx
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { ArrowLeft, Trophy, Clock, MapPin, Calendar, Users, AlertCircle } from "lucide-react";
+import {
+  ArrowLeft,
+  Trophy,
+  Clock,
+  MapPin,
+  Calendar,
+  Users,
+  AlertCircle,
+} from "lucide-react";
 
-/**
- * Match.jsx
- * Взима данни от: GET /api/matches/{matchId}
- *
- * Очаквана структура (пример):
- * {
- *   id,
- *   date,
- *   competition,
- *   stadium,
- *   status,
- *   homeTeam: { name, logo, goals: [{ minute, scorer, playerId? }], penalties?: [{isScored, teamId, shooterName}] },
- *   awayTeam: { name, logo, goals: [...] , penalties?: [...] }
- * }
- *
- * Ако бекендът връща playerId в събитията - линкваме към /player/:playerId
- */
 
 const placeholderLogo = "https://via.placeholder.com/128x128.png?text=No+Logo";
 
@@ -63,11 +54,12 @@ const Match = () => {
         const data = await res.json();
         if (!cancelled) {
           setMatch(data);
+          console.log("Match data:", data);
         }
       } catch (err) {
         if (!cancelled) {
           console.error("Error loading match:", err);
-          setError(err.message || "Грешка при зареждане на мача");
+          setError(err.message || "Error loading match");
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -84,7 +76,7 @@ const Match = () => {
   if (loading)
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-900 text-white text-lg animate-pulse">
-        Зареждане на мач...
+        Loading match...
       </div>
     );
 
@@ -93,28 +85,29 @@ const Match = () => {
       <div className="min-h-screen bg-slate-900 text-white flex items-center justify-center p-6">
         <div className="max-w-xl bg-white/5 p-8 rounded-2xl border border-white/10 text-center">
           <AlertCircle className="mx-auto mb-4 w-12 h-12 text-red-400" />
-          <h2 className="text-lg font-bold">Неуспешно зареждане</h2>
+          <h2 className="text-lg font-bold">Failed to load</h2>
           <p className="mt-2 text-gray-300">{error}</p>
           <div className="mt-6">
             <button
               onClick={() => navigate(-1)}
               className="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-md font-semibold"
             >
-              Назад
+              Back
             </button>
           </div>
         </div>
       </div>
     );
 
-  // safety: normalize shape
   const dateText = match.date ? formatDate(match.date) : "—";
   const competition = match.competition ?? "—";
   const stadium = match.stadium ?? "—";
   const status = match.status ?? "Unknown";
 
-  const home = match.homeTeam ?? { name: "Home", logo: placeholderLogo, goals: [], penalties: [] };
-  const away = match.awayTeam ?? { name: "Away", logo: placeholderLogo, goals: [], penalties: [] };
+  const home =
+    match.homeTeam ?? { name: "Home", logo: placeholderLogo, goals: [], penalties: [] };
+  const away =
+    match.awayTeam ?? { name: "Away", logo: placeholderLogo, goals: [], penalties: [] };
 
   const homeGoalsCount = Array.isArray(home.goals) ? home.goals.length : 0;
   const awayGoalsCount = Array.isArray(away.goals) ? away.goals.length : 0;
@@ -123,9 +116,7 @@ const Match = () => {
     (Array.isArray(home.penalties) && home.penalties.length > 0) ||
     (Array.isArray(away.penalties) && away.penalties.length > 0);
 
-  // Render helper for a goal line (optionally link to player profile if playerId provided)
   const GoalLine = ({ goal, team }) => {
-    // goal: { minute, scorer, playerId? }
     return (
       <li className="flex justify-between items-center text-gray-200 text-sm">
         <div className="truncate">
@@ -162,14 +153,14 @@ const Match = () => {
           className="absolute top-6 left-6 flex items-center text-gray-300 hover:text-white transition-colors"
         >
           <ArrowLeft className="w-5 h-5 mr-2" />
-          <span className="hidden sm:inline font-medium">Назад</span>
+          <span className="hidden sm:inline font-medium">Back</span>
         </button>
 
         {/* Top info */}
         <div className="text-center pt-6">
           <h1 className="text-2xl md:text-3xl font-extrabold text-white drop-shadow-lg flex justify-center items-center gap-3">
             <Trophy className="text-yellow-400 w-6 h-6" />
-            Детайли за мача
+            Match Details
           </h1>
 
           <div className="mt-3 flex flex-col sm:flex-row items-center justify-center gap-4 text-gray-300 text-sm">
@@ -210,11 +201,16 @@ const Match = () => {
           {/* Score */}
           <div className="text-center w-full md:w-auto">
             <div className="text-5xl md:text-6xl font-extrabold text-white tracking-wider drop-shadow-lg">
-              {homeGoalsCount} <span className="text-blue-400">:</span> {awayGoalsCount}
+              {homeGoalsCount} <span className="text-blue-400">:</span>{" "}
+              {awayGoalsCount}
             </div>
             <div className="mt-2 flex justify-center items-center gap-2 text-gray-300 text-sm">
               <Clock className="w-4 h-4 text-emerald-400" />
-              <span>{status === "Live" ? `${match.currentMinute ?? ""}'` : "Full Time"}</span>
+              <span>
+                {status === "Live"
+                  ? `${match.currentMinute ?? ""}'`
+                  : "Full Time"}
+              </span>
             </div>
           </div>
 
@@ -232,12 +228,12 @@ const Match = () => {
           </div>
         </div>
 
-        {/* Goal scorers & penalties */}
+        {/* Goals & Penalties */}
         <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Home goals */}
           <div className="bg-white/5 rounded-2xl p-6 border border-white/10 shadow-lg hover:bg-white/10 transition-all">
             <h3 className="text-lg font-semibold text-blue-300 mb-4 border-b border-blue-400/30 pb-2">
-              {home.name} — Голмайстори
+              {home.name} — Goal Scorers
             </h3>
 
             {Array.isArray(home.goals) && home.goals.length > 0 ? (
@@ -247,18 +243,26 @@ const Match = () => {
                 ))}
               </ul>
             ) : (
-              <p className="text-gray-400 italic">Няма отбелязани голове.</p>
+              <p className="text-gray-400 italic">No goals scored.</p>
             )}
 
-            {/* Home penalties (ако има) */}
+            {/* Home penalties */}
             {Array.isArray(home.penalties) && home.penalties.length > 0 && (
               <div className="mt-4">
-                <h4 className="text-sm font-semibold text-gray-300 mb-2">Дузпи</h4>
+                <h4 className="text-sm font-semibold text-gray-300 mb-2">
+                  Penalties
+                </h4>
                 <ul className="text-sm text-gray-200 space-y-2">
                   {home.penalties.map((p, i) => (
                     <li key={i} className="flex justify-between">
-                      <span>{p.shooterName ?? p.shooter ?? "Играч"}</span>
-                      <span className={p.isScored ? "text-emerald-400 font-bold" : "text-red-400 font-semibold"}>
+                      <span>{p.shooterName ?? p.shooter ?? "Player"}</span>
+                      <span
+                        className={
+                          p.isScored
+                            ? "text-emerald-400 font-bold"
+                            : "text-red-400 font-semibold"
+                        }
+                      >
                         {p.isScored ? "⚽" : "✖"}
                       </span>
                     </li>
@@ -271,7 +275,7 @@ const Match = () => {
           {/* Away goals */}
           <div className="bg-white/5 rounded-2xl p-6 border border-white/10 shadow-lg hover:bg-white/10 transition-all">
             <h3 className="text-lg font-semibold text-red-300 mb-4 border-b border-red-400/30 pb-2">
-              {away.name} — Голмайстори
+              {away.name} — Goal Scorers
             </h3>
 
             {Array.isArray(away.goals) && away.goals.length > 0 ? (
@@ -281,18 +285,26 @@ const Match = () => {
                 ))}
               </ul>
             ) : (
-              <p className="text-gray-400 italic">Няма отбелязани голове.</p>
+              <p className="text-gray-400 italic">No goals scored.</p>
             )}
 
-            {/* Away penalties (ако има) */}
+            {/* Away penalties */}
             {Array.isArray(away.penalties) && away.penalties.length > 0 && (
               <div className="mt-4">
-                <h4 className="text-sm font-semibold text-gray-300 mb-2">Дузпи</h4>
+                <h4 className="text-sm font-semibold text-gray-300 mb-2">
+                  Penalties
+                </h4>
                 <ul className="text-sm text-gray-200 space-y-2">
                   {away.penalties.map((p, i) => (
                     <li key={i} className="flex justify-between">
-                      <span>{p.shooterName ?? p.shooter ?? "Играч"}</span>
-                      <span className={p.isScored ? "text-emerald-400 font-bold" : "text-red-400 font-semibold"}>
+                      <span>{p.shooterName ?? p.shooter ?? "Player"}</span>
+                      <span
+                        className={
+                          p.isScored
+                            ? "text-emerald-400 font-bold"
+                            : "text-red-400 font-semibold"
+                        }
+                      >
                         {p.isScored ? "⚽" : "✖"}
                       </span>
                     </li>
@@ -303,16 +315,21 @@ const Match = () => {
           </div>
         </div>
 
-        {/* Optional: penalties summary */}
+        {/* Penalties summary */}
         {hasPenalties && (
           <div className="mt-6">
             <div className="bg-white/4 p-4 rounded-xl border border-white/8 text-sm text-gray-300">
-              <strong>Резултат след дузпи:</strong>{" "}
+              <strong>Score after penalties:</strong>{" "}
               <span className="ml-2">
-                {Array.isArray(home.penalties) ? home.penalties.filter(p => p.isScored).length : 0} -{" "}
-                {Array.isArray(away.penalties) ? away.penalties.filter(p => p.isScored).length : 0}
+                {Array.isArray(home.penalties)
+                  ? home.penalties.filter((p) => p.isScored).length
+                  : 0}{" "}
+                -{" "}
+                {Array.isArray(away.penalties)
+                  ? away.penalties.filter((p) => p.isScored).length
+                  : 0}
               </span>
-              <span className="ml-4 text-xs text-gray-400">(Ако има)</span>
+              <span className="ml-4 text-xs text-gray-400">(if applicable)</span>
             </div>
           </div>
         )}

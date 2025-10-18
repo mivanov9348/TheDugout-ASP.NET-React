@@ -31,22 +31,21 @@ export default function Knockouts() {
                     </div>
 
                     <span className="font-bold text-sky-600">
-                      {match.status === "Played" ? (
+                      {match.status === "Played" && match.matchId ? (
                         <Link
                           to={`/match/${match.matchId}`}
                           className="hover:text-sky-400 transition-colors underline underline-offset-4"
                         >
-                          {match.homeTeamGoals} - {match.awayTeamGoals}{" "}
+                          {match.homeTeamGoals} - {match.awayTeamGoals}
                           {match.penaltiesResult && (
                             <span className="text-gray-500 text-sm">{match.penaltiesResult}</span>
                           )}
                         </Link>
-
                       ) : (
                         "—"
                       )}
-                    </span>
 
+                    </span>
 
                     <div className="flex items-center gap-2 flex-1 justify-end">
                       <span>{match.awayTeam.name}</span>

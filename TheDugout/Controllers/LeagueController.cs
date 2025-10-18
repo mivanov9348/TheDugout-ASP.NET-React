@@ -15,7 +15,6 @@
             _context = context;
         }
 
-        // 🟢 Взимане на всички лиги за сейв (ако ти трябва)
         [HttpGet("{gameSaveId}")]
         public async Task<IActionResult> GetLeaguesByGameSave(int gameSaveId)
         {
@@ -28,36 +27,21 @@
             var leagues = await _context.Leagues
                 .Include(l => l.Template)
                 .Include(l => l.Country)
-                .Include(l => l.Standings)
-                    .ThenInclude(s => s.Team)
                 .Where(l => l.GameSaveId == gameSaveId && l.SeasonId == season.Id)
+                .Select(l => new
+                {
+                    id = l.Id,
+                    name = l.Template.Name,
+                    country = l.Country.Name,
+                    tier = l.Tier,
+                })
                 .ToListAsync();
 
-            var result = leagues.Select(l => new
+            return Ok(new
             {
-                id = l.Id,
-                name = l.Template.Name,
-                country = l.Country.Name,
-                standings = l.Standings
-                    .OrderBy(s => s.Ranking)
-                    .Select(s => new
-                    {
-                        teamId = s.TeamId,
-                        teamName = s.Team.Name,
-                        teamLogo = s.Team.LogoFileName ?? "default_logo.png",
-                        s.Ranking,
-                        s.Matches,
-                        s.Wins,
-                        s.Draws,
-                        s.Losses,
-                        s.GoalsFor,
-                        s.GoalsAgainst,
-                        s.GoalDifference,
-                        s.Points
-                    })
+                seasonId = season.Id,
+                leagues = leagues
             });
-
-            return Ok(new { seasonId = season.Id, leagues = result });
         }
 
         [HttpGet("current")]

@@ -1,4 +1,3 @@
-// src/pages/Squad.jsx
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search, Filter, Flag } from "lucide-react";
@@ -381,4 +380,3 @@ const Squad = ({ gameSaveId }) => {
 };
 
 export default Squad;
-// src/pages/Squad.jsx

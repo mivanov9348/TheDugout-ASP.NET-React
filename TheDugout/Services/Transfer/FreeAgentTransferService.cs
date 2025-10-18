@@ -119,16 +119,48 @@
             return (true, "");
 
         }
+
         public async Task<(bool Success, string ErrorMessage)> ReleasePlayerAsync(int gameSaveId, int teamId, int playerId)
         {
             var team = await _context.Teams.FirstOrDefaultAsync(t => t.Id == teamId && t.GameSaveId == gameSaveId);
-            var player = await _context.Players.FirstOrDefaultAsync(p => p.Id == playerId && p.GameSaveId == gameSaveId);
+            var player = await _context.Players
+                .Include(p => p.Position) // Explicitly include Position navigation property
+                .FirstOrDefaultAsync(p => p.Id == playerId && p.GameSaveId == gameSaveId);
             var bank = await _context.Banks.FirstOrDefaultAsync(b => b.GameSaveId == gameSaveId);
 
             if (team == null) return (false, "Team not found.");
             if (player == null) return (false, "Player not found.");
             if (bank == null) return (false, "Bank not found.");
             if (player.TeamId != team.Id) return (false, "Player does not belong to this team.");
+            if (player.Position == null || string.IsNullOrEmpty(player.Position.Name))
+                return (false, $"Player {player.FirstName} {player.LastName} has no position assigned.");
+
+            // Check minimum player requirements
+            var playersInTeam = await _context.Players
+                .Include(p => p.Position) // Include Position for team players
+                .Where(p => p.TeamId == team.Id && p.GameSaveId == gameSaveId && p.Id != playerId)
+                .ToListAsync();
+
+            // Validate that all players have a position
+            var playersWithNullPosition = playersInTeam.Where(p => p.Position == null || string.IsNullOrEmpty(p.Position.Name)).ToList();
+            if (playersWithNullPosition.Any())
+            {
+                return (false, $"Cannot release player: Some players in the team have no position assigned.");
+            }
+
+            var goalkeepers = playersInTeam.Count(p => p.Position.Name == "Goalkeeper");
+            var defenders = playersInTeam.Count(p => p.Position.Name == "Defender");
+            var midfielders = playersInTeam.Count(p => p.Position.Name == "Midfielder");
+            var forwards = playersInTeam.Count(p => p.Position.Name == "Attacker"); // Use "Attacker" as per your code
+
+            if (player.Position.Name == "Goalkeeper" && goalkeepers < 1)
+                return (false, "Cannot release player: Team must have at least 1 goalkeeper.");
+            if (player.Position.Name == "Defender" && defenders < 4)
+                return (false, "Cannot release player: Team must have at least 4 defenders.");
+            if (player.Position.Name == "Midfielder" && midfielders < 4)
+                return (false, "Cannot release player: Team must have at least 4 midfielders.");
+            if (player.Position.Name == "Attacker" && forwards < 2)
+                return (false, "Cannot release player: Team must have at least 2 attackers.");
 
             var season = await _context.Seasons
                 .Include(s => s.Events)
@@ -140,7 +172,7 @@
                 e.Date.Date == season.CurrentDate.Date);
 
             if (!inTransferWindow)
-                return (false, "Transfers are not allowed outside of the window.");
+                return (false, "Transfers are not allowed outside of the transfer window.");
 
             decimal totalFee = player.Price;
             var taxSetting = await _gameSettingsService.GetDecimalAsync("ReleasePlayerBankTax");
@@ -148,7 +180,7 @@
             decimal bankCut = totalFee * bankTax;
             decimal agencyCut = totalFee - bankCut;
 
-            // 🔎 Намираме агенции, които могат да си го позволят
+            // Find agencies that can afford the player
             var agencies = await _context.Agencies
                 .Include(a => a.AgencyTemplate)
                 .Where(a => a.GameSaveId == gameSaveId && a.Budget >= totalFee)
@@ -156,17 +188,17 @@
 
             if (!agencies.Any())
             {
-                // Няма агенции с пари - просто освобождаваме го без плащане
+                // No agencies can afford the player - release without payment
                 player.TeamId = null;
                 player.AgencyId = null;
                 await _context.SaveChangesAsync();
                 return (true, "Player released but no agencies could afford him.");
             }
 
-            // 🎯 Избираме произволна или най-богата агенция (по желание)
+            // Select the agency with the highest budget
             var agency = agencies.OrderByDescending(a => a.Budget).First();
 
-            // 💰 Плащане от агенцията към отбора
+            // Payment from agency to club
             var txClub = await _transactionService.AgencyToClubAsync(
                 agency, team, agencyCut,
                 $"Agency {agency.AgencyTemplate.Name} signs released player {player.FirstName} {player.LastName}",
@@ -175,7 +207,7 @@
             if (txClub.Status != TransactionStatus.Completed)
                 return (false, "Payment from agency failed.");
 
-            // 💰 Такса към банката
+            // Bank fee transaction
             var txBank = await _transactionService.AgencyToBankAsync(
                 agency, bank, bankCut,
                 $"Bank fee for signing {player.FirstName} {player.LastName}",
@@ -187,12 +219,12 @@
             agency.TotalEarnings += agencyCut;
             _context.Agencies.Update(agency);
 
-            // 🧾 Освобождаваме играча
+            // Release the player
             player.TeamId = null;
             player.AgencyId = agency.Id;
             _context.Players.Update(player);
 
-            // 📜 История на трансфера
+            // Record the transfer
             var transfer = new Transfer
             {
                 GameSaveId = gameSaveId,
@@ -206,7 +238,6 @@
 
             _context.Transfers.Add(transfer);
             await _context.SaveChangesAsync();
-
 
             return (true, "");
         }

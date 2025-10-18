@@ -40,9 +40,10 @@
 
                 // Зареждаме всички мачове (включително дузпите)
                 var matches = await _context.Matches
-                    .Where(m => fixtureIds.Contains(m.FixtureId) && m.CompetitionId == c.CompetitionId)
-                    .Include(m => m.Penalties)
-                    .ToListAsync();
+    .Where(m => fixtureIds.Contains(m.FixtureId))
+    .Include(m => m.Penalties)
+    .ToListAsync();
+
 
                 // Зареждаме голмайсторите за всички тези мачове
                 var matchIds = matches.Select(m => m.Id).ToList();
