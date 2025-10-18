@@ -101,8 +101,7 @@
             // Check if all rounds are finished
             bool allRoundsFinished = cup.Rounds
                 .SelectMany(r => r.Fixtures)
-                .Where(f => f.Status != FixtureStatusEnum.Cancelled)
-                .All(f => f.Status == FixtureStatusEnum.Played);
+                .All(f => f.Status == MatchStageEnum.Played);
 
             // Check if only one team is left (not eliminated)
             bool onlyOneTeamLeft = cup.Teams.Count(t => !t.IsEliminated) <= 1;
@@ -145,7 +144,7 @@
 
                 // Взимаме финалния мач
                 var finalMatch = finalRound.Fixtures
-                    .Where(f => f.Status == FixtureStatusEnum.Played)
+                    .Where(f => f.Status == MatchStageEnum.Played)
                     .OrderByDescending(f => f.Date)
                     .FirstOrDefault();
 

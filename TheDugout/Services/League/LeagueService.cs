@@ -127,8 +127,7 @@
 
             // Check if all non-cancelled matches are played
             bool allMatchesPlayed = league.Fixtures
-                .Where(f => f.Status != FixtureStatusEnum.Cancelled)
-                .All(f => f.Status == FixtureStatusEnum.Played);
+                .All(f => f.Status == MatchStageEnum.Played);
 
             // If all matches are played and the league is not marked as finished, update it
             if (allMatchesPlayed && !league.IsFinished)

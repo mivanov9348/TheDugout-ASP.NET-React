@@ -118,8 +118,8 @@
             await _context.SaveChangesAsync(ct);
 
             // get all played fixtures for that cup's league-phase(s) (only league-phase fixtures affect league standings)
-            var fixtures = await _context.Set<Models.Fixtures.Fixture>()
-                                    .Where(f => f.EuropeanCupPhaseId == europeanCupPhaseId && f.Status == FixtureStatusEnum.Played)
+            var fixtures = await _context.Set<Fixture>()
+                                    .Where(f => f.EuropeanCupPhaseId == europeanCupPhaseId && f.Status == MatchStageEnum.Played)
                                     .ToListAsync(ct);
 
             foreach (var f in fixtures)
@@ -193,8 +193,7 @@
             // Check if the cup has already been marked as finished
             bool allPhasesFinished = euroCup.Phases?
                 .SelectMany(p => p.Fixtures)
-                .Where(f => f.Status != FixtureStatusEnum.Cancelled)
-                .All(f => f.Status == FixtureStatusEnum.Played) ?? false;
+                .All(f => f.Status == MatchStageEnum.Played) ?? false;
 
             // Check if only one team is left (not eliminated)
             bool onlyOneTeamLeft = euroCup.Teams.Count(t => !t.IsEliminated) <= 1;
@@ -236,7 +235,7 @@
 
                 // Взимаме финалния мач
                 var finalMatch = finalPhase.Fixtures
-                    .Where(f => f.Status == FixtureStatusEnum.Played)
+                    .Where(f => f.Status == MatchStageEnum.Played)
                     .OrderByDescending(f => f.Date)
                     .FirstOrDefault();
 

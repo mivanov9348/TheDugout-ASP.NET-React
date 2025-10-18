@@ -1,9 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using TheDugout.Models.Fixtures;
-
-namespace TheDugout.Data.Configurations
+﻿namespace TheDugout.Data.Configurations
 {
+    using Microsoft.EntityFrameworkCore;
+    using Microsoft.EntityFrameworkCore.Metadata.Builders;
+    using TheDugout.Models.Fixtures;
     public class FixtureConfiguration : IEntityTypeConfiguration<Fixture>
     {
         public void Configure(EntityTypeBuilder<Fixture> builder)
@@ -52,6 +51,5 @@ namespace TheDugout.Data.Configurations
                    .HasForeignKey(f => f.WinnerTeamId)
                    .OnDelete(DeleteBehavior.Restrict);
         }
-
     }
 }

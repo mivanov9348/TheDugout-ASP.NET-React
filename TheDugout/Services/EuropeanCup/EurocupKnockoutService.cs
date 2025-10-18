@@ -34,7 +34,7 @@
                 throw new InvalidOperationException("League phase not found");
 
             // убедим се, че всички мачове са маркирани като Played
-            bool allMatchesFinished = leaguePhase.Fixtures != null && leaguePhase.Fixtures.All(f => f.Status == FixtureStatusEnum.Played);
+            bool allMatchesFinished = leaguePhase.Fixtures != null && leaguePhase.Fixtures.All(f => f.Status == MatchStageEnum.Played);
             if (!allMatchesFinished)
                 throw new InvalidOperationException("Not all group matches have been played.");
 
@@ -170,7 +170,7 @@
                     IsElimination = true,
                     CompetitionType = CompetitionTypeEnum.EuropeanCup,
                     EuropeanCupPhaseId = playoffPhase.Id,
-                    Status = FixtureStatusEnum.Scheduled,
+                    Status = MatchStageEnum.Scheduled,
                     Date = thisRoundDate
                 });
             }
@@ -186,7 +186,7 @@
                 .Include(p => p.Fixtures)
                     .ThenInclude(f => f.AwayTeam)
                 .Include(p => p.Fixtures)
-                    .ThenInclude(f => f.Matches)
+                    .ThenInclude(f => f.Match)
                         .ThenInclude(m => m.Penalties)
                 .Where(p => p.EuropeanCupId == europeanCupId && p.PhaseTemplate.IsKnockout)
                 .OrderBy(p => p.PhaseTemplate.Order)
@@ -216,16 +216,17 @@
                     date = f.Date,
                     status = f.Status,
 
-                    homeTeamPenalties = f.Matches
-                        .SelectMany(m => m.Penalties)
-                        .Count(p => p.TeamId == f.HomeTeamId && p.IsScored),
+                    homeTeamPenalties = f.Match == null
+                        ? 0
+                        : f.Match.Penalties.Count(p => p.TeamId == f.HomeTeamId && p.IsScored),
 
-                    awayTeamPenalties = f.Matches
-                        .SelectMany(m => m.Penalties)
-                        .Count(p => p.TeamId == f.AwayTeamId && p.IsScored)
+                    awayTeamPenalties = f.Match == null
+                        ? 0
+                        : f.Match.Penalties.Count(p => p.TeamId == f.AwayTeamId && p.IsScored)
                 })
             });
         }
+
         public async Task GenerateNextKnockoutPhaseAsync(int europeanCupId, int currentOrder)
         {
             var cup = await _context.EuropeanCups
@@ -268,7 +269,7 @@
                 .ToList();
 
             var eliminatedTeamIds = lastFixtures
-                .Where(f => f.Status == FixtureStatusEnum.Played)
+                .Where(f => f.Status == MatchStageEnum.Played)
                 .SelectMany(f => new[] { f.HomeTeamId, f.AwayTeamId })
                 .Where(id => id.HasValue && !winners.Contains(id.Value))
                 .Select(id => id!.Value)
@@ -321,7 +322,7 @@
                     IsElimination = true,
                     CompetitionType = CompetitionTypeEnum.EuropeanCup,
                     EuropeanCupPhaseId = nextPhase.Id,
-                    Status = FixtureStatusEnum.Scheduled,
+                    Status = MatchStageEnum.Scheduled,
                     Date = thisRoundDate
                 });
             }

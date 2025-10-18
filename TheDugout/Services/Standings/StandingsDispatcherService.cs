@@ -110,7 +110,7 @@ namespace TheDugout.Services.Standings
                         }
                         else
                         {
-                            bool allMatchesFinished = phase.Fixtures.All(f => f.Status == FixtureStatusEnum.Played);
+                            bool allMatchesFinished = phase.Fixtures.All(f => f.Status == MatchStageEnum.Played);
 
                             if (allMatchesFinished)
                             {

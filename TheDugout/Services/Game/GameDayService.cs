@@ -96,7 +96,7 @@
             {
                 GameSave = updatedSave.ToDto(),
                 HasMatchesToday = todaysFixtures.Any(),
-                HasUnplayedMatchesToday = todaysFixtures.Any(f => f.Status != FixtureStatusEnum.Played)
+                HasUnplayedMatchesToday = todaysFixtures.Any(f => f.Status != MatchStageEnum.Played)
             };
         }
 

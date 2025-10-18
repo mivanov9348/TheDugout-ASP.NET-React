@@ -111,7 +111,7 @@ namespace TheDugout.Services.EuropeanCup
             if (leaguePhase == null)
                 return false;
 
-            return leaguePhase.Fixtures.All(f => f.Status == FixtureStatusEnum.Played);
+            return leaguePhase.Fixtures.All(f => f.Status == MatchStageEnum.Played);
         }
         public async Task<IEnumerable<object>> GetSortedStandingsAsync(int cupId)
         {

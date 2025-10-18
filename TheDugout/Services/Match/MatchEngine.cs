@@ -46,10 +46,10 @@
         }
         public async Task EndMatch(Match match)
         {
-            match.Status = MatchStatus.Played;
+            match.Status = MatchStageEnum.Played;
 
             var fixture = match.Fixture;
-            fixture.Status = FixtureStatusEnum.Played;
+            fixture.Status = MatchStageEnum.Played;
 
             int homeGoals = fixture.HomeTeamGoals ?? 0;
             int awayGoals = fixture.AwayTeamGoals ?? 0;

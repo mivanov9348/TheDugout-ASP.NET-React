@@ -104,7 +104,7 @@
 
             // Calculate basic stats from fixtures - only completed matches
             var allFixtures = club.HomeFixtures.Concat(club.AwayFixtures)
-                .Where(f => f.Status == FixtureStatusEnum.Played);
+                .Where(f => f.Status == MatchStageEnum.Played);
 
             var matchesPlayed = allFixtures.Count();
             var wins = allFixtures.Count(f =>
@@ -139,7 +139,7 @@
                 .Include(f => f.AwayTeam)
                 .Include(f => f.League)
                 .ThenInclude(l => l.Template)
-                .Where(f => (f.HomeTeamId == id || f.AwayTeamId == id) && f.Status != FixtureStatusEnum.Played)
+                .Where(f => (f.HomeTeamId == id || f.AwayTeamId == id) && f.Status != MatchStageEnum.Played)
                 .OrderBy(f => f.Date)
                 .Take(limit)
                 .Select(f => new
@@ -152,7 +152,7 @@
                     f.HomeTeamGoals,
                     f.AwayTeamGoals,
                     Status = f.Status.ToString(),
-                    IsCompleted = f.Status == FixtureStatusEnum.Played
+                    IsCompleted = f.Status == MatchStageEnum.Played
                 })
                 .ToListAsync();
 
@@ -167,7 +167,7 @@
                 .Include(f => f.AwayTeam)
                 .Include(f => f.League)
                 .ThenInclude(l => l.Template)
-                .Where(f => (f.HomeTeamId == id || f.AwayTeamId == id) && f.Status == FixtureStatusEnum.Played)
+                .Where(f => (f.HomeTeamId == id || f.AwayTeamId == id) && f.Status == MatchStageEnum.Played)
                 .OrderByDescending(f => f.Date)
                 .Take(limit)
                 .Select(f => new

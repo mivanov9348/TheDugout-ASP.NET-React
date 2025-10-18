@@ -64,7 +64,7 @@
                     .Select(p => new
                     {
                         PlayerId = p.PlayerId,
-                        PlayerName = p.Player.FirstName,
+                        PlayerName = p.Player.FirstName + " " + p.Player.LastName,
                         TeamName = p.Player.Team.Name ?? "Unknown",
                         Goals = p.Goals,
                         Matches = p.MatchesPlayed
@@ -183,12 +183,13 @@
                 {
                     p.PlayerId,
                     p.Player.FirstName,
+                    p.Player.LastName,
                     TeamName = p.Player.Team != null ? p.Player.Team.Name : "Unknown"
                 })
                 .Select(g => new
                 {
                     Id = g.Key.PlayerId,
-                    Name = g.Key.FirstName,
+                    Name = g.Key.FirstName + " " + g.Key.LastName,
                     TeamName = g.Key.TeamName,
                     Goals = g.Sum(x => x.Goals),
                     Matches = g.Select(x => x.MatchId).Distinct().Count()

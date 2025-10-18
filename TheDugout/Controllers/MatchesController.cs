@@ -1,8 +1,6 @@
 ﻿namespace TheDugout.Controllers
 {
-    using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
-    using Microsoft.AspNetCore.SignalR;
     using Microsoft.EntityFrameworkCore;
     using TheDugout.Data;
     using TheDugout.DTOs.Match;
@@ -33,72 +31,87 @@
         [HttpGet("today/{gameSaveId}")]
         public async Task<IActionResult> GetTodayMatches(int gameSaveId)
         {
-
             var save = await _context.GameSaves
                 .Include(gs => gs.Seasons)
-                .Include(gs => gs.Fixtures).ThenInclude(f => f.Matches)
+                .Include(gs => gs.Fixtures)
+                    .ThenInclude(f => f.Match)
+                        .ThenInclude(m => m.Penalties)
                 .FirstOrDefaultAsync(gs => gs.Id == gameSaveId);
 
             if (save == null) return NotFound();
 
             var today = save.Seasons.First().CurrentDate.Date;
 
-            var matches = await _context.Fixtures
+            var fixtures = await _context.Fixtures
                 .Include(f => f.HomeTeam)
                 .Include(f => f.AwayTeam)
                 .Include(f => f.League).ThenInclude(l => l.Template)
                 .Include(f => f.CupRound).ThenInclude(cr => cr.Cup).ThenInclude(c => c.Template)
                 .Include(f => f.EuropeanCupPhase).ThenInclude(p => p.EuropeanCup).ThenInclude(ec => ec.Template)
+                .Include(f => f.Match).ThenInclude(m => m.Penalties)
                 .Where(f => f.GameSaveId == gameSaveId && f.Date.Date == today)
-                .Select(f => new
-                {
-                    FixtureId = f.Id,
-                    CompetitionName =
-        f.CompetitionType == CompetitionTypeEnum.League
-            ? f.League!.Template.Name
-            : f.CompetitionType == CompetitionTypeEnum.DomesticCup
-                ? f.CupRound!.Cup.Template.Name
-                : f.EuropeanCupPhase!.EuropeanCup.Template.Name,
-                    Home = f.HomeTeam.Name,
-                    Away = f.AwayTeam.Name,
-                    HomeGoals = f.HomeTeamGoals,
-                    AwayGoals = f.AwayTeamGoals,
-                    Status = (int)f.Status,
-                    IsUserTeamMatch = (f.HomeTeamId == save.UserTeamId || f.AwayTeamId == save.UserTeamId),
-                    HomePenalties = f.Matches.SelectMany(m => m.Penalties)
-                                    .Count(p => p.TeamId == f.HomeTeamId && p.IsScored),
-                    AwayPenalties = f.Matches.SelectMany(m => m.Penalties)
-                                    .Count(p => p.TeamId == f.AwayTeamId && p.IsScored),
-                    IsElimination =
-                                    f.CompetitionType == CompetitionTypeEnum.DomesticCup
-        || f.CompetitionType == CompetitionTypeEnum.EuropeanCup
-                })
-
                 .ToListAsync();
 
-            var activeMatch = save.Fixtures
-                .SelectMany(f => f.Matches)
-                .FirstOrDefault(m => m.Status == MatchStatus.Live);
+            var matches = fixtures
+    .Select(f =>
+    {
+        var homePens = f.Match?.Penalties.Count(p => p.TeamId == f.HomeTeamId && p.IsScored) ?? 0;
+        var awayPens = f.Match?.Penalties.Count(p => p.TeamId == f.AwayTeamId && p.IsScored) ?? 0;
+
+        string? winner = null;
+
+        if (f.HomeTeamGoals > f.AwayTeamGoals)
+        {
+            winner = f.HomeTeam?.Name;
+        }
+        else if (f.AwayTeamGoals > f.HomeTeamGoals)
+        {
+            winner = f.AwayTeam?.Name;
+        }
+        // Ако е елиминация и се стигне до дузпи
+        else if (f.IsElimination && (homePens > 0 || awayPens > 0))
+        {
+            winner = homePens > awayPens ? f.HomeTeam?.Name : f.AwayTeam?.Name;
+        }
+
+        return new
+        {
+            FixtureId = f.Id,
+            CompetitionName =
+                f.CompetitionType == CompetitionTypeEnum.League
+                    ? f.League!.Template.Name
+                    : f.CompetitionType == CompetitionTypeEnum.DomesticCup
+                        ? f.CupRound!.Cup.Template.Name
+                        : f.EuropeanCupPhase!.EuropeanCup.Template.Name,
+            Home = f.HomeTeam.Name,
+            Away = f.AwayTeam.Name,
+            HomeGoals = f.HomeTeamGoals,
+            AwayGoals = f.AwayTeamGoals,
+            Status = f.Match != null ? (int)f.Match.Status : (int)f.Status,
+            IsUserTeamMatch = (f.HomeTeamId == save.UserTeamId || f.AwayTeamId == save.UserTeamId),
+            HomePenalties = homePens,
+            AwayPenalties = awayPens,
+            Winner = winner,
+            IsElimination = f.CompetitionType == CompetitionTypeEnum.DomesticCup
+                         || f.CompetitionType == CompetitionTypeEnum.EuropeanCup
+        };
+    })
+    .ToList();
+
 
             return Ok(new
             {
-                matches,
-                activeMatch = activeMatch == null ? null : new ActiveMatchDto
-                {
-                    Id = activeMatch.Id,
-                    FixtureId = activeMatch.FixtureId,
-                    Status = activeMatch.Status.ToString()
-                }
+                matches               
             });
         }
+
 
         [HttpPost("simulate/{gameSaveId}")]
         public async Task<IActionResult> SimulateMatches(int gameSaveId)
         {
-
             var gameSave = await _context.GameSaves
                 .Include(gs => gs.Fixtures)
-                    .ThenInclude(f => f.Matches)
+                    .ThenInclude(f => f.Match)
                 .Include(gs => gs.Seasons)
                 .Include(gs => gs.UserTeam)
                 .FirstOrDefaultAsync(gs => gs.Id == gameSaveId);
@@ -115,27 +128,31 @@
 
             var currentDate = currentSeason.CurrentDate.Date;
             var fixtures = gameSave.Fixtures
-                          .Where(f => f.Date.Date == currentDate)
-                          .ToList();
+                .Where(f => f.Date.Date == currentDate)
+                .ToList();
 
             if (!fixtures.Any())
                 return Ok(new { message = "No fixtures to simulate." });
 
             foreach (var fixture in fixtures)
             {
-                var match = fixture.Matches.FirstOrDefault();
+                var match = fixture.Match;
+
                 if (match == null)
                 {
                     match = await _matchService.GetOrCreateMatchAsync(fixture, gameSave);
-                    fixture.Matches.Add(match);
+                    fixture.Match = match;
                 }
+
                 await _matchEngine.SimulateMatchAsync(fixture, gameSave);
 
-                match.Status = MatchStatus.Played;
-                fixture.Status = FixtureStatusEnum.Played;
+                match.Status = MatchStageEnum.Played;
+                fixture.Status = MatchStageEnum.Played;
             }
 
             await _context.SaveChangesAsync();
+
+            _context.ChangeTracker.Clear();
 
             // 👇 ВЗЕМИ АКТУАЛИЗИРАНАТА ИНФОРМАЦИЯ ЗА ХЕДЪРА
             var updatedSave = await _context.GameSaves
@@ -148,27 +165,64 @@
             var updatedSeason = updatedSave.Seasons?.FirstOrDefault();
             var today = updatedSeason?.CurrentDate.Date ?? DateTime.Today;
 
+            _context.ChangeTracker.Clear();
+
             // 👇 ДОБАВИ INCLUDE ЗА ВСИЧКИ NAVIGATION PROPERTIES
             var todayMatches = await _context.Fixtures
-                .Include(f => f.HomeTeam)
-                .Include(f => f.AwayTeam)
-                .Include(f => f.League)
-                    .ThenInclude(l => l.Template)
-                .Include(f => f.CupRound)
-                    .ThenInclude(cr => cr.Cup)
-                    .ThenInclude(c => c.Template)
-                .Include(f => f.EuropeanCupPhase)
-                    .ThenInclude(ecp => ecp.EuropeanCup)
-                    .ThenInclude(ec => ec.Template)
-                .Where(f => f.GameSaveId == gameSaveId && f.Date.Date == today)
-                .ToListAsync();
+                              .Include(f => f.HomeTeam)
+                              .Include(f => f.AwayTeam)
+                              .Include(f => f.League).ThenInclude(l => l.Template)
+                              .Include(f => f.CupRound).ThenInclude(cr => cr.Cup).ThenInclude(c => c.Template)
+                              .Include(f => f.EuropeanCupPhase).ThenInclude(ecp => ecp.EuropeanCup).ThenInclude(ec => ec.Template)
+                              .Include(f => f.Match).ThenInclude(m => m.Penalties)
+                              .Where(f => f.GameSaveId == gameSaveId && f.Date.Date == today)
+                              .ToListAsync();
+
 
             var hasUnplayedMatchesToday = todayMatches.Any(m => m.Status == 0);
-            var hasMatchesToday = todayMatches.Any();
+            var hasMatchesToday = todayMatches.Any();         
 
-            var activeMatch = await _context.Matches
-                .FirstOrDefaultAsync(m => m.Fixture.GameSaveId == gameSaveId &&
-                                        m.Status == MatchStatus.Live);
+            var matches = todayMatches.Select(f =>
+            {
+                var homePens = f.Match?.Penalties.Count(p => p.TeamId == f.HomeTeamId && p.IsScored) ?? 0;
+                var awayPens = f.Match?.Penalties.Count(p => p.TeamId == f.AwayTeamId && p.IsScored) ?? 0;
+
+
+                bool isElimination = f.CompetitionType == CompetitionTypeEnum.DomesticCup
+                                  || f.CompetitionType == CompetitionTypeEnum.EuropeanCup;
+
+                string? winner = null;
+
+                if (f.HomeTeamGoals > f.AwayTeamGoals)
+                {
+                    winner = f.HomeTeam?.Name;
+                }
+                else if (f.AwayTeamGoals > f.HomeTeamGoals)
+                {
+                    winner = f.AwayTeam?.Name;
+                }
+                else if (f.IsElimination && (homePens > 0 || awayPens > 0))
+                {
+                    winner = homePens > awayPens ? f.HomeTeam?.Name : f.AwayTeam?.Name;
+                }
+
+                return new
+                {
+                    FixtureId = f.Id,
+                    CompetitionName = GetCompetitionName(f),
+                    Home = f.HomeTeam?.Name ?? "Unknown Team",
+                    Away = f.AwayTeam?.Name ?? "Unknown Team",
+                    HomeGoals = f.HomeTeamGoals,
+                    AwayGoals = f.AwayTeamGoals,
+                    Status = f.Match != null ? (int)f.Match.Status : (int)f.Status,
+                    IsUserTeamMatch = (f.HomeTeamId == updatedSave.UserTeamId || f.AwayTeamId == updatedSave.UserTeamId),
+                    HomePenalties = homePens,
+                    AwayPenalties = awayPens,
+                    Winner = winner,
+                    IsElimination = isElimination
+                };
+            }).ToList();
+
 
             return Ok(new
             {
@@ -192,20 +246,9 @@
                         }),
                     },
                     hasUnplayedMatchesToday,
-                    hasMatchesToday, // 👈 ДОБАВИ ТОВА
-                    activeMatch = activeMatch != null ? new { activeMatch.Id } : null
+                    hasMatchesToday
                 },
-                matches = todayMatches.Select(f => new
-                {
-                    FixtureId = f.Id,
-                    CompetitionName = GetCompetitionName(f),
-                    Home = f.HomeTeam?.Name ?? "Unknown Team",
-                    Away = f.AwayTeam?.Name ?? "Unknown Team",
-                    HomeGoals = f.HomeTeamGoals,
-                    AwayGoals = f.AwayTeamGoals,
-                    Status = f.Status,
-                    IsUserTeamMatch = (f.HomeTeamId == updatedSave.UserTeamId || f.AwayTeamId == updatedSave.UserTeamId)
-                })
+                matches
             });
         }
 
@@ -274,7 +317,7 @@
                         .Select(e => new
                         {
                             minute = e.Minute,
-                            scorer = e.Player != null ? e.Player.FirstName + " " + e.Player.LastName  : "Unknown Player"
+                            scorer = e.Player != null ? e.Player.FirstName + " " + e.Player.LastName : "Unknown Player"
                         })
                         .ToList()
                 }
@@ -282,126 +325,5 @@
 
             return Ok(dto);
         }
-
-
-
-        //    [Authorize]
-        //    [HttpGet("{fixtureId}/preview")]
-        //    public async Task<IActionResult> GetMatchPreview(int fixtureId)
-        //    {
-        //        var fixture = await _context.Fixtures
-        //            .Include(f => f.HomeTeam).ThenInclude(t => t.Players).ThenInclude(p => p.Position)
-        //            .Include(f => f.AwayTeam).ThenInclude(t => t.Players).ThenInclude(p => p.Position)
-        //            .Include(f => f.League).ThenInclude(l => l.Template)
-        //            .Include(f => f.CupRound).ThenInclude(cr => cr.Cup).ThenInclude(c => c.Template)
-        //            .Include(f => f.EuropeanCupPhase).ThenInclude(p => p.EuropeanCup).ThenInclude(ec => ec.Template)
-        //            .FirstOrDefaultAsync(f => f.Id == fixtureId);
-
-        //        if (fixture == null)
-        //            return NotFound(new { error = "Fixture not found" });
-
-        //        var competitionName =
-        //            fixture.CompetitionType == CompetitionTypeEnum.League
-        //                ? fixture.League?.Template.Name
-        //                : fixture.CompetitionType == CompetitionTypeEnum.DomesticCup
-        //                    ? fixture.CupRound?.Cup?.Template.Name
-        //                    : fixture.EuropeanCupPhase?.EuropeanCup?.Template.Name;
-
-        //        return Ok(new
-        //        {
-        //            Competition = $"{competitionName} - Round {fixture.Round}",
-        //            Home = new
-        //            {
-        //                fixture.HomeTeam!.Name,
-        //                Score = fixture.HomeTeamGoals ?? 0,
-        //                Lineup = fixture.HomeTeam.Players.Select(p => new
-        //                {
-        //                    p.KitNumber,
-        //                    Name = $"{p.FirstName} {p.LastName}",
-        //                    Position = p.Position?.Code ?? "N/A"
-        //                })
-        //            },
-        //            Away = new
-        //            {
-        //                fixture.AwayTeam!.Name,
-        //                Score = fixture.AwayTeamGoals ?? 0,
-        //                Lineup = fixture.AwayTeam.Players.Select(p => new
-        //                {
-        //                    p.KitNumber,
-        //                    Name = $"{p.FirstName} {p.LastName}",
-        //                    Position = p.Position?.Code ?? "N/A"
-        //                })
-        //            },
-        //            Minute = fixture.Status == FixtureStatusEnum.Played ? 90 : 0,
-        //            Status = fixture.Status.ToString()
-        //        });
-        //    }
-
-        //    [Authorize]
-        //    [HttpGet("{fixtureId}/match")]
-        //    public async Task<IActionResult> StartOrGetMatch(int fixtureId)
-        //    {
-        //        var fixture = await _context.Fixtures
-        //            .Include(f => f.Matches)
-        //            .FirstOrDefaultAsync(f => f.Id == fixtureId);
-
-        //        if (fixture == null)
-        //            return NotFound(new { error = "Fixture not found" });
-
-        //        var match = fixture.Matches.OrderByDescending(m => m.Id).FirstOrDefault();
-        //        if (match == null)
-        //        {
-        //            var gameSave = await _context.GameSaves
-        //                .FirstOrDefaultAsync(gs => gs.Id == fixture.GameSaveId);
-        //            if (gameSave == null)
-        //                return NotFound(new { error = "GameSave not found" });
-
-        //            match = await _matchService.GetOrCreateMatchAsync(fixture, gameSave);
-        //        }
-
-        //        var view = await _matchService.GetMatchViewByIdAsync(match.Id);
-        //        return Ok(view);
-        //    }
-
-        //    [Authorize]
-        //    [HttpGet("{matchId}")]
-        //    public async Task<IActionResult> GetMatch(int matchId)
-        //    {
-        //        var view = await _matchService.GetMatchViewByIdAsync(matchId);
-        //        if (view == null)
-        //            return NotFound(new { error = "Match not found" });
-
-        //        var events = await _context.MatchEvents
-        //            .Where(e => e.MatchId == matchId)
-        //            .OrderByDescending(e => e.Minute)
-        //            .Select(e => new
-        //            {
-        //                e.Minute,
-        //                Text = e.Commentary,
-        //                Team = e.Team.Name,
-        //                Player = e.Player.FirstName + " " + e.Player.LastName,
-        //                EventType = e.EventType.Name,
-        //                Outcome = e.Outcome.Name
-        //            })
-        //            .ToListAsync();
-
-        //        return Ok(new { view, events });
-        //    }
-
-        //    [Authorize]
-        //    [HttpGet("active/{gameSaveId}")]
-        //    public async Task<IActionResult> GetActiveMatch(int gameSaveId)
-        //    {
-        //        var match = await _context.Matches
-        //            .Where(m => m.GameSaveId == gameSaveId && m.Status == MatchStatus.Live)
-        //            .OrderByDescending(m => m.Id)
-        //            .FirstOrDefaultAsync();
-
-        //        if (match == null) return Ok(null);
-
-        //        return Ok(new { match.Id, match.FixtureId });
-        //    }
-
-        //}
     }
 }

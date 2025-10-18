@@ -43,7 +43,7 @@
                 IsElimination = DetermineIsElimination(competitionType, cupRound, europeanCupPhaseId),
                 Date = date,
                 Round = round,
-                Status = FixtureStatusEnum.Scheduled
+                Status = MatchStageEnum.Scheduled
             };
         }
 

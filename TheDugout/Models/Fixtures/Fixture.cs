@@ -31,10 +31,11 @@
         public int? AwayTeamGoals { get; set; }
         public int? WinnerTeamId { get; set; }
         public Team? WinnerTeam { get; set; }
+        public int? MatchId { get; set; }
+        public Match Match { get; set; } = null!;
         public DateTime Date { get; set; }
         public int Round { get; set; }
         public bool IsElimination { get; set; } = false;
-        public FixtureStatusEnum Status { get; set; } = FixtureStatusEnum.Scheduled;
-        public ICollection<Match> Matches { get; set; } = new List<Match>();
+        public MatchStageEnum Status { get; set; } = MatchStageEnum.Scheduled;
     }
 }

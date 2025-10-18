@@ -2,10 +2,10 @@
 {
     using Microsoft.EntityFrameworkCore;
     using Microsoft.EntityFrameworkCore.Metadata.Builders;
-    using System.Text.RegularExpressions;
-    public class MatchConfiguration : IEntityTypeConfiguration<Models.Matches.Match>
+    using Models.Matches;
+    public class MatchConfiguration : IEntityTypeConfiguration<Match>
     {
-        public void Configure(EntityTypeBuilder<Models.Matches.Match> builder)
+        public void Configure(EntityTypeBuilder<Match> builder)
         {
             builder.HasKey(m => m.Id);
 
@@ -15,9 +15,9 @@
                    .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(m => m.Fixture)
-                   .WithMany(f => f.Matches)
-                   .HasForeignKey(m => m.FixtureId)
-                   .OnDelete(DeleteBehavior.Restrict);
+               .WithOne(f => f.Match)
+               .HasForeignKey<Match>(m => m.FixtureId)
+               .OnDelete(DeleteBehavior.Restrict);
 
             builder.Property(m => m.Status).HasConversion<int>();
             builder.Property(m => m.CurrentTurn).HasConversion<int>();

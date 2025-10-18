@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using TheDugout.Data;
 using TheDugout.DTOs.Player;
 using TheDugout.Models.Competitions;
+using TheDugout.Models.Enums;
 using TheDugout.Models.Matches;
 using TheDugout.Models.Players;
 using TheDugout.Services.EuropeanCup.Interfaces;
@@ -66,7 +67,7 @@ namespace TheDugout.Controllers
            .ThenInclude(m => m.Fixture)
        .Where(pms => pms.Goals > 0 &&
                     pms.Match.Competition.Id == competitionId &&
-                    pms.Match.Status == MatchStatus.Played)
+                    pms.Match.Status == MatchStageEnum.Played)
        .Select(pms => new
        {
            MatchId = pms.Match.FixtureId,

@@ -10,6 +10,7 @@
     using TheDugout.Services.Cup.Interfaces;
     using TheDugout.Services.Fixture;
     using TheDugout.Services.Season.Interfaces;
+    using TheDugout.Models.Teams;
     public class CupFixturesService : ICupFixturesService
     {
         private readonly DugoutDbContext _context;
@@ -27,7 +28,7 @@
             _cupScheduleService = cupScheduleService;
         }
 
-        public async Task GenerateInitialFixturesAsync(int seasonId, int gameSaveId, List<Models.Cups.Cup> cups)
+        public async Task GenerateInitialFixturesAsync(int seasonId, int gameSaveId, List<Cup> cups)
         {
             var season = await _context.Seasons
                 .Include(s => s.Events)
@@ -35,7 +36,7 @@
 
             if (season == null) return;
 
-            var allFixtures = new List<Models.Fixtures.Fixture>();
+            var allFixtures = new List<Fixture>();
 
             foreach (var cup in cups)
             {
@@ -142,7 +143,7 @@
             };
 
             var shuffledTeams = nextRoundTeams.OrderBy(_ => Guid.NewGuid()).ToList();
-            var fixtures = new List<Models.Fixtures.Fixture>();
+            var fixtures = new List<Fixture>();
 
             for (int i = 0; i < shuffledTeams.Count; i += 2)
             {
@@ -191,13 +192,13 @@
         // Helpers
         // ---------------------------
 
-        private List<Models.Fixtures.Fixture> GenerateFirstRoundFixtures(
-            Models.Cups.Cup cup,
-            List<Models.Teams.Team> teams,
+        private List<Fixture> GenerateFirstRoundFixtures(
+            Cup cup,
+            List<Team> teams,
             int gameSaveId,
             int seasonId)
         {
-            var fixtures = new List<Models.Fixtures.Fixture>();
+            var fixtures = new List<Fixture>();
 
             bool needsPrelim = NeedsPreliminaryRound(teams.Count);
             int prelimTeamsCount = GetTeamsInPrelimRound(teams.Count);
@@ -239,9 +240,9 @@
             return fixtures;
         }
 
-        private List<Models.Fixtures.Fixture> PairTeamsIntoFixtures(List<Models.Teams.Team> teams, int gameSaveId, int seasonId, CupRound round)
+        private List<Fixture> PairTeamsIntoFixtures(List<Team> teams, int gameSaveId, int seasonId, CupRound round)
         {
-            var fixtures = new List<Models.Fixtures.Fixture>();
+            var fixtures = new List<Fixture>();
 
             for (int i = 0; i < teams.Count; i += 2)
             {
@@ -278,7 +279,7 @@
             return teamCount - prevPower;
         }
 
-        private static List<int> GetNextRoundTeams(Models.Cups.Cup cup, CupRound lastRound, List<int> winners)
+        private static List<int> GetNextRoundTeams(Cup cup, CupRound lastRound, List<int> winners)
         {
             if (lastRound.Name.Contains("Preliminary", StringComparison.OrdinalIgnoreCase))
             {
@@ -298,7 +299,5 @@
 
             return winners;
         }
-
-
     }
 }

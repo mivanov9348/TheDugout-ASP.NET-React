@@ -87,8 +87,8 @@
                 .Where(f => f.GameSaveId == gameSaveId && f.Date.Date == today)
                 .ToListAsync();
 
-            var hasUnplayedMatchesToday = matches.Any(m => m.Status == FixtureStatusEnum.Scheduled);
-            var activeMatch = matches.FirstOrDefault(m => m.Status == FixtureStatusEnum.Scheduled);
+            var hasUnplayedMatchesToday = matches.Any(m => m.Status == MatchStageEnum.Scheduled);
+            var activeMatch = matches.FirstOrDefault(m => m.Status == MatchStageEnum.Scheduled);
             var hasMatchesToday = matches.Any();
 
             return Ok(new
@@ -137,7 +137,7 @@
 
             var today = season.CurrentDate.Date;
             var hasUnplayed = await _context.Fixtures
-                .AnyAsync(f => f.GameSaveId == saveId && f.Date.Date == today && f.Status == FixtureStatusEnum.Scheduled);
+                .AnyAsync(f => f.GameSaveId == saveId && f.Date.Date == today && f.Status == MatchStageEnum.Scheduled);
 
             if (hasUnplayed)
                 return BadRequest(new { message = "Cannot advance day: there are unplayed matches today." });

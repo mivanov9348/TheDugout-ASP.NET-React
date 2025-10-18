@@ -1,9 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using TheDugout.Data;
-
-namespace TheDugout.Controllers
+﻿namespace TheDugout.Controllers
 {
+    using Microsoft.AspNetCore.Mvc;
+    using Microsoft.EntityFrameworkCore;
+    using TheDugout.Data;
+
     [ApiController]
     [Route("api/[controller]")]
     public class LeagueController : ControllerBase

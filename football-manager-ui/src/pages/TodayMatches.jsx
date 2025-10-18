@@ -1,7 +1,7 @@
 // src/pages/TodayMatches.jsx
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Trophy, Play } from "lucide-react";
+import { Trophy, Play, Zap } from "lucide-react";
 import TeamLogo from "../components/TeamLogo";
 import { useProcessing } from "../context/ProcessingContext";
 import { useGame } from "../context/GameContext";
@@ -26,7 +26,7 @@ export default function TodayMatches() {
     away: m.away ?? m.Away,
     homeGoals: m.homeGoals ?? m.HomeGoals,
     awayGoals: m.awayGoals ?? m.AwayGoals,
-    status: Number(m.status ?? m.Status ?? 0), // 👈 гарантираме, че е число
+    status: Number(m.status ?? m.Status ?? 0),
     isUserTeamMatch:
       typeof m.isUserTeamMatch !== "undefined"
         ? m.isUserTeamMatch
@@ -35,26 +35,20 @@ export default function TodayMatches() {
     awayLogoFileName: m.awayLogoFileName ?? m.AwayLogoFileName,
     homePenalties: m.homePenalties ?? m.HomePenalties ?? 0,
     awayPenalties: m.awayPenalties ?? m.AwayPenalties ?? 0,
-    isElimination: m.isElimination ?? m.IsElimination ?? false, // 👈 ново
+    isElimination: m.isElimination ?? m.IsElimination ?? false,
+    winner: m.winner ?? m.Winner ?? null,
   });
-
 
   const loadMatches = async () => {
     try {
       const res = await fetch(`/api/matches/today/${gameSaveId}`, {
         credentials: "include",
       });
-      if (!res.ok) {
-        console.error("Failed to fetch matches", res.status);
-        return;
-      }
+      if (!res.ok) return console.error("Failed to fetch matches", res.status);
       const data = await res.json();
       const normalized = (data.matches ?? []).map(normalizeMatch);
       setMatches(normalized);
-
-      if (data.activeMatch) {
-        setActiveMatch(data.activeMatch);
-      }
+      if (data.activeMatch) setActiveMatch(data.activeMatch);
     } catch (err) {
       console.error("Failed to fetch matches", err);
     }
@@ -67,7 +61,6 @@ export default function TodayMatches() {
   const handleSimulate = async () => {
     try {
       const data = await runSimulateMatches(gameSaveId);
-
       if (!data) return;
 
       if (data.matches) {
@@ -102,38 +95,21 @@ export default function TodayMatches() {
   }, {});
 
   const renderStatus = (status) => {
-    switch (status) {
-      case 0:
-        return (
-          <span className="px-2 py-0.5 text-xs rounded-full bg-gray-200 text-gray-600">
-            Scheduled
-          </span>
-        );
-      case 1:
-        return (
-          <span className="px-2 py-0.5 text-xs rounded-full bg-green-200 text-green-700">
-            Played
-          </span>
-        );
-      case 2:
-        return (
-          <span className="px-2 py-0.5 text-xs rounded-full bg-red-200 text-red-700">
-            Cancelled
-          </span>
-        );
-      case 3:
-        return (
-          <span className="px-2 py-0.5 text-xs rounded-full bg-orange-200 text-orange-700 animate-pulse">
-            Live 🔴
-          </span>
-        );
-      default:
-        return (
-          <span className="px-2 py-0.5 text-xs rounded-full bg-gray-100 text-gray-400">
-            Unknown
-          </span>
-        );
-    }
+    const styles = {
+      0: "bg-gray-200 text-gray-600",
+      1: "bg-green-200 text-green-800",
+      2: "bg-red-200 text-red-700",
+      3: "bg-orange-200 text-orange-700 animate-pulse",
+    };
+    const labels = ["Scheduled", "Played", "Cancelled", "Live 🔴"];
+    return (
+      <span
+        className={`px-2 py-0.5 text-xs font-semibold rounded-full ${styles[status] || "bg-gray-100 text-gray-400"
+          }`}
+      >
+        {labels[status] || "Unknown"}
+      </span>
+    );
   };
 
   return (
@@ -143,7 +119,7 @@ export default function TodayMatches() {
           <button
             onClick={handleSimulate}
             disabled={isProcessing}
-            className={`flex items-center gap-2 px-6 py-3 rounded-2xl shadow-md font-semibold transition transform
+            className={`flex items-center gap-2 px-8 py-3 rounded-2xl font-bold shadow-lg transition-all transform
               ${isProcessing
                 ? "opacity-60 cursor-not-allowed bg-gray-300 text-gray-600"
                 : "bg-gradient-to-r from-sky-600 to-blue-700 hover:from-sky-700 hover:to-blue-800 text-white hover:scale-105"
@@ -156,7 +132,7 @@ export default function TodayMatches() {
       </div>
 
       {matches.length === 0 && (
-        <p className="text-center text-gray-500 italic text-lg">
+        <p className="text-center text-gray-500 italic text-lg animate-pulse">
           No matches today.
         </p>
       )}
@@ -164,55 +140,86 @@ export default function TodayMatches() {
       {Object.entries(grouped).map(([competition, compMatches]) => (
         <div
           key={competition}
-          className="bg-gradient-to-b from-white to-slate-50 rounded-2xl shadow-lg border border-slate-200 p-6 space-y-5"
+          className="bg-gradient-to-b from-slate-50 to-slate-100 rounded-3xl shadow-2xl border border-slate-200 p-6 space-y-5 transition-all"
         >
-          <h2 className="flex items-center justify-center gap-2 text-2xl font-bold text-slate-700 border-b pb-2">
-            <Trophy className="w-6 h-6 text-amber-500" />
-            {competition}
+          <h2 className="flex items-center justify-center gap-3 text-2xl font-extrabold text-slate-800 tracking-wide">
+            <Trophy className="w-6 h-6 text-amber-500 drop-shadow" />
+            <span className="drop-shadow-sm">{competition}</span>
           </h2>
 
           <div className="space-y-4">
-            {compMatches.map((m, idx) => (
-              <div
-                key={idx}
-                className={`flex items-center justify-between px-6 py-4 rounded-xl border transition shadow-sm hover:shadow-md
-                  ${m.isUserTeamMatch
-                    ? "bg-sky-50 border-sky-300 animate-pulse"
-                    : "bg-white border-slate-100"
-                  }`}
-              >
-                <div className="flex-1 flex items-center justify-end gap-2">
-                  <span className="font-semibold text-slate-800">{m.home}</span>
-                  <TeamLogo
-                    teamName={m.home}
-                    logoFileName={m.homeLogoFileName}
-                    className="w-8 h-8 rounded-full shadow"
-                  />
-                </div>
-                <div className="flex flex-col items-center px-4">
-                  <span className="text-gray-700 font-bold">
-                    {m.homeGoals != null && m.awayGoals != null
-                      ? `${m.homeGoals} : ${m.awayGoals}`
-                      : "vs"}
-                    {m.isElimination &&
-                      m.homeGoals === m.awayGoals &&
-                      (m.homePenalties > 0 || m.awayPenalties > 0) && (
-                        <> ({m.homePenalties} : {m.awayPenalties} pens)</>
-                      )}
-                  </span>
+            {compMatches.map((m, idx) => {
+              const isWinner = (team) =>
+                m.winner && m.winner.toLowerCase() === team.toLowerCase();
 
-                  {renderStatus(m.status)}
+              return (
+                <div
+                  key={idx}
+                  className={`flex items-center justify-between px-6 py-4 rounded-2xl border shadow-sm backdrop-blur-sm transition-transform hover:-translate-y-1 hover:shadow-md
+                    ${m.isUserTeamMatch
+                      ? "bg-sky-50 border-sky-300 ring-2 ring-sky-200"
+                      : "bg-white border-slate-200"
+                    }`}
+                >
+                  {/* HOME */}
+                  <div className="flex-1 flex items-center justify-end gap-2">
+                    <span
+                      className={`font-semibold text-right text-lg ${isWinner(m.home)
+                        ? "text-amber-500 drop-shadow-sm animate-pulse"
+                        : "text-slate-800"
+                        }`}
+                    >
+                      {m.home}
+                    </span>
+                    <TeamLogo
+                      teamName={m.home}
+                      logoFileName={m.homeLogoFileName}
+                      className={`w-9 h-9 rounded-full shadow ${isWinner(m.home) ? "ring-2 ring-amber-400" : ""
+                        }`}
+                    />
+                  </div>
+
+                  {/* SCORE */}
+                  <div className="flex flex-col items-center px-4 text-center">
+                    <span className="text-gray-700 font-extrabold text-xl">
+                      {m.homeGoals != null && m.awayGoals != null
+                        ? `${m.homeGoals} : ${m.awayGoals}`
+                        : "vs"}
+                      {m.isElimination &&
+                        m.homeGoals === m.awayGoals &&
+                        (m.homePenalties > 0 || m.awayPenalties > 0) && (
+                          <>
+                            {" "}
+                            <span className="text-sm text-slate-500">
+                              ({m.homePenalties}:{m.awayPenalties} pens)
+                            </span>
+                          </>
+                        )}
+                    </span>
+
+                    <div className="mt-1">{renderStatus(m.status)}</div>
+                  </div>
+
+                  {/* AWAY */}
+                  <div className="flex-1 flex items-center justify-start gap-2">
+                    <TeamLogo
+                      teamName={m.away}
+                      logoFileName={m.awayLogoFileName}
+                      className={`w-9 h-9 rounded-full shadow ${isWinner(m.away) ? "ring-2 ring-amber-400" : ""
+                        }`}
+                    />
+                    <span
+                      className={`font-semibold text-left text-lg ${isWinner(m.away)
+                        ? "text-amber-500 drop-shadow-sm animate-pulse"
+                        : "text-slate-800"
+                        }`}
+                    >
+                      {m.away}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex-1 flex items-center justify-start gap-2">
-                  <TeamLogo
-                    teamName={m.away}
-                    logoFileName={m.awayLogoFileName}
-                    className="w-8 h-8 rounded-full shadow"
-                  />
-                  <span className="font-semibold text-slate-800">{m.away}</span>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       ))}

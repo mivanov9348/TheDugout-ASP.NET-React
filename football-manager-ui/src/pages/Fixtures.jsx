@@ -5,10 +5,10 @@ const Fixtures = ({ gameSaveId, seasonId }) => {
   const [fixtures, setFixtures] = useState([]);
   const [loading, setLoading] = useState(false);
   const [round, setRound] = useState("1");
-  const [league, setLeague] = useState("");
+  const [league, setLeague] = useState(""); // ID на избраната лига
   const [leagues, setLeagues] = useState([]);
 
-  // Load leagues
+  // ✅ Зарежда лигите
   useEffect(() => {
     if (!gameSaveId) return;
 
@@ -19,34 +19,37 @@ const Fixtures = ({ gameSaveId, seasonId }) => {
         });
         if (!res.ok) throw new Error("Failed to load leagues");
         const data = await res.json();
-
-        setLeagues(data);
-
-        // Set default league to the one with the lowest tier
-        if (data.length > 0 && !league) {
-          const first = data.sort((a, b) => a.tier - b.tier)[0];
-          setLeague(first.id.toString());
-        }
+        setLeagues(data || []);
       } catch (err) {
         console.error("Error fetching leagues:", err);
+        setLeagues([]);
       }
     };
 
     fetchLeagues();
   }, [gameSaveId]);
 
-  // Load fixtures
+  // ✅ Ако няма избрана лига — избира първата по Tier
   useEffect(() => {
-    if (!gameSaveId || !seasonId || !league) return;
+    if (leagues.length > 0 && !league) {
+      const firstLeague = leagues.sort((a, b) => a.tier - b.tier)[0];
+      if (firstLeague) setLeague(firstLeague.id.toString());
+    }
+  }, [leagues, league]);
+
+  // ✅ Зарежда мачовете при промяна
+  useEffect(() => {
+    if (!gameSaveId || !seasonId) return;
+
+    let url = `/api/fixtures/${gameSaveId}/${seasonId}?round=${round}`;
+    if (league) url += `&leagueId=${league}`;
 
     const fetchFixtures = async () => {
       try {
         setLoading(true);
-        const url = `/api/fixtures/${gameSaveId}/${seasonId}?round=${round}&leagueId=${league}`;
         const res = await fetch(url, { credentials: "include" });
         if (!res.ok) throw new Error("Failed to load fixtures");
         const data = await res.json();
-
         setFixtures(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error("Error fetching fixtures:", err);
@@ -59,35 +62,17 @@ const Fixtures = ({ gameSaveId, seasonId }) => {
     fetchFixtures();
   }, [gameSaveId, seasonId, round, league]);
 
-  // Get the number of rounds for the selected league
   const selectedLeague = leagues.find((l) => l.id.toString() === league);
-  const maxRounds = selectedLeague?.rounds || 38; // Default to 38 if rounds not available
+  const maxRounds = selectedLeague?.rounds || 38;
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
-       
 
-        {/* Filters */}
+        {/* 🔹 Филтри */}
         <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-8 bg-white p-6 rounded-2xl shadow-md">
-          <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Select Round
-            </label>
-            <select
-              className="w-full p-3 rounded-lg border border-gray-300 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
-              value={round}
-              onChange={(e) => setRound(e.target.value)}
-            >
-              {[...Array(maxRounds)].map((_, i) => (
-                <option key={i + 1} value={i + 1}>
-                  Round {i + 1}
-                </option>
-              ))}
-            </select>
-          </div>
-
+          
+          {/* Избор на лига */}
           <div className="flex-1">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Select League
@@ -100,17 +85,36 @@ const Fixtures = ({ gameSaveId, seasonId }) => {
                 setRound("1");
               }}
             >
-              <option value="">Select a league</option>
+              <option value="">Auto (User Team League)</option>
               {leagues.map((l) => (
                 <option key={l.id} value={l.id}>
-                  {l.name} 
+                  {l.name} ({l.tier})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Избор на кръг */}
+          <div className="flex-1">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Select Round
+            </label>
+            <select
+              className="w-full p-3 rounded-lg border border-gray-300 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
+              value={round}
+              onChange={(e) => setRound(e.target.value)}
+              disabled={loading || fixtures.length === 0}
+            >
+              {[...Array(maxRounds)].map((_, i) => (
+                <option key={i + 1} value={i + 1}>
+                  Round {i + 1}
                 </option>
               ))}
             </select>
           </div>
         </div>
 
-        {/* Fixtures Table */}
+        {/* 🔹 Таблица с мачове */}
         {loading ? (
           <div className="flex justify-center py-12">
             <div className="animate-spin h-12 w-12 border-4 border-blue-500 border-t-transparent rounded-full"></div>
@@ -123,10 +127,9 @@ const Fixtures = ({ gameSaveId, seasonId }) => {
           </div>
         ) : (
           <div className="bg-white rounded-2xl shadow-md overflow-hidden">
-            {/* League & Round Header */}
             <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white px-6 py-4">
               <h2 className="text-xl font-semibold">
-                {selectedLeague?.name || "Selected League"} – Round {round}
+                {selectedLeague?.name || "User Team League"} – Round {round}
               </h2>
             </div>
 

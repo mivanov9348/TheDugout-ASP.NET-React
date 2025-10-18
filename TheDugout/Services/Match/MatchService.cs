@@ -54,7 +54,7 @@
                 FixtureId = fixture.Id,
                 Fixture = fixture,
                 CurrentMinute = 0,
-                Status = MatchStatus.Live,
+                Status = MatchStageEnum.Scheduled,
                 CompetitionId = competition.Id
             };
 
@@ -143,9 +143,9 @@
             fixture.AwayTeamGoals = awayGoals;
             fixture.WinnerTeamId = homeGoals > awayGoals ? fixture.HomeTeamId :
                                   awayGoals > homeGoals ? fixture.AwayTeamId : null;
-            fixture.Status = FixtureStatusEnum.Played;
+            fixture.Status = MatchStageEnum.Played;
 
-            match.Status = MatchStatus.Played;
+            match.Status = MatchStageEnum.Played;
             match.CurrentMinute = 90;
 
             _context.Entry(fixture).State = EntityState.Modified;
