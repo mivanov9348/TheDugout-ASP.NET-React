@@ -71,12 +71,12 @@
 
             if (match.PlayerStats != null && match.PlayerStats.Any())
             {
-                await _playerStatsService.UpdateSeasonStatsAfterMatchAsync(match);
+                await _playerStatsService.UpdateStatsAfterMatchAsync(match);
             }
         }
         public void PlayNextMinute(Match match)
         {
-            int increment = _random.Next(1, 26);
+            int increment = _random.Next(1, 21);
             match.CurrentMinute += increment;
         }
         public void ChangeTurn(Match match)
@@ -88,10 +88,7 @@
         public bool IsMatchFinished(Match match)
         {
             return match.CurrentMinute >= 90;
-        }
-
-        
-
+        }      
 
         public async Task<Match> SimulateMatchAsync(Fixture fixture, GameSave gameSave)
         {
@@ -204,10 +201,6 @@
         {
             await _penaltyService.RunPenaltyShootoutAsync(match);
 
-            //if (match.Fixture.HomeTeamGoals > match.Fixture.AwayTeamGoals)
-            //    match.Fixture.WinnerTeamId = match.Fixture.HomeTeamId;
-            //else
-            //    match.Fixture.WinnerTeamId = match.Fixture.AwayTeamId;
         }
         public async Task RunMatch(Match match)
         {

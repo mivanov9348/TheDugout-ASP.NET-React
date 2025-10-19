@@ -24,6 +24,7 @@
         public ICollection<Match> Matches { get; set; } = new List<Match>();
         public ICollection<PlayerMatchStats> PlayerStats { get; set; } = new List<PlayerMatchStats>();
         public ICollection<CompetitionAward> Awards { get; set; } = new List<CompetitionAward>();
+        public ICollection<PlayerCompetitionStats> PlayerCompetitionStats { get; set; } = new List<PlayerCompetitionStats>();
 
     }
 }

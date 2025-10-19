@@ -58,19 +58,20 @@
 
                 if (competition == null) continue;
 
-                var topScorer = await _context.PlayerSeasonStats
-                    .Include(p => p.Player)
-                    .Where(p => p.SeasonId == seasonId && p.CompetitionId == competition.Id)
-                    .OrderByDescending(p => p.Goals)
-                    .ThenBy(p => p.Player!.LastName)
-                    .FirstOrDefaultAsync();
+                var topScorer = await _context.PlayerCompetitionStats
+                        .Include(p => p.Player)
+                        .Where(p => p.SeasonId == seasonId && p.CompetitionId == competition.Id)
+                        .OrderByDescending(p => p.Goals)
+                        .ThenBy(p => p.Player.LastName)
+                        .FirstOrDefaultAsync();
+
 
                 if (topScorer != null && topScorer.Goals > 0)
                 {
                     var award = new CompetitionAward
                     {
                         AwardType = CompetitionAwardType.TopScorer,
-                        PlayerId = topScorer.PlayerId!.Value,
+                        PlayerId = topScorer.PlayerId!,
                         Value = topScorer.Goals,
                         CompetitionSeasonResult = result,
                         CompetitionId = competition.Id,

@@ -87,7 +87,7 @@ namespace TheDugout.Controllers
 
             if (competitionId != null)
             {
-                playerStats = await _context.PlayerSeasonStats
+                playerStats = await _context.PlayerCompetitionStats
                     .Include(ps => ps.Player)
                         .ThenInclude(p => p.Team)
                     .Where(ps => ps.CompetitionId == competitionId)
@@ -103,6 +103,7 @@ namespace TheDugout.Controllers
                     .ThenBy(p => p.Name)
                     .ToListAsync();
             }
+
 
             var result = new
             {

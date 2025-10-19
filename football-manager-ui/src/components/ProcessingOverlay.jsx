@@ -23,7 +23,7 @@ export default function ProcessingOverlay({
           Processing...
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 bg-gray-50 font-mono text-sm text-gray-800 space-y-1">
+        <div className="flex-1 overflow-y-auto p-4 bg-gray-50 font-mono text-sm text-gray-800 space-y-1 max-h-[400px]">
           {logs.map((line, idx) => (
             <div key={idx}>{line}</div>
           ))}

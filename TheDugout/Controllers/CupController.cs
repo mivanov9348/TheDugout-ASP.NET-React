@@ -59,20 +59,22 @@
                     .Sum(f => (f.HomeTeamGoals ?? 0) + (f.AwayTeamGoals ?? 0));
 
                 // Играческа статистика за турнира
-                var cupPlayerStats = await _context.PlayerSeasonStats
-                    .Where(p => p.CompetitionId == c.CompetitionId && p.SeasonId == seasonId)
-                    .Include(p => p.Player).ThenInclude(pl => pl.Team)
-                    .Select(p => new
-                    {
-                        PlayerId = p.PlayerId,
-                        PlayerName = p.Player.FirstName + " " + p.Player.LastName,
-                        TeamName = p.Player.Team.Name ?? "Unknown",
-                        Goals = p.Goals,
-                        Matches = p.MatchesPlayed
-                    })
-                    .OrderByDescending(p => p.Goals)
-                    .ThenBy(p => p.PlayerName)
-                    .ToListAsync();
+                var cupPlayerStats = await _context.PlayerCompetitionStats
+    .Where(p => p.CompetitionId == c.CompetitionId && p.SeasonId == seasonId)
+    .Include(p => p.Player)
+        .ThenInclude(pl => pl.Team)
+    .Select(p => new
+    {
+        PlayerId = p.PlayerId,
+        PlayerName = p.Player.FirstName + " " + p.Player.LastName,
+        TeamName = p.Player.Team.Name ?? "Unknown",
+        Goals = p.Goals,
+        Matches = p.MatchesPlayed
+    })
+    .OrderByDescending(p => p.Goals)
+    .ThenBy(p => p.PlayerName)
+    .ToListAsync();
+
 
                 // Сглобяваме финалния резултат
                 result.Add(new

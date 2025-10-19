@@ -27,5 +27,7 @@
         public ICollection<Competition> Competitions { get; set; } = new List<Competition>();
         public ICollection<CompetitionSeasonResult> CompetitionSeasonResults { get; set; } = new List<CompetitionSeasonResult>();
         public ICollection<CompetitionAward> Awards { get; set; } = new List<CompetitionAward>();
+        public ICollection<PlayerCompetitionStats> PlayerCompetitionStats { get; set; } = new List<PlayerCompetitionStats>();
+
     }
 }

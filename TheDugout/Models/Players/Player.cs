@@ -49,6 +49,8 @@
         public ICollection<PlayerSeasonStats> SeasonStats { get; set; } = new List<PlayerSeasonStats>();
         public ICollection<MatchEvent> MatchEvents { get; set; } = new List<MatchEvent>();
         public ICollection<TransferOffer> TransferOffers { get; set; } = new List<TransferOffer>();
+        public ICollection<PlayerCompetitionStats> CompetitionStats { get; set; } = new List<PlayerCompetitionStats>();
+
 
     }
 }

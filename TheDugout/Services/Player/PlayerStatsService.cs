@@ -2,6 +2,9 @@
 {
     using Microsoft.EntityFrameworkCore;
     using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading.Tasks;
     using TheDugout.Data;
     using TheDugout.Models.Matches;
     using TheDugout.Models.Players;
@@ -19,7 +22,9 @@
             _teamPlanService = teamPlanService;
         }
 
-        /// Create PlayerMatchStats for all active players in the match
+        /// <summary>
+        /// Създава PlayerMatchStats за всички активни играчи в даден мач.
+        /// </summary>
         public async Task<List<PlayerMatchStats>> InitializeMatchStatsAsync(Match match)
         {
             if (match.Fixture == null)
@@ -52,7 +57,6 @@
 
             var newStats = new List<PlayerMatchStats>();
 
-            // Добавяме само липсващите
             foreach (var player in allPlayers)
             {
                 if (existingStats.Any(ps => ps.PlayerId == player.Id))
@@ -64,11 +68,11 @@
                     MatchId = match.Id,
                     GameSaveId = match.GameSaveId,
                     CompetitionId = match.CompetitionId,
-                    Goals = 0,
+                    Goals = 0
                 });
             }
 
-            if (newStats.Count > 0)
+            if (newStats.Any())
             {
                 await _context.PlayerMatchStats.AddRangeAsync(newStats);
                 await _context.SaveChangesAsync();
@@ -77,7 +81,9 @@
             return existingStats.Concat(newStats).ToList();
         }
 
-        /// Update PlayerMatchStats based on a MatchEvent
+        /// <summary>
+        /// Обновява PlayerMatchStats въз основа на MatchEvent (пример: гол).
+        /// </summary>
         public void UpdateStats(MatchEvent matchEvent, PlayerMatchStats stats)
         {
             if (matchEvent.EventTypeId == 0)
@@ -100,7 +106,9 @@
             }
         }
 
-        /// Check if PlayerMatchStats exist for the match; if not, initialize them
+        /// <summary>
+        /// Ако няма PlayerMatchStats за мача, създава ги.
+        /// </summary>
         public async Task<List<PlayerMatchStats>> EnsureMatchStatsAsync(Match match)
         {
             if (match.PlayerStats == null || !match.PlayerStats.Any())
@@ -112,80 +120,96 @@
 
             return match.PlayerStats.ToList();
         }
-
-        /// After the match, update PlayerSeasonStats based on PlayerMatchStats
-        public async Task UpdateSeasonStatsAfterMatchAsync(Match match)
+        
+        public async Task UpdateStatsAfterMatchAsync(Match match)
         {
             if (match.Fixture == null)
                 throw new InvalidOperationException("Fixture is missing for match.");
 
             var seasonId = match.Fixture.SeasonId;
             var gameSaveId = match.Fixture.GameSaveId;
+            var competitionId = match.CompetitionId;
 
-            // Get Competition (competition)
-            var competition = await _context.Competitions
-                .AsNoTracking()
-                .FirstOrDefaultAsync(c =>
-                    c.SeasonId == seasonId &&
-                    c.Type == match.Fixture.CompetitionType);
-
-            if (competition == null)
-                throw new InvalidOperationException("Competition not found for match.");
-
-            // Get all player IDs from the match
             var playerIds = match.PlayerStats.Select(ps => ps.PlayerId).ToList();
 
-            // Load existing PlayerSeasonStats for these players in this season and competition
-            var existingStats = await _context.PlayerSeasonStats
-                .Where(ps => ps.SeasonId == seasonId &&
-                             ps.CompetitionId == competition.Id &&
-                             playerIds.Contains(ps.PlayerId ?? -1))
+            // --- PlayerCompetitionStats ---
+            var competitionStats = await _context.PlayerCompetitionStats
+                .Where(pcs => pcs.SeasonId == seasonId &&
+                              pcs.CompetitionId == competitionId &&
+                              playerIds.Contains(pcs.PlayerId))
                 .ToListAsync();
 
-            // Update or create PlayerSeasonStats
-            foreach (var playerStat in match.PlayerStats)
+            foreach (var matchStat in match.PlayerStats)
             {
-                var existing = existingStats.FirstOrDefault(ps => ps.PlayerId == playerStat.PlayerId);
+                var existing = competitionStats.FirstOrDefault(pcs => pcs.PlayerId == matchStat.PlayerId);
+
+                if (existing == null)
+                {
+                    existing = new PlayerCompetitionStats
+                    {
+                        PlayerId = matchStat.PlayerId,
+                        CompetitionId = competitionId,
+                        SeasonId = seasonId,
+                        GameSaveId = gameSaveId,
+                        MatchesPlayed = 1,
+                        Goals = matchStat.Goals
+                    };
+                    _context.PlayerCompetitionStats.Add(existing);
+                }
+                else
+                {
+                    existing.MatchesPlayed += 1;
+                    existing.Goals += matchStat.Goals;
+                }
+            }
+
+            // --- PlayerSeasonStats ---
+            var seasonStats = await _context.PlayerSeasonStats
+                .Where(pss => pss.SeasonId == seasonId && playerIds.Contains(pss.PlayerId))
+                .ToListAsync();
+
+            foreach (var matchStat in match.PlayerStats)
+            {
+                var existing = seasonStats.FirstOrDefault(pss => pss.PlayerId == matchStat.PlayerId);
 
                 if (existing == null)
                 {
                     existing = new PlayerSeasonStats
                     {
-                        PlayerId = playerStat.PlayerId,
+                        PlayerId = matchStat.PlayerId,
                         SeasonId = seasonId,
-                        CompetitionId = competition.Id,
                         GameSaveId = gameSaveId,
                         MatchesPlayed = 1,
-                        Goals = playerStat.Goals
+                        Goals = matchStat.Goals
                     };
                     _context.PlayerSeasonStats.Add(existing);
                 }
                 else
                 {
                     existing.MatchesPlayed += 1;
-                    existing.Goals += playerStat.Goals;
+                    existing.Goals += matchStat.Goals;
                 }
             }
 
             await _context.SaveChangesAsync();
         }
+ 
         public async Task<List<(int CompetitionId, int PlayerId, int Goals)>> GetTopScorersByCompetitionAsync(int seasonId)
         {
-            var topScorers = await _context.PlayerSeasonStats
-                .Include(p => p.Player)
-                .Where(p => p.SeasonId == seasonId && p.CompetitionId != null)
-                .GroupBy(p => p.CompetitionId!.Value)
+            var topScorers = await _context.PlayerCompetitionStats
+                .Include(pcs => pcs.Player)
+                .Where(pcs => pcs.SeasonId == seasonId)
+                .GroupBy(pcs => pcs.CompetitionId)
                 .Select(g => g
                     .OrderByDescending(x => x.Goals)
-                    .ThenBy(x => x.Player!.LastName)
+                    .ThenBy(x => x.Player.LastName)
                     .Select(x => new { x.CompetitionId, x.PlayerId, x.Goals })
                     .First())
                 .ToListAsync();
 
             return topScorers
-                .Select(x => (x.CompetitionId!.Value, x.PlayerId!.Value, x.Goals))
+                .Select(x => (x.CompetitionId, x.PlayerId, x.Goals))
                 .ToList();
         }
-
     }
 }
