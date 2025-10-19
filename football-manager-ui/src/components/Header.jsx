@@ -5,6 +5,7 @@ import { useProcessing } from "../context/ProcessingContext";
 import { useGame } from "../context/GameContext";
 import Swal from "sweetalert2";
 
+
 function Header({ username }) {
   const { startProcessing, stopProcessing } = useProcessing();
   const {
@@ -20,32 +21,23 @@ function Header({ username }) {
   const location = useLocation();
 
   // 🔄 Проверка при смяна на страница дали има неизиграни мачове
-  useEffect(() => {
-    const checkStatus = async () => {
-      try {
-        const res = await fetch("/api/games/current/status", {
-          credentials: "include",
-        });
-        if (!res.ok) return;
-        const status = await res.json();
+ useEffect(() => {
+  // при смяна на страница опресняваме само чрез GameContext
+  const updateStatus = async () => {
+    const status = await refreshGameStatus();
 
-        setHasUnplayedMatchesToday(Boolean(status.hasUnplayedMatchesToday));
+    if (
+      status?.hasUnplayedMatchesToday &&
+      !location.pathname.includes("/today-matches")
+    ) {
+      const gid = status.gameSave?.id ?? currentGameSave?.id;
+      navigate(`/today-matches/${gid}`);
+    }
+  };
 
-        // ако има неизиграни мачове, прехвърли към TodayMatches
-        if (
-          status.hasUnplayedMatchesToday &&
-          !location.pathname.includes("/today-matches")
-        ) {
-          const gid = status.gameSave?.id ?? currentGameSave?.id;
-          navigate(`/today-matches/${gid}`);
-        }
-      } catch (err) {
-        console.error("Status refresh failed:", err);
-      }
-    };
+  updateStatus();
+}, [location.pathname]);
 
-    checkStatus();
-  }, [location.pathname]);
 
   // 🕒 Бутон "Next Day"
   const handleNextDay = async () => {

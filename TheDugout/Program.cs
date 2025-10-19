@@ -1,44 +1,13 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Scrutor;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using TheDugout.Data;
-using TheDugout.Services;
-using TheDugout.Services.CPUManager;
-using TheDugout.Services.Cup;
-using TheDugout.Services.EuropeanCup;
-using TheDugout.Services.Facilities;
-using TheDugout.Services.Finance;
-using TheDugout.Services.Fixture;
-using TheDugout.Services.Game;
-using TheDugout.Services.League;
-using TheDugout.Services.Match;
-using TheDugout.Services.MatchEngine;
-using TheDugout.Services.Message;
-using TheDugout.Services.Player;
-using TheDugout.Services.Players;
-using TheDugout.Services.Season;
-using TheDugout.Services.Staff;
-using TheDugout.Services.Standings;
-using TheDugout.Services.Team;
-using TheDugout.Services.Template;
-using TheDugout.Services.Training;
-using TheDugout.Services.Transfer;
-using TheDugout.Services.User;
-using TheDugout.Services.GameSettings;
-using TheDugout.Services.Season.Interfaces;
-using TheDugout.Services.League.Interfaces;
-using TheDugout.Services.Cup.Interfaces;
-using TheDugout.Services.EuropeanCup.Interfaces;
-using TheDugout.Services.Player.Interfaces;
-using TheDugout.Services.Team.Interfaces;
-using TheDugout.Services.Match.Interfaces;
-using TheDugout.Services.Competition.Interfaces;
-using TheDugout.Services.Competition;
-using TheDugout.Services.Message.Interfaces;
-using Scrutor;
+using TheDugout.Extensions;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -57,64 +26,7 @@ builder.Services.AddControllers()
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Services DI
-builder.Services.AddScoped<IUserContextService, UserContextService>();
-builder.Services.AddScoped<ITemplateService, TemplateService>();
-builder.Services.AddScoped<IGameSaveService, GameSaveService>();
-builder.Services.AddScoped<IPlayerGenerationService, PlayerGenerationService>();
-builder.Services.AddScoped<ITeamPlanService, TeamPlanService>();
-builder.Services.AddScoped<ITeamGenerationService, TeamGenerationService>();
-builder.Services.AddScoped<ILeagueService, LeagueService>();
-builder.Services.AddScoped<INewSeasonService, NewSeasonService>();
-builder.Services.AddScoped<IPlayerInfoService, PlayerInfoService>();
-builder.Services.AddScoped<ITeamService, TeamService>();
-builder.Services.AddScoped<IBankService, BankService>();
-builder.Services.AddScoped<ITeamFinanceService, TeamFinanceService>();
-builder.Services.AddScoped<IAgencyFinanceService, AgencyFinanceService>();
-builder.Services.AddScoped<ITransactionService, TransactionService>();
-builder.Services.AddScoped<ITrainingService, TrainingService>();
-builder.Services.AddScoped<ITransferQueryService, TransferQueryService>();
-builder.Services.AddScoped<IClubToClubTransferService, ClubToClubTransferService>();
-builder.Services.AddScoped<IFreeAgentTransferService, FreeAgentTransferService>();
-builder.Services.AddScoped<IEuropeanCupService, EuropeanCupService>();
-builder.Services.AddScoped<IEuroCupTeamService, EuroCupTeamService>();
-builder.Services.AddScoped<ICupService, CupService>();
-builder.Services.AddScoped<IAgencyService, AgencyService>();
-builder.Services.AddScoped<IFixturesHelperService, FixturesHelperService>();
-builder.Services.AddScoped<ILeagueFixturesService, LeagueFixturesService>();
-builder.Services.AddScoped<ICupFixturesService, CupFixturesService>();
-builder.Services.AddScoped<IEurocupFixturesService, EurocupFixturesService>();
-builder.Services.AddScoped<ILeagueScheduleService, LeagueScheduleService>();
-builder.Services.AddScoped<ICupScheduleService, CupScheduleService>();
-builder.Services.AddScoped<IEurocupScheduleService, EurocupScheduleService>();
-builder.Services.AddScoped<IEurocupKnockoutService, EurocupKnockoutService>();
-builder.Services.AddScoped<ITrainingFacilitiesService, TrainingFacilitiesService>();
-builder.Services.AddScoped<IYouthAcademyService, YouthAcademyService>();
-builder.Services.AddScoped<IStadiumService, StadiumService>();
-builder.Services.AddScoped<IMessageService, MessageService>();
-builder.Services.AddScoped<IMessageOrchestrator, MessageOrchestrator>();
-builder.Services.Scan(scan => scan
-    .FromAssemblyOf<IMessagePlaceholderBuilder>() 
-    .AddClasses(classes => classes.AssignableTo<IMessagePlaceholderBuilder>())
-    .AsImplementedInterfaces()
-    .WithScopedLifetime());
-
-builder.Services.AddScoped<IGameDayService, GameDayService>();
-builder.Services.AddScoped<ISeasonEventService, SeasonEventService>();
-builder.Services.AddScoped<ICPUManagerService, CpuManagerService>();
-builder.Services.AddScoped<IMatchService, MatchService>();
-builder.Services.AddScoped<IMatchEngine, MatchEngine>();
-builder.Services.AddScoped<IMatchEventService, MatchEventService>();
-builder.Services.AddScoped<IMatchResponseService, MatchResponseService>();
-builder.Services.AddScoped<IPlayerStatsService, PlayerStatsService>();
-builder.Services.AddScoped<ILeagueStandingsService, LeagueStandingsService>();
-builder.Services.AddScoped<IStandingsDispatcherService, StandingsDispatcherService>();
-builder.Services.AddScoped<IEuropeanCupStandingService, EuropeanCupStandingService>();
-builder.Services.AddScoped<IPenaltyShootoutService, PenaltyShootoutService>();
-builder.Services.AddScoped<IGameSettingsService, GameSettingsService>();
-builder.Services.AddScoped<ICompetitionService, CompetitionService>();
-builder.Services.AddScoped<INewSeasonService, NewSeasonService>();
-builder.Services.AddScoped<IEndSeasonService, EndSeasonService>();
+builder.Services.AddDugoutServices();
 
 // CORS
 builder.Services.AddCors(options =>

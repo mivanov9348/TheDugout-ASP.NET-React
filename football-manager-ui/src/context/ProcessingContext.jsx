@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useRef } from "react";
+import { flushSync } from "react-dom";
 import ProcessingOverlay from "../components/ProcessingOverlay";
 
 const ProcessingContext = createContext();
@@ -15,16 +16,19 @@ export function ProcessingProvider({ children }) {
     msg = "Processing...",
     { allowCancel = true } = {}
   ) => {
-    setLogs([msg]); // започваме с нов лог при стартиране
+    setLogs([msg]);
     setIsProcessing(true);
     setAllowCancel(allowCancel);
   };
 
-  const addLog = (msg) =>
-    setLogs((prev) => {
-      const next = [...prev, msg];
-      return next.length > 500 ? next.slice(next.length - 500) : next;
+  const addLog = (msg) => {
+    flushSync(() => {
+      setLogs((prev) => {
+        const next = [...prev, msg];
+        return next.length > 500 ? next.slice(next.length - 500) : next;
+      });
     });
+  };
 
   const stopProcessing = () => {
     if (eventSourceRef.current) {
@@ -51,68 +55,61 @@ export function ProcessingProvider({ children }) {
 
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-  const runSimulateMatches = async (gameSaveId, { stepDelay = 400 } = {}) => {
+  const runSimulateMatches = async (gameSaveId) => {
     startProcessing("Simulating matches...", { allowCancel: true });
 
-    const ac = new AbortController();
-    abortCtrlRef.current = ac;
+    const es = new EventSource(`/api/matches/simulate-stream/${gameSaveId}`);
+    eventSourceRef.current = es;
 
-    try {
-      const res = await fetch(`/api/matches/simulate/${gameSaveId}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        signal: ac.signal,
-      });
+    let firstMessageHandled = false;
 
-      if (!res.ok) {
-        const txt = await res.text().catch(() => "");
-        addLog(`❌ Error: ${res.status} ${res.statusText} ${txt}`);
-        await sleep(1200);
-        return null;
-      }
+    return new Promise((resolve) => {
+      es.onmessage = (e) => {
+        if (!e.data) return;
+        try {
+          const data = JSON.parse(e.data);
 
-      const data = await res.json();
-      addLog(`✅ ${data.message}`);
+          if (data.error) {
+            addLog(`❌ ${data.error}`);
+            stopProcessing();
+            es.close();
+            resolve(null);
+            return;
+          }
 
-      const matches = data.matches ?? [];
-      if (!matches.length) {
-        addLog("Няма мачове за симулация (празен списък).");
-        await sleep(900);
-        return data;
-      }
+          if (data.message === "done") {
+            addLog("✔️ Simulation completed!");
+            stopProcessing();
+            es.close();
+            resolve(true);
+            return;
+          }
 
-      for (const m of matches) {
-        const homeGoals = m.homeGoals ?? m.HomeGoals ?? "-";
-        const awayGoals = m.awayGoals ?? m.AwayGoals ?? "-";
-        const isUser =
-          m.isUserTeamMatch ?? m.IsUserTeamMatch ? " (Your team)" : "";
-        const competition = m.competitionName ?? m.CompetitionName ?? "Match";
-        const home = m.home ?? m.Home ?? "Home";
-        const away = m.away ?? m.Away ?? "Away";
+          // 👉 извличаме името на турнира от първия лог
+          if (!firstMessageHandled && data.message.startsWith("🏆")) {
+            const tournamentName = data.message.split(":")[0].replace("🏆", "").trim().split("—")[0].trim();
+            flushSync(() => {
+              setLogs([`Simulating ${tournamentName} matches...`]);
+            });
+            firstMessageHandled = true;
+          }
 
-        const line = `${competition}: ${home} ${homeGoals} - ${awayGoals} ${away}${isUser}`;
-        addLog(line);
-        await sleep(stepDelay);
-      }
+          addLog(data.message);
+        } catch {
+          addLog("⚠️ Invalid data received.");
+        }
+      };
 
-      if (data.gameStatus?.gameSave) {
-        const gs = data.gameStatus.gameSave;
-        const date = gs.Seasons?.[0]?.CurrentDate ?? null;
-        if (date) addLog(`Date after sim: ${date}`);
-      }
-
-      addLog("✔️ Simulation finished. You can close this window.");
-      return data;
-    } catch (err) {
-      if (err.name === "AbortError") addLog("❌ Simulation aborted.");
-      else addLog("❌ Exception: " + (err.message || err));
-      throw err;
-    } finally {
-      await sleep(800);
-      abortCtrlRef.current = null;
-    }
+      es.onerror = () => {
+        addLog("❌ Connection error");
+        stopProcessing();
+        es.close();
+        resolve(null);
+      };
+    });
   };
+
+
 
   return (
     <ProcessingContext.Provider

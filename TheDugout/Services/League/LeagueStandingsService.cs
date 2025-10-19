@@ -1,12 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
-using TheDugout.Data;
-using TheDugout.Models.Competitions;
-using TheDugout.Models.Enums;
-using TheDugout.Models.Fixtures;
-using TheDugout.Services.League.Interfaces;
-
-namespace TheDugout.Services.League
+﻿namespace TheDugout.Services.League
 {
+    using Microsoft.EntityFrameworkCore;
+    using TheDugout.Data;
+    using TheDugout.Models.Competitions;
+    using TheDugout.Models.Enums;
+    using TheDugout.Models.Fixtures;
+    using TheDugout.Services.League.Interfaces;
 
     public class LeagueStandingsService : ILeagueStandingsService
     {
@@ -17,7 +16,7 @@ namespace TheDugout.Services.League
             _context = context;
         }
 
-        public async Task UpdateStandingsAfterMatchAsync(Models.Fixtures.Fixture fixture)
+        public async Task UpdateStandingsAfterMatchAsync(Fixture fixture)
         {
             // само за лигата
             if (fixture.CompetitionType != CompetitionTypeEnum.League || fixture.LeagueId == null)

@@ -1,86 +1,45 @@
-import { Loader2 } from "lucide-react";
+import React, { useEffect, useRef } from "react";
 
 export default function ProcessingOverlay({
   logs,
   isProcessing,
   stopProcessing,
-  allowCancel = true,
+  allowCancel,
 }) {
+  const logEndRef = useRef(null);
+
+  useEffect(() => {
+    if (logEndRef.current) {
+      logEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [logs]);
+
   if (!isProcessing) return null;
 
   return (
-    <div
-      className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 pointer-events-auto"
-      aria-modal="true"
-      role="dialog"
-    >
-      <div className="bg-white rounded-2xl shadow-xl p-6 flex flex-col gap-4 w-[32rem] max-h-[80vh]">
-        {/* Header */}
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <Loader2 className="animate-spin text-sky-600" size={28} />
-            <p className="text-lg font-semibold text-slate-700">
-              Processing...
-            </p>
-          </div>
-          {allowCancel && (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 backdrop-blur-sm">
+      <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+        <div className="bg-sky-700 text-white px-5 py-3 font-bold text-lg">
+          Processing...
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-4 bg-gray-50 font-mono text-sm text-gray-800 space-y-1">
+          {logs.map((line, idx) => (
+            <div key={idx}>{line}</div>
+          ))}
+          <div ref={logEndRef} />
+        </div>
+
+        {allowCancel && (
+          <div className="p-3 flex justify-end bg-gray-100 border-t">
             <button
               onClick={stopProcessing}
-              className="text-sm px-3 py-1 rounded-md bg-red-50 hover:bg-red-100"
+              className="px-4 py-2 rounded-lg bg-red-500 text-white font-semibold hover:bg-red-600 transition"
             >
               Cancel
             </button>
-          )}
-        </div>
-
-        {/* Logs */}
-        <div
-          className="bg-slate-100 rounded p-3 text-sm text-slate-700 overflow-auto flex-1"
-          aria-live="polite"
-        >
-          {logs.map((l, i) => {
-            const matchRegex =
-              /^(.+?): (.+?) (\d+) - (\d+) (.+?)(?: \(Your team\))?$/;
-            const m = l.match(matchRegex);
-            if (m) {
-              const isUserMatch = l.includes("(Your team)");
-              return (
-                <div
-                  key={i}
-                  className={`mb-2 p-2 rounded shadow-sm ${
-                    isUserMatch
-                      ? "bg-yellow-100 border border-yellow-300"
-                      : "bg-white"
-                  }`}
-                >
-                  <div className="font-medium text-sky-700">{m[1]}</div>
-                  <div className="flex justify-between font-semibold">
-                    <span>{m[2]}</span>
-                    <span>
-                      {m[3]} - {m[4]}
-                    </span>
-                    <span>{m[5]}</span>
-                  </div>
-                  {isUserMatch && (
-                    <div className="text-xs text-yellow-700 mt-1">
-                      Your team match
-                    </div>
-                  )}
-                </div>
-              );
-            }
-            return (
-              <div key={i} className="mb-1 whitespace-pre-wrap">
-                {l}
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Footer */}
-        <div className="flex items-center justify-between">
-          <p className="text-xs text-slate-400">Please wait...</p>
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );

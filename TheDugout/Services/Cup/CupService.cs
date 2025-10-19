@@ -19,6 +19,7 @@
         private readonly IFixturesHelperService _fixturesHelperService;
         private readonly ICupFixturesService _cupFixturesService;
         private readonly Random _random = new Random();
+        private readonly ILogger<CupService> _logger = LoggerFactory.Create(builder => builder.AddConsole()).CreateLogger<CupService>();
 
         public CupService(DugoutDbContext context, ICupFixturesService cupFixturesService, IFixturesHelperService fixturesHelperService)
         {
@@ -28,24 +29,40 @@
         }
         public async Task InitializeCupsForGameSaveAsync(GameSave gameSave, int seasonId)
         {
+            _logger.LogInformation("=== InitializeCupsForGameSaveAsync START for GameSaveId: {GameSaveId}, SeasonId: {SeasonId} ===", gameSave.Id, seasonId);
+
             var cupTemplates = await _context.CupTemplates
                 .Where(ct => ct.IsActive)
                 .ToListAsync();
+
+            _logger.LogInformation("Loaded {Count} active CupTemplates.", cupTemplates.Count);
 
             var allCups = new List<Models.Cups.Cup>();
 
             foreach (var template in cupTemplates)
             {
+                _logger.LogInformation("Processing CupTemplate {TemplateId} ({CountryCode})", template.Id, template.CountryCode);
+
                 var country = await _context.Countries
                     .FirstOrDefaultAsync(c => c.Code == template.CountryCode);
 
-                if (country == null) continue;
+                if (country == null)
+                {
+                    _logger.LogWarning("Skipping template {TemplateId} - Country not found.", template.Id);
+                    continue;
+                }
 
                 var teams = gameSave.Teams
                     .Where(t => t.CountryId == country.Id)
                     .ToList();
 
-                if (teams.Count < 2) continue;
+                _logger.LogInformation("Found {Count} teams for country {CountryId}", teams.Count, country.Id);
+
+                if (teams.Count < 2)
+                {
+                    _logger.LogWarning("Skipping cup for {CountryCode} - Not enough teams ({Count})", country.Code, teams.Count);
+                    continue;
+                }
 
                 int teamsCount = teams.Count;
                 int nextPowerOfTwo = (int)Math.Pow(2, Math.Ceiling(Math.Log2(teamsCount)));
@@ -58,7 +75,6 @@
                     SeasonId = seasonId
                 };
 
-                // Shared PK pattern — Cup.Id == Competition.Id
                 var cup = new Models.Cups.Cup
                 {
                     Competition = competition,
@@ -74,17 +90,33 @@
                 _context.Cups.Add(cup);
                 await _context.SaveChangesAsync();
 
-                // Добавяме участници
+                _logger.LogInformation("Created Cup {CupId} for CountryId {CountryId} with {TeamsCount} teams.", cup.Id, country.Id, teamsCount);
+
                 foreach (var team in teams)
+                {
+                    var entry = _context.Entry(team);
+                    _logger.LogInformation("Team {TeamId} State: {State}", team.Id, entry.State);
                     cup.Teams.Add(new CupTeam { TeamId = team.Id, GameSaveId = gameSave.Id });
+                }
 
                 allCups.Add(cup);
+
+                await _context.SaveChangesAsync();
             }
 
             if (allCups.Any())
+            {
+                _logger.LogInformation("Generating initial fixtures for {Count} cups...", allCups.Count);
                 await _cupFixturesService.GenerateInitialFixturesAsync(seasonId, gameSave.Id, allCups);
+            }
+            else
+            {
+                _logger.LogWarning("No cups created for GameSaveId {GameSaveId}.", gameSave.Id);
+            }
 
             await _context.SaveChangesAsync();
+
+            _logger.LogInformation("=== InitializeCupsForGameSaveAsync END ===");
         }
         public async Task<bool> IsCupFinishedAsync(int cupId)
         {

@@ -4,6 +4,7 @@
     using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.Logging;
     using System.Collections.Generic;
+    using System.Text.Json;
     using TheDugout.Data;
     using TheDugout.Models.Enums;
     using TheDugout.Models.Fixtures;
@@ -171,6 +172,93 @@
             });
         }
 
+        [HttpGet("simulate-stream/{gameSaveId}")]
+        public async Task SimulateMatchesStream(int gameSaveId)
+        {
+            Response.Headers.Add("Content-Type", "text/event-stream");
+            Response.Headers.Add("Cache-Control", "no-cache");
+            Response.Headers.Add("Connection", "keep-alive");
+
+            var gameSave = await _context.GameSaves
+                .Include(gs => gs.Fixtures)
+                    .ThenInclude(f => f.Match)
+                .Include(gs => gs.Seasons)
+                .Include(gs => gs.UserTeam)
+                .FirstOrDefaultAsync(gs => gs.Id == gameSaveId);
+
+            if (gameSave == null)
+            {
+                await Response.WriteAsync("data: {\"error\":\"GameSave not found\"}\n\n");
+                await Response.Body.FlushAsync();
+                return;
+            }
+
+            var currentSeason = gameSave.Seasons
+                .OrderByDescending(s => s.StartDate)
+                .FirstOrDefault();
+
+            if (currentSeason == null)
+            {
+                await Response.WriteAsync("data: {\"error\":\"No active season\"}\n\n");
+                await Response.Body.FlushAsync();
+                return;
+            }
+
+            var currentDate = currentSeason.CurrentDate.Date;
+            var fixtures = gameSave.Fixtures
+                .Where(f => f.Date.Date == currentDate)
+                .ToList();
+
+            if (!fixtures.Any())
+            {
+                await Response.WriteAsync("data: {\"message\":\"No fixtures to simulate.\"}\n\n");
+                await Response.Body.FlushAsync();
+                return;
+            }
+
+            foreach (var fixture in fixtures)
+            {
+                var match = fixture.Match ?? await _matchService.GetOrCreateMatchAsync(fixture, gameSave);
+                fixture.Match = match;
+
+                await _matchEngine.SimulateMatchAsync(fixture, gameSave);
+
+                match.Status = MatchStageEnum.Played;
+                fixture.Status = MatchStageEnum.Played;
+
+                await _context.SaveChangesAsync();
+
+
+                var competitionName = GetCompetitionDisplayName(fixture);
+                var homeName = fixture.HomeTeam?.Name ?? "Home";
+                var awayName = fixture.AwayTeam?.Name ?? "Away";
+                var homeGoals = fixture.HomeTeamGoals ?? 0;
+                var awayGoals = fixture.AwayTeamGoals ?? 0;
+
+                var message = $"🏆 {competitionName}: {homeName} - {awayName} {homeGoals}:{awayGoals}";
+
+                var json = JsonSerializer.Serialize(new
+                {
+                    message,
+                    match = new
+                    {
+                        fixture.Id,
+                        Competition = competitionName,
+                        Home = homeName,
+                        Away = awayName,
+                        HomeGoals = homeGoals,
+                        AwayGoals = awayGoals,
+                        fixture.Date
+                    }
+                });
+
+                await Response.WriteAsync($"data: {json}\n\n");
+                await Response.Body.FlushAsync();
+
+                await Task.Delay(500); // малка пауза между мачовете
+            }
+        }
+
         [HttpGet("{matchId}")]
         public async Task<IActionResult> GetMatchDetails(int matchId)
         {
@@ -204,7 +292,6 @@
                 return BadRequest("Match has no fixture assigned.");
             }
 
-            // 🔹 Голмайстори — от PlayerMatchStats
             var goalScorers = match.PlayerStats
                 .Where(ps => ps.Goals > 0)
                 .Select(ps => new
@@ -216,62 +303,44 @@
                 })
                 .ToList();
 
-            // 🔹 Минутите — от MatchEvent (EventType = GOAL)
             var goalEvents = match.Events
                 .Where(e => e.EventType.Code.Equals("GOAL", StringComparison.OrdinalIgnoreCase)
                          || e.EventType.Code.Equals("G", StringComparison.OrdinalIgnoreCase))
-                .Select(e => new
-                {
-                    e.TeamId,
-                    e.PlayerId,
-                    e.Minute
-                })
+                .Select(e => new { e.TeamId, e.PlayerId, e.Minute })
                 .ToList();
 
-            // 🔹 Комбинираме данните: голмайстори + минута
             List<object> BuildGoals(int? teamId)
             {
                 var teamGoals = new List<object>();
 
                 foreach (var scorer in goalScorers.Where(s => s.TeamId == teamId))
                 {
-                    // 🔹 Списък от nullable int (int?) – защото може да няма минута
                     var minutes = goalEvents
                         .Where(g => g.TeamId == teamId && g.PlayerId == scorer.PlayerId)
                         .Select(g => (int?)g.Minute)
                         .OrderBy(m => m)
                         .ToList();
 
-                    // 🔹 Ако няма минути – добавяме null за всеки гол
                     if (!minutes.Any())
                         minutes.AddRange(Enumerable.Repeat<int?>(null, scorer.Goals));
 
                     for (int i = 0; i < scorer.Goals; i++)
                     {
                         var minute = i < minutes.Count ? minutes[i] : (int?)null;
-                        teamGoals.Add(new
-                        {
-                            minute,
-                            scorer = scorer.Scorer,
-                            playerId = scorer.PlayerId
-                        });
+                        teamGoals.Add(new { minute, scorer = scorer.Scorer, playerId = scorer.PlayerId });
                     }
                 }
 
-                // 🔹 Сортираме по минута, null в края
                 return teamGoals.OrderBy(g => ((dynamic)g).minute ?? 999).ToList();
             }
-
 
             var homeGoals = BuildGoals(fixture.HomeTeamId);
             var awayGoals = BuildGoals(fixture.AwayTeamId);
 
-            // 🔹 DTO за фронтенда
             var dto = new
             {
                 id = match.Id,
                 date = fixture.Date,
-                //competition = match.Competition?.Name ?? "Unknown competition",
                 status = match.Status.ToString(),
                 currentMinute = match.CurrentMinute,
                 result = $"{fixture.HomeTeamGoals ?? 0} - {fixture.AwayTeamGoals ?? 0}",
@@ -305,7 +374,68 @@
 
             return Ok(dto);
         }
+        private string GetCompetitionDisplayName(Fixture fixture)
+        {
+            if (fixture == null) return "Unknown competition";
 
+            // 1) League template name (най-добър вариант за league)
+            var leagueTemplateName = fixture.League?.Template?.Name;
+            if (!string.IsNullOrWhiteSpace(leagueTemplateName))
+            {
+                // добавяме ниво (tier) ако има и ако е полезно
+                if (fixture.League?.Tier > 0)
+                    return $"{leagueTemplateName} (Tier {fixture.League.Tier})";
+                return leagueTemplateName;
+            }
 
+            // 2) Cup template / round (DomesticCup)
+            var cupTemplateName = fixture.CupRound?.Cup?.Template?.Name;
+            if (!string.IsNullOrWhiteSpace(cupTemplateName))
+            {
+                var roundName = fixture.CupRound?.Name;
+                return string.IsNullOrWhiteSpace(roundName)
+                    ? cupTemplateName
+                    : $"{cupTemplateName} — {roundName}";
+            }
+
+            // 3) European cup: try phase's cup template, or phase template name
+            var euroCupTemplateName = fixture.EuropeanCupPhase?.EuropeanCup?.Template?.Name;
+            if (!string.IsNullOrWhiteSpace(euroCupTemplateName))
+            {
+                var phaseName = fixture.EuropeanCupPhase?.PhaseTemplate?.Name;
+                // phase template name може да е нещо като "Group Stage" или "Quarterfinals"
+                return string.IsNullOrWhiteSpace(phaseName)
+                    ? euroCupTemplateName
+                    : $"{euroCupTemplateName} — {phaseName}";
+            }
+
+            // 4) As a last attempt look into Competition navigation through related entities
+            // (if you have Competition navigation filled on League/Cup/EuropeanCup)
+            var compFromLeague = fixture.League?.Competition;
+            if (compFromLeague != null)
+            {
+                // Competition няма Name поле в примера ти — но ако има някаква полезна навигация,
+                // можеш да extend-неш тук. За момента ще паднем обратно на template или enum.
+                // return compFromLeague.SomeNameProperty ?? compFromLeague.Id.ToString();
+            }
+
+            // 5) Fallbacks: use CupRound.Name if present, or EuropeanCupPhase info, or enum name
+            if (!string.IsNullOrWhiteSpace(fixture.CupRound?.Name))
+                return fixture.CupRound.Name;
+
+            var phaseTemplateName = fixture.EuropeanCupPhase?.PhaseTemplate?.Name;
+            if (!string.IsNullOrWhiteSpace(phaseTemplateName))
+                return phaseTemplateName;
+
+            // 6) Final fallback: use CompetitionTypeEnum with maybe league tier or round
+            var baseName = fixture.CompetitionType.ToString();
+            if (fixture.CompetitionType == CompetitionTypeEnum.League && fixture.League != null)
+                return $"{baseName} (Tier {fixture.League.Tier})";
+
+            if (fixture.CompetitionType == CompetitionTypeEnum.DomesticCup && fixture.CupRound != null)
+                return $"{baseName} — {fixture.CupRound?.Name ?? "Cup"}";
+
+            return baseName;
+        }
     }
 }

@@ -3,8 +3,11 @@ import { Loader2, Filter } from "lucide-react";
 import { Link } from "react-router-dom";
 import Swal from "sweetalert2";
 import PlayerAvatar from "../components/PlayerAvatar";
+import { useGame } from "../context/GameContext";
 
 export default function SearchPlayers({ gameSaveId }) {
+  const { refreshGameStatus } = useGame();
+
   const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [userTeamId, setUserTeamId] = useState(null);
@@ -128,7 +131,7 @@ export default function SearchPlayers({ gameSaveId }) {
         timer: 2000,
         showConfirmButton: false,
       });
-
+      await refreshGameStatus();
       fetchPlayers();
     } catch (err) {
       Swal.fire({
@@ -154,9 +157,8 @@ export default function SearchPlayers({ gameSaveId }) {
       html: `
         <div style="text-align: left;">
           <p><b>Team:</b> ${player.team || "Free agent"}</p>
-          <p><b>Current Price:</b> ${
-            player.price ? player.price.toLocaleString() : "-"
-          } €</p>
+          <p><b>Current Price:</b> ${player.price ? player.price.toLocaleString() : "-"
+        } €</p>
           <label style="display:block;margin-top:10px;">Enter your offer (€):</label>
           <input type="number" id="offerAmount" class="swal2-input" placeholder="Enter amount">
         </div>
@@ -310,11 +312,10 @@ export default function SearchPlayers({ gameSaveId }) {
                           ? () => handleSort(col.key)
                           : undefined
                       }
-                      className={`px-4 py-2 font-medium text-left ${
-                        col.key !== "actions"
+                      className={`px-4 py-2 font-medium text-left ${col.key !== "actions"
                           ? "cursor-pointer hover:bg-slate-200"
                           : ""
-                      }`}
+                        }`}
                     >
                       {col.label}
                       {filters.sortBy === col.key && (
@@ -371,11 +372,10 @@ export default function SearchPlayers({ gameSaveId }) {
                           <button
                             disabled={!userTeamId}
                             onClick={() => handleOffer(p)}
-                            className={`px-3 py-1 rounded text-white text-xs ${
-                              userTeamId
+                            className={`px-3 py-1 rounded text-white text-xs ${userTeamId
                                 ? "bg-blue-600 hover:bg-blue-700"
                                 : "bg-gray-400 cursor-not-allowed"
-                            }`}
+                              }`}
                           >
                             Offer
                           </button>
@@ -383,11 +383,10 @@ export default function SearchPlayers({ gameSaveId }) {
                           <button
                             disabled={!userTeamId}
                             onClick={() => handleSign(p.id, p.name)}
-                            className={`px-3 py-1 rounded text-white text-xs ${
-                              userTeamId
+                            className={`px-3 py-1 rounded text-white text-xs ${userTeamId
                                 ? "bg-emerald-600 hover:bg-emerald-700"
                                 : "bg-gray-400 cursor-not-allowed"
-                            }`}
+                              }`}
                           >
                             Sign
                           </button>

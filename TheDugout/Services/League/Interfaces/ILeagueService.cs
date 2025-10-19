@@ -2,11 +2,12 @@
 {
     using TheDugout.Models.Competitions;
     using TheDugout.Models.Game;
+    using TheDugout.Models.Leagues;
+    using TheDugout.Models.Seasons;
     public interface ILeagueService
     {
-        Task<List<Models.Leagues.League>> GenerateLeaguesAsync(GameSave gameSave, Models.Seasons.Season season);
-        Task InitializeStandingsAsync(GameSave gameSave, Models.Seasons.Season season);
+        Task<List<League>> GenerateLeaguesAsync(GameSave gameSave, Season season);
+        Task InitializeStandingsAsync(GameSave gameSave, Season season);
         Task<bool> IsLeagueFinishedAsync(int leagueId);
-        Task<List<CompetitionSeasonResult>> GenerateLeagueResultsAsync(int seasonId);
     }
 }

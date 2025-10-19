@@ -1,9 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
-using TheDugout.Data;
-using TheDugout.DTOs.DtoNewGame;
-
-namespace TheDugout.Services.Template
+﻿namespace TheDugout.Services.Template
 {
+    using Microsoft.EntityFrameworkCore;
+    using TheDugout.Data;
+    using TheDugout.DTOs.DtoNewGame;
     public class TemplateService : ITemplateService
     {
         private readonly DugoutDbContext _context;

@@ -17,6 +17,7 @@
         private readonly IFixturesHelperService _fixtureHelperService;
         private readonly ICupScheduleService _cupScheduleService;
         private readonly Random _random = new();
+        private readonly ILogger<CupFixturesService> _logger = LoggerFactory.Create(builder => builder.AddConsole()).CreateLogger<CupFixturesService>();
 
         public CupFixturesService(
             DugoutDbContext context,
@@ -29,16 +30,24 @@
         }
         public async Task GenerateInitialFixturesAsync(int seasonId, int gameSaveId, List<Cup> cups)
         {
+            _logger.LogInformation("=== GenerateInitialFixturesAsync START for GameSaveId: {GameSaveId}, SeasonId: {SeasonId} ===", gameSaveId, seasonId);
+
             var season = await _context.Seasons
                 .Include(s => s.Events)
                 .FirstOrDefaultAsync(s => s.GameSaveId == gameSaveId && s.IsActive);
 
-            if (season == null) return;
+            if (season == null)
+            {
+                _logger.LogWarning("No active season found for GameSaveId {GameSaveId}.", gameSaveId);
+                return;
+            }
 
             var allFixtures = new List<Fixture>();
 
             foreach (var cup in cups)
             {
+                _logger.LogInformation("Processing Cup {CupId} ({CountryId})", cup.Id, cup.CountryId);
+
                 var activeTeams = cup.Teams
                     .Where(ct => !ct.IsEliminated)
                     .Select(ct => ct.Team)
@@ -47,27 +56,34 @@
                     .OrderBy(_ => _random.Next())
                     .ToList();
 
-                var cupMatchDates = season.Events
-                    .Where(e => e.Type == SeasonEventType.CupMatch)
-                    .OrderBy(e => e.Date)
-                    .Select(e => e.Date)
-                    .ToList();
+                _logger.LogInformation("Active teams for Cup {CupId}: {Count}", cup.Id, activeTeams.Count);
 
                 if (activeTeams.Count < 2)
+                {
+                    _logger.LogWarning("Skipping Cup {CupId} - Not enough active teams ({Count})", cup.Id, activeTeams.Count);
                     continue;
+                }
 
                 var roundFixtures = GenerateFirstRoundFixtures(cup, activeTeams, gameSaveId, seasonId);
+                _logger.LogInformation("Generated {Count} fixtures for Cup {CupId}.", roundFixtures.Count, cup.Id);
+
                 allFixtures.AddRange(roundFixtures);
             }
 
             if (allFixtures.Any())
             {
+                _logger.LogInformation("Assigning total {Count} fixtures across all cups.", allFixtures.Count);
                 _cupScheduleService.AssignCupFixtures(allFixtures, season);
                 await _context.Fixtures.AddRangeAsync(allFixtures);
                 await _context.SaveChangesAsync();
             }
-        }
+            else
+            {
+                _logger.LogWarning("No fixtures generated for GameSaveId {GameSaveId}.", gameSaveId);
+            }
 
+            _logger.LogInformation("=== GenerateInitialFixturesAsync END ===");
+        }
         public async Task GenerateNextRoundAsync(int cupId, int gameSaveId, int? seasonId)
         {
             var cup = await _context.Cups
@@ -180,8 +196,6 @@
             _context.CupRounds.Add(nextRound);
             await _context.SaveChangesAsync();
         }
-
-
         public bool IsRoundFinished(CupRound round)
         {
             return round.Fixtures.All(f => f.WinnerTeamId != null);

@@ -1,15 +1,13 @@
-﻿
-using Microsoft.EntityFrameworkCore;
-using TheDugout.Data;
-using TheDugout.Models.Enums;
-using TheDugout.Models.Fixtures;
-using TheDugout.Models.Seasons;
-using TheDugout.Services.Fixture;
-using TheDugout.Services.League.Interfaces;
-using TheDugout.Services.Season.Interfaces;
-
-namespace TheDugout.Services.League
+﻿namespace TheDugout.Services.League
 {
+    using Microsoft.EntityFrameworkCore;
+    using TheDugout.Data;
+    using TheDugout.Models.Enums;
+    using TheDugout.Models.Fixtures;
+    using TheDugout.Models.Seasons;
+    using TheDugout.Services.Fixture;
+    using TheDugout.Services.League.Interfaces;
+    using TheDugout.Services.Season.Interfaces;
     public class LeagueFixturesService : ILeagueFixturesService
     {
         private readonly DugoutDbContext _context;
@@ -52,7 +50,7 @@ namespace TheDugout.Services.League
             await _context.SaveChangesAsync();
         }
 
-        private List<Models.Fixtures.Fixture> GenerateLeagueFixturesCore(
+        private List<Fixture> GenerateLeagueFixturesCore(
     int gameSaveId,
     int seasonId,
     int leagueId,

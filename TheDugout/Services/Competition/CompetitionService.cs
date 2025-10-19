@@ -4,7 +4,6 @@
     using TheDugout.Data;
     using TheDugout.Models.Competitions;
     using TheDugout.Models.Enums;
-    using TheDugout.Models.Seasons;
     using TheDugout.Services.Competition.Interfaces;
     using TheDugout.Services.Cup.Interfaces;
     using TheDugout.Services.EuropeanCup.Interfaces;
@@ -13,12 +12,14 @@
     {
         private readonly DugoutDbContext _context;
         private readonly ILeagueService _leagueService;
+        private readonly ILeagueResultService _leagueResultService;
         private readonly ICupService _cupService;
         private readonly IEuropeanCupService _euroService;
-        public CompetitionService(DugoutDbContext context, ILeagueService leagueService, ICupService cupService, IEuropeanCupService euroService)
+        public CompetitionService(DugoutDbContext context, ILeagueService leagueService, ILeagueResultService leagueResultService, ICupService cupService, IEuropeanCupService euroService)
         {
             _context = context;
             _leagueService = leagueService;
+            _leagueResultService = leagueResultService;
             _cupService = cupService;
             _euroService = euroService;
         }
@@ -38,7 +39,7 @@
         public async Task<List<CompetitionSeasonResult>> GenerateSeasonResultAsync(int seasonId)
         {
             // 1️⃣ Взимаме резултатите от всички типове турнири
-            var leagueResults = await _leagueService.GenerateLeagueResultsAsync(seasonId);
+            var leagueResults = await _leagueResultService.GenerateLeagueResultsAsync(seasonId);
             var cupResults = await _cupService.GenerateCupResultsAsync(seasonId);
             var euroResults = await _euroService.GenerateEuropeanCupResultsAsync(seasonId);
 
