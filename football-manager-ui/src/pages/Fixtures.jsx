@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import TeamLogo from "../components/TeamLogo";
 
 const Fixtures = ({ gameSaveId, seasonId }) => {
@@ -8,7 +9,6 @@ const Fixtures = ({ gameSaveId, seasonId }) => {
   const [league, setLeague] = useState("");
   const [leagues, setLeagues] = useState([]);
   const [maxRounds, setMaxRounds] = useState(38);
-  const [activeView, setActiveView] = useState("grid"); // grid или list
 
   // ✅ Зарежда лигите
   useEffect(() => {
@@ -51,15 +51,11 @@ const Fixtures = ({ gameSaveId, seasonId }) => {
     const fetchFixtures = async () => {
       try {
         setLoading(true);
-        const res = await fetch(url, {
-          credentials: "include"
-        });
-
+        const res = await fetch(url, { credentials: "include" });
         if (!res.ok) throw new Error("Failed to load fixtures");
 
         const data = await res.json();
         setFixtures(Array.isArray(data) ? data : []);
-
       } catch (err) {
         console.error("Error fetching fixtures:", err);
         setFixtures([]);
@@ -71,7 +67,6 @@ const Fixtures = ({ gameSaveId, seasonId }) => {
     fetchFixtures();
   }, [gameSaveId, seasonId, round, league]);
 
-  // ✅ При промяна на лигата, актуализираме максималните кръгове
   useEffect(() => {
     if (league && leagues.length > 0) {
       const selectedLeague = leagues.find(l => l.id.toString() === league);
@@ -82,12 +77,10 @@ const Fixtures = ({ gameSaveId, seasonId }) => {
     }
   }, [league, leagues]);
 
-  const selectedLeague = leagues.find((l) => l.id.toString() === league);
+  const selectedLeague = leagues.find(l => l.id.toString() === league);
 
-  // Функция за форматиране на датата
   const formatMatchDate = (dateString) => {
     if (!dateString) return "—";
-
     const date = new Date(dateString);
     return {
       day: date.getDate(),
@@ -97,95 +90,17 @@ const Fixtures = ({ gameSaveId, seasonId }) => {
     };
   };
 
-  // Компонент за карта на мач
-  const MatchCard = ({ match }) => {
-    const dateInfo = formatMatchDate(match.date);
-    const isPlayed = typeof match.homeTeamGoals === "number" && typeof match.awayTeamGoals === "number";
-
-    return (
-      <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden">
-        {/* Дата и час */}
-        <div className="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-4 py-3 text-center">
-          <div className="text-xs uppercase tracking-wider text-gray-300">
-            {dateInfo.weekday}, {dateInfo.day} {dateInfo.month}
-          </div>
-          <div className="text-sm font-semibold mt-1">
-            {dateInfo.time}
-          </div>
-        </div>
-
-        {/* Съдържание на мача */}
-        <div className="p-6">
-          <div className="flex items-center justify-between space-x-4">
-            {/* Домакин */}
-            <div className="flex-1 text-right">
-              <div className="flex items-center justify-end space-x-3">
-                <span className="font-bold text-gray-900 text-lg">
-                  {match.homeTeam ?? "—"}
-                </span>
-                <TeamLogo
-                  teamName={match.homeTeam}
-                  logoFileName={match.homeLogoFileName}
-                  className="w-12 h-12"
-                />
-              </div>
-            </div>
-
-            {/* Резултат */}
-            <div className="flex flex-col items-center mx-4">
-              {isPlayed ? (
-                <>
-                  <div className="text-2xl font-bold text-gray-900 bg-gray-100 px-4 py-2 rounded-lg min-w-[80px] text-center">
-                    {match.homeTeamGoals} - {match.awayTeamGoals}
-                  </div>
-                  <div className="text-xs text-gray-500 mt-2 uppercase font-semibold">
-                    FT
-                  </div>
-                </>
-              ) : (
-                <div className="text-lg font-semibold text-gray-400 bg-gray-50 px-4 py-2 rounded-lg">
-                  VS
-                </div>
-              )}
-            </div>
-
-            {/* Гост */}
-            <div className="flex-1 text-left">
-              <div className="flex items-center space-x-3">
-                <TeamLogo
-                  teamName={match.awayTeam}
-                  logoFileName={match.awayLogoFileName}
-                  className="w-12 h-12"
-                />
-                <span className="font-bold text-gray-900 text-lg">
-                  {match.awayTeam ?? "—"}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Статус */}
-          <div className="mt-4 text-center">
-            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${isPlayed
-                ? "bg-green-100 text-green-800"
-                : "bg-blue-100 text-blue-800"
-              }`}>
-              {isPlayed ? "Match Finished" : "Scheduled"}
-            </span>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  // Компонент за ред в лист изглед
   const MatchRow = ({ match, index }) => {
     const dateInfo = formatMatchDate(match.date);
     const isPlayed = typeof match.homeTeamGoals === "number" && typeof match.awayTeamGoals === "number";
 
     return (
-      <div className={`flex items-center justify-between p-6 ${index % 2 === 0 ? "bg-white" : "bg-gray-50"
-        } hover:bg-blue-50 transition-colors duration-200 border-b border-gray-100 last:border-b-0`}>
+      <Link
+        to={`/match/${match.id}`}
+        className={`flex items-center justify-between p-6 ${
+          index % 2 === 0 ? "bg-white" : "bg-gray-50"
+        } hover:bg-blue-50 transition-colors duration-200 border-b border-gray-100 last:border-b-0`}
+      >
         {/* Дата */}
         <div className="w-24 flex-shrink-0">
           <div className="text-center">
@@ -221,9 +136,7 @@ const Fixtures = ({ gameSaveId, seasonId }) => {
                 </span>
               </div>
             ) : (
-              <div className="text-gray-400 font-semibold">
-                VS
-              </div>
+              <div className="text-gray-400 font-semibold">VS</div>
             )}
           </div>
 
@@ -242,14 +155,17 @@ const Fixtures = ({ gameSaveId, seasonId }) => {
 
         {/* Статус */}
         <div className="w-20 flex-shrink-0 text-right">
-          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${isPlayed
-              ? "bg-green-100 text-green-800"
-              : "bg-blue-100 text-blue-800"
-            }`}>
+          <span
+            className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+              isPlayed
+                ? "bg-green-100 text-green-800"
+                : "bg-blue-100 text-blue-800"
+            }`}
+          >
             {isPlayed ? "FT" : "SCH"}
           </span>
         </div>
-      </div>
+      </Link>
     );
   };
 
@@ -259,96 +175,55 @@ const Fixtures = ({ gameSaveId, seasonId }) => {
 
         {/* Контроли */}
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-6 mb-8">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-            {/* Леви контроли - филтри */}
-            <div className="flex flex-col sm:flex-row gap-4 flex-1">
-              {/* Избор на лига */}
-              <div className="flex-1">
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  📊 League
-                </label>
-                <select
-                  className="w-full p-3 rounded-xl border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 shadow-sm"
-                  value={league}
-                  onChange={(e) => setLeague(e.target.value)}
-                >
-                  {leagues.map((l) => (
-                    <option key={l.id} value={l.id}>
-                      {l.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Избор на кръг */}
-              <div className="flex-1">
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  🔄 Round
-                </label>
-                <select
-                  className="w-full p-3 rounded-xl border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 shadow-sm"
-                  value={round}
-                  onChange={(e) => setRound(e.target.value)}
-                  disabled={loading || fixtures.length === 0}
-                >
-                  {[...Array(maxRounds)].map((_, i) => (
-                    <option key={i + 1} value={i + 1}>
-                      Round {i + 1}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            {/* Десни контроли - изглед */}
-            <div className="flex items-center space-x-4">
-              <label className="block text-sm font-semibold text-gray-700">
-                View:
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                📊 League
               </label>
-              <div className="flex bg-gray-100 rounded-lg p-1">
-                <button
-                  onClick={() => setActiveView("grid")}
-                  className={`px-4 py-2 rounded-md transition-all duration-200 ${activeView === "grid"
-                      ? "bg-white shadow-sm text-blue-600"
-                      : "text-gray-600 hover:text-gray-900"
-                    }`}
-                >
-                  🏟️ Grid
-                </button>
-                <button
-                  onClick={() => setActiveView("list")}
-                  className={`px-4 py-2 rounded-md transition-all duration-200 ${activeView === "list"
-                      ? "bg-white shadow-sm text-blue-600"
-                      : "text-gray-600 hover:text-gray-900"
-                    }`}
-                >
-                  📋 List
-                </button>
-              </div>
+              <select
+                className="w-full p-3 rounded-xl border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 shadow-sm"
+                value={league}
+                onChange={(e) => setLeague(e.target.value)}
+              >
+                {leagues.map((l) => (
+                  <option key={l.id} value={l.id}>
+                    {l.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex-1">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                🔄 Round
+              </label>
+              <select
+                className="w-full p-3 rounded-xl border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 shadow-sm"
+                value={round}
+                onChange={(e) => setRound(e.target.value)}
+                disabled={loading || fixtures.length === 0}
+              >
+                {[...Array(maxRounds)].map((_, i) => (
+                  <option key={i + 1} value={i + 1}>
+                    Round {i + 1}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
         </div>
 
-        {/* Информация за селекцията */}
+        {/* Инфо за селекцията */}
         <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl shadow-lg p-6 mb-8 text-white">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h2 className="text-2xl font-bold mb-2">
-                {selectedLeague?.name || "Fixtures"}
-              </h2>
-              <p className="text-blue-100">
-                Round {round} • {fixtures.length} matches
-              </p>
-            </div>
-            <div className="mt-4 sm:mt-0">
-              <div className="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2 text-sm">
-                Season {seasonId}
-              </div>
-            </div>
-          </div>
+          <h2 className="text-2xl font-bold mb-2">
+            {selectedLeague?.name || "Fixtures"}
+          </h2>
+          <p className="text-blue-100">
+            Round {round} • {fixtures.length} matches
+          </p>
         </div>
 
-        {/* Мачове */}
+        {/* Списък с мачове */}
         {loading ? (
           <div className="flex justify-center items-center py-20">
             <div className="text-center">
@@ -357,21 +232,14 @@ const Fixtures = ({ gameSaveId, seasonId }) => {
             </div>
           </div>
         ) : fixtures.length === 0 ? (
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-12 text-center">
+          <div className="bg-white/80 rounded-2xl shadow-xl p-12 text-center">
             <div className="text-6xl mb-4">⚽</div>
             <h3 className="text-2xl font-bold text-gray-900 mb-2">
               No Fixtures Found
             </h3>
             <p className="text-gray-600 max-w-md mx-auto">
               There are no matches scheduled for the selected round and league.
-              Try selecting a different round or league.
             </p>
-          </div>
-        ) : activeView === "grid" ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {fixtures.map((match) => (
-              <MatchCard key={match.id} match={match} />
-            ))}
           </div>
         ) : (
           <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 overflow-hidden">

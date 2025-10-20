@@ -55,7 +55,7 @@ const PlayerProfile = () => {
   // Среден рейтинг (пример)
   const avgRating =
     player.attributes?.reduce((a, b) => a + b.value, 0) /
-      player.attributes?.length || 0;
+    player.attributes?.length || 0;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-800 text-gray-100 flex justify-center items-start py-14 px-6 relative overflow-hidden">
@@ -159,44 +159,48 @@ const PlayerProfile = () => {
           </div>
         </div>
 
-        {/* Season Stats */}
+        {/* Competition Stats */}
         <div className="mt-14">
-          <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
-            <TrendingUp className="w-6 h-6 text-blue-400" /> Season Statistics
-          </h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {player.seasonStats?.map((stat) => (
-              <div
-                key={stat.seasonId}
-                className="bg-white/5 p-5 rounded-2xl border border-white/10 hover:bg-white/15 hover:shadow-xl transition-all"
-              >
-                <p className="text-sm text-gray-300 mb-2">
-                  Season {stat.seasonId}
-                </p>
-                <div className="space-y-1 text-sm">
-                  <p>
-                    Matches:{" "}
-                    <span className="font-bold text-white">
-                      {stat.matchesPlayed}
-                    </span>
-                  </p>
-                  <p>
-                    Goals:{" "}
-                    <span className="font-bold text-blue-400">
+
+          <div className="overflow-x-auto rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm shadow-lg">
+            <table className="min-w-full text-sm text-gray-200">
+              <thead className="bg-white/10 text-gray-100">
+                <tr>
+                  <th className="px-4 py-3 text-left">Competition</th>
+                  <th className="px-4 py-3 text-right">Matches</th>
+                  <th className="px-4 py-3 text-right">Goals</th>
+                </tr>
+              </thead>
+              <tbody>
+                {player.competitionStats?.map((stat) => (
+                  <tr
+                    key={stat.competitionId}
+                    className="border-t border-white/10 hover:bg-white/10 transition"
+                  >
+                    <td className="px-4 py-2 font-medium">{stat.competitionName}</td>
+                    <td className="px-4 py-2 text-right">{stat.matchesPlayed}</td>
+                    <td className="px-4 py-2 text-right text-blue-400 font-semibold">
                       {stat.goals}
-                    </span>
-                  </p>
-                  <p>
-                    Assists:{" "}
-                    <span className="font-bold text-emerald-400">
-                      {stat.assists}
-                    </span>
-                  </p>
-                </div>
-              </div>
-            ))}
+                    </td>
+                  </tr>
+                ))}
+
+                {player.competitionStats?.length > 0 && (
+                  <tr className="border-t border-white/20 bg-white/10 font-bold">
+                    <td className="px-4 py-3 text-right">Total</td>
+                    <td className="px-4 py-3 text-right">
+                      {player.competitionStats.reduce((a, b) => a + b.matchesPlayed, 0)}
+                    </td>
+                    <td className="px-4 py-3 text-right text-emerald-400">
+                      {player.competitionStats.reduce((a, b) => a + b.goals, 0)}
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
+
       </div>
     </div>
   );

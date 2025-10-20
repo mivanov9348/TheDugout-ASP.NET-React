@@ -3,10 +3,17 @@
     using TheDugout.Models.Enums;
     using TheDugout.Models.Fixtures;
     using TheDugout.Models.Game;
+    using TheDugout.Services.Competition.Interfaces;
     using TheDugout.Services.Match.Interfaces;
 
     public class MatchResponseService : IMatchResponseService
     {
+        private readonly ICompetitionService _competitionService;
+        public MatchResponseService(ICompetitionService competitionService)
+        {
+            _competitionService = competitionService;
+        }
+
         public async Task<object> GetFormattedMatchResponseAsync(Fixture fixture, GameSave gameSave)
         {
             var homePens = fixture.Match?.Penalties.Count(p => p.TeamId == fixture.HomeTeamId && p.IsScored) ?? 0;
@@ -29,7 +36,7 @@
             return new
             {
                 FixtureId = fixture.Id,
-                CompetitionName = GetCompetitionName(fixture),
+                CompetitionName = _competitionService.GetCompetitionName(fixture),
                 Home = fixture.HomeTeam?.Name ?? "Unknown Team",
                 Away = fixture.AwayTeam?.Name ?? "Unknown Team",
                 HomeGoals = fixture.HomeTeamGoals,
@@ -55,22 +62,6 @@
             return matchResponses;
         }
 
-        public string GetCompetitionName(Fixture fixture)
-        {
-            try
-            {
-                return fixture.CompetitionType switch
-                {
-                    CompetitionTypeEnum.League => fixture.League?.Template?.Name ?? "Unknown League",
-                    CompetitionTypeEnum.DomesticCup => fixture.CupRound?.Cup?.Template?.Name ?? "Unknown Cup",
-                    CompetitionTypeEnum.EuropeanCup => fixture.EuropeanCupPhase?.EuropeanCup?.Template?.Name ?? "Unknown European Cup",
-                    _ => "Unknown Competition"
-                };
-            }
-            catch
-            {
-                return "Unknown Competition";
-            }
-        }
+        
     }
 }

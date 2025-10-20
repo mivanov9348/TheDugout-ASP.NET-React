@@ -1,5 +1,6 @@
 import TeamLogo from "../../../components/TeamLogo";
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 
 export default function GroupStage({ cup }) {
   const [selectedRound, setSelectedRound] = useState(null);
@@ -120,10 +121,16 @@ export default function GroupStage({ cup }) {
                       />
                     </div>
                     <div className="w-24 text-center font-bold">
-                      {m.homeTeamGoals != null && m.awayTeamGoals != null
-                        ? `${m.homeTeamGoals} : ${m.awayTeamGoals}`
-                        : "vs"}
+                      <Link
+                        to={`/match/${m.id}`}
+                        className="text-blue-600 hover:text-blue-800 underline decoration-dotted"
+                      >
+                        {m.homeTeamGoals != null && m.awayTeamGoals != null
+                          ? `${m.homeTeamGoals} : ${m.awayTeamGoals}`
+                          : "vs"}
+                      </Link>
                     </div>
+
                     <div className="flex-1 pl-2 font-medium flex items-center gap-2">
                       <TeamLogo
                         teamName={m.awayTeam?.name}
@@ -150,7 +157,7 @@ export default function GroupStage({ cup }) {
                               </div>
                             ))}
                         </div>
-                        
+
                         {/* Away team goalscorers */}
                         <div className="text-left">
                           {m.goalscorers

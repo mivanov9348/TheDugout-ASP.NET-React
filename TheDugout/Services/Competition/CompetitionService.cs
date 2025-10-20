@@ -8,6 +8,7 @@
     using TheDugout.Services.Cup.Interfaces;
     using TheDugout.Services.EuropeanCup.Interfaces;
     using TheDugout.Services.League.Interfaces;
+    using TheDugout.Models.Fixtures;
     public class CompetitionService : ICompetitionService
     {
         private readonly DugoutDbContext _context;
@@ -90,6 +91,40 @@
             await _context.SaveChangesAsync();
 
             return allResults;
-        }        
+        }
+        public string GetCompetitionName(Fixture fixture)
+        {
+            try
+            {
+                return fixture.CompetitionType switch
+                {
+                    CompetitionTypeEnum.League => fixture.League?.Template?.Name ?? "Unknown League",
+                    CompetitionTypeEnum.DomesticCup => fixture.CupRound?.Cup?.Template?.Name ?? "Unknown Cup",
+                    CompetitionTypeEnum.EuropeanCup => fixture.EuropeanCupPhase?.EuropeanCup?.Template?.Name ?? "Unknown European Cup",
+                    _ => "Unknown Competition"
+                };
+            }
+            catch
+            {
+                return "Unknown Competition";
+            }
+        }
+        public string GetCompetitionNameById(int competitionId)
+        {
+            var competition = _context.Competitions
+                .Include(c => c.League).ThenInclude(l => l.Template)
+                .Include(c => c.Cup).ThenInclude(cu => cu.Template)
+                .Include(c => c.EuropeanCup).ThenInclude(ec => ec.Template)
+                .FirstOrDefault(c => c.Id == competitionId);
+
+            if (competition == null)
+                return string.Empty;
+
+            return competition.League?.Template?.Name
+                ?? competition.Cup?.Template?.Name
+                ?? competition.EuropeanCup?.Template?.Name
+                ?? string.Empty;
+        }
+
     }
 }

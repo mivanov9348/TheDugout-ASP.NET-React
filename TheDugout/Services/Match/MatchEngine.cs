@@ -169,7 +169,7 @@
             }
 
             await EndMatch(match);
-            await _matchService.SaveMatchProgressAsync(match); // 💾 крайно сейвване
+            await _matchService.SaveMatchProgressAsync(match);
 
             var fixtureAfter = match.Fixture ?? dbFixture;
             bool isKnockout = fixtureAfter.IsElimination

@@ -3,15 +3,18 @@
     using Microsoft.EntityFrameworkCore;
     using TheDugout.Data;
     using TheDugout.DTOs.Player;
+    using TheDugout.Services.Competition.Interfaces;
     using TheDugout.Services.Player.Interfaces;
 
     public class PlayerInfoService : IPlayerInfoService
     {
         private readonly DugoutDbContext _context;
+        private readonly ICompetitionService _competitionService;
 
-        public PlayerInfoService(DugoutDbContext context)
+        public PlayerInfoService(DugoutDbContext context, ICompetitionService competitionService)
         {
             _context = context;
+            _competitionService = competitionService;
         }
 
         public async Task<PlayerDto?> GetPlayerByIdAsync(int playerId)
@@ -23,6 +26,16 @@
                 .Include(p => p.Attributes)
                     .ThenInclude(a => a.Attribute)
                 .Include(p => p.SeasonStats)
+                .Include(p => p.CompetitionStats)
+    .ThenInclude(cs => cs.Competition)
+        .ThenInclude(c => c.League).ThenInclude(l => l.Template)
+.Include(p => p.CompetitionStats)
+    .ThenInclude(cs => cs.Competition)
+        .ThenInclude(c => c.Cup).ThenInclude(cu => cu.Template)
+.Include(p => p.CompetitionStats)
+    .ThenInclude(cs => cs.Competition)
+        .ThenInclude(c => c.EuropeanCup).ThenInclude(ec => ec.Template)
+
                 .Where(p => p.Id == playerId)
                 .Select(p => new PlayerDto
                 {
@@ -37,7 +50,8 @@
                     WeightKg = p.WeightKg,
                     Price = p.Price,
                     TeamName = p.Team != null ? p.Team.Name : null,
-                    AvatarUrl =  p.AvatarFileName,
+                    AvatarFileName = p.AvatarFileName,
+
                     Attributes = p.Attributes.Select(a => new PlayerAttributeDto
                     {
                         AttributeId = a.AttributeId,
@@ -51,10 +65,24 @@
                         SeasonId = s.SeasonId,
                         MatchesPlayed = s.MatchesPlayed,
                         Goals = s.Goals
+                    }).ToList(),
+
+                    CompetitionStats = p.CompetitionStats.Select(cs => new PlayerCompetitionStatsDto
+                    {
+                        CompetitionId = cs.CompetitionId,
+                        CompetitionName =
+                            cs.Competition.League != null ? cs.Competition.League.Template.Name :
+                            cs.Competition.Cup != null ? cs.Competition.Cup.Template.Name :
+                            cs.Competition.EuropeanCup != null ? cs.Competition.EuropeanCup.Template.Name :
+                            "",
+                        MatchesPlayed = cs.MatchesPlayed,
+                        Goals = cs.Goals
                     }).ToList()
+
                 })
                 .FirstOrDefaultAsync();
         }
+
 
         public async Task<ICollection<PlayerDto>> GetPlayersByTeamIdAsync(int teamId)
         {

@@ -1,10 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using TheDugout.Services.Player.Interfaces;
-
-namespace TheDugout.Controllers
+﻿namespace TheDugout.Controllers
 {
+    using Microsoft.AspNetCore.Mvc;
+    using TheDugout.Services.Player.Interfaces;
     [ApiController]
-    [Route("api/player")] // <-- фиксираме route-а с малки букви
+    [Route("api/player")] 
     public class PlayerController : ControllerBase
     {
         private readonly IPlayerInfoService _playerService;

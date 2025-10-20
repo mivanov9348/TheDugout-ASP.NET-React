@@ -228,7 +228,6 @@
 
                 await _context.SaveChangesAsync();
 
-
                 var competitionName = GetCompetitionDisplayName(fixture);
                 var homeName = fixture.HomeTeam?.Name ?? "Home";
                 var awayName = fixture.AwayTeam?.Name ?? "Away";
@@ -252,12 +251,18 @@
                     }
                 });
 
+                // 🟢 изпращаме резултата от този мач
                 await Response.WriteAsync($"data: {json}\n\n");
                 await Response.Body.FlushAsync();
 
                 await Task.Delay(500); // малка пауза между мачовете
             }
+
+            // ✅ изпращаме "done" чак след последния мач
+            await Response.WriteAsync("data: {\"message\":\"done\"}\n\n");
+            await Response.Body.FlushAsync();
         }
+
 
         [HttpGet("{matchId}")]
         public async Task<IActionResult> GetMatchDetails(int matchId)

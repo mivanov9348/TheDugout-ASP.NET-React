@@ -45,14 +45,14 @@
         }
 
         [HttpGet("current")]
-        public async Task<IActionResult> GetCurrentLeague(int gameSaveId, int seasonId)
+        public async Task<IActionResult> GetCurrentLeague(int gameSaveId, int seasonId, int leagueId)
         {
             var league = await _context.Leagues
                 .Include(l => l.Template)
                 .Include(l => l.Country)
                 .Include(l => l.Standings)
                     .ThenInclude(s => s.Team)
-                .FirstOrDefaultAsync(l => l.GameSaveId == gameSaveId && l.SeasonId == seasonId);
+                .FirstOrDefaultAsync(l => l.Id == leagueId && l.GameSaveId == gameSaveId && l.SeasonId == seasonId);
 
             if (league == null)
                 return Ok(new { exists = false });
@@ -85,18 +85,17 @@
             return Ok(data);
         }
 
-
         [HttpGet("{gameSaveId}/{leagueId}/top-scorers")]
         public async Task<IActionResult> GetTopScorersByLeague(int gameSaveId, int leagueId)
         {
-            // 🟢 Активен сезон
+            // Get current active season
             var season = await _context.Seasons
                 .FirstOrDefaultAsync(s => s.GameSaveId == gameSaveId && s.IsActive);
 
             if (season == null)
                 return NotFound("❌ No active season found.");
 
-            // 🟢 Лига
+            // Get the league
             var league = await _context.Leagues
                 .Include(l => l.Template)
                 .Include(l => l.Country)
@@ -105,41 +104,35 @@
             if (league == null)
                 return NotFound("❌ League not found.");
 
-            // 🟢 Намираме competition (ако е нужно)
+            // Search for the competition associated with this league and season
             var competition = await _context.Competitions
                 .FirstOrDefaultAsync(c => c.LeagueId == league.Id && c.SeasonId == season.Id);
 
             if (competition == null)
                 return NotFound("❌ No competition found for this league.");
 
-            // 🟢 Всички голмайстори за конкретната лига
-            var scorersQuery = _context.PlayerSeasonStats
-                .Include(pss => pss.Player)
+            // Get top scorers
+            var scorers = await _context.PlayerCompetitionStats
+                .Include(pcs => pcs.Player)
                     .ThenInclude(p => p.Team)
-                .Where(pss => pss.SeasonId == season.Id);
-
-            // Ако Player.Team има LeagueId – използваме това:
-            scorersQuery = scorersQuery.Where(pss => pss.Player!.Team!.LeagueId == league.Id);
-
-            // Ако не – ползваме CompetitionId (стария вариант)
-            // scorersQuery = scorersQuery.Where(pss => pss.CompetitionId == competition.Id);
-
-            var scorers = await scorersQuery
-                .OrderByDescending(pss => pss.Goals)
-                .ThenBy(pss => pss.Player!.LastName)
-                .Select(pss => new
+                .Where(pcs => pcs.CompetitionId == competition.Id && pcs.SeasonId == season.Id)
+                .OrderByDescending(pcs => pcs.Goals)
+                .ThenBy(pcs => pcs.Player.LastName)
+                .Select(pcs => new
                 {
-                    id = pss.PlayerId,
-                    name = $"{pss.Player!.FirstName} {pss.Player!.LastName}",
-                    teamName = pss.Player!.Team!.Name,
-                    goals = pss.Goals,
-                    matches = pss.MatchesPlayed
+                    id = pcs.PlayerId,
+                    name = pcs.Player.FirstName + " " + pcs.Player.LastName,
+                    teamName = pcs.Player.Team.Name,
+                    goals = pcs.Goals,
+                    matches = pcs.MatchesPlayed
                 })
                 .ToListAsync();
 
+            if (!scorers.Any())
+                return Ok(new List<object>()); 
+
             return Ok(scorers);
         }
-
 
     }
 }

@@ -7,6 +7,5 @@
     {
         Task<object> GetFormattedMatchResponseAsync(Fixture fixture, GameSave gameSave);
         Task<List<object>> GetFormattedMatchesResponseAsync(List<Fixture> fixtures, GameSave gameSave);
-        string GetCompetitionName(Fixture fixture);
     }
 }

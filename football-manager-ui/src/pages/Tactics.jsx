@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Swal from "sweetalert2";
 
 const Tactics = ({ gameSaveId, teamId }) => {
@@ -9,6 +9,9 @@ const Tactics = ({ gameSaveId, teamId }) => {
   const [substitutes, setSubstitutes] = useState({});
   const [loading, setLoading] = useState(true);
   const [allAttributes, setAllAttributes] = useState([]);
+
+  const suppressClearRef = useRef(false);
+  const appliedSavedTacticRef = useRef(false);
 
   const getRowClass = (position) => {
     switch (position) {
@@ -25,7 +28,6 @@ const Tactics = ({ gameSaveId, teamId }) => {
     }
   };
 
-  // Fetch players
   useEffect(() => {
     const fetchPlayers = async () => {
       try {
@@ -34,7 +36,6 @@ const Tactics = ({ gameSaveId, teamId }) => {
         });
         if (!res.ok) throw new Error("Failed to load team");
         const data = await res.json();
-
         const mappedPlayers = data.players.map((p) => ({
           id: p.id,
           name: p.fullName,
@@ -43,14 +44,11 @@ const Tactics = ({ gameSaveId, teamId }) => {
           age: p.age,
           attributes: p.attributes || [],
         }));
-
         const attrSet = new Set();
         mappedPlayers.forEach((p) =>
           p.attributes.forEach((a) => attrSet.add(a.name))
         );
-
         mappedPlayers.sort((a, b) => a.positionId - b.positionId);
-
         setAllAttributes(Array.from(attrSet));
         setPlayers(mappedPlayers);
       } catch (err) {
@@ -59,11 +57,9 @@ const Tactics = ({ gameSaveId, teamId }) => {
         setLoading(false);
       }
     };
-
     if (gameSaveId) fetchPlayers();
   }, [gameSaveId]);
 
-  // Fetch formations
   useEffect(() => {
     const fetchFormations = async () => {
       try {
@@ -78,39 +74,61 @@ const Tactics = ({ gameSaveId, teamId }) => {
     fetchFormations();
   }, []);
 
-  // Load team tactic if exists
   useEffect(() => {
     const fetchTeamTactic = async () => {
       try {
-        if (!teamId || !gameSaveId || formations.length === 0) return;
+        if (!teamId || !gameSaveId || formations.length === 0 || players.length === 0)
+          return;
+        if (appliedSavedTacticRef.current) return;
 
         const res = await fetch(`/api/tactics/${teamId}?saveId=${gameSaveId}`, {
           credentials: "include",
         });
-
         if (!res.ok) return;
-
         const data = await res.json();
-        const tactic = formations.find((f) => f.id === data.tacticId);
-        if (tactic) setSelectedFormation(tactic.name);
+
+        let parsedLineup = {};
+        let parsedSubs = {};
 
         if (data.lineupJson) {
           try {
-            setLineup(JSON.parse(data.lineupJson));
-          } catch {}
+            const temp = JSON.parse(data.lineupJson);
+            parsedLineup = Object.fromEntries(
+              Object.entries(temp).map(([key, value]) => {
+                const newKey = key.replace(/([A-Z]+)(\d+)/, "$1-$2");
+                return [newKey, value];
+              })
+            );
+          } catch (e) {
+            console.error("Invalid lineup JSON", e);
+          }
         }
 
         if (data.substitutesJson) {
           try {
-            setSubstitutes(JSON.parse(data.substitutesJson));
-          } catch {}
+            parsedSubs = JSON.parse(data.substitutesJson);
+          } catch (e) {
+            console.error("Invalid substitutes JSON", e);
+          }
+        }
+
+        const tactic = formations.find((f) => f.id === data.tacticId);
+        if (tactic) {
+          suppressClearRef.current = true;
+          setSelectedFormation(tactic.name);
+          setTimeout(() => {
+            setLineup(parsedLineup);
+            setSubstitutes(parsedSubs);
+            appliedSavedTacticRef.current = true;
+            suppressClearRef.current = false;
+          }, 0);
         }
       } catch (err) {
         console.error("Грешка при зареждане на тактиката:", err);
       }
     };
     fetchTeamTactic();
-  }, [teamId, gameSaveId, formations]);
+  }, [teamId, gameSaveId, formations, players]);
 
   const handleSave = async () => {
     try {
@@ -122,28 +140,11 @@ const Tactics = ({ gameSaveId, teamId }) => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({
-          tacticId,
-          customName: selectedFormation,
-          lineup,
-          substitutes,
-        }),
+        body: JSON.stringify({ tacticId, customName: selectedFormation, lineup, substitutes }),
       });
 
-      const rawText = await res.text();
-      if (!res.ok) {
-        let message = "Неуспешно запазване";
-        try {
-          const parsed = JSON.parse(rawText);
-          message = parsed.error || rawText || message;
-        } catch {
-          message = rawText || message;
-        }
-        Swal.fire("Грешка", message, "error");
-        return;
-      }
-
-      Swal.fire("Успех!", "Тактиката е запазена!", "success");
+      if (!res.ok) throw new Error(await res.text());
+      Swal.fire("✅ Успех!", "Тактиката е запазена!", "success");
     } catch (err) {
       Swal.fire("Грешка", err.message, "error");
     }
@@ -162,39 +163,42 @@ const Tactics = ({ gameSaveId, teamId }) => {
   };
   const slots = getPositionSlots();
 
-  const getSelectedPlayerIds = () => [
-    ...Object.values(lineup),
-    ...Object.values(substitutes),
-  ].filter(Boolean);
+  const isStarter = (id) => Object.values(lineup).includes(id.toString());
+  const isSub = (id) => Object.values(substitutes).includes(id.toString());
 
   const renderSlots = (position, count, availablePlayers) => {
     const slotsArray = [];
-    const selectedIds = getSelectedPlayerIds();
     for (let i = 1; i <= count; i++) {
       const slotKey = `${position}-${i}`;
       slotsArray.push(
         <tr key={slotKey}>
-          <td className="px-6 py-3 text-sm font-semibold text-gray-800">{`${position} ${i}`}</td>
-          <td className="px-6 py-3">
+          <td className="px-6 py-3 font-semibold text-gray-800 bg-white/80 hover:bg-indigo-50 transition-colors rounded-l-lg">
+            {`${position} ${i}`}
+          </td>
+          <td className="px-6 py-3 bg-white/80 hover:bg-indigo-50 transition-colors rounded-r-lg">
             <select
-              className="block w-full px-3 py-2 border border-gray-300 bg-gray-50 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+              className="block w-full px-3 py-2 border border-gray-300 bg-white rounded-lg focus:ring-2 focus:ring-indigo-500 transition"
               value={lineup[slotKey] || ""}
-              onChange={(e) =>
-                setLineup((prev) => ({ ...prev, [slotKey]: e.target.value }))
-              }
+              onChange={(e) => setLineup((prev) => ({ ...prev, [slotKey]: e.target.value }))}
             >
               <option value="">Select Player</option>
-              {availablePlayers
-                .filter(
-                  (p) =>
-                    !selectedIds.includes(p.id.toString()) ||
-                    lineup[slotKey] === p.id.toString()
-                )
-                .map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name}
-                  </option>
-                ))}
+              {availablePlayers.map((p) => (
+                <option
+                  key={p.id}
+                  value={p.id}
+                  disabled={isStarter(p.id) && lineup[slotKey] !== p.id.toString()}
+                  className={
+                    isSub(p.id)
+                      ? "text-amber-600 font-semibold"
+                      : isStarter(p.id)
+                        ? "text-blue-600 font-semibold"
+                        : "text-gray-800"
+                  }
+                >
+                  {p.name}
+                  {isSub(p.id) ? " (Sub)" : isStarter(p.id) ? " (Starter)" : ""}
+                </option>
+              ))}
             </select>
           </td>
         </tr>
@@ -204,38 +208,46 @@ const Tactics = ({ gameSaveId, teamId }) => {
   };
 
   const renderSubstitutes = () => {
-    const slots = ["SUB1", "SUB2", "SUB3", "SUB4", "SUB5"];
-    const selectedIds = getSelectedPlayerIds();
-    return slots.map((slotKey) => (
+    const slotsArr = ["SUB1", "SUB2", "SUB3", "SUB4", "SUB5"];
+    return slotsArr.map((slotKey) => (
       <tr key={slotKey}>
-        <td className="px-6 py-3 text-sm font-semibold text-gray-800">{slotKey}</td>
-        <td className="px-6 py-3">
+        <td className="px-6 py-3 font-semibold text-gray-800 bg-white/80 hover:bg-indigo-50 transition-colors rounded-l-lg">
+          {slotKey}
+        </td>
+        <td className="px-6 py-3 bg-white/80 hover:bg-indigo-50 transition-colors rounded-r-lg">
           <select
-            className="block w-full px-3 py-2 border border-gray-300 bg-gray-50 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+            className="block w-full px-3 py-2 border border-gray-300 bg-white rounded-lg focus:ring-2 focus:ring-indigo-500 transition"
             value={substitutes[slotKey] || ""}
             onChange={(e) =>
               setSubstitutes((prev) => ({ ...prev, [slotKey]: e.target.value }))
             }
           >
             <option value="">Select Player</option>
-            {players
-              .filter(
-                (p) =>
-                  !selectedIds.includes(p.id.toString()) ||
-                  substitutes[slotKey] === p.id.toString()
-              )
-              .map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))}
+            {players.map((p) => (
+              <option
+                key={p.id}
+                value={p.id}
+                disabled={isSub(p.id) && substitutes[slotKey] !== p.id.toString()}
+                className={
+                  isStarter(p.id)
+                    ? "text-blue-600 font-semibold"
+                    : isSub(p.id)
+                      ? "text-amber-600 font-semibold"
+                      : "text-gray-800"
+                }
+              >
+                {p.name}
+                {isStarter(p.id) ? " (Starter)" : isSub(p.id) ? " (Sub)" : ""}
+              </option>
+            ))}
           </select>
         </td>
       </tr>
     ));
   };
 
-  if (loading) {
+
+  if (loading || formations.length === 0) {
     return (
       <div className="flex items-center justify-center h-screen bg-gradient-to-br from-indigo-100 via-white to-indigo-200">
         <span className="animate-spin rounded-full h-12 w-12 border-4 border-indigo-600 border-t-transparent"></span>
@@ -244,23 +256,15 @@ const Tactics = ({ gameSaveId, teamId }) => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-100 via-white to-indigo-50 p-6">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-indigo-50 p-8">
+      <div className="max-w-7xl mx-auto space-y-10">
         <div className="text-center">
-          <h1 className="text-5xl font-extrabold text-indigo-700">
-            Team Tactics
-          </h1>
-          <p className="text-gray-600 mt-2 text-lg">
-            Build your perfect lineup and dominate the league.
-          </p>
+          <h1 className="text-5xl font-extrabold text-indigo-700 drop-shadow-sm">⚔️ Team Tactics</h1>
+          <p className="text-gray-600 mt-3 text-lg">Craft your perfect lineup & rule the pitch.</p>
         </div>
 
-        {/* Formation Selector */}
-        <div className="bg-white/70 backdrop-blur-md p-6 rounded-2xl shadow-lg border border-gray-100">
-          <label
-            htmlFor="formation"
-            className="block text-xl font-semibold mb-3 text-gray-700"
-          >
+        <div className="bg-white/80 backdrop-blur p-6 rounded-2xl shadow-lg border border-gray-100">
+          <label htmlFor="formation" className="block text-xl font-semibold mb-3 text-gray-700">
             Select Formation
           </label>
           <select
@@ -268,7 +272,13 @@ const Tactics = ({ gameSaveId, teamId }) => {
             className="block w-full px-4 py-3 border border-gray-300 bg-gray-50 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
             value={selectedFormation}
             onChange={(e) => {
-              setSelectedFormation(e.target.value);
+              const newForm = e.target.value;
+              if (suppressClearRef.current) {
+                suppressClearRef.current = false;
+                setSelectedFormation(newForm);
+                return;
+              }
+              setSelectedFormation(newForm);
               setLineup({});
               setSubstitutes({});
             }}
@@ -282,29 +292,19 @@ const Tactics = ({ gameSaveId, teamId }) => {
           </select>
         </div>
 
-        {selectedFormation && (
+        {selectedFormation && players.length > 0 && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-            {/* Players Table */}
-            <div className="bg-white/80 backdrop-blur-md shadow-xl rounded-2xl p-5 border border-gray-100">
+            <div className="bg-white/80 backdrop-blur shadow-xl rounded-2xl p-6 border border-gray-100">
               <h2 className="text-2xl font-bold mb-4 text-indigo-600">All Players</h2>
               <div className="overflow-auto max-h-[70vh] rounded-lg">
                 <table className="min-w-full text-sm">
                   <thead className="bg-indigo-50 sticky top-0 shadow-sm">
                     <tr>
-                      <th className="px-4 py-2 text-left font-semibold text-gray-700">
-                        Name
-                      </th>
-                      <th className="px-4 py-2 text-left font-semibold text-gray-700">
-                        Position
-                      </th>
-                      <th className="px-4 py-2 text-left font-semibold text-gray-700">
-                        Age
-                      </th>
+                      <th className="px-4 py-2 text-left font-semibold text-gray-700">Name</th>
+                      <th className="px-4 py-2 text-left font-semibold text-gray-700">Position</th>
+                      <th className="px-4 py-2 text-left font-semibold text-gray-700">Age</th>
                       {allAttributes.map((attr) => (
-                        <th
-                          key={attr}
-                          className="px-4 py-2 text-center font-semibold text-gray-700"
-                        >
+                        <th key={attr} className="px-4 py-2 text-center font-semibold text-gray-700">
                           {attr}
                         </th>
                       ))}
@@ -312,12 +312,7 @@ const Tactics = ({ gameSaveId, teamId }) => {
                   </thead>
                   <tbody className="divide-y divide-gray-200">
                     {players.map((p) => (
-                      <tr
-                        key={p.id}
-                        className={`${getRowClass(
-                          p.position
-                        )} hover:bg-indigo-50 transition`}
-                      >
+                      <tr key={p.id} className={`${getRowClass(p.position)} hover:bg-indigo-50`}>
                         <td className="px-4 py-2 font-medium">{p.name}</td>
                         <td className="px-4 py-2">{p.position}</td>
                         <td className="px-4 py-2">{p.age}</td>
@@ -336,19 +331,14 @@ const Tactics = ({ gameSaveId, teamId }) => {
               </div>
             </div>
 
-            {/* Lineup + Subs */}
-            <div className="bg-white/80 backdrop-blur-md shadow-xl rounded-2xl p-5 border border-gray-100">
+            <div className="bg-white/80 backdrop-blur shadow-xl rounded-2xl p-6 border border-gray-100">
               <h2 className="text-2xl font-bold mb-4 text-indigo-600">Starting Lineup</h2>
               <div className="overflow-auto rounded-lg mb-6">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-indigo-50 sticky top-0">
                     <tr>
-                      <th className="px-6 py-3 text-left font-semibold text-gray-700">
-                        Position
-                      </th>
-                      <th className="px-6 py-3 text-left font-semibold text-gray-700">
-                        Player
-                      </th>
+                      <th className="px-6 py-3 text-left font-semibold text-gray-700">Position</th>
+                      <th className="px-6 py-3 text-left font-semibold text-gray-700">Player</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -378,13 +368,13 @@ const Tactics = ({ gameSaveId, teamId }) => {
                   onClick={handleSave}
                   className="flex-1 px-4 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow transition"
                 >
-                  Save
+                  💾 Save
                 </button>
                 <button
                   onClick={handleReset}
                   className="flex-1 px-4 py-3 bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-lg shadow transition"
                 >
-                  Reset
+                  ♻ Reset
                 </button>
               </div>
             </div>
