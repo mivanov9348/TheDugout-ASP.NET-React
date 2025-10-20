@@ -27,24 +27,25 @@ export default function League({ gameSaveId }) {
           setLeagues(data.leagues);
           setSeasonId(data.seasonId);
 
-          const firstLeague = data.leagues[0];
+          // ❗ Не презаписвай избраната лига, ако вече има такава
+          if (!selectedLeague) {
+            const firstLeague = data.leagues[0];
 
-          // 🟢 Зареждаме standings за първата лига
-          const res2 = await fetch(
-            `/api/League/current?gameSaveId=${gameSaveId}&seasonId=${data.seasonId}&leagueId=${firstLeague.id}`,
-            { credentials: "include" }
-          );
-          const leagueData = await res2.json();
+            const res2 = await fetch(
+              `/api/League/current?gameSaveId=${gameSaveId}&seasonId=${data.seasonId}&leagueId=${firstLeague.id}`,
+              { credentials: "include" }
+            );
+            const leagueData = await res2.json();
 
-          setSelectedLeague(
-            leagueData.exists
-              ? { ...firstLeague, standings: leagueData.standings }
-              : { ...firstLeague, standings: [] }
-          );
+            setSelectedLeague(
+              leagueData.exists
+                ? { ...firstLeague, standings: leagueData.standings }
+                : { ...firstLeague, standings: [] }
+            );
 
-          // 🟢 Навигираме към таб, ако сме на /league
-          if (location.pathname.endsWith("/league")) {
-            navigate(`/competitions/league/standings`, { replace: true });
+            if (location.pathname.endsWith("/league")) {
+              navigate(`/competitions/league/standings`, { replace: true });
+            }
           }
         }
       } catch (err) {
@@ -55,7 +56,8 @@ export default function League({ gameSaveId }) {
     };
 
     loadLeagues();
-  }, [gameSaveId, navigate, location]);
+  }, [gameSaveId, navigate]);
+
 
   // 🟢 Смяна на лига от dropdown
   const handleLeagueChange = async (e) => {
@@ -131,10 +133,9 @@ export default function League({ gameSaveId }) {
         <NavLink
           to="/competitions/league/standings"
           className={({ isActive }) =>
-            `px-4 py-2 rounded-md font-medium ${
-              isActive
-                ? "bg-blue-600 text-white"
-                : "bg-slate-200 text-slate-700 hover:bg-slate-300"
+            `px-4 py-2 rounded-md font-medium ${isActive
+              ? "bg-blue-600 text-white"
+              : "bg-slate-200 text-slate-700 hover:bg-slate-300"
             }`
           }
         >
@@ -143,10 +144,9 @@ export default function League({ gameSaveId }) {
         <NavLink
           to="/competitions/league/player-stats"
           className={({ isActive }) =>
-            `px-4 py-2 rounded-md font-medium ${
-              isActive
-                ? "bg-blue-600 text-white"
-                : "bg-slate-200 text-slate-700 hover:bg-slate-300"
+            `px-4 py-2 rounded-md font-medium ${isActive
+              ? "bg-blue-600 text-white"
+              : "bg-slate-200 text-slate-700 hover:bg-slate-300"
             }`
           }
         >

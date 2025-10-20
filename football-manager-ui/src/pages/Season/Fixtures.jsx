@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import TeamLogo from "../components/TeamLogo";
+import TeamLogo from "../../components/TeamLogo";
 
 const Fixtures = ({ gameSaveId, seasonId }) => {
   const [fixtures, setFixtures] = useState([]);

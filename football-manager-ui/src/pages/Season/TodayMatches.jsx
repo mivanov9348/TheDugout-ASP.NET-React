@@ -2,9 +2,9 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Trophy, Play, Zap } from "lucide-react";
-import TeamLogo from "../components/TeamLogo";
-import { useProcessing } from "../context/ProcessingContext";
-import { useGame } from "../context/GameContext";
+import TeamLogo from "../../components/TeamLogo";
+import { useProcessing } from "../../context/ProcessingContext";
+import { useGame } from "../../context/GameContext";
 
 export default function TodayMatches() {
   const { gameSaveId } = useParams();

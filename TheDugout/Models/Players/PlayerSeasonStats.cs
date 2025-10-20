@@ -18,6 +18,9 @@
 
         public int MatchesPlayed { get; set; }
         public int Goals { get; set; }
+
+        public double SeasonRating { get; set; }
+
     }
 
 }

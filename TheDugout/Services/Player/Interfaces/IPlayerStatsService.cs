@@ -6,10 +6,10 @@
     {
         Task<List<PlayerMatchStats>> InitializeMatchStatsAsync(Match match);
         void UpdateStats(MatchEvent matchEvent, PlayerMatchStats stats);
-         Task<List<PlayerMatchStats>> EnsureMatchStatsAsync(Match match);
+        Task<List<PlayerMatchStats>> EnsureMatchStatsAsync(Match match);
         Task UpdateStatsAfterMatchAsync(Match match);
         Task<List<(int CompetitionId, int PlayerId, int Goals)>> GetTopScorersByCompetitionAsync(int seasonId);
-
+        double CalculateSeasonRating(PlayerSeasonStats stats);
 
     }
 }

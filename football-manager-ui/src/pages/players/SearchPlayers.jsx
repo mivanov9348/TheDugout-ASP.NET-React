@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { Loader2, Filter } from "lucide-react";
 import { Link } from "react-router-dom";
 import Swal from "sweetalert2";
-import PlayerAvatar from "../components/PlayerAvatar";
-import { useGame } from "../context/GameContext";
+import PlayerAvatar from "../../components/PlayerAvatar";
+import { useGame } from "../../context/GameContext";
 
 export default function SearchPlayers({ gameSaveId }) {
   const { refreshGameStatus } = useGame();

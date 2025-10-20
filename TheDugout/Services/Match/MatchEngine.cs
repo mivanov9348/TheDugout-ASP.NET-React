@@ -1,7 +1,5 @@
 ﻿namespace TheDugout.Services.MatchEngine
 {
-    using Azure;
-    using Microsoft.AspNetCore.Mvc;
     using Microsoft.EntityFrameworkCore;
     using System.Diagnostics;
     using TheDugout.Data;
@@ -25,6 +23,7 @@
         private readonly ILeagueStandingsService _leagueStandingsService;
         private readonly IStandingsDispatcherService _standingsDispatcher;
         private readonly IPenaltyShootoutService _penaltyService;
+        private readonly ILogger<MatchEngine> _logger;
         private readonly DugoutDbContext _context;
 
         public MatchEngine(
@@ -35,6 +34,7 @@
             IStandingsDispatcherService standingsDispatcher,
         IMatchService matchService,
             IPenaltyShootoutService penaltyService,
+            ILogger<MatchEngine> logger,
             DugoutDbContext context)
         {
             _teamPlanService = teamPlanService;
@@ -44,6 +44,7 @@
             _matchService = matchService;
             _standingsDispatcher = standingsDispatcher;
             _penaltyService = penaltyService;
+            _logger = logger;
             _context = context;
         }
         public async Task EndMatch(Match match)
@@ -88,61 +89,158 @@
         public bool IsMatchFinished(Match match)
         {
             return match.CurrentMinute >= 90;
-        }      
+        }
 
+        //public async Task<Match> SimulateMatchAsync(Fixture fixture, GameSave gameSave)
+        //{
+        //    if (fixture is null) throw new ArgumentNullException(nameof(fixture));
+        //    if (gameSave is null) throw new ArgumentNullException(nameof(gameSave));
+
+        //    var dbFixture = await _context.Fixtures
+        //        .Include(f => f.HomeTeam).ThenInclude(t => t.Players)
+        //        .Include(f => f.AwayTeam).ThenInclude(t => t.Players)
+        //        .Include(f => f.EuropeanCupPhase).ThenInclude(p => p.PhaseTemplate)
+        //        .FirstOrDefaultAsync(f => f.Id == fixture.Id);
+
+        //    if (dbFixture is null)
+        //        throw new InvalidOperationException($"Fixture with Id {fixture.Id} not found in DB.");
+
+        //    var match = await _matchService.GetOrCreateMatchAsync(fixture, gameSave);
+        //    match.PlayerStats = await _playerStatsService.EnsureMatchStatsAsync(match);
+
+        //    int eventCount = 0;
+
+        //    while (!IsMatchFinished(match))
+        //    {
+        //        PlayNextMinute(match);
+
+        //        var currentTeamId = match.CurrentTurn == MatchTurn.Home
+        //            ? match.Fixture.HomeTeamId
+        //            : match.Fixture.AwayTeamId;
+
+        //        var currentTeam = match.CurrentTurn == MatchTurn.Home
+        //            ? match.Fixture.HomeTeam
+        //            : match.Fixture.AwayTeam;
+
+        //        if (currentTeam == null)
+        //            throw new InvalidOperationException($"Team {currentTeamId} not found.");
+
+        //        var lineup = await _teamPlanService.GetStartingLineupAsync(currentTeam, includeDetails: false);
+        //        var outfieldPlayers = lineup.Where(p => p.Position.Code != "GK").ToList();
+
+        //        if (!outfieldPlayers.Any())
+        //            throw new InvalidOperationException($"No outfield players found for team {currentTeam.Id}");
+
+        //        var player = outfieldPlayers[_random.Next(outfieldPlayers.Count)];
+        //        var eventType = _matchEventService.GetRandomEvent();
+        //        var outcome = _matchEventService.GetEventOutcome(player, eventType);
+
+        //        if (eventType.Code == "SHT" && outcome.Name == "Goal")
+        //        {
+        //            UpdateFixtureScore(dbFixture, currentTeamId);
+        //        }
+
+        //        var playerStatsMap = match.PlayerStats.ToDictionary(s => s.PlayerId);
+        //        if (playerStatsMap.TryGetValue(player.Id, out var stats))
+        //        {
+        //            _playerStatsService.UpdateStats(new MatchEvent
+        //            {
+        //                Minute = match.CurrentMinute,
+        //                Player = player,
+        //                Team = currentTeam,
+        //                TeamId = currentTeam.Id,
+        //                EventType = eventType,
+        //                EventTypeId = eventType.Id,
+        //                Outcome = outcome
+        //            }, stats);
+        //        }
+
+        //        if (eventCount % 5 == 0)
+        //        {
+        //            await _matchService.SaveMatchProgressAsync(match);
+        //        }
+
+        //        ChangeTurn(match);
+        //        eventCount++;
+        //    }
+
+        //    await EndMatch(match);
+        //    await _matchService.SaveMatchProgressAsync(match);
+
+        //    var fixtureAfter = match.Fixture ?? dbFixture;
+        //    bool isKnockout = fixtureAfter.IsElimination
+        //                      || (fixtureAfter.EuropeanCupPhase?.PhaseTemplate?.IsKnockout == true);
+
+        //    if (isKnockout && fixtureAfter.WinnerTeamId == null)
+        //    {
+        //        await HandlePenaltyShootoutAsync(match);
+        //    }
+
+        //    await _standingsDispatcher.UpdateAfterMatchAsync(match.Fixture);
+
+        //    return match;
+        //}
+
+        // ⚠️ DEBUG VERSION: включва подробен Stopwatch и логове за профилиране
         public async Task<Match> SimulateMatchAsync(Fixture fixture, GameSave gameSave)
         {
             if (fixture is null) throw new ArgumentNullException(nameof(fixture));
             if (gameSave is null) throw new ArgumentNullException(nameof(gameSave));
 
-            var sw = Stopwatch.StartNew();
+            var totalSw = Stopwatch.StartNew();
+            _logger.LogInformation("▶️ Starting simulation for {Home} vs {Away}", fixture.HomeTeam?.Name, fixture.AwayTeam?.Name);
 
+            var sw = Stopwatch.StartNew();
             var dbFixture = await _context.Fixtures
                 .Include(f => f.HomeTeam).ThenInclude(t => t.Players)
                 .Include(f => f.AwayTeam).ThenInclude(t => t.Players)
                 .Include(f => f.EuropeanCupPhase).ThenInclude(p => p.PhaseTemplate)
                 .FirstOrDefaultAsync(f => f.Id == fixture.Id);
+            sw.Stop();
+            _logger.LogInformation("⏱ Loaded fixture in {Elapsed} ms", sw.ElapsedMilliseconds);
 
-            if (dbFixture is null)
-                throw new InvalidOperationException($"Fixture with Id {fixture.Id} not found in DB.");
+            if (dbFixture is null) throw new InvalidOperationException($"Fixture {fixture.Id} not found.");
 
+            sw.Restart();
             var match = await _matchService.GetOrCreateMatchAsync(fixture, gameSave);
-
             match.PlayerStats = await _playerStatsService.EnsureMatchStatsAsync(match);
+            sw.Stop();
+            _logger.LogInformation("🔧 Created/Loaded match + stats in {Elapsed} ms", sw.ElapsedMilliseconds);
+
+            // Кеширане на lineup-и
+            var homeLineup = (await _teamPlanService.GetStartingLineupAsync(dbFixture.HomeTeam, false))
+                                .Where(p => p.Position.Code != "GK").ToList();
+            var awayLineup = (await _teamPlanService.GetStartingLineupAsync(dbFixture.AwayTeam, false))
+                                .Where(p => p.Position.Code != "GK").ToList();
 
             int eventCount = 0;
 
             while (!IsMatchFinished(match))
             {
+                var loopSw = Stopwatch.StartNew();
                 PlayNextMinute(match);
 
-                var currentTeamId = match.CurrentTurn == MatchTurn.Home
-                    ? match.Fixture.HomeTeamId
-                    : match.Fixture.AwayTeamId;
-
                 var currentTeam = match.CurrentTurn == MatchTurn.Home
-                    ? match.Fixture.HomeTeam
-                    : match.Fixture.AwayTeam;
+                    ? dbFixture.HomeTeam
+                    : dbFixture.AwayTeam;
+                var outfieldPlayers = match.CurrentTurn == MatchTurn.Home ? homeLineup : awayLineup;
 
-                if (currentTeam == null)
-                    throw new InvalidOperationException($"Team {currentTeamId} not found.");
-
-                var lineup = await _teamPlanService.GetStartingLineupAsync(currentTeam, includeDetails: false);
-                var outfieldPlayers = lineup.Where(p => p.Position.Code != "GK").ToList();
-
-                if (!outfieldPlayers.Any())
-                    throw new InvalidOperationException($"No outfield players found for team {currentTeam.Id}");
-
+                var playerSw = Stopwatch.StartNew();
                 var player = outfieldPlayers[_random.Next(outfieldPlayers.Count)];
+                playerSw.Stop();
 
+                var eventSw = Stopwatch.StartNew();
                 var eventType = _matchEventService.GetRandomEvent();
                 var outcome = _matchEventService.GetEventOutcome(player, eventType);
+                eventSw.Stop();
 
                 if (eventType.Code == "SHT" && outcome.Name == "Goal")
                 {
-                    UpdateFixtureScore(dbFixture, currentTeamId);
+                    UpdateFixtureScore(dbFixture, currentTeam.Id);
+                    _logger.LogInformation("⚽ GOAL! {Team} scores at minute {Minute}", currentTeam.Name, match.CurrentMinute);
                 }
 
+                var statsSw = Stopwatch.StartNew();
                 var playerStatsMap = match.PlayerStats.ToDictionary(s => s.PlayerId);
                 if (playerStatsMap.TryGetValue(player.Id, out var stats))
                 {
@@ -157,32 +255,47 @@
                         Outcome = outcome
                     }, stats);
                 }
+                statsSw.Stop();
 
-                // 💾 Ново: сейвваме прогреса на всеки няколко стъпки (например на всеки 5)
-                if (eventCount % 5 == 0)
+                if (eventCount % 15 == 0)
                 {
+                    sw.Restart();
                     await _matchService.SaveMatchProgressAsync(match);
+                    sw.Stop();
+                    _logger.LogDebug("💾 Saved progress in {Elapsed} ms", sw.ElapsedMilliseconds);
                 }
 
                 ChangeTurn(match);
                 eventCount++;
+                loopSw.Stop();
+
+                if (loopSw.ElapsedMilliseconds > 50)
+                    _logger.LogWarning("Minute {Minute} took {Elapsed} ms", match.CurrentMinute, loopSw.ElapsedMilliseconds);
             }
 
+            sw.Restart();
             await EndMatch(match);
             await _matchService.SaveMatchProgressAsync(match);
+            sw.Stop();
+            _logger.LogInformation("🏁 EndMatch + save in {Elapsed} ms", sw.ElapsedMilliseconds);
 
-            var fixtureAfter = match.Fixture ?? dbFixture;
-            bool isKnockout = fixtureAfter.IsElimination
-                              || (fixtureAfter.EuropeanCupPhase?.PhaseTemplate?.IsKnockout == true);
-
-            if (isKnockout && fixtureAfter.WinnerTeamId == null)
+            if ((dbFixture.IsElimination || dbFixture.EuropeanCupPhase?.PhaseTemplate?.IsKnockout == true)
+                && dbFixture.WinnerTeamId == null)
             {
+                sw.Restart();
                 await HandlePenaltyShootoutAsync(match);
+                sw.Stop();
+                _logger.LogInformation("🏆 Penalty shootout processed in {Elapsed} ms", sw.ElapsedMilliseconds);
             }
 
+            sw.Restart();
             await _standingsDispatcher.UpdateAfterMatchAsync(match.Fixture);
-
             sw.Stop();
+            _logger.LogInformation("📊 Standings updated in {Elapsed} ms", sw.ElapsedMilliseconds);
+
+            totalSw.Stop();
+            _logger.LogInformation("✅ Finished match in {Elapsed} ms ({Seconds:N2}s)", totalSw.ElapsedMilliseconds, totalSw.Elapsed.TotalSeconds);
+
             return match;
         }
 
@@ -206,7 +319,6 @@
         {
             await SimulateMatchAsync(match.Fixture, match.Fixture.GameSave);
         }
-
-       
+               
     }
 }

@@ -15,7 +15,7 @@ import {
   Clock,
   Search
 } from "lucide-react";
-import TeamLogo from "../components/TeamLogo";
+import TeamLogo from "../../components/TeamLogo";
 
 const Club = () => {
   const [club, setClub] = useState(null);

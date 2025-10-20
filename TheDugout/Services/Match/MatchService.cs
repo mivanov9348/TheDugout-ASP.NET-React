@@ -171,10 +171,7 @@
 
             return await CreateMatchFromFixtureAsync(fixture, gameSave);
         }
-
-        // -------------------------------
-        // PRIVATE HELPERS
-        // -------------------------------
+               
         private async Task<Competition?> GetCompetitionForFixtureAsync(Fixture fixture)
         {
             return fixture.CompetitionType switch
