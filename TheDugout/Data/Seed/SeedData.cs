@@ -1,4 +1,4 @@
-﻿namespace TheDugout.Infrastructure
+﻿namespace TheDugout.Data.Seed
 {
     using Microsoft.EntityFrameworkCore;
     using System.Text.Json;
@@ -28,7 +28,7 @@
             var env = scope.ServiceProvider.GetRequiredService<IHostEnvironment>();
             var seedDir = Path.Combine(env.ContentRootPath, "Data", "SeedFiles");
 
-            // 1) Tactics
+            // Tactics
             var tacticsPath = Path.Combine(seedDir, "tactics.json");
             var tactics = await ReadJsonAsync<List<TacticDto>>(tacticsPath);
 
@@ -55,7 +55,7 @@
             }
             await db.SaveChangesAsync();
 
-            // 2) Positions
+            // Positions
             var positionsPath = Path.Combine(seedDir, "positions.json");
             var positions = await ReadJsonAsync<List<Position>>(positionsPath);
 
@@ -115,7 +115,7 @@
 
             var moneyPrizesByCode = await db.MoneyPrizes.ToDictionaryAsync(x => x.Code, x => x);
 
-            // 3) Attributes
+            // Attributes
             var attributesPath = Path.Combine(seedDir, "attributes.json");
             var attributes = await ReadJsonAsync<List<Models.Players.AttributeDefinition>>(attributesPath);
 
@@ -144,7 +144,7 @@
 
             var attributesByCode = await db.Attributes.ToDictionaryAsync(x => x.Code, x => x);
 
-            // 4) Position Weights
+            // Position Weights
             var weightsPath = Path.Combine(seedDir, "positionWeights.json");
             var weights = await ReadJsonAsync<List<PositionWeightDto>>(weightsPath);
 
@@ -180,7 +180,7 @@
             }
             await db.SaveChangesAsync();
 
-            // 5) Regions
+            // Regions
             var regionsPath = Path.Combine(seedDir, "regions.json");
             var regions = await ReadJsonAsync<List<Region>>(regionsPath);
 
@@ -232,7 +232,7 @@
             }
 
             await db.SaveChangesAsync();
-            // 6) Countries
+            // Countries
             var countriesPath = Path.Combine(seedDir, "countries.json");
             var countries = await ReadJsonAsync<List<CountryDto>>(countriesPath);
 
@@ -260,7 +260,7 @@
 
             var countriesByCode = await db.Countries.ToDictionaryAsync(x => x.Code, x => x);
 
-            // 7) First Names
+            // First Names
             var firstNamesPath = Path.Combine(seedDir, "firstnames.json");
             var firstNamesDict = await ReadJsonAsync<Dictionary<string, List<string>>>(firstNamesPath);
 
@@ -289,7 +289,7 @@
             }
             await db.SaveChangesAsync();
 
-            // 8) Last Names
+            // Last Names
             var lastNamesPath = Path.Combine(seedDir, "lastnames.json");
             var lastNamesDict = await ReadJsonAsync<Dictionary<string, List<string>>>(lastNamesPath);
 
@@ -318,7 +318,7 @@
             }
             await db.SaveChangesAsync();
 
-            // 9) Leagues
+            // Leagues
             var leaguesPath = Path.Combine(seedDir, "leagues.json");
             var leagues = await ReadJsonAsync<List<LeagueTemplateDto>>(leaguesPath);
 
@@ -361,7 +361,7 @@
                 .Include(x => x.Country)
                 .ToDictionaryAsync(x => x.LeagueCode, x => x);
 
-            // 4) Cups
+            // Cups
             var cupsPath = Path.Combine(seedDir, "cups.json");
             var cupTemplates = await ReadJsonAsync<List<CupTemplateDto>>(cupsPath);
 
@@ -390,7 +390,7 @@
             }
 
             await db.SaveChangesAsync();
-            // 11) EventTypes
+            // EventTypes
             var eventTypesFile = Path.Combine(seedDir, "eventTypes.json");
             var eventTypes = await ReadJsonAsync<List<SeedDtos.EventTypeDto>>(eventTypesFile);
             var dbEventTypes = await db.EventTypes.ToListAsync();
@@ -417,7 +417,7 @@
             }
             await db.SaveChangesAsync();
 
-            // 12) EventAttributeWeights
+            // EventAttributeWeights
             var eventWeightsFile = Path.Combine(seedDir, "matchEventWeights.json");
             var eventWeights = await ReadJsonAsync<List<SeedDtos.EventAttributeWeightDto>>(eventWeightsFile);
 
@@ -462,7 +462,7 @@
 
             await db.SaveChangesAsync();
 
-            // 12) EventOutcomes
+            // EventOutcomes
             var outcomesFile = Path.Combine(seedDir, "eventOutcomes.json");
             var eventOutcomes = await ReadJsonAsync<List<SeedDtos.EventOutcomeDto>>(outcomesFile);
             var dbOutcomes = await db.EventOutcomes.Include(o => o.EventType).ToListAsync();
@@ -508,8 +508,7 @@
 
             await db.SaveChangesAsync();
 
-
-            // 13) CommentaryTemplates
+            // CommentaryTemplates
             var commentaryFile = Path.Combine(seedDir, "commentaryTemplates.json");
             var commentaryTemplates = await ReadJsonAsync<List<SeedDtos.CommentaryTemplateDto>>(commentaryFile);
 
@@ -551,7 +550,7 @@
             }
             await db.SaveChangesAsync();
 
-            // 10) Teams
+            // Teams
             var teamsDir = Path.Combine(seedDir, "teams");
             var allTeams = new List<TeamTemplateDto>();
 
@@ -892,7 +891,7 @@
             }
         }
 
-        private static async Task<T> ReadJsonAsync<T>(string path)
+        public static async Task<T> ReadJsonAsync<T>(string path)
         {
             if (!File.Exists(path))
                 throw new FileNotFoundException($"Seed file not found: {path}");
@@ -907,3 +906,52 @@
         }
     }
 }
+
+//namespace TheDugout.Data.Seed
+//{
+//    using Microsoft.EntityFrameworkCore;
+//    using Microsoft.Extensions.DependencyInjection;
+//    using Microsoft.Extensions.Hosting;
+//    using Microsoft.Extensions.Logging;
+//    using System.Text.Json;
+//    public static class SeedData
+//    {
+//        public static async Task EnsureSeededAsync(IServiceProvider services, ILogger logger)
+//        {
+//            using var scope = services.CreateScope();
+//            var db = scope.ServiceProvider.GetRequiredService<DugoutDbContext>();
+//            var env = scope.ServiceProvider.GetRequiredService<IHostEnvironment>();
+//            var seedDir = Path.Combine(env.ContentRootPath, "Data", "SeedFiles");
+
+//            await db.Database.MigrateAsync();
+
+//            await SeedTactics.RunAsync(db, seedDir, logger);
+//            await SeedPositions.RunAsync(db, seedDir, logger);
+//            await SeedMoneyPrizes.RunAsync(db, seedDir, logger);
+//            await SeedAttributes.RunAsync(db, seedDir, logger);
+//            await SeedRegions.RunAsync(db, seedDir, logger);
+//            await SeedCountries.RunAsync(db, seedDir, logger);
+//            await SeedNames.RunAsync(db, seedDir, logger);
+//            await SeedLeaguesAndCups.RunAsync(db, seedDir, logger);
+//            await SeedTeams.RunAsync(db, seedDir, logger);
+//            await SeedMessages.RunAsync(db, seedDir, logger);
+//            await SeedEuropeanCups.RunAsync(db, seedDir, logger);
+
+//            logger.LogInformation("✅ All seed data applied successfully.");
+//        }
+
+//        public static async Task<T> ReadJsonAsync<T>(string path)
+//        {
+//            if (!File.Exists(path))
+//                throw new FileNotFoundException($"Seed file not found: {path}");
+
+//            using var fs = File.OpenRead(path);
+//            return (await JsonSerializer.DeserializeAsync<T>(fs, new JsonSerializerOptions
+//            {
+//                PropertyNameCaseInsensitive = true,
+//                ReadCommentHandling = JsonCommentHandling.Skip,
+//                AllowTrailingCommas = true
+//            }))!;
+//        }
+//    }
+//}

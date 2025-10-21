@@ -16,41 +16,75 @@
         private readonly ILeagueResultService _leagueResultService;
         private readonly ICupService _cupService;
         private readonly IEuropeanCupService _euroService;
-        public CompetitionService(DugoutDbContext context, ILeagueService leagueService, ILeagueResultService leagueResultService, ICupService cupService, IEuropeanCupService euroService)
+        private readonly ICupResultService _cupResultService;
+        private readonly IEuropeanCupResultService _euroCupResultService;
+        private readonly ILogger<CompetitionService> _logger; 
+        public CompetitionService(DugoutDbContext context, ILeagueService leagueService, ILeagueResultService leagueResultService, ICupService cupService, IEuropeanCupService euroService, ICupResultService cupResultService, IEuropeanCupResultService europeanCupResultService, ILogger<CompetitionService> logger)
         {
             _context = context;
             _leagueService = leagueService;
             _leagueResultService = leagueResultService;
             _cupService = cupService;
             _euroService = euroService;
+            _cupResultService = cupResultService;
+            _euroCupResultService = europeanCupResultService;
+            _logger = logger;
         }
         public async Task<bool> AreAllCompetitionsFinishedAsync(int seasonId)
         {
+            Console.WriteLine($"🔍 Checking competitions for season {seasonId}");
+
             var leagues = await _context.Leagues.Where(l => l.SeasonId == seasonId).ToListAsync();
             var cups = await _context.Cups.Where(c => c.SeasonId == seasonId).ToListAsync();
             var euros = await _context.EuropeanCups.Where(e => e.SeasonId == seasonId).ToListAsync();
 
-            var tasks = leagues.Select(l => _leagueService.IsLeagueFinishedAsync(l.Id))
-                        .Concat(cups.Select(c => _cupService.IsCupFinishedAsync(c.Id)))
-                        .Concat(euros.Select(e => _euroService.IsEuropeanCupFinishedAsync(e.Id)));
+            Console.WriteLine($"Found {leagues.Count} leagues, {cups.Count} cups, {euros.Count} european cups.");
 
-            var results = await Task.WhenAll(tasks);
-            return results.All(r => r);
+            foreach (var l in leagues)
+            {
+                if (!await _leagueService.IsLeagueFinishedAsync(l.Id))
+                {
+                    Console.WriteLine($"⚠️ League {l.Id} not finished yet.");
+                    return false;
+                }
+            }
+
+            foreach (var c in cups)
+            {
+                if (!await _cupService.IsCupFinishedAsync(c.Id))
+                {
+                    Console.WriteLine($"⚠️ Cup {c.Id} not finished yet.");
+                    return false;
+                }
+            }
+
+            foreach (var e in euros)
+            {
+                if (!await _euroService.IsEuropeanCupFinishedAsync(e.Id))
+                {
+                    Console.WriteLine($"⚠️ Euro cup {e.Id} not finished yet.");
+                    return false;
+                }
+            }
+
+            Console.WriteLine($"✅ All competitions finished for season {seasonId}");
+            return true;
         }
+
         public async Task<List<CompetitionSeasonResult>> GenerateSeasonResultAsync(int seasonId)
         {
-            // 1️⃣ Взимаме резултатите от всички типове турнири
+            // Getting results of all type of cups
             var leagueResults = await _leagueResultService.GenerateLeagueResultsAsync(seasonId);
-            var cupResults = await _cupService.GenerateCupResultsAsync(seasonId);
-            var euroResults = await _euroService.GenerateEuropeanCupResultsAsync(seasonId);
+            var cupResults = await _cupResultService.GenerateCupResultsAsync(seasonId);
+            var euroResults = await _euroCupResultService.GenerateEuropeanCupResultsAsync(seasonId);
 
-            // Обединяваме всички резултати
+            // Collecting all results
             var allResults = new List<CompetitionSeasonResult>();
             allResults.AddRange(leagueResults);
             allResults.AddRange(cupResults);
             allResults.AddRange(euroResults);
 
-            // 2️⃣ За всеки турнир намираме топ голмайстора и създаваме награда
+            // For each 
             foreach (var result in allResults)
             {
                 var competitionId = result.CompetitionId;
@@ -63,9 +97,9 @@
                         .Include(p => p.Player)
                         .Where(p => p.SeasonId == seasonId && p.CompetitionId == competition.Id)
                         .OrderByDescending(p => p.Goals)
-                        .ThenBy(p => p.Player.LastName)
+                        .ThenByDescending(p => p.MatchesPlayed)
+                        .ThenBy(p => p.Player.FirstName)
                         .FirstOrDefaultAsync();
-
 
                 if (topScorer != null && topScorer.Goals > 0)
                 {
@@ -125,6 +159,5 @@
                 ?? competition.EuropeanCup?.Template?.Name
                 ?? string.Empty;
         }
-
     }
 }

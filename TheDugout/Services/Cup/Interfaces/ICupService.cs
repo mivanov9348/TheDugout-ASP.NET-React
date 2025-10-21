@@ -6,6 +6,5 @@
     {
         Task InitializeCupsForGameSaveAsync(GameSave gameSave, int seasonId);
         Task<bool> IsCupFinishedAsync(int cupId);
-        Task<List<CompetitionSeasonResult>> GenerateCupResultsAsync(int seasonId);
     }
 }

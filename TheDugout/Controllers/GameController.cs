@@ -11,6 +11,7 @@
     using TheDugout.Models.Messages;
     using TheDugout.Services.Game;
     using TheDugout.Services.Message.Interfaces;
+    using TheDugout.Services.Season.Interfaces;
     using TheDugout.Services.Template;
     using TheDugout.Services.User;
 
@@ -57,9 +58,9 @@
 
             if (save == null) return NotFound();
 
-            // 👇 Безопасна проверка за сезони
             var season = save.Seasons?.FirstOrDefault();
             if (season == null)
+            {
                 return Ok(new
                 {
                     gameSave = new
@@ -78,6 +79,7 @@
                     hasMatchesToday = false,
                     activeMatch = (object)null
                 });
+            }
 
             var today = season.CurrentDate.Date;
 
@@ -106,7 +108,9 @@
                     Seasons = save.Seasons.Select(s => new
                     {
                         s.Id,
-                        s.CurrentDate
+                        s.CurrentDate,
+                        s.EndDate,
+                        s.StartDate
                     }),
                 },
                 hasUnplayedMatchesToday,
@@ -114,6 +118,7 @@
                 activeMatch = activeMatch != null ? new { activeMatch.Id } : null
             });
         }
+
 
         [Authorize]
         [HttpPost("current/next-day")]
@@ -247,6 +252,34 @@
                 return StatusCode(500, new { message = "Failed to create new game" });
             }
         }
+
+        [Authorize]
+        [HttpPost("season/{seasonId}/end")]
+        public async Task<IActionResult> EndSeason(int seasonId, [FromServices] IEndSeasonService endSeasonService)
+        {
+            Console.WriteLine($"📅 EndSeason called for seasonId={seasonId}");
+
+            try
+            {
+                var result = await endSeasonService.ProcessSeasonEndAsync(seasonId);
+
+                if (!result)
+                {
+                    Console.WriteLine($"⚠️ Season {seasonId} cannot end yet.");
+                    return BadRequest(new { message = "Not all competitions are finished yet. Season cannot end." });
+                }
+
+                Console.WriteLine($"✅ Season {seasonId} ended successfully.");
+                return Ok(new { message = "Season ended successfully and next season will be generated." });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ EndSeason Error: {ex.Message}");
+                return StatusCode(500, new { message = "Error while processing season end.", error = ex.Message });
+            }
+        }
+
+
 
         [Authorize]
         [HttpPost("{saveId}/select-team/{teamId}")]

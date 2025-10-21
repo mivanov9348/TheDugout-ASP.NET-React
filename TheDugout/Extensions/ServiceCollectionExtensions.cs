@@ -97,11 +97,13 @@
             services.AddScoped<IEurocupScheduleService, EurocupScheduleService>();
             services.AddScoped<IEurocupKnockoutService, EurocupKnockoutService>();
             services.AddScoped<IEuropeanCupStandingService, EuropeanCupStandingService>();
+            services.AddScoped<IEuropeanCupResultService, EuropeanCupResultService>();
 
             // Cup
             services.AddScoped<ICupFixturesService, CupFixturesService>();
             services.AddScoped<ICupService, CupService>();
             services.AddScoped<ICupScheduleService, CupScheduleService>();
+            services.AddScoped<ICupResultService, CupResultService>();
 
             // Training
             services.AddScoped<ITrainingService, TrainingService>();

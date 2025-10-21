@@ -3,6 +3,5 @@
     public interface ILeagueStandingsService
     {
         Task UpdateStandingsAfterMatchAsync(Models.Fixtures.Fixture fixture);
-
     }
 }

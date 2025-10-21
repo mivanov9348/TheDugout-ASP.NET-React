@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using TheDugout.Data;
+using TheDugout.Data.Seed;
 using TheDugout.Extensions;
 
 
@@ -94,7 +95,7 @@ builder.Logging.AddFile("Logs/app-{Date}.txt");
 
 var app = builder.Build();
 
-await TheDugout.Infrastructure.SeedData.EnsureSeededAsync(app.Services, app.Logger);
+await SeedData.EnsureSeededAsync(app.Services, app.Logger);
 
 if (app.Environment.IsDevelopment())
 {

@@ -109,7 +109,6 @@
             await _context.LeagueStandings.AddRangeAsync(standings);
             await _context.SaveChangesAsync();
         }
-
         public async Task<bool> IsLeagueFinishedAsync(int leagueId)
         {
             bool allMatchesPlayed = !await _context.Fixtures
@@ -124,7 +123,6 @@
                     await _context.SaveChangesAsync();
                 }
             }
-
             return allMatchesPlayed;
         }
     }

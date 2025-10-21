@@ -1,10 +1,9 @@
-// src/components/Header.jsx
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useProcessing } from "../context/ProcessingContext";
 import { useGame } from "../context/GameContext";
 import Swal from "sweetalert2";
-
+import { RotateCcw } from "lucide-react";
 
 function Header({ username }) {
   const { startProcessing, stopProcessing } = useProcessing();
@@ -17,27 +16,45 @@ function Header({ username }) {
     setCurrentGameSave,
   } = useGame();
 
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
-  // 🔄 Проверка при смяна на страница дали има неизиграни мачове
- useEffect(() => {
-  // при смяна на страница опресняваме само чрез GameContext
-  const updateStatus = async () => {
-    const status = await refreshGameStatus();
+  // 🔄 Проверка при смяна на страница (веднъж, без полинг)
+  useEffect(() => {
+    const updateStatus = async () => {
+      const status = await refreshGameStatus();
 
-    if (
-      status?.hasUnplayedMatchesToday &&
-      !location.pathname.includes("/today-matches")
-    ) {
-      const gid = status.gameSave?.id ?? currentGameSave?.id;
-      navigate(`/today-matches/${gid}`);
+      if (
+        status?.hasUnplayedMatchesToday &&
+        !location.pathname.includes("/today-matches")
+      ) {
+        const gid = status.gameSave?.id ?? currentGameSave?.id;
+        navigate(`/today-matches/${gid}`);
+      }
+    };
+
+    updateStatus();
+  }, [location.pathname]);
+
+  // 🧩 Ръчно опресняване чрез бутон 🔃
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      const status = await refreshGameStatus();
+      if (
+        status?.hasUnplayedMatchesToday &&
+        !location.pathname.includes("/today-matches")
+      ) {
+        const gid = status.gameSave?.id ?? currentGameSave?.id;
+        navigate(`/today-matches/${gid}`);
+      }
+    } catch (err) {
+      console.error("Refresh failed:", err);
+    } finally {
+      setIsRefreshing(false);
     }
   };
-
-  updateStatus();
-}, [location.pathname]);
-
 
   // 🕒 Бутон "Next Day"
   const handleNextDay = async () => {
@@ -115,7 +132,67 @@ function Header({ username }) {
     }
   };
 
-  // 🧩 UI helper-и
+  // 🏁 Бутон "End Season"
+  const handleEndSeason = async () => {
+  const confirm = await Swal.fire({
+    title: "🏁 End of Season",
+    text: "Are you sure you want to end the season?",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "Yes, end it",
+    cancelButtonText: "Cancel",
+    confirmButtonColor: "#e11d48",
+    cancelButtonColor: "#334155",
+    background: "#1e293b",
+    color: "#fff",
+  });
+
+  if (!confirm.isConfirmed) return;
+
+  startProcessing("Ending current season...");
+  try {
+    const res = await fetch(`/api/games/season/${currentGameSave.seasons[0].id}/end`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      await Swal.fire({
+        title: "⚠️ Cannot End Season",
+        text: data.message || "Unknown error",
+        icon: "error",
+        background: "#1e293b",
+        color: "#fff",
+      });
+      return;
+    }
+
+    await Swal.fire({
+      title: "✅ Season Ended!",
+      text: data.message || "Next season has been generated.",
+      icon: "success",
+      background: "#1e293b",
+      color: "#fff",
+    });
+
+    // 🔄 Обнови текущия статус на играта
+    const refreshed = await refreshGameStatus();
+    if (refreshed?.gameSave) {
+      setCurrentGameSave(refreshed.gameSave);
+      navigate(`/`); // или страница със сезона
+    }
+  } catch (err) {
+    console.error("End season failed:", err);
+  } finally {
+    stopProcessing();
+  }
+};
+
+
+  // 🧩 Формат на дата
   const formatDate = (dateStr) =>
     dateStr
       ? new Date(dateStr).toLocaleDateString("en-GB", {
@@ -144,10 +221,24 @@ function Header({ username }) {
   const season = currentGameSave.seasons?.[0];
   const team = currentGameSave.userTeam;
 
-  const buttonLabel = hasUnplayed ? "Match Day" : "Next Day →";
-  const buttonColor = hasUnplayed
+  // Проверяваме дали е последният ден от сезона
+  const isLastDay =
+    season && new Date(season.currentDate).toDateString() ===
+    new Date(season.endDate).toDateString();
+
+  const buttonLabel = isLastDay
+    ? "🏁 End Season"
+    : hasUnplayed
+    ? "Match Day"
+    : "Next Day →";
+
+  const buttonColor = isLastDay
+    ? "bg-rose-600 hover:bg-rose-700"
+    : hasUnplayed
     ? "bg-amber-600 hover:bg-amber-700"
     : "bg-sky-600 hover:bg-sky-700";
+
+  const buttonHandler = isLastDay ? handleEndSeason : handleNextDay;
 
   return (
     <header className="flex justify-between items-center px-6 py-3 bg-slate-800 text-white shadow-md">
@@ -167,16 +258,27 @@ function Header({ username }) {
         </div>
       </div>
 
-      <div className="flex items-center gap-8 text-sm text-slate-300">
+      <div className="flex items-center gap-6 text-sm text-slate-300">
+        <button
+          onClick={handleRefresh}
+          disabled={isRefreshing}
+          className="text-sky-400 hover:text-sky-300 transition"
+          title="Refresh game status"
+        >
+          <RotateCcw
+            className={`w-5 h-5 ${isRefreshing ? "animate-spin text-sky-300" : ""}`}
+          />
+        </button>
+
         <span>{season ? formatDate(season.currentDate) : ""}</span>
         <span className="font-semibold">{username}</span>
         <span className="font-semibold text-green-400">
           {team ? `€${team.balance.toLocaleString()}` : "€0"}
         </span>
+
         <button
-          onClick={handleNextDay}
+          onClick={buttonHandler}
           className={`px-4 py-2 rounded-lg font-medium transition ${buttonColor}`}
-          title={hasUnplayed ? "Go to today's matches" : "Advance to next day"}
         >
           {buttonLabel}
         </button>
