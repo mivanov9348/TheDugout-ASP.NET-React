@@ -11,12 +11,14 @@
         private readonly ICompetitionService _competitionService;
         private readonly INewSeasonService _seasonGenerationService;
         private readonly IPlayerStatsService _playerStatsService;
-        public EndSeasonService(DugoutDbContext context, ICompetitionService competitionService, INewSeasonService seasonGenerationService, IPlayerStatsService playerStatsService)
+        private readonly ISeasonCleanupService _seasonCleanupService;
+        public EndSeasonService(DugoutDbContext context, ICompetitionService competitionService, INewSeasonService seasonGenerationService, IPlayerStatsService playerStatsService, ISeasonCleanupService seasonCleanupService)
         {
             _context = context;
             _competitionService = competitionService;
             _seasonGenerationService = seasonGenerationService;
             _playerStatsService = playerStatsService;
+            _seasonCleanupService = seasonCleanupService;
         }
         public async Task<bool> ProcessSeasonEndAsync(int seasonId)
         {
@@ -51,23 +53,19 @@
                 return false;
             }
 
-            //// Generate player stats for the season
-            //await _competitionService.GenerateSeasonResultAsync(season.Id);
+            // Generate player stats for the season
+            await _competitionService.GenerateSeasonResultAsync(season.Id);
 
-            //// End the season
-            //season.IsActive = false;
-            //await _context.SaveChangesAsync();
+            // Season cleanup
+            await _seasonCleanupService.CleanupOldSeasonDataAsync(season.Id);
 
-            //// Delete from this season:
-            //// 1. Fixtures
-            //// 2. Matches from fixtures
-            //// 3. Transfers History
-            //// 4. Free Agents
-            //// 5. 
+            // End the season
+            season.IsActive = false;
+            await _context.SaveChangesAsync();
 
-            //// Generate the next season
-            //var nextSeasonStart = season.EndDate.AddDays(1);
-            //await _seasonGenerationService.GenerateSeason(season.GameSave, nextSeasonStart);
+            // Generate the next season
+            var nextSeasonStart = season.EndDate.AddDays(1);
+            await _seasonGenerationService.GenerateSeason(season.GameSave, nextSeasonStart);
 
             Console.WriteLine($"✅ [ProcessSeasonEndAsync] Returning TRUE for season {seasonId}");
             return true;

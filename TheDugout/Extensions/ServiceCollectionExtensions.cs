@@ -58,6 +58,7 @@
             services.AddScoped<INewSeasonService, NewSeasonService>();
             services.AddScoped<IEndSeasonService, EndSeasonService>();
             services.AddScoped<ISeasonEventService, SeasonEventService>();
+            services.AddScoped<ISeasonCleanupService, SeasonCleanupService>();
 
             // Player
             services.AddScoped<IPlayerGenerationService, PlayerGenerationService>();

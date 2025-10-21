@@ -5,15 +5,17 @@
     using TheDugout.Models.Competitions;
     using TheDugout.Models.Enums;
     using TheDugout.Services.EuropeanCup.Interfaces;
+    using TheDugout.Services.GameSettings.Interfaces;
 
     public class EuropeanCupResultService : IEuropeanCupResultService
     {
         private readonly DugoutDbContext _context;
-        public EuropeanCupResultService(DugoutDbContext context)
+        private readonly IMoneyPrizeService _moneyPrizeService;
+        public EuropeanCupResultService(DugoutDbContext context, IMoneyPrizeService moneyPrizeService)
         {
             _context = context;
+            _moneyPrizeService = moneyPrizeService;
         }
-
         public async Task<List<CompetitionSeasonResult>> GenerateEuropeanCupResultsAsync(int seasonId)
         {
             var europeanCups = await _context.EuropeanCups
@@ -31,7 +33,7 @@
 
             foreach (var euro in europeanCups)
             {
-                // Намираме последната фаза (финала)
+                // Последна фаза = финал
                 var finalPhase = euro.Phases
                     .OrderByDescending(p => p.PhaseTemplate.Order)
                     .FirstOrDefault();
@@ -39,7 +41,7 @@
                 if (finalPhase == null)
                     continue;
 
-                // Взимаме финалния мач
+                // Финален мач
                 var finalMatch = finalPhase.Fixtures
                     .Where(f => f.Status == MatchStageEnum.Played)
                     .OrderByDescending(f => f.Date)
@@ -48,7 +50,7 @@
                 if (finalMatch == null)
                     continue;
 
-                // Определяме шампиона и финалиста по WinnerTeamId
+                // Определяне на шампиона и финалиста
                 int? championTeamId = finalMatch.WinnerTeamId;
                 int? runnerUpTeamId = null;
 
@@ -57,7 +59,6 @@
                 else if (championTeamId == finalMatch.AwayTeamId)
                     runnerUpTeamId = finalMatch.HomeTeamId;
 
-                // fallback, ако WinnerTeamId липсва, ползвай головете
                 if (championTeamId == null)
                 {
                     if (finalMatch.HomeTeamGoals > finalMatch.AwayTeamGoals)
@@ -72,7 +73,30 @@
                     }
                 }
 
-                // Създаваме резултата
+                // 💰 Награди
+                if (championTeamId.HasValue)
+                {
+                    var champion = finalMatch.HomeTeamId == championTeamId ? finalMatch.HomeTeam : finalMatch.AwayTeam;
+                    await _moneyPrizeService.GrantToTeamAsync(
+                        euro.GameSave,
+                        "EURO_CHAMPION",
+                        champion,
+                        $"Награда за спечелване на {euro.Template.Name}"
+                    );
+                }
+
+                if (runnerUpTeamId.HasValue)
+                {
+                    var runnerUp = finalMatch.HomeTeamId == runnerUpTeamId ? finalMatch.HomeTeam : finalMatch.AwayTeam;
+                    await _moneyPrizeService.GrantToTeamAsync(
+                        euro.GameSave,
+                        "EURO_RUNNER_UP",
+                        runnerUp,
+                        $"Награда за финал в {euro.Template.Name}"
+                    );
+                }
+
+                // 🏆 Записваме резултата
                 var result = new CompetitionSeasonResult
                 {
                     SeasonId = seasonId,

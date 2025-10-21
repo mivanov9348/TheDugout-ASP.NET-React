@@ -7,14 +7,16 @@
     using TheDugout.Models.Leagues;
     using TheDugout.Services.League.Interfaces;
     using TheDugout.Models.Teams;
+    using TheDugout.Services.GameSettings.Interfaces;
 
     public class LeagueResultService : ILeagueResultService
     {
         private readonly DugoutDbContext _context;
-
-        public LeagueResultService(DugoutDbContext context)
+        private readonly IMoneyPrizeService _moneyPrizeService;
+        public LeagueResultService(DugoutDbContext context, IMoneyPrizeService moneyPrizeService)
         {
             _context = context;
+            _moneyPrizeService = moneyPrizeService;
         }
 
         public async Task<List<CompetitionSeasonResult>> GenerateLeagueResultsAsync(int seasonId)
@@ -83,6 +85,29 @@
                         TeamId = team.Id,
                         GameSaveId = league.GameSaveId
                     });
+                }
+
+                for (int i = 0; i < orderedStandings.Count; i++)
+                {
+                    var standing = orderedStandings[i];
+                    var team = standing.Team;
+                    string prizeCode;
+
+                    if (i == 0)
+                        prizeCode = "LEAGUE_CHAMPION";
+                    else if (i == 1)
+                        prizeCode = "LEAGUE_SECOND";
+                    else if (i == 2)
+                        prizeCode = "LEAGUE_THIRD";
+                    else
+                        prizeCode = "LEAGUE_SOLIDARITY";
+
+                    await _moneyPrizeService.GrantToTeamAsync(
+                        league.GameSave,
+                        prizeCode,
+                        team,
+                        $"Награда за {i + 1}-во място в {league.Template.Name}"
+                    );
                 }
 
                 results.Add(result);

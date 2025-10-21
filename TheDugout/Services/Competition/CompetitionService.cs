@@ -70,7 +70,6 @@
             Console.WriteLine($"✅ All competitions finished for season {seasonId}");
             return true;
         }
-
         public async Task<List<CompetitionSeasonResult>> GenerateSeasonResultAsync(int seasonId)
         {
             // Getting results of all type of cups

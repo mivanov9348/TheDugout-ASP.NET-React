@@ -21,11 +21,7 @@
             _logger = logger;
         }
 
-        public async Task<EuropeanCup> InitializeTournamentAsync(
-    int templateId,
-    int gameSaveId,
-    int seasonId,
-    CancellationToken ct = default)
+        public async Task<EuropeanCup> InitializeTournamentAsync(int templateId, int gameSaveId, int seasonId, CancellationToken ct = default)
         {
             var template = await _context.Set<EuropeanCupTemplate>()
                 .Include(t => t.PhaseTemplates)
@@ -206,7 +202,7 @@
 
             return euroCup.IsFinished;
         }
-        
+
         public async Task HandleFinalMatchCompletionAsync(int europeanCupId, Fixture finalMatch, CancellationToken ct = default)
         {
             if (finalMatch == null)
