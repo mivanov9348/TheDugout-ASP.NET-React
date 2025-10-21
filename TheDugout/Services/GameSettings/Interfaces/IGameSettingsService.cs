@@ -1,4 +1,4 @@
-﻿namespace TheDugout.Services.GameSettings
+﻿namespace TheDugout.Services.GameSettings.Interfaces
 {
     public interface IGameSettingsService
     {

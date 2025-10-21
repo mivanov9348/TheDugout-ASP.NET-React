@@ -1,4 +1,4 @@
-﻿namespace TheDugout.Services.Finance
+﻿namespace TheDugout.Services.Finance.Interfaces
 {
     using TheDugout.Models.Finance;
     using TheDugout.Models.Game;

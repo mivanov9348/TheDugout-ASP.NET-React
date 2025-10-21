@@ -5,7 +5,8 @@
     using TheDugout.Models.Game;
     using TheDugout.Models.Leagues;
     using TheDugout.Models.Teams;
-    using TheDugout.Services.GameSettings;
+    using TheDugout.Services.Finance.Interfaces;
+    using TheDugout.Services.GameSettings.Interfaces;
 
     public class TeamFinanceService : ITeamFinanceService
     {

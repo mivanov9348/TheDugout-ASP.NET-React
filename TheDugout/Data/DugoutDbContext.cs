@@ -31,6 +31,7 @@
         public DbSet<FirstName> FirstNames { get; set; }
         public DbSet<LastName> LastNames { get; set; }
         public DbSet<GameSetting> GameSettings { get; set; }
+        public DbSet<MoneyPrize> MoneyPrizes { get; set; }
         public DbSet<LeagueTemplate> LeagueTemplates { get; set; }
         public DbSet<League> Leagues { get; set; }
         public DbSet<CupTemplate> CupTemplates { get; set; }

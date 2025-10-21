@@ -7,6 +7,7 @@
     using TheDugout.Models.Fixtures;
     using TheDugout.Models.Game;
     using TheDugout.Models.Matches;
+    using TheDugout.Services.GameSettings.Interfaces;
     using TheDugout.Services.League.Interfaces;
     using TheDugout.Services.Match.Interfaces;
     using TheDugout.Services.Player.Interfaces;
@@ -23,6 +24,7 @@
         private readonly ILeagueStandingsService _leagueStandingsService;
         private readonly IStandingsDispatcherService _standingsDispatcher;
         private readonly IPenaltyShootoutService _penaltyService;
+        private readonly IMoneyPrizeService _moneyPrizeService;
         private readonly ILogger<MatchEngine> _logger;
         private readonly DugoutDbContext _context;
 
@@ -34,6 +36,7 @@
             IStandingsDispatcherService standingsDispatcher,
         IMatchService matchService,
             IPenaltyShootoutService penaltyService,
+            IMoneyPrizeService moneyPrizeService,
             ILogger<MatchEngine> logger,
             DugoutDbContext context)
         {
@@ -44,6 +47,7 @@
             _matchService = matchService;
             _standingsDispatcher = standingsDispatcher;
             _penaltyService = penaltyService;
+            _moneyPrizeService = moneyPrizeService;
             _logger = logger;
             _context = context;
         }
@@ -72,8 +76,11 @@
 
             if (match.PlayerStats != null && match.PlayerStats.Any())
             {
-                await _playerStatsService.UpdateStatsAfterMatchAsync(match);
+                await _playerStatsService.UpdateCompetitionStatsAfterMatchAsync(match);
+                await _playerStatsService.UpdateSeasonStatsAfterMatchAsync(match);
             }
+
+            await GrantMatchPrizesAsync(match, fixture);
         }
         public void PlayNextMinute(Match match)
         {
@@ -180,8 +187,7 @@
 
         //    return match;
         //}
-
-        // ⚠️ DEBUG VERSION: включва подробен Stopwatch и логове за профилиране
+               
         public async Task<Match> SimulateMatchAsync(Fixture fixture, GameSave gameSave)
         {
             if (fixture is null) throw new ArgumentNullException(nameof(fixture));
@@ -298,7 +304,6 @@
 
             return match;
         }
-
         private void UpdateFixtureScore(Fixture fixture, int? currentTeamId)
         {
             if (currentTeamId == fixture.HomeTeamId)
@@ -319,6 +324,24 @@
         {
             await SimulateMatchAsync(match.Fixture, match.Fixture.GameSave);
         }
-               
+        private async Task GrantMatchPrizesAsync(Match match, Fixture fixture)
+        {
+            var gameSave = fixture.GameSave ?? throw new InvalidOperationException("Fixture.GameSave is null.");
+
+            if (fixture.WinnerTeamId == null)
+            {
+                await _moneyPrizeService.GrantToTeamAsync(gameSave, "MATCH_DRAW", fixture.HomeTeam);
+                await _moneyPrizeService.GrantToTeamAsync(gameSave, "MATCH_DRAW", fixture.AwayTeam);
+            }
+            else if (fixture.WinnerTeamId == fixture.HomeTeamId)
+            {
+                await _moneyPrizeService.GrantToTeamAsync(gameSave, "MATCH_WIN", fixture.HomeTeam);
+            }
+            else if (fixture.WinnerTeamId == fixture.AwayTeamId)
+            {
+                await _moneyPrizeService.GrantToTeamAsync(gameSave, "MATCH_WIN", fixture.AwayTeam);
+            }
+        }
+         
     }
 }

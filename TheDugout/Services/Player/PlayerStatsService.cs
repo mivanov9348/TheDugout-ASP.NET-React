@@ -3,6 +3,7 @@
     using Microsoft.EntityFrameworkCore;
     using System;
     using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
     using System.Threading.Tasks;
     using TheDugout.Data;
@@ -26,9 +27,8 @@
             if (match.Fixture == null)
                 throw new InvalidOperationException("Match Fixture is missing.");
 
-            var allPlayers = new List<Models.Players.Player>(22); // предварителен капацитет
+            var allPlayers = new List<Models.Players.Player>(22);
 
-            // Вземаме стартовите състави
             if (match.Fixture.HomeTeam != null)
                 allPlayers.AddRange(await _teamPlanService.GetStartingLineupAsync(match.Fixture.HomeTeam, includeDetails: true));
 
@@ -40,15 +40,12 @@
 
             var playerIds = allPlayers.Select(p => p.Id).ToHashSet();
 
-            // Вземаме вече съществуващите статистики за тези играчи в конкретния мач
             var existingStats = await _context.PlayerMatchStats
                 .Where(ps => ps.MatchId == match.Id && playerIds.Contains(ps.PlayerId))
                 .ToListAsync();
 
-            // Правим HashSet за бързи проверки O(1)
             var existingPlayerIds = existingStats.Select(ps => ps.PlayerId).ToHashSet();
 
-            // Създаваме само липсващите записи
             var newStats = allPlayers
                 .Where(p => !existingPlayerIds.Contains(p.Id))
                 .Select(p => new PlayerMatchStats
@@ -57,7 +54,8 @@
                     MatchId = match.Id,
                     GameSaveId = match.GameSaveId,
                     CompetitionId = match.CompetitionId,
-                    Goals = 0
+                    Goals = 0,
+                    MatchRating = 0
                 })
                 .ToList();
 
@@ -91,6 +89,7 @@
                     break;
             }
         }
+
         public async Task<List<PlayerMatchStats>> EnsureMatchStatsAsync(Match match)
         {
             if (match.PlayerStats is { Count: > 0 })
@@ -99,7 +98,7 @@
             match.PlayerStats = await InitializeMatchStatsAsync(match);
             return match.PlayerStats.ToList();
         }
-        public async Task UpdateStatsAfterMatchAsync(Match match)
+        public async Task UpdateCompetitionStatsAfterMatchAsync(Match match)
         {
             if (match.Fixture == null)
                 throw new InvalidOperationException("Fixture is missing for match.");
@@ -110,7 +109,6 @@
 
             var playerIds = match.PlayerStats.Select(ps => ps.PlayerId).ToList();
 
-            // --- PlayerCompetitionStats ---
             var competitionStats = await _context.PlayerCompetitionStats
                 .Where(pcs => pcs.SeasonId == seasonId &&
                               pcs.CompetitionId == competitionId &&
@@ -141,13 +139,28 @@
                 }
             }
 
-            // --- PlayerSeasonStats ---
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task UpdateSeasonStatsAfterMatchAsync(Match match)
+        {
+            if (match.Fixture == null)
+                throw new InvalidOperationException("Fixture is missing for match.");
+
+            var seasonId = match.Fixture.SeasonId;
+            var gameSaveId = match.Fixture.GameSaveId;
+
+            var playerIds = match.PlayerStats.Select(ps => ps.PlayerId).ToList();
+
             var seasonStats = await _context.PlayerSeasonStats
                 .Where(pss => pss.SeasonId == seasonId && playerIds.Contains(pss.PlayerId))
                 .ToListAsync();
 
             foreach (var matchStat in match.PlayerStats)
             {
+                // Изчисли рейтинга за конкретния мач
+                matchStat.MatchRating = CalculateMatchRating(matchStat);
+
                 var existing = seasonStats.FirstOrDefault(pss => pss.PlayerId == matchStat.PlayerId);
 
                 if (existing == null)
@@ -158,7 +171,8 @@
                         SeasonId = seasonId,
                         GameSaveId = gameSaveId,
                         MatchesPlayed = 1,
-                        Goals = matchStat.Goals
+                        Goals = matchStat.Goals,
+                        SeasonRating = matchStat.MatchRating
                     };
                     _context.PlayerSeasonStats.Add(existing);
                 }
@@ -166,15 +180,39 @@
                 {
                     existing.MatchesPlayed += 1;
                     existing.Goals += matchStat.Goals;
+
+                    // Изчисли новия сезонен рейтинг на база всички MatchStats на играча
+                    var playerMatches = await _context.PlayerMatchStats
+                        .Where(pms => pms.PlayerId == matchStat.PlayerId &&
+                                      pms.GameSaveId == gameSaveId)
+                        .ToListAsync();
+
+                    existing.SeasonRating = CalculateSeasonRating(playerMatches);
                 }
             }
 
-            foreach (var stat in seasonStats)
+            await _context.SaveChangesAsync();
+        }
+        public double CalculateMatchRating(PlayerMatchStats stat)
+        {
+            double rating = 5.0;
+            rating += stat.Goals * 1.5;
+            return Math.Round(Math.Clamp(rating, 1.0, 10.0), 2);
+        }
+
+        public double CalculateSeasonRating(IEnumerable<PlayerMatchStats> matchStats)
+        {
+            if (matchStats == null || !matchStats.Any())
+                return 1.0;
+
+            foreach (var stat in matchStats)
             {
-                stat.SeasonRating = CalculateSeasonRating(stat);
+                if (stat.MatchRating <= 0)
+                    stat.MatchRating = CalculateMatchRating(stat);
             }
 
-            await _context.SaveChangesAsync();
+            double avg = matchStats.Average(m => m.MatchRating);
+            return Math.Round(Math.Clamp(avg, 1.0, 10.0), 2);
         }
         public async Task<List<(int CompetitionId, int PlayerId, int Goals)>> GetTopScorersByCompetitionAsync(int seasonId)
         {
@@ -192,29 +230,6 @@
             return topScorers
                 .Select(x => (x.CompetitionId, x.PlayerId, x.Goals))
                 .ToList();
-        }
-
-        public double CalculateSeasonRating(PlayerSeasonStats stats)
-        {
-            if (stats.MatchesPlayed == 0)
-                return 1.0;
-
-            // Базова стойност
-            double rating = 5.0;
-
-            // Голове носят тежест – по-голяма за нападатели, по-малка за защитници
-            double goalWeight = 0.7;
-            double matchConsistency = Math.Min(2.0, stats.MatchesPlayed * 0.05);
-
-            rating += stats.Goals * goalWeight;
-            // rating += stats.Assists * assistWeight;
-
-            rating += matchConsistency;
-
-            // Ограничаваме в диапазона [1.0, 10.0]
-            rating = Math.Clamp(rating, 1.0, 10.0);
-
-            return Math.Round(rating, 2);
         }
 
     }

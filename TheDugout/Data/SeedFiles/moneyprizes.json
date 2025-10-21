@@ -1,0 +1,18 @@
+[
+  { "Code": "MATCH_WIN", "Name": "Match Win", "Amount": 500, "Description": "Reward for winning an official match", "IsActive": true },
+  { "Code": "MATCH_DRAW", "Name": "Match Draw", "Amount": 300, "Description": "Reward for a draw result", "IsActive": true },
+  { "Code": "LEAGUE_CHAMPION", "Name": "League Champion", "Amount": 30000, "Description": "Reward for winning the league", "IsActive": true },
+  { "Code": "LEAGUE_SECOND", "Name": "League Runner-up", "Amount": 20000, "Description": "Reward for finishing second in the league", "IsActive": true },
+  { "Code": "LEAGUE_THIRD", "Name": "League Third Place", "Amount": 10000, "Description": "Reward for finishing third in the league", "IsActive": true },
+  { "Code": "LEAGUE_SOLIDARITY", "Name": "League Solidarity Fund", "Amount": 5000, "Description": "Solidarity reward for all other league positions", "IsActive": true },
+  { "Code": "LEAGUE_PROMOTION", "Name": "League Promotion", "Amount": 10000, "Description": "Reward for promotion to a higher division", "IsActive": true },
+  { "Code": "CUP_CHAMPION", "Name": "Cup Champion", "Amount": 20000, "Description": "Reward for winning the national cup", "IsActive": true },
+  { "Code": "CUP_RUNNER_UP", "Name": "Cup Runner-up", "Amount": 10000, "Description": "Reward for reaching the cup final", "IsActive": true },
+  { "Code": "EURO_CHAMPION", "Name": "European Champion", "Amount": 50000, "Description": "Reward for winning the European tournament", "IsActive": true },
+  { "Code": "EURO_RUNNER_UP", "Name": "European Runner-up", "Amount": 10000, "Description": "Reward for reaching the European final", "IsActive": true },
+  { "Code": "EURO_GROUP_STAGE", "Name": "Group Stage", "Amount": 5000, "Description": "Reward for participating in the group stage", "IsActive": true },
+  { "Code": "EURO_PLAYOFF", "Name": "Playoff", "Amount": 5000, "Description": "Reward for participating in the playoff stage", "IsActive": true },
+  { "Code": "EURO_R16", "Name": "Round of 16", "Amount": 5000, "Description": "Reward for reaching the Round of 16", "IsActive": true },
+  { "Code": "EURO_QF", "Name": "Quarterfinal", "Amount": 5000, "Description": "Reward for reaching the quarterfinal", "IsActive": true },
+  { "Code": "EURO_SF", "Name": "Semifinal", "Amount": 5000, "Description": "Reward for reaching the semifinal", "IsActive": true }
+]

@@ -4,6 +4,7 @@
     using TheDugout.Models.Finance;
     using TheDugout.Models.Game;
     using TheDugout.Models.Staff;
+    using TheDugout.Services.Finance.Interfaces;
 
     public class AgencyFinanceService : IAgencyFinanceService
     {

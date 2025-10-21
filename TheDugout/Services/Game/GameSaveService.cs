@@ -10,8 +10,8 @@
     using TheDugout.Models.Game;
     using TheDugout.Services.Cup.Interfaces;
     using TheDugout.Services.EuropeanCup.Interfaces;
-    using TheDugout.Services.Finance;
-    using TheDugout.Services.GameSettings;
+    using TheDugout.Services.Finance.Interfaces;
+    using TheDugout.Services.GameSettings.Interfaces;
     using TheDugout.Services.League.Interfaces;
     using TheDugout.Services.Player.Interfaces;
     using TheDugout.Services.Season.Interfaces;

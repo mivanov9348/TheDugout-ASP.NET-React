@@ -1,41 +1,42 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using TheDugout.Services;
-using TheDugout.Services.CPUManager;
-using TheDugout.Services.Cup;
-using TheDugout.Services.EuropeanCup;
-using TheDugout.Services.Facilities;
-using TheDugout.Services.Finance;
-using TheDugout.Services.Fixture;
-using TheDugout.Services.Game;
-using TheDugout.Services.League;
-using TheDugout.Services.Match;
-using TheDugout.Services.MatchEngine;
-using TheDugout.Services.Message;
-using TheDugout.Services.Player;
-using TheDugout.Services.Players;
-using TheDugout.Services.Season;
-using TheDugout.Services.Staff;
-using TheDugout.Services.Standings;
-using TheDugout.Services.Team;
-using TheDugout.Services.Template;
-using TheDugout.Services.Training;
-using TheDugout.Services.Transfer;
-using TheDugout.Services.User;
-using TheDugout.Services.GameSettings;
-using TheDugout.Services.Season.Interfaces;
-using TheDugout.Services.League.Interfaces;
-using TheDugout.Services.Cup.Interfaces;
-using TheDugout.Services.EuropeanCup.Interfaces;
-using TheDugout.Services.Player.Interfaces;
-using TheDugout.Services.Team.Interfaces;
-using TheDugout.Services.Match.Interfaces;
-using TheDugout.Services.Competition.Interfaces;
-using TheDugout.Services.Competition;
-using TheDugout.Services.Message.Interfaces;
-using Scrutor;
-
-namespace TheDugout.Extensions
+﻿namespace TheDugout.Extensions
 {
+    using Microsoft.Extensions.DependencyInjection;
+    using TheDugout.Services;
+    using TheDugout.Services.CPUManager;
+    using TheDugout.Services.Cup;
+    using TheDugout.Services.EuropeanCup;
+    using TheDugout.Services.Facilities;
+    using TheDugout.Services.Finance;
+    using TheDugout.Services.Fixture;
+    using TheDugout.Services.Game;
+    using TheDugout.Services.League;
+    using TheDugout.Services.Match;
+    using TheDugout.Services.MatchEngine;
+    using TheDugout.Services.Message;
+    using TheDugout.Services.Player;
+    using TheDugout.Services.Players;
+    using TheDugout.Services.Season;
+    using TheDugout.Services.Staff;
+    using TheDugout.Services.Standings;
+    using TheDugout.Services.Team;
+    using TheDugout.Services.Template;
+    using TheDugout.Services.Training;
+    using TheDugout.Services.Transfer;
+    using TheDugout.Services.User;
+    using TheDugout.Services.GameSettings;
+    using TheDugout.Services.Season.Interfaces;
+    using TheDugout.Services.League.Interfaces;
+    using TheDugout.Services.Cup.Interfaces;
+    using TheDugout.Services.EuropeanCup.Interfaces;
+    using TheDugout.Services.Player.Interfaces;
+    using TheDugout.Services.Team.Interfaces;
+    using TheDugout.Services.Match.Interfaces;
+    using TheDugout.Services.Competition.Interfaces;
+    using TheDugout.Services.Competition;
+    using TheDugout.Services.Message.Interfaces;
+    using Scrutor;
+    using TheDugout.Services.Finance.Interfaces;
+    using TheDugout.Services.GameSettings.Interfaces;
     public static class ServiceCollectionExtensions
     {
         public static IServiceCollection AddDugoutServices(this IServiceCollection services)
@@ -47,6 +48,9 @@ namespace TheDugout.Extensions
 
             // Gamesettings
             services.AddScoped<IGameSettingsService, GameSettingsService>();
+
+            // Money Prizes
+            services.AddScoped<IMoneyPrizeService, MoneyPrizeService>();
 
             // Season
             services.AddScoped<INewSeasonService, NewSeasonService>();

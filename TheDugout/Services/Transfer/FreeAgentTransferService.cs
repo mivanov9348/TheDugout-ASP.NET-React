@@ -7,8 +7,8 @@
     using TheDugout.Models.Messages;
     using TheDugout.Models.Seasons;
     using TheDugout.Models.Transfers;
-    using TheDugout.Services.Finance;
-    using TheDugout.Services.GameSettings;
+    using TheDugout.Services.Finance.Interfaces;
+    using TheDugout.Services.GameSettings.Interfaces;
     using TheDugout.Services.Message.Interfaces;
 
     public class FreeAgentTransferService : IFreeAgentTransferService

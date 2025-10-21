@@ -5,7 +5,7 @@
     using TheDugout.Data;
     using TheDugout.Models.Facilities;
     using TheDugout.Models.Finance;
-    using TheDugout.Services.Finance;
+    using TheDugout.Services.Finance.Interfaces;
     using static TheDugout.Services.Facilities.StadiumService;
     public class TrainingFacilitiesService : ITrainingFacilitiesService
     {

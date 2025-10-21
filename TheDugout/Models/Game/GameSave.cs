@@ -27,6 +27,7 @@
         public int? UserTeamId { get; set; }
         public Team? UserTeam { get; set; }
 
+        public int? BankId { get; set; }
         public Bank Bank { get; set; } = null!;
 
         public int? CurrentSeasonId { get; set; }

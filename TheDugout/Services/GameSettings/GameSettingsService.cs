@@ -3,6 +3,8 @@
     using Microsoft.EntityFrameworkCore;
     using TheDugout.Data;
     using TheDugout.Models.Common;
+    using TheDugout.Services.GameSettings.Interfaces;
+
     public class GameSettingsService : IGameSettingsService
     {
         private readonly DugoutDbContext _context;

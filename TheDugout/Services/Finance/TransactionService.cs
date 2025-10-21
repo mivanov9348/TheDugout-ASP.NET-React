@@ -5,6 +5,7 @@
     using TheDugout.Models.Game;
     using TheDugout.Models.Staff;
     using TheDugout.Models.Teams;
+    using TheDugout.Services.Finance.Interfaces;
 
     public class TransactionService : ITransactionService
     {
