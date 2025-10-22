@@ -21,6 +21,20 @@
 
         public async Task<List<CompetitionSeasonResult>> GenerateLeagueResultsAsync(int seasonId)
         {
+            bool alreadyExists = await _context.CompetitionSeasonResults
+            .AnyAsync(r => r.SeasonId == seasonId && r.CompetitionType == CompetitionTypeEnum.League);
+
+            if (alreadyExists)
+                return new List<CompetitionSeasonResult>();
+
+            var gameSave = _context.GameSaves
+                    .FirstOrDefault(gs=>gs.CurrentSeasonId == seasonId);
+
+            if (gameSave == null)
+            {
+                throw new Exception("No Game Save");
+            }
+
             var leagues = await _context.Leagues
                 .Include(l => l.Country)
                 .Include(l => l.Teams)
@@ -57,7 +71,8 @@
                     GameSaveId = league.GameSaveId,
                     ChampionTeamId = champion.Id,
                     RunnerUpTeamId = runnerUp?.Id,
-                    Notes = $"Лига {league.Template.Name} ({league.Country.Name}) - Ниво {league.Tier}"
+                    Notes = $"Лига {league.Template.Name} ({league.Country.Name}) - Ниво {league.Tier}",
+ 
                 };
 
                 foreach (var team in relegatedTeams)
@@ -103,7 +118,7 @@
                         prizeCode = "LEAGUE_SOLIDARITY";
 
                     await _moneyPrizeService.GrantToTeamAsync(
-                        league.GameSave,
+                        gameSave,
                         prizeCode,
                         team,
                         $"Награда за {i + 1}-во място в {league.Template.Name}"

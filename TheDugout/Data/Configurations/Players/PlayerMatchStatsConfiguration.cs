@@ -29,6 +29,12 @@
                    .HasForeignKey(ps => ps.GameSaveId)
                    .OnDelete(DeleteBehavior.Restrict);
 
+            builder.HasOne(ps => ps.Season)
+                    .WithMany(s => s.PlayerMatchStats)
+                    .HasForeignKey(ps => ps.SeasonId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+
 
         }
 

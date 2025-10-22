@@ -46,6 +46,8 @@
 
             var existingPlayerIds = existingStats.Select(ps => ps.PlayerId).ToHashSet();
 
+            var activeSeason = _context.Seasons.FirstOrDefault(x => x.GameSaveId == match.GameSaveId && x.IsActive==true);
+
             var newStats = allPlayers
                 .Where(p => !existingPlayerIds.Contains(p.Id))
                 .Select(p => new PlayerMatchStats
@@ -54,6 +56,7 @@
                     MatchId = match.Id,
                     GameSaveId = match.GameSaveId,
                     CompetitionId = match.CompetitionId,
+                    SeasonId = activeSeason.Id,
                     Goals = 0,
                     MatchRating = 0
                 })

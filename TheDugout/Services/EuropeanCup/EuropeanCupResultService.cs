@@ -18,6 +18,20 @@
         }
         public async Task<List<CompetitionSeasonResult>> GenerateEuropeanCupResultsAsync(int seasonId)
         {
+            bool alreadyExists = await _context.CompetitionSeasonResults
+       .AnyAsync(r => r.SeasonId == seasonId && r.CompetitionType == CompetitionTypeEnum.EuropeanCup);
+
+            if (alreadyExists)
+                return new List<CompetitionSeasonResult>();
+
+            var gameSave = _context.GameSaves
+                    .FirstOrDefault(gs => gs.CurrentSeasonId == seasonId);
+
+            if (gameSave == null)
+            {
+                throw new Exception("No Game Save");
+            }
+
             var europeanCups = await _context.EuropeanCups
                 .Include(e => e.Template)
                 .Include(e => e.Phases)
@@ -33,13 +47,28 @@
 
             foreach (var euro in europeanCups)
             {
-                // Последна фаза = финал
-                var finalPhase = euro.Phases
-                    .OrderByDescending(p => p.PhaseTemplate.Order)
-                    .FirstOrDefault();
+                var phases = _context.EuropeanCupPhases
+                            .Where(ph => ph.EuropeanCupId == euro.Id)
+                            .Include(ph => ph.PhaseTemplate)
+                            .Include(ph => ph.Fixtures)
+                            .AsNoTracking() 
+                            .ToList();
+
+                // Last phase = final
+                var finalPhase = await _context.EuropeanCupPhases
+                                .Include(ph => ph.PhaseTemplate)
+                                .Include(ph => ph.Fixtures)
+                                    .ThenInclude(f => f.HomeTeam)
+                                .Include(ph => ph.Fixtures)
+                                    .ThenInclude(f => f.AwayTeam)
+                                .Where(ph => ph.EuropeanCupId == euro.Id)
+                                .OrderByDescending(ph => ph.PhaseTemplate.Order)
+                                .AsNoTracking()
+                                .FirstOrDefaultAsync();
+
 
                 if (finalPhase == null)
-                    continue;
+                    continue;               
 
                 // Финален мач
                 var finalMatch = finalPhase.Fixtures
@@ -78,7 +107,7 @@
                 {
                     var champion = finalMatch.HomeTeamId == championTeamId ? finalMatch.HomeTeam : finalMatch.AwayTeam;
                     await _moneyPrizeService.GrantToTeamAsync(
-                        euro.GameSave,
+                        gameSave,
                         "EURO_CHAMPION",
                         champion,
                         $"Награда за спечелване на {euro.Template.Name}"
@@ -89,7 +118,7 @@
                 {
                     var runnerUp = finalMatch.HomeTeamId == runnerUpTeamId ? finalMatch.HomeTeam : finalMatch.AwayTeam;
                     await _moneyPrizeService.GrantToTeamAsync(
-                        euro.GameSave,
+                        gameSave,
                         "EURO_RUNNER_UP",
                         runnerUp,
                         $"Награда за финал в {euro.Template.Name}"

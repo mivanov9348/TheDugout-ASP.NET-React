@@ -32,19 +32,20 @@
         }
         public async Task<bool> AreAllCompetitionsFinishedAsync(int seasonId)
         {
-            Console.WriteLine($"🔍 Checking competitions for season {seasonId}");
+            _logger.LogInformation("🔍 Checking competitions for season {SeasonId}", seasonId);
 
             var leagues = await _context.Leagues.Where(l => l.SeasonId == seasonId).ToListAsync();
             var cups = await _context.Cups.Where(c => c.SeasonId == seasonId).ToListAsync();
             var euros = await _context.EuropeanCups.Where(e => e.SeasonId == seasonId).ToListAsync();
 
-            Console.WriteLine($"Found {leagues.Count} leagues, {cups.Count} cups, {euros.Count} european cups.");
+            _logger.LogInformation("Found {LeaguesCount} leagues, {CupsCount} cups, {EurosCount} european cups.",
+                leagues.Count, cups.Count, euros.Count);
 
             foreach (var l in leagues)
             {
                 if (!await _leagueService.IsLeagueFinishedAsync(l.Id))
                 {
-                    Console.WriteLine($"⚠️ League {l.Id} not finished yet.");
+                    _logger.LogWarning("⚠️ League {LeagueId} not finished yet.", l.Id);
                     return false;
                 }
             }
@@ -53,7 +54,7 @@
             {
                 if (!await _cupService.IsCupFinishedAsync(c.Id))
                 {
-                    Console.WriteLine($"⚠️ Cup {c.Id} not finished yet.");
+                    _logger.LogWarning("⚠️ Cup {CupId} not finished yet.", c.Id);
                     return false;
                 }
             }
@@ -62,16 +63,19 @@
             {
                 if (!await _euroService.IsEuropeanCupFinishedAsync(e.Id))
                 {
-                    Console.WriteLine($"⚠️ Euro cup {e.Id} not finished yet.");
+                    _logger.LogWarning("⚠️ Euro cup {EuroCupId} not finished yet.", e.Id);
                     return false;
                 }
             }
 
-            Console.WriteLine($"✅ All competitions finished for season {seasonId}");
+            _logger.LogInformation("✅ All competitions finished for season {SeasonId}", seasonId);
             return true;
         }
+
         public async Task<List<CompetitionSeasonResult>> GenerateSeasonResultAsync(int seasonId)
         {
+            _logger.LogInformation("🏆 Generating season results for season {SeasonId}", seasonId);
+
             // Getting results of all type of cups
             var leagueResults = await _leagueResultService.GenerateLeagueResultsAsync(seasonId);
             var cupResults = await _cupResultService.GenerateCupResultsAsync(seasonId);
@@ -83,6 +87,8 @@
             allResults.AddRange(cupResults);
             allResults.AddRange(euroResults);
 
+            _logger.LogInformation("📊 Total results to process: {Count}", allResults.Count);
+
             // For each 
             foreach (var result in allResults)
             {
@@ -90,13 +96,17 @@
                 var competition = await _context.Competitions
                     .FirstOrDefaultAsync(c => c.Id == competitionId);
 
-                if (competition == null) continue;
+                if (competition == null)
+                {
+                    _logger.LogWarning("⚠️ Competition {CompetitionId} not found for season {SeasonId}", competitionId, seasonId);
+                    continue;
+                }
 
                 var topScorer = await _context.PlayerCompetitionStats
                         .Include(p => p.Player)
                         .Where(p => p.SeasonId == seasonId && p.CompetitionId == competition.Id)
                         .OrderByDescending(p => p.Goals)
-                        .ThenByDescending(p => p.MatchesPlayed)
+                        .ThenBy(p => p.MatchesPlayed)
                         .ThenBy(p => p.Player.FirstName)
                         .FirstOrDefaultAsync();
 
@@ -115,6 +125,9 @@
 
                     result.Awards.Add(award);
                     _context.CompetitionAwards.Add(award);
+
+                    _logger.LogInformation("🏅 Added top scorer {PlayerId} with {Goals} goals for competition {CompetitionId}",
+                        topScorer.PlayerId, topScorer.Goals, competition.Id);
                 }
 
                 _context.CompetitionSeasonResults.Add(result);
@@ -123,8 +136,11 @@
             // 3️⃣ Запазваме всички промени
             await _context.SaveChangesAsync();
 
+            _logger.LogInformation("✅ Season results saved for season {SeasonId}", seasonId);
+
             return allResults;
         }
+
         public string GetCompetitionName(Fixture fixture)
         {
             try

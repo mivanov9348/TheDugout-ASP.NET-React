@@ -9,13 +9,13 @@ using TheDugout.Data;
 using TheDugout.Data.Seed;
 using TheDugout.Extensions;
 
-
 var builder = WebApplication.CreateBuilder(args);
 
 var connectionString = builder.Configuration.GetConnectionString("Default");
 
 builder.Services.AddDbContext<DugoutDbContext>(options =>
-    options.UseSqlServer(connectionString, opt => opt.CommandTimeout(90)));
+    options.UseSqlServer(connectionString, opt => opt.CommandTimeout(90)
+    .UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)));
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>

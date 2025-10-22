@@ -134,72 +134,83 @@ function Header({ username }) {
 
   // 🏁 Бутон "End Season"
   const handleEndSeason = async () => {
-  const confirm = await Swal.fire({
-    title: "🏁 End of Season",
-    text: "Are you sure you want to end the season?",
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonText: "Yes, end it",
-    cancelButtonText: "Cancel",
-    confirmButtonColor: "#e11d48",
-    cancelButtonColor: "#334155",
-    background: "#1e293b",
-    color: "#fff",
-  });
-
-  if (!confirm.isConfirmed) return;
-
-  startProcessing("Ending current season...");
-  try {
-    const res = await fetch(`/api/games/season/${currentGameSave.seasons[0].id}/end`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      await Swal.fire({
-        title: "⚠️ Cannot End Season",
-        text: data.message || "Unknown error",
-        icon: "error",
-        background: "#1e293b",
-        color: "#fff",
-      });
-      return;
-    }
-
-    await Swal.fire({
-      title: "✅ Season Ended!",
-      text: data.message || "Next season has been generated.",
-      icon: "success",
+    const confirm = await Swal.fire({
+      title: "🏁 End of Season",
+      text: "Are you sure you want to end the season?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, end it",
+      cancelButtonText: "Cancel",
+      confirmButtonColor: "#e11d48",
+      cancelButtonColor: "#334155",
       background: "#1e293b",
       color: "#fff",
     });
 
-    // 🔄 Обнови текущия статус на играта
-    const refreshed = await refreshGameStatus();
-    if (refreshed?.gameSave) {
-      setCurrentGameSave(refreshed.gameSave);
-      navigate(`/`); // или страница със сезона
+    if (!confirm.isConfirmed) return;
+
+    startProcessing("Ending current season...");
+    try {
+      const res = await fetch(
+        `/api/games/season/${currentGameSave.seasons[0].id}/end`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+        }
+      );
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        await Swal.fire({
+          title: "⚠️ Cannot End Season",
+          text: data.message || "Unknown error",
+          icon: "error",
+          background: "#1e293b",
+          color: "#fff",
+        });
+        return;
+      }
+
+      await Swal.fire({
+        title: "✅ Season Ended!",
+        text: data.message || "Next season has been generated.",
+        icon: "success",
+        background: "#1e293b",
+        color: "#fff",
+      });
+
+      // 🔄 Обнови текущия статус на играта
+      const refreshed = await refreshGameStatus();
+      if (refreshed?.gameSave) {
+        setCurrentGameSave(refreshed.gameSave);
+
+        // 🆕 взимаме id на новия сезон
+        const newSeasonId = refreshed.gameSave?.seasons?.[0]?.id;
+        if (newSeasonId) {
+          navigate(`/season/${newSeasonId}/overview`);
+        }
+
+        return;
+      }
+    } catch (err) {
+      console.error("End season failed:", err);
+    } finally {
+      stopProcessing();
     }
-  } catch (err) {
-    console.error("End season failed:", err);
-  } finally {
-    stopProcessing();
-  }
-};
+  };
+
 
 
   // 🧩 Формат на дата
   const formatDate = (dateStr) =>
     dateStr
       ? new Date(dateStr).toLocaleDateString("en-GB", {
-          day: "numeric",
-          month: "short",
-          year: "numeric",
-        })
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      })
       : "";
 
   if (isLoading && !currentGameSave) {
@@ -229,14 +240,14 @@ function Header({ username }) {
   const buttonLabel = isLastDay
     ? "🏁 End Season"
     : hasUnplayed
-    ? "Match Day"
-    : "Next Day →";
+      ? "Match Day"
+      : "Next Day →";
 
   const buttonColor = isLastDay
     ? "bg-rose-600 hover:bg-rose-700"
     : hasUnplayed
-    ? "bg-amber-600 hover:bg-amber-700"
-    : "bg-sky-600 hover:bg-sky-700";
+      ? "bg-amber-600 hover:bg-amber-700"
+      : "bg-sky-600 hover:bg-sky-700";
 
   const buttonHandler = isLastDay ? handleEndSeason : handleNextDay;
 

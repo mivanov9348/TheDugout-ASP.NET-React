@@ -9,6 +9,7 @@ import StartScreen from "./components/StartScreen";
 import LoadGameModal from "./components/LoadGameModal";
 import TeamSelectionModal from "./components/TeamSelectionModal";
 import ProcessingOverlay from "./components/ProcessingOverlay";
+import SeasonOverview from "./pages/season/SeasonOverview";
 
 import { ProcessingProvider } from "./context/ProcessingContext";
 import { GameProvider, useGame } from "./context/GameContext";
@@ -87,6 +88,14 @@ function AppInner() {
                 onLogout={() => setIsAuthenticated(false)}
               />
             )
+          }
+        />
+        <Route
+          path="/season/:seasonId/overview"
+          element={
+            <ProtectedRoute isAuthenticated={isAuthenticated}>
+              <SeasonOverview />
+            </ProtectedRoute>
           }
         />
 

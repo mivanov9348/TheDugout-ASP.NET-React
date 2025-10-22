@@ -73,6 +73,11 @@
                     .WithOne(a => a.Season)
                     .HasForeignKey(a => a.SeasonId)
                     .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasMany(c => c.PlayerMatchStats)
+                    .WithOne(a => a.Season)
+                    .HasForeignKey(a => a.SeasonId)
+                    .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

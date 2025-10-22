@@ -17,6 +17,7 @@
         public DateTime CurrentDate { get; set; }
         public bool IsActive { get; set; }
         public ICollection<SeasonEvent> Events { get; set; } = new List<SeasonEvent>();
+        public ICollection<PlayerMatchStats> PlayerMatchStats { get; set; } = new List<PlayerMatchStats>();
         public ICollection<PlayerSeasonStats> PlayerSeasonStats { get; set; } = new List<PlayerSeasonStats>();
         public ICollection<Fixture> Fixtures { get; set; } = new List<Fixture>();
         public ICollection<TrainingSession> TrainingSessions { get; set; } = new List<TrainingSession>();

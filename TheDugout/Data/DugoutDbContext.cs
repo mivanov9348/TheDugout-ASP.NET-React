@@ -52,7 +52,6 @@
         public DbSet<PlayerSeasonStats> PlayerSeasonStats { get; set; }
         public DbSet<PlayerAttribute> PlayerAttributes { get; set; }
         public DbSet<PlayerCompetitionStats> PlayerCompetitionStats { get; set; }
-
         public DbSet<AttributeDefinition> Attributes { get; set; }
         public DbSet<Position> Positions { get; set; }
         public DbSet<PositionWeight> PositionWeights { get; set; }  

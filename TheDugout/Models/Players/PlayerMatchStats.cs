@@ -5,6 +5,8 @@
     using TheDugout.Models.Fixtures;
     using TheDugout.Models.Game;
     using TheDugout.Models.Matches;
+    using TheDugout.Models.Seasons;
+
     public class PlayerMatchStats
     {
         public int Id { get; set; }
@@ -16,6 +18,8 @@
         public int CompetitionId { get; set; }
         public Competition Competition { get; set; } = null!;
         public int GameSaveId { get; set; }
+        public Season Season { get; set; } = null!;
+        public int? SeasonId { get; set; }
         public GameSave GameSave { get; set; } = null!;
         public int Goals { get; set; }
     }

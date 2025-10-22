@@ -18,6 +18,20 @@
         }
         public async Task<List<CompetitionSeasonResult>> GenerateCupResultsAsync(int seasonId)
         {
+            bool alreadyExists = await _context.CompetitionSeasonResults
+        .AnyAsync(r => r.SeasonId == seasonId && r.CompetitionType == CompetitionTypeEnum.DomesticCup);
+
+            if (alreadyExists)
+                return new List<CompetitionSeasonResult>();
+
+            var gameSave = _context.GameSaves
+                    .FirstOrDefault(gs=>gs.CurrentSeasonId == seasonId);
+
+            if (gameSave == null)
+            {
+                throw new Exception("Game Save is null!");
+            }
+
             var cups = await _context.Cups
                 .Include(c => c.Country)
                 .Include(c => c.Template)
@@ -76,7 +90,7 @@
                 {
                     var champion = finalMatch.HomeTeamId == championTeamId ? finalMatch.HomeTeam : finalMatch.AwayTeam;
                     await _moneyPrizeService.GrantToTeamAsync(
-                        cup.GameSave,
+                        gameSave,
                         "CUP_CHAMPION",
                         champion,
                         $"Награда за спечелване на Купа {cup.Template.Name}"
@@ -87,7 +101,7 @@
                 {
                     var runnerUp = finalMatch.HomeTeamId == runnerUpTeamId ? finalMatch.HomeTeam : finalMatch.AwayTeam;
                     await _moneyPrizeService.GrantToTeamAsync(
-                        cup.GameSave,
+                        gameSave,
                         "CUP_RUNNER_UP",
                         runnerUp,
                         $"Награда за финал в Купа {cup.Template.Name}"
