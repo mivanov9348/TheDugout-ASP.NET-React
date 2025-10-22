@@ -71,8 +71,7 @@
                     GameSaveId = league.GameSaveId,
                     ChampionTeamId = champion.Id,
                     RunnerUpTeamId = runnerUp?.Id,
-                    Notes = $"Лига {league.Template.Name} ({league.Country.Name}) - Ниво {league.Tier}",
- 
+                    Notes = $"Лига {league.Template.Name} ({league.Country.Name}) - Ниво {league.Tier}", 
                 };
 
                 foreach (var team in relegatedTeams)
@@ -127,9 +126,7 @@
 
                 results.Add(result);
             }
-
-            await _context.CompetitionSeasonResults.AddRangeAsync(results);
-            await _context.SaveChangesAsync();
+            
             return results;
         }
 

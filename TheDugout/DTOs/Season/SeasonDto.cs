@@ -14,12 +14,17 @@ namespace TheDugout.DTOs.Season
         public int CompetitionId { get; set; }
         public string Name { get; set; } = string.Empty;
         public CompetitionTypeEnum Type { get; set; }
+
         public string? ChampionTeam { get; set; }
         public string? RunnerUpTeam { get; set; }
+
         public List<string> PromotedTeams { get; set; } = new();
         public List<string> RelegatedTeams { get; set; } = new();
         public List<string> EuropeanQualifiedTeams { get; set; } = new();
+
         public List<AwardDto> Awards { get; set; } = new();
+        public List<LeagueStandingDto>? LeagueStandings { get; set; }
+        public List<TopScorerDto>? TopScorers { get; set; }
     }
 
     public class AwardDto
@@ -27,6 +32,24 @@ namespace TheDugout.DTOs.Season
         public string PlayerName { get; set; } = string.Empty;
         public CompetitionAwardType AwardType { get; set; }
         public int Value { get; set; }
+    }
+
+    public class LeagueStandingDto
+    {
+        public string TeamName { get; set; } = string.Empty;
+        public int Points { get; set; }
+        public int Wins { get; set; }
+        public int Draws { get; set; }
+        public int Losses { get; set; }
+        public int GoalsFor { get; set; }
+        public int GoalsAgainst { get; set; }
+        public int GoalDifference { get; set; }
+    }
+
+    public class TopScorerDto
+    {
+        public string PlayerName { get; set; } = string.Empty;
+        public int Goals { get; set; }
     }
 
 }

@@ -51,7 +51,8 @@
                     TeamsCount = lt.TeamsCount,
                     RelegationSpots = lt.RelegationSpots,
                     PromotionSpots = lt.PromotionSpots,
-                    Competition = competition
+                    Competition = competition,
+                    CompetitionId = competition.Id
                 });
             }
 

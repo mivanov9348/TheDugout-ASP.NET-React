@@ -172,20 +172,58 @@ export default function SeasonOverview() {
         </div>
       </div>
 
-      {/* Footer - Extra Stats Placeholder */}
+      {/* Footer - Extra Stats */}
       <div className="mt-10 w-full max-w-6xl grid grid-cols-3 gap-6">
+
+        {/* Top Scorers */}
         <div className="bg-slate-800/40 rounded-2xl p-6 text-center border border-slate-700">
-          <h3 className="text-xl font-bold mb-2 text-yellow-400">Top 5 Scorers</h3>
-          <p className="text-slate-400 text-sm">Coming soon...</p>
+          <h3 className="text-xl font-bold mb-4 text-yellow-400">Top 5 Scorers</h3>
+          {competition.topScorers && competition.topScorers.length > 0 ? (
+            <ul className="space-y-1 text-sm">
+              {competition.topScorers.slice(0, 5).map((p, i) => (
+                <li key={i} className="text-slate-300">
+                  {i + 1}. {p.playerName} –{" "}
+                  <span className="text-yellow-400">{p.goals}</span> ⚽
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-slate-400 text-sm">No scorers data</p>
+          )}
         </div>
 
-        <div className="bg-slate-800/40 rounded-2xl p-6 text-center border border-slate-700">
-          <h3 className="text-xl font-bold mb-2 text-green-400">League Table</h3>
-          <p className="text-slate-400 text-sm">Coming soon...</p>
+        {/* League Table */}
+        <div className="bg-slate-800/40 rounded-2xl p-6 text-center border border-slate-700 overflow-x-auto">
+          <h3 className="text-xl font-bold mb-4 text-green-400">League Table</h3>
+          {competition.standings && competition.standings.length > 0 ? (
+            <table className="w-full text-sm">
+              <thead className="text-slate-400 border-b border-slate-700">
+                <tr>
+                  <th className="text-left p-1">#</th>
+                  <th className="text-left p-1">Team</th>
+                  <th className="p-1">Pts</th>
+                  <th className="p-1">GD</th>
+                </tr>
+              </thead>
+              <tbody>
+                {competition.standings.slice(0, 10).map((team, i) => (
+                  <tr key={i} className="border-b border-slate-800">
+                    <td className="text-slate-400 p-1">{team.ranking}</td>
+                    <td className="text-left p-1">{team.teamName}</td>
+                    <td className="text-slate-300 p-1">{team.points}</td>
+                    <td className="text-slate-400 p-1">{team.goalDifference}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <p className="text-slate-400 text-sm">No standings available</p>
+          )}
         </div>
 
+        {/* Top Assists (placeholder) */}
         <div className="bg-slate-800/40 rounded-2xl p-6 text-center border border-slate-700">
-          <h3 className="text-xl font-bold mb-2 text-blue-400">Top Assists</h3>
+          <h3 className="text-xl font-bold mb-4 text-blue-400">Top Assists</h3>
           <p className="text-slate-400 text-sm">Coming soon...</p>
         </div>
       </div>

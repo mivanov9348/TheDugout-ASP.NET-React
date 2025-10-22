@@ -57,7 +57,8 @@
                 SeasonId = seasonId,
                 LogoFileName = $"{template.Name}.png",
                 IsActive = template.IsActive,
-                Competition = competition
+                Competition = competition,
+                CompetitionId = competition.Id
             };
 
             _context.EuropeanCups.Add(euroCup);

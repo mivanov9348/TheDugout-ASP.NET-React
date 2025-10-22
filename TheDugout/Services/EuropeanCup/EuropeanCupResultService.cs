@@ -138,13 +138,7 @@
                 };
 
                 results.Add(result);
-            }
-
-            if (results.Any())
-            {
-                await _context.CompetitionSeasonResults.AddRangeAsync(results);
-                await _context.SaveChangesAsync();
-            }
+            }         
 
             return results;
         }
