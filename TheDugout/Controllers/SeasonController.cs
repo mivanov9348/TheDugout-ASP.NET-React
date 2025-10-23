@@ -213,7 +213,6 @@
             }
         }
 
-
         [Authorize]
         [HttpGet("status/{gameSaveId}")]
         public async Task<IActionResult> GetGameStatus(int gameSaveId)
@@ -227,7 +226,8 @@
 
             if (save == null) return NotFound();
 
-            var season = save.Seasons?.FirstOrDefault();
+            var season = _context.Seasons.FirstOrDefault(s => s.GameSaveId == gameSaveId && s.IsActive == true);
+
             if (season == null)
             {
                 return Ok(new
@@ -305,12 +305,13 @@
 
             var saveId = user.CurrentSave.Id;
             var save = user.CurrentSave;
-            var season = save.Seasons.FirstOrDefault();
+
+            var season = save.Seasons.FirstOrDefault(s => s.IsActive);
             if (season == null) return BadRequest("No season found.");
 
             var today = season.CurrentDate.Date;
             var hasUnplayed = await _context.Fixtures
-                .AnyAsync(f => f.GameSaveId == saveId && f.Date.Date == today && f.Status == MatchStageEnum.Scheduled);
+        .AnyAsync(f => f.GameSaveId == saveId && f.Date.Date == today && f.Status == MatchStageEnum.Scheduled);
 
             if (hasUnplayed)
                 return BadRequest(new { message = "Cannot advance day: there are unplayed matches today." });

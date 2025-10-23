@@ -27,7 +27,7 @@
 
             var leagues = await _context.Leagues
                 .Include(l => l.Teams)
-                .Where(l => l.GameSaveId == gameSaveId)
+                .Where(l => l.GameSaveId == gameSaveId && l.SeasonId == seasonId)                
                 .ToListAsync();
 
             foreach (var league in leagues)

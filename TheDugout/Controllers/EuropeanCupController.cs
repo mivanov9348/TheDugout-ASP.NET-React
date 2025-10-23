@@ -1,15 +1,15 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using TheDugout.Data;
-using TheDugout.DTOs.Player;
-using TheDugout.Models.Competitions;
-using TheDugout.Models.Enums;
-using TheDugout.Models.Matches;
-using TheDugout.Models.Players;
-using TheDugout.Services.EuropeanCup.Interfaces;
-
-namespace TheDugout.Controllers
+﻿namespace TheDugout.Controllers
 {
+    using Microsoft.AspNetCore.Mvc;
+    using Microsoft.EntityFrameworkCore;
+    using TheDugout.Data;
+    using TheDugout.DTOs.Player;
+    using TheDugout.Models.Competitions;
+    using TheDugout.Models.Enums;
+    using TheDugout.Models.Matches;
+    using TheDugout.Models.Players;
+    using TheDugout.Services.EuropeanCup.Interfaces;
+
     [ApiController]
     [Route("api/[controller]")]
     public class EuropeanCupController : ControllerBase
@@ -35,13 +35,16 @@ namespace TheDugout.Controllers
         [HttpGet("current")]
         public async Task<IActionResult> GetCurrentEuropeanCup(int gameSaveId, int seasonId)
         {
+            var activeSeason = _context.Seasons
+                .FirstOrDefault(s=>s.GameSaveId == gameSaveId && s.IsActive == true);
+
             var cup = await _context.Set<EuropeanCup>()
                 .Include(c => c.Template)
                 .Include(c => c.Teams).ThenInclude(ct => ct.Team)
                 .Include(c => c.Standings).ThenInclude(s => s.Team)
                 .Include(c => c.Phases).ThenInclude(p => p.PhaseTemplate)
                 .Include(c => c.Competition) // ✅ добавяме Competition
-                .FirstOrDefaultAsync(c => c.GameSaveId == gameSaveId && c.SeasonId == seasonId);
+                .FirstOrDefaultAsync(c => c.GameSaveId == gameSaveId && c.SeasonId == activeSeason.Id);
 
             if (cup == null)
                 return Ok(new { exists = false });

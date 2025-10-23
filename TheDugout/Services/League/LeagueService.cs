@@ -133,7 +133,33 @@
             await _context.LeagueStandings.AddRangeAsync(standings);
             await _context.SaveChangesAsync();
         }
-   
+        public async Task CopyTeamsFromPreviousSeasonAsync(Season previousSeason, List<League> newSeasonLeagues)
+        {
+            var previousLeagues = await _context.Leagues
+                .Include(l => l.Teams)
+                .Where(l => l.SeasonId == previousSeason.Id)
+                .ToListAsync();
+
+            // Създаваме lookup по Country + Tier за по-лесно съпоставяне
+            var newLeaguesByCountryAndTier = newSeasonLeagues
+                .ToDictionary(l => (l.CountryId, l.Tier));
+
+            foreach (var oldLeague in previousLeagues)
+            {
+                if (!newLeaguesByCountryAndTier.TryGetValue((oldLeague.CountryId, oldLeague.Tier), out var newLeague))
+                {
+                    continue;
+                }
+
+                foreach (var team in oldLeague.Teams)
+                {
+                    team.LeagueId = newLeague.Id;
+                }
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
         public async Task ProcessPromotionsAndRelegationsAsync(GameSave gameSave, Season previousSeason, List<League> newSeasonLeagues)
         {
             // 1. Create Lookup

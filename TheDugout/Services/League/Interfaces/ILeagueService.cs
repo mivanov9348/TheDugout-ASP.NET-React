@@ -9,6 +9,7 @@
         Task<List<League>> GenerateLeaguesAsync(GameSave gameSave, Season season);
         Task InitializeStandingsAsync(GameSave gameSave, Season season);
         Task GenerateTeamsForLeaguesAsync(GameSave gameSave, List<League> leagues);
+        Task CopyTeamsFromPreviousSeasonAsync(Season previousSeason, List<League> newSeasonLeagues);
         Task ProcessPromotionsAndRelegationsAsync(GameSave gameSave, Season previousSeason, List<League> newSeasonLeagues);
         Task<bool> IsLeagueFinishedAsync(int leagueId);
     }

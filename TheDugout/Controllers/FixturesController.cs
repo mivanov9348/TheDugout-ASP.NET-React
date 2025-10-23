@@ -25,12 +25,21 @@
     [FromQuery] int? round = 1,
     [FromQuery] int? leagueId = null)
         {
+            var activeSeason = _context.Seasons.FirstOrDefault(s => s.GameSaveId == gameSaveId && s.IsActive == true);
+
+            // ПРОМЯНА 3: Валидация. Ако няма активен сезон, връщаме грешка.
+            if (activeSeason == null)
+            {
+                return NotFound($"Не е намерен активен сезон за GameSaveId: {gameSaveId}");
+            }
+
             // Базов филтър – винаги по GameSaveId и Season
             var query = _context.Fixtures
                 .Include(f => f.League).ThenInclude(l => l.Template)
                 .Include(f => f.HomeTeam)
                 .Include(f => f.AwayTeam)
-                .Where(f => f.GameSaveId == gameSaveId && f.SeasonId == seasonId);
+                // ПРОМЯНА 4: Използваме ID-то на намерения активен сезон
+                .Where(f => f.GameSaveId == gameSaveId && f.SeasonId == activeSeason.Id);
 
             // Филтрирай по кръг
             if (round.HasValue && round.Value > 0)

@@ -166,14 +166,18 @@
             if (userId == null) return Unauthorized();
 
             var user = await _context.Users
-                .AsSplitQuery()
-                .Include(u => u.CurrentSave).ThenInclude(gs => gs.UserTeam).ThenInclude(t => t.Country)
-                .Include(u => u.CurrentSave).ThenInclude(gs => gs.Leagues).ThenInclude(l => l.Country)
-                .Include(u => u.CurrentSave).ThenInclude(gs => gs.Leagues).ThenInclude(l => l.Template)
-                .Include(u => u.CurrentSave).ThenInclude(gs => gs.Leagues).ThenInclude(l => l.Teams).ThenInclude(t => t.Country)
-                .Include(u => u.CurrentSave).ThenInclude(gs => gs.Seasons).ThenInclude(s => s.Events)
-                .Include(u => u.CurrentSave).ThenInclude(gs => gs.Seasons).ThenInclude(s => s.Fixtures)
-                .FirstOrDefaultAsync(u => u.Id == userId.Value);
+            .AsSplitQuery()
+            .Include(u => u.CurrentSave).ThenInclude(gs => gs.UserTeam).ThenInclude(t => t.Country)
+            .Include(u => u.CurrentSave).ThenInclude(gs => gs.Leagues).ThenInclude(l => l.Country)
+            .Include(u => u.CurrentSave).ThenInclude(gs => gs.Leagues).ThenInclude(l => l.Template)
+            .Include(u => u.CurrentSave).ThenInclude(gs => gs.Leagues).ThenInclude(l => l.Teams).ThenInclude(t => t.Country)
+
+            .Include(u => u.CurrentSave).ThenInclude(gs => gs.Seasons.Where(s => s.IsActive))
+    .ThenInclude(s => s.Events)
+            .Include(u => u.CurrentSave).ThenInclude(gs => gs.Seasons.Where(s => s.IsActive))
+                .ThenInclude(s => s.Fixtures)
+
+            .FirstOrDefaultAsync(u => u.Id == userId.Value);
 
             if (user?.CurrentSave == null)
                 return Ok(null);

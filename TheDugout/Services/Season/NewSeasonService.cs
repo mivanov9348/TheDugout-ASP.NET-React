@@ -102,14 +102,21 @@
                 }
 
                 // New Season
-                var newSeason = await GenerateSeason(previousSeason.GameSave, previousSeason.EndDate.AddDays(1));
+                var newSeason = await GenerateSeason(gameSave, previousSeason.EndDate.AddDays(1));
                 _logger.LogInformation("✅ Created new Season {Id}", newSeason.Id);
-
 
                 // New leagues with new releagated/promoted
                 var newLeagues = await _leagueService.GenerateLeaguesAsync(gameSave, newSeason);
-                await _leagueService.ProcessPromotionsAndRelegationsAsync(gameSave, previousSeason, newLeagues);
-                await _leagueService.InitializeStandingsAsync(gameSave, newSeason);
+
+                await _leagueService.CopyTeamsFromPreviousSeasonAsync(previousSeason, newLeagues);
+                _logger.LogInformation("Copied all teams from previous season to new season leagues");
+
+                await _leagueService.ProcessPromotionsAndRelegationsAsync(previousSeason.GameSave, previousSeason, newLeagues);
+                _logger.LogInformation("Processed promotions and relegations");
+
+                // 5️⃣ Създай standings за всички лиги
+                await _leagueService.InitializeStandingsAsync(previousSeason.GameSave, newSeason);
+                _logger.LogInformation("Initialized new standings");
 
                 // new eurocup for season with qualified from previous season + random other teams
                 var euroTemplates = await _context.Set<EuropeanCupTemplate>()
@@ -136,11 +143,11 @@
                     }
                 }
                 // new domestic cups same rules
-                await _cupService.InitializeCupsForGameSaveAsync(gameSave, seasonId);
+                await _cupService.InitializeCupsForGameSaveAsync(gameSave, newSeason.Id);
                 _logger.LogInformation("Initialized Domestic Cups");
 
                 // fixtures same rules
-                await _leagueFixturesService.GenerateLeagueFixturesAsync(gameSave.Id, seasonId, newSeason.StartDate);
+                await _leagueFixturesService.GenerateLeagueFixturesAsync(gameSave.Id, newSeason.Id, newSeason.StartDate);
                 _logger.LogInformation("Generated League Fixtures");
 
                 // agencies
