@@ -138,6 +138,30 @@
             return player;
         }
 
+        public async Task GeneratePlayersForAgenciesAsync(GameSave save, List<Agency> agencies, CancellationToken ct = default)
+        {
+            if (save == null) throw new ArgumentNullException(nameof(save));
+            if (agencies == null || agencies.Count == 0) return;
+
+            foreach (var agency in agencies)
+            {
+                var freeAgents = new List<Models.Players.Player>();
+
+                while (true)
+                {
+                    var player = GenerateFreeAgent(save, agency);
+                    if (player == null)
+                        break;
+
+                    freeAgents.Add(player);
+                    _context.Players.Add(player);
+                }
+            }
+
+            await _context.SaveChangesAsync(ct);
+        }
+
+
         private Player CreateBasePlayer(GameSave save, Team? team, Country country, Position position, Agency? agency = null)
         {
             if (save == null) throw new ArgumentNullException(nameof(save));

@@ -1,13 +1,14 @@
 ﻿namespace TheDugout.Services.League
 {
     using Microsoft.EntityFrameworkCore;
+    using System.Linq;
     using TheDugout.Data;
     using TheDugout.Models.Competitions;
     using TheDugout.Models.Enums;
     using TheDugout.Models.Leagues;
-    using TheDugout.Services.League.Interfaces;
     using TheDugout.Models.Teams;
     using TheDugout.Services.GameSettings.Interfaces;
+    using TheDugout.Services.League.Interfaces;
 
     public class LeagueResultService : ILeagueResultService
     {
@@ -45,6 +46,8 @@
 
             var results = new List<CompetitionSeasonResult>();
 
+            var alreadyQualified = new HashSet<int?>();
+
             foreach (var league in leagues)
             {
                 var orderedStandings = league.Standings
@@ -61,7 +64,7 @@
 
                 var relegatedTeams = await GetRelegatedTeamsAsync(league, orderedStandings, seasonId);
                 var promotedTeams = await GetPromotedTeamsAsync(league, seasonId);
-                var europeanQualified = GetEuropeanQualifiedTeams(league, orderedStandings);
+                var europeanQualified = GetEuropeanQualifiedTeams(league, orderedStandings, alreadyQualified);
 
                 var result = new CompetitionSeasonResult
                 {
@@ -166,15 +169,27 @@
             return lowerLeagueStandings.Select(s => s.Team).ToList();
         }
 
-        private List<Team> GetEuropeanQualifiedTeams(League league, List<LeagueStanding> orderedStandings)
+        private List<Team> GetEuropeanQualifiedTeams(League league, List<LeagueStanding> orderedStandings, HashSet<int?> alreadyQualifiedTeamIds)
         {
             if (league.Tier != 1)
                 return new List<Team>();
 
-            return orderedStandings
-                .Take(3)
-                .Select(s => s.Team)
-                .ToList();
+            var qualified = new List<Team>();
+
+            foreach (var standing in orderedStandings)
+            {
+                if (qualified.Count >= 3)
+                    break;
+
+                if (alreadyQualifiedTeamIds.Contains(standing.TeamId))
+                    continue; 
+
+                qualified.Add(standing.Team);
+                alreadyQualifiedTeamIds.Add(standing.TeamId);
+            }
+
+            return qualified;
         }
+
     }
 }

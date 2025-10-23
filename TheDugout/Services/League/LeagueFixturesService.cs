@@ -4,7 +4,7 @@
     using TheDugout.Data;
     using TheDugout.Models.Enums;
     using TheDugout.Models.Fixtures;
-    using TheDugout.Models.Seasons;
+    using TheDugout.Models.Teams;
     using TheDugout.Services.Fixture;
     using TheDugout.Services.League.Interfaces;
     using TheDugout.Services.Season.Interfaces;
@@ -12,16 +12,13 @@
     {
         private readonly DugoutDbContext _context;
         private readonly IFixturesHelperService _fixturesHelperService;
-        //private readonly ISeasonSchedulingService _seasonSchedulingService;
         private readonly ILeagueScheduleService _leagueScheduleService;
         public LeagueFixturesService(DugoutDbContext context, IFixturesHelperService fixturesHelperService, ILeagueScheduleService leagueScheduleService)
         {
             _context = context;
             _fixturesHelperService = fixturesHelperService;
             _leagueScheduleService = leagueScheduleService;
-            //_seasonSchedulingService = seasonSchedulingService;
         }
-
         public async Task GenerateLeagueFixturesAsync(int gameSaveId, int seasonId, DateTime startDate)
         {
             var season = await _context.Seasons
@@ -49,12 +46,11 @@
 
             await _context.SaveChangesAsync();
         }
-
         private List<Fixture> GenerateLeagueFixturesCore(
     int gameSaveId,
     int seasonId,
     int leagueId,
-    List<Models.Teams.Team> teams,
+    List<Team> teams,
     IFixturesHelperService fixturesHelperService)
         {
             if (teams.Count % 2 != 0)

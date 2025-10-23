@@ -16,7 +16,6 @@
     using TheDugout.Services.Player;
     using TheDugout.Services.Players;
     using TheDugout.Services.Season;
-    using TheDugout.Services.Staff;
     using TheDugout.Services.Standings;
     using TheDugout.Services.Team;
     using TheDugout.Services.Template;
@@ -38,6 +37,7 @@
     using TheDugout.Services.Finance.Interfaces;
     using TheDugout.Services.GameSettings.Interfaces;
     using TheDugout.Services.Game.Interfaces;
+    using TheDugout.Services.Staff.Interfaces;
 
     public static class ServiceCollectionExtensions
     {

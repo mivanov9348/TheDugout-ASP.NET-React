@@ -3,11 +3,10 @@
     using Microsoft.EntityFrameworkCore;
     using System.Diagnostics;
     using System.Linq;
-    using System.Runtime;
-    using System.Runtime.CompilerServices;
     using TheDugout.Data;
     using TheDugout.Models.Competitions;
     using TheDugout.Models.Game;
+    using TheDugout.Models.Teams;
     using TheDugout.Services.Cup.Interfaces;
     using TheDugout.Services.EuropeanCup.Interfaces;
     using TheDugout.Services.Finance.Interfaces;
@@ -16,7 +15,7 @@
     using TheDugout.Services.League.Interfaces;
     using TheDugout.Services.Player.Interfaces;
     using TheDugout.Services.Season.Interfaces;
-    using TheDugout.Services.Staff;
+    using TheDugout.Services.Staff.Interfaces;
     using TheDugout.Services.Team.Interfaces;
 
     public class GameSaveService : IGameSaveService
@@ -311,30 +310,20 @@ WHERE T.{Quote("GameSaveId")} = @p0;";
                     .Include(t => t.PhaseTemplates)
                     .Where(t => t.IsActive)
                     .ToListAsync(ct);
+
                 LogStep("Loaded European Cup Templates");
 
                 foreach (var template in euroTemplates)
                 {
                     try
                     {
-                        var eligibleTeams = await _context.Set<Models.Teams.Team>()
-                            .Where(t => t.LeagueId == null && t.GameSaveId == gameSave.Id)
-                            .ToListAsync(ct);
-
-                        if (eligibleTeams.Count < template.TeamsCount)
-                        {
-                            _logger.LogWarning(
-                                "Not enough eligible teams ({Eligible}) for European Cup Template '{TemplateName}' ({TemplateId}). Requires {Required}. Skipping.",
-                                eligibleTeams.Count, template.Name, template.Id, template.TeamsCount);
-                            continue;
-                        }
-
                         await _europeanCupService.InitializeTournamentAsync(
-                            templateId: template.Id,
-                            gameSaveId: gameSave.Id,
-                            seasonId: season.Id,
-                            ct: ct);
-
+                           templateId: template.Id,
+                           gameSaveId: gameSave.Id,
+                           previousSeasonId:null,
+                           seasonId: season.Id,
+                           ct: ct);                     
+                       
                     }
                     catch (Exception ex)
                     {

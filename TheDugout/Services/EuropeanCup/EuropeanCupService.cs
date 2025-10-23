@@ -5,6 +5,7 @@
     using TheDugout.Models.Competitions;
     using TheDugout.Models.Enums;
     using TheDugout.Models.Fixtures;
+    using TheDugout.Models.Teams;
     using TheDugout.Services.EuropeanCup.Interfaces;
     public class EuropeanCupService : IEuropeanCupService
     {
@@ -20,49 +21,91 @@
             _euroCupTeamService = euroCupTeamService;
             _logger = logger;
         }
-
-        public async Task<EuropeanCup> InitializeTournamentAsync(int templateId, int gameSaveId, int seasonId, CancellationToken ct = default)
+        public async Task<EuropeanCup> InitializeTournamentAsync(int templateId, int gameSaveId, int seasonId, int? previousSeasonId, CancellationToken ct = default)
         {
             var template = await _context.Set<EuropeanCupTemplate>()
-                .Include(t => t.PhaseTemplates)
-                .FirstOrDefaultAsync(t => t.Id == templateId, ct)
-                ?? throw new InvalidOperationException($"Template {templateId} not found.");
+        .Include(t => t.PhaseTemplates)
+        .FirstOrDefaultAsync(t => t.Id == templateId, ct)
+        ?? throw new InvalidOperationException($"Template {templateId} not found.");
 
             if (!template.IsActive)
                 throw new InvalidOperationException($"Template {templateId} is not active.");
 
-            var eligibleTeams = await _context.Set<Models.Teams.Team>()
-                .Where(t => t.LeagueId == null && t.GameSaveId == gameSaveId)
-                .ToListAsync(ct);
+            var chosenTeams = new List<Team>();
 
-            if (eligibleTeams.Count < template.TeamsCount)
-                throw new InvalidOperationException($"Not enough teams for {template.Name}");
+            if (previousSeasonId.HasValue)
+            {
+                var qualifiedTeams = await GetQualifiedTeamsForTemplateAsync(
+                    template.Id,
+                    previousSeasonId.Value,
+                    gameSaveId,
+                    ct);
 
-            var chosenTeams = eligibleTeams
-                .OrderBy(_ => _rng.Next())
-                .Take(template.TeamsCount)
-                .ToList();
+                chosenTeams.AddRange(qualifiedTeams);
+            }
+
+            int slotsToFill = template.TeamsCount - chosenTeams.Count;
+
+            if (slotsToFill < 0)
+            {
+                _logger.LogWarning(
+                    "Повече отбори ({QualifiedCount}) са се класирали за '{TemplateName}' отколкото поддържа ({TemplateCount}). Ще бъдат взети първите {TemplateCount}.",
+                    chosenTeams.Count, template.Name, template.TeamsCount);
+                chosenTeams = chosenTeams.Take(template.TeamsCount).ToList();
+                slotsToFill = 0;
+            }
+
+            // 3. Запълни оставащите места със "свободни" отбори
+            if (slotsToFill > 0)
+            {
+                var qualifiedTeamIds = new HashSet<int>(chosenTeams.Select(t => t.Id));
+
+                // Вземи всички "свободни" отбори, които НЕ са вече в списъка
+                var fillerTeamPool = await _context.Set<Models.Teams.Team>()
+                    .Where(t => t.LeagueId == null &&
+                                t.GameSaveId == gameSaveId &&
+                                !qualifiedTeamIds.Contains(t.Id)) // <-- Изключваме вече класираните
+                    .ToListAsync(ct);
+
+                if (fillerTeamPool.Count < slotsToFill)
+                {
+                    // Това е проблем - няма достатъчно отбори в играта
+                    throw new InvalidOperationException(
+                        $"Няма достатъчно свободни отбори за {template.Name}. " +
+                        $"Нужни: {template.TeamsCount}, Класирани: {chosenTeams.Count}, " +
+                        $"Налични свободни: {fillerTeamPool.Count}, Търсят се още: {slotsToFill}");
+                }
+
+                // Избери случайни отбори от свободните
+                var randomFillerTeams = fillerTeamPool
+                    .OrderBy(_ => _rng.Next()) // Приемаме, че имаш _rng
+                    .Take(slotsToFill)
+                    .ToList();
+
+                chosenTeams.AddRange(randomFillerTeams);
+            }
+
+            // --- КРАЙ НА НОВАТА ЛОГИКА ЗА ИЗБОР НА ОТБОРИ ---
 
             var competition = new Competition
             {
                 Type = CompetitionTypeEnum.EuropeanCup,
                 GameSaveId = gameSaveId,
-                SeasonId = seasonId
+                SeasonId = seasonId // ID-то на новия сезон
             };
 
             var euroCup = new EuropeanCup
             {
                 TemplateId = template.Id,
                 GameSaveId = gameSaveId,
-                SeasonId = seasonId,
+                SeasonId = seasonId, // ID-то на новия сезон
                 LogoFileName = $"{template.Name}.png",
                 IsActive = template.IsActive,
                 Competition = competition,
-                CompetitionId = competition.Id
             };
 
             _context.EuropeanCups.Add(euroCup);
-            await _context.SaveChangesAsync(ct);
+            await _context.SaveChangesAsync(ct); // Запази, за да получи `euroCup.Id`
 
             // Добавяме отбори, standings и фази
             var rankedTeams = chosenTeams
@@ -70,11 +113,14 @@
                 .ThenBy(t => t.Name)
                 .ToList();
 
+            // *** ПОПРАВКА НА БЪГ ***
+            // Извикай този метод ЕДИН път, ИЗВЪН цикъла
+            await _euroCupTeamService.CreateTeamsForCupAsync(euroCup, rankedTeams, ct);
+
             foreach (var team in rankedTeams)
             {
-
-                await _euroCupTeamService.CreateTeamsForCupAsync(euroCup, rankedTeams, ct);
-
+                // Твоят `CreateTeamsForCupAsync` вероятно създава `EuropeanCupTeam`
+                // Тук добавяме само `EuropeanCupStanding`
                 _context.Add(new EuropeanCupStanding
                 {
                     EuropeanCupId = euroCup.Id,
@@ -88,7 +134,7 @@
             foreach (var pt in template.PhaseTemplates.OrderBy(p => p.Order))
                 _context.Add(new EuropeanCupPhase { EuropeanCupId = euroCup.Id, PhaseTemplateId = pt.Id, GameSaveId = gameSaveId });
 
-            await _context.SaveChangesAsync(ct);
+            await _context.SaveChangesAsync(ct); // Запази standings и phases
 
             await _eurocupFixturesService.GenerateEuropeanLeaguePhaseFixturesAsync(euroCup.Id, seasonId, ct);
             return euroCup;
@@ -234,6 +280,40 @@
             await IsEuropeanCupFinishedAsync(europeanCupId);
         }
 
+        private async Task<List<Team>> GetQualifiedTeamsForTemplateAsync(
+     int euroCupTemplateId,
+     int previousSeasonId,
+     int gameSaveId,
+     CancellationToken ct)
+        {
+            // 1️⃣ Взимаме всички TeamId, които са се класирали в предишния сезон
+            var qualifiedTeamIds = await _context.Set<CompetitionEuropeanQualifiedTeam>()
+                .Include(q => q.CompetitionSeasonResult)
+                .Where(q => q.GameSaveId == gameSaveId &&
+                            q.CompetitionSeasonResult.SeasonId == previousSeasonId)
+                .Select(q => q.TeamId)
+                .Distinct()
+                .ToListAsync(ct);
+
+            if (!qualifiedTeamIds.Any())
+            {
+                _logger.LogInformation(
+                    "Няма квалифицирани отбори от предишния сезон {SeasonId}. Евротурнирът {TemplateId} ще се запълни със свободни отбори.",
+                    previousSeasonId, euroCupTemplateId);
+
+                return new List<Team>();
+            }
+
+            // 2️⃣ Връщаме самите обекти Team
+            var teams = await _context.Set<Team>()
+                .Where(t => qualifiedTeamIds.Contains(t.Id))
+                .ToListAsync(ct);
+
+            _logger.LogInformation("Намерени са {Count} класирани отбора от сезон {SeasonId} за евротурнир {TemplateId}.",
+                teams.Count, previousSeasonId, euroCupTemplateId);
+
+            return teams;
+        }
 
     }
 }

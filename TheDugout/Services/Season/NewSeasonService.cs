@@ -1,24 +1,40 @@
 ﻿namespace TheDugout.Services.Season
 {
+    using Bogus;
     using Microsoft.EntityFrameworkCore;
     using TheDugout.Data;
+    using TheDugout.Models.Competitions;
     using TheDugout.Models.Game;
     using TheDugout.Models.Seasons;
+    using TheDugout.Services.Cup.Interfaces;
+    using TheDugout.Services.EuropeanCup;
+    using TheDugout.Services.EuropeanCup.Interfaces;
+    using TheDugout.Services.League;
     using TheDugout.Services.League.Interfaces;
+    using TheDugout.Services.Player.Interfaces;
     using TheDugout.Services.Season.Interfaces;
+    using TheDugout.Services.Staff.Interfaces;
 
     public class NewSeasonService : INewSeasonService
     {
         private readonly DugoutDbContext _context;
+        private readonly ILogger<NewSeasonService> _logger;
+        private readonly ICupService _cupService;
         private readonly ISeasonCleanupService _seasonCleanupService;
         private readonly ILeagueService _leagueService;
-        private readonly ILogger<NewSeasonService> _logger;
-        public NewSeasonService(DugoutDbContext context, ISeasonCleanupService seasonCleanupService, ILeagueService leagueService, ILogger<NewSeasonService> logger)
+        private readonly IEuropeanCupService _europeanCupService;
+        private readonly ILeagueFixturesService _leagueFixturesService;
+        private readonly IPlayerGenerationService _playerGenerationService;
+        public NewSeasonService(DugoutDbContext context, ILogger<NewSeasonService> logger, ICupService cupService, ISeasonCleanupService seasonCleanupService, ILeagueService leagueService, IEuropeanCupService europeanCupService, ILeagueFixturesService leagueFixturesService, IPlayerGenerationService playerGenerationService)
         {
             _context = context;
             _logger = logger;
+            _cupService = cupService;
             _seasonCleanupService = seasonCleanupService;
             _leagueService = leagueService;
+            _europeanCupService = europeanCupService;
+            _leagueFixturesService = leagueFixturesService;
+            _playerGenerationService = playerGenerationService;
         }
         public async Task<Season> GenerateSeason(GameSave gameSave, DateTime startDate)
         {
@@ -89,21 +105,47 @@
                 var newSeason = await GenerateSeason(previousSeason.GameSave, previousSeason.EndDate.AddDays(1));
                 _logger.LogInformation("✅ Created new Season {Id}", newSeason.Id);
 
-      
+
                 // New leagues with new releagated/promoted
                 var newLeagues = await _leagueService.GenerateLeaguesAsync(gameSave, newSeason);
                 await _leagueService.ProcessPromotionsAndRelegationsAsync(gameSave, previousSeason, newLeagues);
                 await _leagueService.InitializeStandingsAsync(gameSave, newSeason);
 
                 // new eurocup for season with qualified from previous season + random other teams
+                var euroTemplates = await _context.Set<EuropeanCupTemplate>()
+                                    .Include(t => t.PhaseTemplates)
+                                    .Where(t => t.IsActive)
+                                    .ToListAsync();
+                _logger.LogInformation("Creating new European Cups for Season {SeasonId}", newSeason.Id);
 
+                foreach (var template in euroTemplates)
+                {
+                    try
+                    {
+                        await _europeanCupService.InitializeTournamentAsync(
+                            templateId: template.Id,
+                            gameSaveId: gameSave.Id,
+                            seasonId: newSeason.Id,
+                            previousSeasonId: previousSeason.Id);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Failed to initialize European Cup template '{TemplateName}' ({TemplateId}) for new season",
+                            template.Name, template.Id);
+                        // Помисли дали да не хвърлиш грешката нагоре, за да предизвикаш rollback
+                    }
+                }
                 // new domestic cups same rules
+                await _cupService.InitializeCupsForGameSaveAsync(gameSave, seasonId);
+                _logger.LogInformation("Initialized Domestic Cups");
 
                 // fixtures same rules
+                await _leagueFixturesService.GenerateLeagueFixturesAsync(gameSave.Id, seasonId, newSeason.StartDate);
+                _logger.LogInformation("Generated League Fixtures");
 
-                // new league standings for new leagues
-
-
+                // agencies
+                var agencies = _context.Agencies.Where(a => a.GameSaveId == gameSave.Id).ToList();
+                await _playerGenerationService.GeneratePlayersForAgenciesAsync(gameSave, agencies);
 
                 // 💾 7. Save and Commit
                 await _context.SaveChangesAsync();

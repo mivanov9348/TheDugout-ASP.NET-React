@@ -8,6 +8,7 @@
                 int templateId,
                 int gameSaveId,
                 int seasonId,
+                int? previousSeasonId,
                 CancellationToken ct = default);           
         
         Task UpdateStandingsForPhaseAsync(int europeanCupPhaseId, CancellationToken ct = default);

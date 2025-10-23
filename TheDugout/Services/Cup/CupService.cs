@@ -12,16 +12,15 @@
     public class CupService : ICupService
     {
         private readonly DugoutDbContext _context;
-        private readonly IFixturesHelperService _fixturesHelperService;
         private readonly ICupFixturesService _cupFixturesService;
-        private readonly Random _random = new Random();
+        private readonly Random _random;
         private readonly ILogger<CupService> _logger = LoggerFactory.Create(builder => builder.AddConsole()).CreateLogger<CupService>();
 
-        public CupService(DugoutDbContext context, ICupFixturesService cupFixturesService, IFixturesHelperService fixturesHelperService)
+        public CupService(DugoutDbContext context, ICupFixturesService cupFixturesService)
         {
             _context = context;
             _cupFixturesService = cupFixturesService;
-            _fixturesHelperService = fixturesHelperService;
+            _random = new Random();
         }
         public async Task InitializeCupsForGameSaveAsync(GameSave gameSave, int seasonId)
         {
@@ -33,7 +32,7 @@
 
             _logger.LogInformation("Loaded {Count} active CupTemplates.", cupTemplates.Count);
 
-            var allCups = new List<Models.Cups.Cup>();
+            var allCups = new List<Cup>();
 
             foreach (var template in cupTemplates)
             {

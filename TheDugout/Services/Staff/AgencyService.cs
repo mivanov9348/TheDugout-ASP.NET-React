@@ -6,7 +6,8 @@
     using TheDugout.Models.Staff;
     using TheDugout.Services.Finance.Interfaces;
     using TheDugout.Services.Player.Interfaces;
-    using TheDugout.Services.Staff;
+    using TheDugout.Services.Staff.Interfaces;
+
     public class AgencyService : IAgencyService
     {
         private readonly DugoutDbContext _context;
@@ -19,7 +20,14 @@
             _playerGenerationService = playerGenerationService;
             _agencyFinanceService = agencyFinanceService;
         }
+
         public async Task InitializeAgenciesForGameSaveAsync(GameSave save, CancellationToken ct = default)
+        {
+            var agencies = await InitializeAgenciesAsync(save, ct);
+            await _playerGenerationService.GeneratePlayersForAgenciesAsync(save, agencies, ct);
+        }
+
+        public async Task<List<Agency>> InitializeAgenciesAsync(GameSave save, CancellationToken ct = default)
         {
             if (save == null) throw new ArgumentNullException(nameof(save));
 
@@ -62,21 +70,8 @@
                 await _agencyFinanceService.InitializeAgencyFundsAsync(save, agency);
             }
 
-            foreach (var agency in agencies)
-            {
-                var freeAgents = new List<Models.Players.Player>();
-
-                while (true)
-                {
-                    var player = _playerGenerationService.GenerateFreeAgent(save, agency);
-                    if (player == null)
-                        break;
-
-                    freeAgents.Add(player);
-                    _context.Players.Add(player);
-                }
-            }
-            await _context.SaveChangesAsync(ct);
+            return agencies;
         }
+
     }
 }

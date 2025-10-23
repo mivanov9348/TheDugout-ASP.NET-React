@@ -8,7 +8,7 @@
     using TheDugout.DTOs.Season;
     using TheDugout.Models.Enums;
     using TheDugout.Services.Competition.Interfaces;
-    using TheDugout.Services.Game;
+    using TheDugout.Services.Game.Interfaces;
     using TheDugout.Services.Season.Interfaces;
     using TheDugout.Services.User;
 
