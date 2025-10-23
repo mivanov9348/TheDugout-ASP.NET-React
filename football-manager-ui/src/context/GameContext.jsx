@@ -17,7 +17,7 @@ export function GameProvider({ children }) {
 
     setIsLoading(true);
     try {
-      const res = await fetch(`/api/games/status/${id}`, {
+      const res = await fetch(`/api/season/status/${id}`, {
         credentials: "include",
         method: "GET",
       });

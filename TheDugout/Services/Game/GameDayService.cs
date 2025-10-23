@@ -6,6 +6,7 @@
     using TheDugout.Models.Fixtures;
     using TheDugout.Models.Seasons;
     using TheDugout.Services.CPUManager;
+    using TheDugout.Services.Game.Interfaces;
     using TheDugout.Services.Season.Interfaces;
 
     public class GameDayService : IGameDayService

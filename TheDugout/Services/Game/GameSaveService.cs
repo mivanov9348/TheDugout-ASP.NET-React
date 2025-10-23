@@ -11,6 +11,7 @@
     using TheDugout.Services.Cup.Interfaces;
     using TheDugout.Services.EuropeanCup.Interfaces;
     using TheDugout.Services.Finance.Interfaces;
+    using TheDugout.Services.Game.Interfaces;
     using TheDugout.Services.GameSettings.Interfaces;
     using TheDugout.Services.League.Interfaces;
     using TheDugout.Services.Player.Interfaces;
@@ -235,7 +236,6 @@ WHERE T.{Quote("GameSaveId")} = @p0;";
                 return false;
             }
         }
-
         public async Task<GameSave> StartNewGameAsync(int userId, CancellationToken ct = default)
         {
             if (userId <= 0)
@@ -291,6 +291,10 @@ WHERE T.{Quote("GameSaveId")} = @p0;";
                 var leagues = await _leagueGenerator.GenerateLeaguesAsync(gameSave, season);
                 await _context.SaveChangesAsync(ct);
                 LogStep("Generated Leagues");
+
+                await _leagueGenerator.GenerateTeamsForLeaguesAsync(gameSave, leagues);
+                await _context.SaveChangesAsync(ct);
+                LogStep("Generated Teams for Leagues");
 
                 var independentTeams = await _teamGenerator.GenerateIndependentTeamsAsync(gameSave);
                 foreach (var team in independentTeams)

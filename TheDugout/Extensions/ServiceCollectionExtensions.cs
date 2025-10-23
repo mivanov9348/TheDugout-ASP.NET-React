@@ -37,6 +37,8 @@
     using Scrutor;
     using TheDugout.Services.Finance.Interfaces;
     using TheDugout.Services.GameSettings.Interfaces;
+    using TheDugout.Services.Game.Interfaces;
+
     public static class ServiceCollectionExtensions
     {
         public static IServiceCollection AddDugoutServices(this IServiceCollection services)

@@ -74,7 +74,7 @@ function Header({ username }) {
 
     startProcessing("Advancing to next day...");
     try {
-      const res = await fetch("/api/games/current/next-day", {
+      const res = await fetch("/api/season/current/next-day", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -152,7 +152,7 @@ function Header({ username }) {
     startProcessing("Ending current season...");
     try {
       const res = await fetch(
-        `/api/games/season/${currentGameSave.seasons[0].id}/end`,
+        `/api/season/season/${currentGameSave.seasons[0].id}/end`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

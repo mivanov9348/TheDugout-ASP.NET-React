@@ -1,4 +1,4 @@
-﻿namespace TheDugout.Services.Game
+﻿namespace TheDugout.Services.Game.Interfaces
 {
     using TheDugout.Models.Game;
     public interface IGameSaveService

@@ -4,14 +4,21 @@
     using TheDugout.Data;
     using TheDugout.Models.Game;
     using TheDugout.Models.Seasons;
+    using TheDugout.Services.League.Interfaces;
     using TheDugout.Services.Season.Interfaces;
 
     public class NewSeasonService : INewSeasonService
     {
         private readonly DugoutDbContext _context;
-        public NewSeasonService(DugoutDbContext context)
+        private readonly ISeasonCleanupService _seasonCleanupService;
+        private readonly ILeagueService _leagueService;
+        private readonly ILogger<NewSeasonService> _logger;
+        public NewSeasonService(DugoutDbContext context, ISeasonCleanupService seasonCleanupService, ILeagueService leagueService, ILogger<NewSeasonService> logger)
         {
             _context = context;
+            _logger = logger;
+            _seasonCleanupService = seasonCleanupService;
+            _leagueService = leagueService;
         }
         public async Task<Season> GenerateSeason(GameSave gameSave, DateTime startDate)
         {
@@ -55,6 +62,65 @@
 
             return season;
         }
+        public async Task<bool> StartNewSeasonAsync(int seasonId)
+        {
+            _logger.LogInformation("🚀 [StartNewSeasonAsync] Starting new season after {SeasonId}", seasonId);
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                // 1️⃣ Clean up old season data
+                await _seasonCleanupService.CleanupOldSeasonDataAsync(seasonId);
+
+                var previousSeason = await _context.Seasons
+                                    .Include(s => s.GameSave)
+                                    .FirstAsync(s => s.Id == seasonId);
+
+                var gameSave = _context.GameSaves
+                        .FirstOrDefault(gs => gs.CurrentSeasonId == seasonId);
+
+                if (gameSave == null)
+                {
+                    throw new Exception("Game Save is null!");
+                }
+
+                // New Season
+                var newSeason = await GenerateSeason(previousSeason.GameSave, previousSeason.EndDate.AddDays(1));
+                _logger.LogInformation("✅ Created new Season {Id}", newSeason.Id);
+
+      
+                // New leagues with new releagated/promoted
+                var newLeagues = await _leagueService.GenerateLeaguesAsync(gameSave, newSeason);
+                await _leagueService.ProcessPromotionsAndRelegationsAsync(gameSave, previousSeason, newLeagues);
+                await _leagueService.InitializeStandingsAsync(gameSave, newSeason);
+
+                // new eurocup for season with qualified from previous season + random other teams
+
+                // new domestic cups same rules
+
+                // fixtures same rules
+
+                // new league standings for new leagues
+
+
+
+                // 💾 7. Save and Commit
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                _logger.LogInformation("🎉 New season successfully started!");
+                return true;
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "❌ [StartNewSeasonAsync] Error occurred, rolling back transaction.");
+                await transaction.RollbackAsync();
+                return false;
+            }
+        }
+
         private SeasonEventType GetEventType(DateTime date, DateTime seasonStart, DateTime seasonEnd)
         {
             if (date.Date == seasonStart.Date)

@@ -8,6 +8,7 @@
     using TheDugout.Services.Facilities;
     using TheDugout.Services.Player.Interfaces;
     using TheDugout.Services.Team.Interfaces;
+    using TheDugout.Models.Leagues;
 
     public class TeamGenerationService : ITeamGenerationService
     {
@@ -28,7 +29,7 @@
 
         public async Task<List<Team>> GenerateTeamsAsync(
     GameSave gameSave,
-    Models.Leagues.League league,
+    League league,
     IEnumerable<TeamTemplate> templates)
         {
             var teams = new List<Team>();
@@ -79,7 +80,8 @@
             await _context.SaveChangesAsync();
 
             return teams;
-        }
+        }       
+
         private int CalculateTeamPopularity(Models.Teams.Team team)
         {
             if (team.Players == null || !team.Players.Any())

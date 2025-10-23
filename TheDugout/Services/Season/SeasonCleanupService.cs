@@ -16,6 +16,25 @@
         }
         public async Task CleanupOldSeasonDataAsync(int seasonId)
         {
+            if (seasonId <= 0)
+            {
+                _logger.LogWarning("⚠️ No valid seasonId provided. Trying to find last inactive season...");
+
+                var lastInactiveSeason = await _context.Seasons
+                    .Where(s => !s.IsActive)
+                    .OrderByDescending(s => s.EndDate)
+                    .FirstOrDefaultAsync();
+
+                if (lastInactiveSeason == null)
+                {
+                    _logger.LogError("❌ No inactive season found to clean up!");
+                    throw new Exception("No inactive season found to clean up.");
+                }
+
+                seasonId = lastInactiveSeason.Id;
+                _logger.LogInformation("📅 Using last inactive season {SeasonId} for cleanup.", seasonId);
+            }
+
             _logger.LogInformation("🧹 Starting cleanup for season {SeasonId}", seasonId);
 
             await CleanupFixturesAndMatchesAsync(seasonId);
@@ -25,8 +44,10 @@
             await CleanupFreeAgentsAsync(seasonId);
 
             await _context.SaveChangesAsync();
+
             _logger.LogInformation("✅ Cleanup complete for season {SeasonId}", seasonId);
         }
+
         private async Task CleanupFixturesAndMatchesAsync(int seasonId)
         {
             _logger.LogInformation("🧩 Cleaning Fixtures & Matches for season {SeasonId}", seasonId);
@@ -74,7 +95,7 @@
 
             // Изтриваме оферти първо, защото имат FK към Player и Transfer
             var transferOffers = await _context.TransferOffers
-                .Where(o => o.GameSaveId == seasonId)
+                .Where(o => o.GameSave.CurrentSeasonId == seasonId)
                 .ToListAsync();
 
             if (transferOffers.Any())
@@ -109,7 +130,7 @@
             _logger.LogInformation("🧹 Cleaning up free agents for season {SeasonId}", seasonId);
 
             var playersToDelete = await _context.Players
-                .Where(p => p.TeamId == null && p.GameSaveId == seasonId)
+                .Where(p => p.TeamId == null && p.GameSave.CurrentSeasonId == seasonId)
                 .ToListAsync();
 
             if (!playersToDelete.Any())
@@ -170,7 +191,7 @@
         {
             // Намираме всички training sessions за сезона
             var sessionsToDelete = await _context.TrainingSessions
-                .Where(t => t.SeasonId == seasonId || t.GameSaveId == seasonId)
+                .Where(t => t.SeasonId == seasonId || t.GameSave.CurrentSeasonId == seasonId)
                 .ToListAsync();
 
             if (!sessionsToDelete.Any())

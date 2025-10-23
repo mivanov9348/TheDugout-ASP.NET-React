@@ -12,7 +12,6 @@
     using TheDugout.Models.Players;
     using TheDugout.Models.Training;
     using TheDugout.Models.Transfers;
-
     public class Team
     {
         public int Id { get; set; }
@@ -58,7 +57,6 @@
         public ICollection<MatchEvent> MatchEvents { get; set; } = new List<MatchEvent>();
         public ICollection<TransferOffer> SentTransferOffers { get; set; } = new List<TransferOffer>();
         public ICollection<TransferOffer> ReceivedTransferOffers { get; set; } = new List<TransferOffer>();
-
 
         public TeamTactic? TeamTactic { get; set; }
     }

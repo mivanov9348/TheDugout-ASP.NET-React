@@ -1,9 +1,11 @@
-﻿using TheDugout.Models.Game;
-
-namespace TheDugout.Services.Season.Interfaces
+﻿namespace TheDugout.Services.Season.Interfaces
 {
+    using TheDugout.Models.Game;
+    using TheDugout.Models.Seasons;
     public interface INewSeasonService
     {
-        Task<Models.Seasons.Season> GenerateSeason(GameSave gameSave, DateTime startDate);
+        Task<Season> GenerateSeason(GameSave gameSave, DateTime startDate);
+        Task<bool> StartNewSeasonAsync(int seasonId);
+
     }
 }

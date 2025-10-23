@@ -1,7 +1,7 @@
-﻿using TheDugout.Models.Enums;
-
-namespace TheDugout.DTOs.Season
+﻿namespace TheDugout.DTOs.Season
 {
+    using TheDugout.Models.Enums;
+
     public class SeasonOverviewDto
     {
         public int SeasonId { get; set; }
@@ -15,12 +15,12 @@ namespace TheDugout.DTOs.Season
         public string Name { get; set; } = string.Empty;
         public CompetitionTypeEnum Type { get; set; }
 
-        public string? ChampionTeam { get; set; }
-        public string? RunnerUpTeam { get; set; }
+        public TeamSummaryDto? ChampionTeam { get; set; }
+        public TeamSummaryDto? RunnerUpTeam { get; set; }
 
-        public List<string> PromotedTeams { get; set; } = new();
-        public List<string> RelegatedTeams { get; set; } = new();
-        public List<string> EuropeanQualifiedTeams { get; set; } = new();
+        public List<TeamSummaryDto> PromotedTeams { get; set; } = new();
+        public List<TeamSummaryDto> RelegatedTeams { get; set; } = new();
+        public List<TeamSummaryDto> EuropeanQualifiedTeams { get; set; } = new();
 
         public List<AwardDto> Awards { get; set; } = new();
         public List<LeagueStandingDto>? LeagueStandings { get; set; }
@@ -37,6 +37,7 @@ namespace TheDugout.DTOs.Season
     public class LeagueStandingDto
     {
         public string TeamName { get; set; } = string.Empty;
+        public string? TeamLogo { get; set; } 
         public int Points { get; set; }
         public int Wins { get; set; }
         public int Draws { get; set; }
@@ -50,6 +51,12 @@ namespace TheDugout.DTOs.Season
     {
         public string PlayerName { get; set; } = string.Empty;
         public int Goals { get; set; }
+    }
+
+    public class TeamSummaryDto
+    {
+        public string Name { get; set; } = string.Empty;
+        public string? LogoFileName { get; set; }
     }
 
 }
