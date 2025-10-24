@@ -50,7 +50,6 @@
             };
 
             _context.Stadiums.Add(stadium);
-            await _context.SaveChangesAsync();
 
             return stadium;
         }
@@ -144,10 +143,12 @@
             if (team == null)
                 throw new Exception("Home team not found");
 
-            if (team.Stadium == null)
+            var stadium = await _context.Stadiums
+             .FirstOrDefaultAsync(s => s.TeamId == team.Id);
+
+            if (stadium == null)
                 throw new Exception("Stadium not found");
 
-            var stadium = team.Stadium;
             var attendance = match.Attendance; 
 
             // 💰 Приход от билети

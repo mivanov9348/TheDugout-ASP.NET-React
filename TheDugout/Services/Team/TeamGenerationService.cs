@@ -82,7 +82,7 @@
             return teams;
         }       
 
-        private int CalculateTeamPopularity(Models.Teams.Team team)
+        private int CalculateTeamPopularity(Team team)
         {
             if (team.Players == null || !team.Players.Any())
                 return 10;
@@ -122,7 +122,6 @@
                 var team = new Team
                 {
                     TemplateId = tt.Id,
-                    GameSave = gameSave,
                     GameSaveId = gameSave.Id,
                     League = null,
                     Name = tt.Name,
@@ -145,7 +144,18 @@
                 teams.Add(team);
             }
 
+            // Първо записваме отборите, за да получат ID
             _context.Teams.AddRange(teams);
+            await _context.SaveChangesAsync();
+
+            // Сега вече имаме team.Id, можем да добавим съоръжения
+            foreach (var team in teams)
+            {
+                await _stadiumService.AddStadiumAsync(team.Id);
+                await _trainingService.AddTrainingFacilityAsync(team.Id);
+                await _academyService.AddYouthAcademyAsync(team.Id);
+            }
+
             return teams;
         }
 

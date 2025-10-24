@@ -45,7 +45,6 @@
             };
 
             _context.YouthAcademies.Add(academy);
-            await _context.SaveChangesAsync();
 
             return academy;
         }

@@ -19,6 +19,7 @@ import Fixtures from "../pages/season/Fixtures";
 import SeasonReview from "../pages/season/SeasonReview";
 import TodayMatches from "../pages/season/TodayMatches";
 import Match from "../pages/season/Match";
+import AllTimeStats from "../pages/AllTimeStats";
 
 import Competitions from "../pages/competitions/Competitions";
 import Cup from "../pages/competitions/Cup";
@@ -106,6 +107,10 @@ export const AppRoutes = (gameSaveId, userTeamId, seasonId) => (
     <Route path="/season-review" element={<SeasonReview gameSaveId={gameSaveId} />} />
     <Route path="/today-matches/:gameSaveId" element={<TodayMatches />} />
     <Route path="/match/:matchId" element={<Match />} />
+    <Route 
+      path="/all-time-stats" 
+      element={<AllTimeStats gameSaveId={gameSaveId} />} 
+    />
 
     {/* Player */}
     <Route path="/player/:playerId" element={<PlayerProfile gameSaveId={gameSaveId} />} />

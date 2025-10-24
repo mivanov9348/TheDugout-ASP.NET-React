@@ -45,7 +45,6 @@
             };
 
             _context.TrainingFacilities.Add(trainingFacility);
-            await _context.SaveChangesAsync();
 
             return trainingFacility;
         }

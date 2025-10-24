@@ -213,6 +213,7 @@
 
             sw.Restart();
             var match = await _matchService.GetOrCreateMatchAsync(fixture, gameSave);
+            await _matchService.GenerateAttendanceAsync(match);
             var revenue = await _stadiumService.GenerateMatchRevenueAsync(match);
             _logger.LogInformation($"revenue from match: {revenue}");
 

@@ -30,34 +30,15 @@
                 .Where(ct => ct.IsActive)
                 .ToListAsync();
 
-            _logger.LogInformation("Loaded {Count} active CupTemplates.", cupTemplates.Count);
-
             var allCups = new List<Cup>();
 
             foreach (var template in cupTemplates)
             {
-                _logger.LogInformation("Processing CupTemplate {TemplateId} ({CountryCode})", template.Id, template.CountryCode);
+                var country = await _context.Countries.FirstOrDefaultAsync(c => c.Code == template.CountryCode);
+                if (country == null) continue;
 
-                var country = await _context.Countries
-                    .FirstOrDefaultAsync(c => c.Code == template.CountryCode);
-
-                if (country == null)
-                {
-                    _logger.LogWarning("Skipping template {TemplateId} - Country not found.", template.Id);
-                    continue;
-                }
-
-                var teams = gameSave.Teams
-                    .Where(t => t.CountryId == country.Id)
-                    .ToList();
-
-                _logger.LogInformation("Found {Count} teams for country {CountryId}", teams.Count, country.Id);
-
-                if (teams.Count < 2)
-                {
-                    _logger.LogWarning("Skipping cup for {CountryCode} - Not enough teams ({Count})", country.Code, teams.Count);
-                    continue;
-                }
+                var teams = gameSave.Teams.Where(t => t.CountryId == country.Id).ToList();
+                if (teams.Count < 2) continue;
 
                 int teamsCount = teams.Count;
                 int nextPowerOfTwo = (int)Math.Pow(2, Math.Ceiling(Math.Log2(teamsCount)));
@@ -73,7 +54,6 @@
                 var cup = new Cup
                 {
                     Competition = competition,
-                    CompetitionId = competition.Id,
                     TemplateId = template.Id,
                     GameSaveId = gameSave.Id,
                     SeasonId = seasonId,
@@ -84,36 +64,36 @@
                 };
 
                 _context.Cups.Add(cup);
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(); // Save Cup first to get Cup.Id
 
-                _logger.LogInformation("Created Cup {CupId} for CountryId {CountryId} with {TeamsCount} teams.", cup.Id, country.Id, teamsCount);
-
-                foreach (var team in teams)
+                var cupTeams = teams.Select(t => new CupTeam
                 {
-                    var entry = _context.Entry(team);
-                    _logger.LogInformation("Team {TeamId} State: {State}", team.Id, entry.State);
-                    cup.Teams.Add(new CupTeam { TeamId = team.Id, GameSaveId = gameSave.Id });
-                }
+                    CupId = cup.Id,
+                    TeamId = t.Id,
+                    GameSaveId = gameSave.Id
+                }).ToList();
+
+                _context.CupTeams.AddRange(cupTeams);
 
                 allCups.Add(cup);
-
-                await _context.SaveChangesAsync();
-            }
-
-            if (allCups.Any())
-            {
-                _logger.LogInformation("Generating initial fixtures for {Count} cups...", allCups.Count);
-                await _cupFixturesService.GenerateInitialFixturesAsync(seasonId, gameSave.Id, allCups);
-            }
-            else
-            {
-                _logger.LogWarning("No cups created for GameSaveId {GameSaveId}.", gameSave.Id);
             }
 
             await _context.SaveChangesAsync();
 
+            // 🧠 Ето тук е ключът — презареждаме cups с включени Teams
+            allCups = await _context.Cups
+                .Include(c => c.Teams)
+                .Where(c => c.GameSaveId == gameSave.Id && c.SeasonId == seasonId)
+                .ToListAsync();
+
+            if (allCups.Any())
+            {
+                await _cupFixturesService.GenerateInitialFixturesAsync(seasonId, gameSave.Id, allCups);
+            }
+
             _logger.LogInformation("=== InitializeCupsForGameSaveAsync END ===");
         }
+
         public async Task<bool> IsCupFinishedAsync(int cupId)
         {
             // Getting the cup with its rounds and fixtures

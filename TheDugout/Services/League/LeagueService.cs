@@ -80,10 +80,7 @@
                 var lt = leagueTemplates[league.TemplateId];
                 var teams = await _teamGenerator.GenerateTeamsAsync(gameSave, league, lt.TeamTemplates);
                 league.Teams = teams;
-                foreach (var team in teams)
-                {
-                    gameSave.Teams.Add(team); 
-                }
+                
             }
 
             _context.ChangeTracker.AutoDetectChangesEnabled = true;

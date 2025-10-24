@@ -1,7 +1,7 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import { 
   Home, Mail, Users, Activity, Dumbbell, Calendar, 
-  Trophy, ShoppingCart, Building, Wallet, Calendar1, LogOut
+  Trophy, ShoppingCart, Building, Wallet, Calendar1, LogOut, BarChart
 } from "lucide-react";
 
 function Sidebar({ onExitGame }) {
@@ -18,6 +18,8 @@ function Sidebar({ onExitGame }) {
     {name:"Facilities", path:"/facilities", icon:<Building size={18}/>},
     { name: "Club", path: "/club", icon: <Building size={18} /> },
     { name: "Finances", path: "/finances", icon: <Wallet size={18} /> },
+        { name: "Stats", path: "/all-time-stats", icon: <BarChart size={18} /> },
+
   ];
 
   return (

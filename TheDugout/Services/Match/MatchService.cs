@@ -72,6 +72,7 @@
                         .ThenInclude(p => p.Position)
                 .LoadAsync();
 
+            await _context.SaveChangesAsync();
             return match;
         }
 
@@ -227,10 +228,13 @@
             if (homeTeam == null)
                 throw new Exception("Home team not found.");
 
-            if (homeTeam.Stadium == null)
-                throw new Exception("Home team's stadium not found.");
+            var stadium = await _context.Stadiums
+                    .FirstOrDefaultAsync(s => s.TeamId == homeTeam.Id);
 
-            var capacity = homeTeam.Stadium.Capacity;
+            if (stadium == null)
+                throw new Exception("Stadium not found");    
+
+            var capacity = stadium.Capacity;
 
             // 🎟️ Генерираме посещаемост между 10% и 100%
             var random = new Random();
@@ -244,8 +248,6 @@
 
             return attendance;
         }
-
-
         private static object BuildMatchView(Match match, Fixture fixture)
         {
             static object BuildTeamView(Team team)

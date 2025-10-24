@@ -297,7 +297,10 @@ WHERE T.{Quote("GameSaveId")} = @p0;";
 
                 var independentTeams = await _teamGenerator.GenerateIndependentTeamsAsync(gameSave);
                 foreach (var team in independentTeams)
+                {
                     gameSave.Teams.Add(team);
+                   
+                }
 
                 await _context.SaveChangesAsync(ct);
                 LogStep("Generated Independent Teams");
