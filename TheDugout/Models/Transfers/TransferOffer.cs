@@ -2,6 +2,7 @@
 {
     using TheDugout.Models.Game;
     using TheDugout.Models.Players;
+    using TheDugout.Models.Seasons;
     using TheDugout.Models.Teams;
     public enum OfferStatus
     {
@@ -14,6 +15,8 @@
         public int Id { get; set; }
         public int GameSaveId { get; set; }
         public GameSave GameSave { get; set; } = null!;
+        public int? SeasonId { get; set; }
+        public Season Season { get; set; } = null!;
         public int FromTeamId { get; set; }
         public Team FromTeam { get; set; } = null!;
         public int ToTeamId { get; set; }

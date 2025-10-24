@@ -274,7 +274,10 @@
                         save.UserTeam.Balance,
                         LeagueName = save.UserTeam.League.Template.Name
                     },
-                    Seasons = save.Seasons.Select(s => new
+                    Seasons = save.Seasons
+                     .Where(s => s.IsActive)
+                     .OrderByDescending(s => s.StartDate)
+                    .Select(s => new
                     {
                         s.Id,
                         s.CurrentDate,

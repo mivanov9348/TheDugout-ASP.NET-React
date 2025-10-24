@@ -7,6 +7,10 @@
     using TheDugout.Models.Leagues;
     using TheDugout.Models.Players;
     using TheDugout.Models.Training;
+    using TheDugout.Models.Transfers;
+    using TheDugout.Models.Matches;
+    using TheDugout.Models.Finance;
+
     public class Season
     {
         public int Id { get; set; }
@@ -29,6 +33,9 @@
         public ICollection<CompetitionSeasonResult> CompetitionSeasonResults { get; set; } = new List<CompetitionSeasonResult>();
         public ICollection<CompetitionAward> Awards { get; set; } = new List<CompetitionAward>();
         public ICollection<PlayerCompetitionStats> PlayerCompetitionStats { get; set; } = new List<PlayerCompetitionStats>();
+        public ICollection<TransferOffer> TransferOffers { get; set; } = new List<TransferOffer>();
+        public ICollection<Match> Matches { get; set; } = new List<Match>();
+        public ICollection<FinancialTransaction> FinancialTransactions { get; set; } = new List<FinancialTransaction>();
 
     }
 }

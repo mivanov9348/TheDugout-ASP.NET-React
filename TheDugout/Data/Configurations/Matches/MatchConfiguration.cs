@@ -36,6 +36,11 @@
                    .WithMany(c => c.Matches)
                    .HasForeignKey(m => m.CompetitionId)
                    .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasOne(to => to.Season)
+              .WithMany(p => p.Matches)
+              .HasForeignKey(to => to.SeasonId)
+              .OnDelete(DeleteBehavior.Restrict);
         }
 
     }

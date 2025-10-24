@@ -11,6 +11,8 @@
     {
         private readonly DugoutDbContext _context;
         private readonly ITransactionService _transactionService;
+        private const int MAX_LEVEL = 10;
+
         private readonly string _trainingLevelsPath = "Data/SeedFiles/trainingQuality.json";
         private readonly string _facilityCostsPath = "Data/SeedFiles/facilitiesUpgradeCost.json";
         public TrainingFacilitiesService(DugoutDbContext context, ITransactionService transactionService)
@@ -46,6 +48,45 @@
             await _context.SaveChangesAsync();
 
             return trainingFacility;
+        }
+
+        public long? GetNextUpgradeCost(int currentLevel)
+        {
+            if (currentLevel >= MAX_LEVEL)
+            {
+                return null; // Няма ъпгрейд след макс. ниво
+            }
+
+            int nextLevel = currentLevel + 1;
+            string nextLevelStr = nextLevel.ToString();
+
+            try
+            {
+                var costsJson = File.ReadAllText(_facilityCostsPath);
+                var costs = JsonSerializer.Deserialize<FacilityCostsRoot>(costsJson);
+
+                // Промяната е на този ред:
+                if (costs != null &&
+                    costs.FacilityCosts.TryGetValue("TrainingFacility", out var facilityCosts) &&
+                    facilityCosts.TryGetValue(nextLevelStr, out decimal decimalCost))
+                {
+                    // Преобразуваме 'decimal' към 'long?'
+                    return (long)decimalCost;
+                }
+            }
+            catch (Exception)
+            {
+                // Грешка при четене/парсване на файла
+                return null;
+            }
+
+            return null; // Не е намерена цена
+        }
+
+        // Увери се, че този клас съществува и тук:
+        public class FacilityCostsRoot
+        {
+            public Dictionary<string, Dictionary<string, decimal>> FacilityCosts { get; set; } = new();
         }
 
         public async Task<bool> UpgradeTrainingFacilityAsync(int teamId)

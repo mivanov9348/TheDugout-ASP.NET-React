@@ -7,6 +7,7 @@
     using TheDugout.Models.Fixtures;
     using TheDugout.Models.Game;
     using TheDugout.Models.Matches;
+    using TheDugout.Services.Facilities;
     using TheDugout.Services.GameSettings.Interfaces;
     using TheDugout.Services.League.Interfaces;
     using TheDugout.Services.Match.Interfaces;
@@ -25,6 +26,7 @@
         private readonly IStandingsDispatcherService _standingsDispatcher;
         private readonly IPenaltyShootoutService _penaltyService;
         private readonly IMoneyPrizeService _moneyPrizeService;
+        private readonly IStadiumService _stadiumService;
         private readonly ILogger<MatchEngine> _logger;
         private readonly DugoutDbContext _context;
 
@@ -37,6 +39,7 @@
         IMatchService matchService,
             IPenaltyShootoutService penaltyService,
             IMoneyPrizeService moneyPrizeService,
+            IStadiumService stadiumService,
             ILogger<MatchEngine> logger,
             DugoutDbContext context)
         {
@@ -48,6 +51,7 @@
             _standingsDispatcher = standingsDispatcher;
             _penaltyService = penaltyService;
             _moneyPrizeService = moneyPrizeService;
+            _stadiumService = stadiumService;
             _logger = logger;
             _context = context;
         }
@@ -187,7 +191,7 @@
 
         //    return match;
         //}
-               
+
         public async Task<Match> SimulateMatchAsync(Fixture fixture, GameSave gameSave)
         {
             if (fixture is null) throw new ArgumentNullException(nameof(fixture));
@@ -209,6 +213,9 @@
 
             sw.Restart();
             var match = await _matchService.GetOrCreateMatchAsync(fixture, gameSave);
+            var revenue = await _stadiumService.GenerateMatchRevenueAsync(match);
+            _logger.LogInformation($"revenue from match: {revenue}");
+
             match.PlayerStats = await _playerStatsService.EnsureMatchStatsAsync(match);
             sw.Stop();
             _logger.LogInformation("🔧 Created/Loaded match + stats in {Elapsed} ms", sw.ElapsedMilliseconds);
@@ -342,6 +349,6 @@
                 await _moneyPrizeService.GrantToTeamAsync(gameSave, "MATCH_WIN", fixture.AwayTeam);
             }
         }
-         
+
     }
 }

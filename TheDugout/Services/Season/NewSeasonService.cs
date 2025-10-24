@@ -7,9 +7,7 @@
     using TheDugout.Models.Game;
     using TheDugout.Models.Seasons;
     using TheDugout.Services.Cup.Interfaces;
-    using TheDugout.Services.EuropeanCup;
     using TheDugout.Services.EuropeanCup.Interfaces;
-    using TheDugout.Services.League;
     using TheDugout.Services.League.Interfaces;
     using TheDugout.Services.Player.Interfaces;
     using TheDugout.Services.Season.Interfaces;
@@ -25,7 +23,8 @@
         private readonly IEuropeanCupService _europeanCupService;
         private readonly ILeagueFixturesService _leagueFixturesService;
         private readonly IPlayerGenerationService _playerGenerationService;
-        public NewSeasonService(DugoutDbContext context, ILogger<NewSeasonService> logger, ICupService cupService, ISeasonCleanupService seasonCleanupService, ILeagueService leagueService, IEuropeanCupService europeanCupService, ILeagueFixturesService leagueFixturesService, IPlayerGenerationService playerGenerationService)
+        private readonly IAgencyService _agencyService;
+        public NewSeasonService(DugoutDbContext context, ILogger<NewSeasonService> logger, ICupService cupService, ISeasonCleanupService seasonCleanupService, ILeagueService leagueService, IEuropeanCupService europeanCupService, ILeagueFixturesService leagueFixturesService, IPlayerGenerationService playerGenerationService,IAgencyService agencyService)
         {
             _context = context;
             _logger = logger;
@@ -35,6 +34,7 @@
             _europeanCupService = europeanCupService;
             _leagueFixturesService = leagueFixturesService;
             _playerGenerationService = playerGenerationService;
+            _agencyService = agencyService;
         }
         public async Task<Season> GenerateSeason(GameSave gameSave, DateTime startDate)
         {
@@ -150,8 +150,9 @@
                 await _leagueFixturesService.GenerateLeagueFixturesAsync(gameSave.Id, newSeason.Id, newSeason.StartDate);
                 _logger.LogInformation("Generated League Fixtures");
 
-                // agencies
+                // Agencies (Solidarity & New Players)
                 var agencies = _context.Agencies.Where(a => a.GameSaveId == gameSave.Id).ToList();
+                await _agencyService.DistributeSolidarityPaymentsAsync(gameSave);
                 await _playerGenerationService.GeneratePlayersForAgenciesAsync(gameSave, agencies);
 
                 // 💾 7. Save and Commit
@@ -168,6 +169,20 @@
                 await transaction.RollbackAsync();
                 return false;
             }
+        }
+
+        public async Task<Season> GetActiveSeason(int gameSaveId)
+        {
+            var activeSeason = await _context.Seasons
+                    .FirstOrDefaultAsync(x => x.GameSaveId == gameSaveId && x.IsActive);
+
+            if (activeSeason != null)
+                return activeSeason;
+
+            return await _context.Seasons
+                .Where(x => x.GameSaveId == gameSaveId)
+                .OrderByDescending(x=>x.Id)
+                .FirstOrDefaultAsync();
         }
 
         private SeasonEventType GetEventType(DateTime date, DateTime seasonStart, DateTime seasonEnd)

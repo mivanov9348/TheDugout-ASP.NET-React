@@ -2,6 +2,7 @@
 {
     using Microsoft.EntityFrameworkCore;
     using TheDugout.Data;
+    using TheDugout.Models.Finance;
     using TheDugout.Models.Game;
     using TheDugout.Models.Staff;
     using TheDugout.Services.Finance.Interfaces;
@@ -14,11 +15,13 @@
         private readonly IPlayerGenerationService _playerGenerationService;
         private readonly IAgencyFinanceService _agencyFinanceService;
         private readonly Random _rng = new();
-        public AgencyService(DugoutDbContext context, IPlayerGenerationService playerGenerationService, IAgencyFinanceService agencyFinanceService)
+        private readonly ILogger<AgencyService> _logger;
+        public AgencyService(DugoutDbContext context, IPlayerGenerationService playerGenerationService, IAgencyFinanceService agencyFinanceService, ILogger<AgencyService> logger)
         {
             _context = context;
             _playerGenerationService = playerGenerationService;
             _agencyFinanceService = agencyFinanceService;
+            _logger = logger;
         }
 
         public async Task InitializeAgenciesForGameSaveAsync(GameSave save, CancellationToken ct = default)
@@ -71,6 +74,72 @@
             }
 
             return agencies;
+        }
+        public async Task DistributeSolidarityPaymentsAsync(GameSave save, decimal percentage)
+        {
+            if (save == null) throw new ArgumentNullException(nameof(save));
+            if (percentage <= 0) return;
+
+            var previousSeason = await _context.Seasons
+                .Where(s => s.GameSaveId == save.Id && !s.IsActive)
+                .OrderByDescending(s => s.StartDate)
+                .FirstOrDefaultAsync();
+
+            if (previousSeason == null)
+            {
+                _logger.LogWarning("No previous season found for GameSave {GameSaveId}", save.Id);
+                return;
+            }
+
+            var totalTransferFees = await _context.FinancialTransactions
+                .Where(t => t.GameSaveId == save.Id &&
+                            t.SeasonId == previousSeason.Id &&
+                            t.Type == TransactionType.TransferFee &&
+                            t.Status == TransactionStatus.Completed)
+                .SumAsync(t => t.Amount);
+
+            // използваме параметъра percentage (примерно 20 → 0.20)
+            var percentageDecimal = percentage / 100m;
+            var solidarityPool = totalTransferFees * percentageDecimal;
+
+            if (solidarityPool <= 0)
+            {
+                _logger.LogInformation("No transfer fees found for previous season {SeasonId}", previousSeason.Id);
+                return;
+            }
+
+            var agencies = await _context.Agencies
+                .Where(a => a.GameSaveId == save.Id && a.IsActive)
+                .ToListAsync();
+
+            if (agencies.Count == 0)
+            {
+                _logger.LogWarning("No agencies found for GameSave {GameSaveId}", save.Id);
+                return;
+            }
+
+            var perAgency = solidarityPool / agencies.Count;
+            var bank = await _context.Banks.FirstAsync(b => b.GameSaveId == save.Id);
+
+            foreach (var agency in agencies)
+            {
+                agency.Budget += perAgency;
+                bank.Balance -= perAgency;
+
+                _context.FinancialTransactions.Add(new FinancialTransaction
+                {
+                    BankId = bank.Id,
+                    ToAgencyId = agency.Id,
+                    GameSaveId = save.Id,
+                    SeasonId = previousSeason.Id,
+                    Amount = perAgency,
+                    Type = TransactionType.Prize,
+                    Status = TransactionStatus.Completed,
+                    Description = $"Solidarity payment ({percentageDecimal:P0}) for season {previousSeason.Id}"
+                });
+            }
+
+            await _context.SaveChangesAsync();
         }
 
     }

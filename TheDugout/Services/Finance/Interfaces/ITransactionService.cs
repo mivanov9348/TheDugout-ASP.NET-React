@@ -14,7 +14,7 @@
         Task<FinancialTransaction> BankToAgencyAsync(Bank from, Agency to, decimal amt, string desc, TransactionType type);
         Task<FinancialTransaction> AgencyToClubAsync(Agency from, Team to, decimal amt, string desc, TransactionType type);
         Task<FinancialTransaction> AgencyToBankAsync(Agency from, Bank bank, decimal amt, string desc, TransactionType type);
-
+        Task<FinancialTransaction> ExternalToClubAsync(Team team, decimal amount, string description, TransactionType type);
 
     }
 }

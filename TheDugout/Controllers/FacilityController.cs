@@ -50,16 +50,19 @@
                     {
                         Level = team.Stadium.Level,
                         Capacity = team.Stadium.Capacity,
-                        TicketPrice = team.Stadium.TicketPrice
+                        TicketPrice = team.Stadium.TicketPrice,
+                        UpgradeCost = _stadiumService.GetNextUpgradeCost(team.Stadium.Level)
                     },
                     TrainingFacility = team.TrainingFacility == null ? null : new TrainingFacilityDto
                     {
                         Level = team.TrainingFacility.Level,
-                        TrainingQuality = team.TrainingFacility.TrainingQuality
+                        TrainingQuality = team.TrainingFacility.TrainingQuality,
+                        UpgradeCost = _trainingService.GetNextUpgradeCost(team.TrainingFacility.Level)
                     },
                     YouthAcademy = team.YouthAcademy == null ? null : new YouthAcademyDto
                     {
-                        Level = team.YouthAcademy.Level
+                        Level = team.YouthAcademy.Level,
+                        UpgradeCost = _academyService.GetNextUpgradeCost(team.YouthAcademy.Level)
                     }
                 };
 

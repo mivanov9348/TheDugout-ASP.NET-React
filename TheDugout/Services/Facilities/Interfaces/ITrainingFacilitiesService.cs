@@ -6,5 +6,6 @@
     {
         Task<TrainingFacility> AddTrainingFacilityAsync(int teamId);
         Task<bool> UpgradeTrainingFacilityAsync(int teamId);
+        long? GetNextUpgradeCost(int currentLevel);
     }
 }

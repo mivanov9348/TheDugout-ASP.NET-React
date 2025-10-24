@@ -2,7 +2,6 @@
 {
     using Microsoft.EntityFrameworkCore;
     using System.Text.Json;
-    using TheDugout;
     using TheDugout.Data;
     using TheDugout.Models.Competitions;
     using TheDugout.Models.Enums;
@@ -51,6 +50,7 @@
             var match = new Match
             {
                 GameSaveId = gameSave.Id,
+                SeasonId = gameSave.CurrentSeasonId,
                 FixtureId = fixture.Id,
                 Fixture = fixture,
                 CurrentMinute = 0,
@@ -211,6 +211,40 @@
                 _ => throw new InvalidOperationException($"Unsupported or invalid competition type: {fixture.CompetitionType}")
             };
         }
+
+        public async Task<int> GenerateAttendanceAsync(Match match)
+        {
+            if (match == null)
+                throw new ArgumentNullException(nameof(match));
+
+            // 🔹 Взимаме домакинския отбор
+            var homeTeamId = match.Fixture.HomeTeamId;
+
+            var homeTeam = await _context.Teams
+                .Include(t => t.Stadium)
+                .FirstOrDefaultAsync(t => t.Id == homeTeamId);
+
+            if (homeTeam == null)
+                throw new Exception("Home team not found.");
+
+            if (homeTeam.Stadium == null)
+                throw new Exception("Home team's stadium not found.");
+
+            var capacity = homeTeam.Stadium.Capacity;
+
+            // 🎟️ Генерираме посещаемост между 10% и 100%
+            var random = new Random();
+            double attendanceRate = random.NextDouble() * 0.9 + 0.1; 
+            int attendance = (int)(capacity * attendanceRate);
+
+            // 🧾 Записваме в мача
+            match.Attendance = attendance;
+
+            await _context.SaveChangesAsync();
+
+            return attendance;
+        }
+
 
         private static object BuildMatchView(Match match, Fixture fixture)
         {

@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { ArrowUpCircle } from "lucide-react";
 import Swal from "sweetalert2";
+import { useGame } from "../../context/GameContext";
 
 export default function Facilities({ gameSaveId, teamId }) {
   const [facilities, setFacilities] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { refreshGameStatus } = useGame();
 
   // 🔹 функция за зареждане на facilities
   const fetchFacilities = async () => {
@@ -15,6 +17,8 @@ export default function Facilities({ gameSaveId, teamId }) {
       });
       if (!res.ok) throw new Error("Грешка при зареждане на Facilities");
       const data = await res.json();
+      
+      // ПРОМЯНА: Добавяме upgradeCost към state-а
       setFacilities({
         stadium: data.stadium
           ? {
@@ -22,6 +26,7 @@ export default function Facilities({ gameSaveId, teamId }) {
               level: data.stadium.level,
               capacity: data.stadium.capacity,
               ticketPrice: data.stadium.ticketPrice,
+              upgradeCost: data.stadium.upgradeCost, // 👈 ПРОЧЕТИ ОТ API
             }
           : null,
         training: data.trainingFacility
@@ -29,6 +34,7 @@ export default function Facilities({ gameSaveId, teamId }) {
               name: "💪 Training Facilities",
               level: data.trainingFacility.level,
               quality: data.trainingFacility.trainingQuality,
+              upgradeCost: data.trainingFacility.upgradeCost, // 👈 ПРОЧЕТИ ОТ API
             }
           : null,
         youth: data.youthAcademy
@@ -36,6 +42,7 @@ export default function Facilities({ gameSaveId, teamId }) {
               name: "👶 Youth Academy",
               level: data.youthAcademy.level,
               talentPoints: data.youthAcademy.talentPointsPerYear,
+              upgradeCost: data.youthAcademy.upgradeCost, // 👈 ПРОЧЕТИ ОТ API
             }
           : null,
       });
@@ -52,7 +59,7 @@ export default function Facilities({ gameSaveId, teamId }) {
     }
   }, [teamId]);
 
-  // 🔹 Upgrade бутон
+  // 🔹 Upgrade бутон (ОСТАВА БЕЗ ПРОМЯНА)
   const handleUpgrade = async (key) => {
     try {
       let url;
@@ -75,6 +82,7 @@ export default function Facilities({ gameSaveId, teamId }) {
 
         // 🔄 обновяваме facilities след успех
         fetchFacilities();
+        await refreshGameStatus();
       } else {
         const errText = await res.text();
         Swal.fire({
@@ -95,15 +103,7 @@ export default function Facilities({ gameSaveId, teamId }) {
     }
   };
 
-  // 🔹 изчисляваме цена за следващ ъпгрейд (примерна формула)
-  const getNextUpgradeCost = (level) => {
-    if (level >= 10) return null;
-    return (level + 1) * 1000; // 👈 можеш да смениш формулата
-  };
-
   const renderFacility = (key, facility) => {
-    const nextCost = getNextUpgradeCost(facility.level);
-
     return (
       <div
         key={key}
@@ -118,13 +118,13 @@ export default function Facilities({ gameSaveId, teamId }) {
           </div>
           {facility.capacity && (
             <div>
-              Capacity: <span className="font-bold">{facility.capacity}</span>
+              Capacity: <span className="font-bold">{facility.capacity.toLocaleString()}</span>
             </div>
           )}
           {facility.ticketPrice && (
             <div>
               Ticket price:{" "}
-              <span className="font-bold">{facility.ticketPrice}</span>
+              <span className="font-bold">${facility.ticketPrice}</span>
             </div>
           )}
           {facility.quality && (
@@ -139,10 +139,15 @@ export default function Facilities({ gameSaveId, teamId }) {
               <span className="font-bold">{facility.talentPoints}</span>
             </div>
           )}
-          {nextCost ? (
+
+          {/* 👇 ПРОМЯНА: Използваме facility.upgradeCost директно */}
+          {facility.upgradeCost ? (
             <div>
               Next upgrade cost:{" "}
-              <span className="font-bold text-green-600">${nextCost}</span>
+              <span className="font-bold text-green-600">
+                {/* Добавяме .toLocaleString() за форматиране (напр. 1,200,000) */}
+                ${facility.upgradeCost.toLocaleString()}
+              </span>
             </div>
           ) : (
             <div className="text-red-600 font-bold">Max level reached</div>
@@ -155,7 +160,8 @@ export default function Facilities({ gameSaveId, teamId }) {
           </div>
         </div>
 
-        {facility.level < 10 ? (
+        {/* 👇 ПРОМЯНА: Проверяваме срещу facility.upgradeCost (по-надеждно е) */}
+        {facility.upgradeCost ? (
           <button
             onClick={() => handleUpgrade(key)}
             className="mt-auto flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-xl shadow transition"

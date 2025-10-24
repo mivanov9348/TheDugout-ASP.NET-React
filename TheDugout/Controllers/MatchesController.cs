@@ -73,10 +73,10 @@
         public async Task<IActionResult> SimulateMatches(int gameSaveId)
         {
             var gameSave = await _context.GameSaves
-                .Include(gs => gs.Fixtures)
-                    .ThenInclude(f => f.Match)
                 .Include(gs => gs.Seasons)
                 .Include(gs => gs.UserTeam)
+                    .ThenInclude(ut => ut.League)
+                        .ThenInclude(l => l.Template)
                 .FirstOrDefaultAsync(gs => gs.Id == gameSaveId);
 
             if (gameSave == null)
@@ -90,44 +90,77 @@
                 return BadRequest("No active season found for this GameSave.");
 
             var currentDate = currentSeason.CurrentDate.Date;
-            var fixtures = gameSave.Fixtures
-                .Where(f => f.Date.Date == currentDate)
-                .ToList();
+
+            // *** ПРОМЯНА: Зареждаме мачовете ефективно и с всички филтри ***
+            var fixtures = await _context.Fixtures
+                .Where(f => f.GameSaveId == gameSaveId &&
+                            f.Date.Date == currentDate &&
+                            f.SeasonId == currentSeason.Id &&
+                            f.Status != MatchStageEnum.Played) // Важно за идемпотентност
+                .ToListAsync();
 
             if (!fixtures.Any())
-                return Ok(new { message = "No fixtures to simulate." });
+                return Ok(new { message = "No fixtures to simulate." }); // Това не е грешка
 
-            foreach (var fixture in fixtures)
+            // *** ПРОМЯНА: Обвиваме всичко в транзакция ***
+            await using var transaction = await _context.Database.BeginTransactionAsync();
+            try
             {
-                var match = fixture.Match;
-
-                if (match == null)
+                foreach (var fixture in fixtures)
                 {
-                    match = await _matchService.GetOrCreateMatchAsync(fixture, gameSave);
-                    fixture.Match = match;
+                    var match = fixture.Match;
+
+                    if (match == null)
+                    {
+                        // Предполагаме, че GetOrCreateMatchAsync НЕ запазва, 
+                        // а само добавя към _context
+                        match = await _matchService.GetOrCreateMatchAsync(fixture, gameSave);
+                        fixture.Match = match;
+                    }
+
+                    // SimulateMatchAsync вече НЕ запазва промени
+                    await _matchEngine.SimulateMatchAsync(fixture, gameSave);
+
+                    // Маркираме статусите
+                    match.Status = MatchStageEnum.Played;
+                    fixture.Status = MatchStageEnum.Played;
                 }
 
-                await _matchEngine.SimulateMatchAsync(fixture, gameSave);
+                // *** ПРОМЯНА: Запазваме ВСИЧКО наведнъж ***
+                // Това включва: резултати, голове, статистики, 
+                // промени по LeagueStandings И новите статуси на Fixture/Match.
+                await _context.SaveChangesAsync();
 
-                match.Status = MatchStageEnum.Played;
-                fixture.Status = MatchStageEnum.Played;
+                // *** ПРОМЯНА: Потвърждаваме транзакцията ***
+                await transaction.CommitAsync();
+            }
+            catch (Exception ex)
+            {
+                // *** ПРОМЯНА: Ако нещо гръмне, връщаме всичко назад ***
+                await transaction.RollbackAsync();
+
+                _logger.LogError(ex, "Failed to simulate matches. Transaction rolled back.");
+
+                // Върни грешката, която хвана (напр. "Standings not initialized")
+                return StatusCode(500, $"Error during simulation: {ex.Message}");
             }
 
-            await _context.SaveChangesAsync();
-
             _context.ChangeTracker.Clear();
 
+            // ... (Останалата част от твоя код за връщане на Ok() с данните е същата) ...
+            // ... (Зареждаш updatedSave, todayMatches, и т.н.) ...
+
+            // Само за пълнота, ето пример как би изглеждало:
             var updatedSave = await _context.GameSaves
-                .Include(gs => gs.Seasons)
-                .Include(gs => gs.UserTeam)
-                    .ThenInclude(ut => ut.League)
-                        .ThenInclude(l => l.Template)
-                .FirstOrDefaultAsync(gs => gs.Id == gameSaveId);
+               .Include(gs => gs.Seasons)
+               .Include(gs => gs.UserTeam)
+                   .ThenInclude(ut => ut.League)
+                       .ThenInclude(l => l.Template)
+               .AsNoTracking() // Добра практика след SaveChanges/Clear
+               .FirstOrDefaultAsync(gs => gs.Id == gameSaveId);
 
-            var updatedSeason = updatedSave.Seasons?.FirstOrDefault();
+            var updatedSeason = updatedSave.Seasons.FirstOrDefault(s => s.Id == currentSeason.Id);
             var today = updatedSeason?.CurrentDate.Date ?? DateTime.Today;
-
-            _context.ChangeTracker.Clear();
 
             var todayMatches = await _context.Fixtures
                 .Include(f => f.HomeTeam)
@@ -137,6 +170,7 @@
                 .Include(f => f.EuropeanCupPhase).ThenInclude(ecp => ecp.EuropeanCup).ThenInclude(ec => ec.Template)
                 .Include(f => f.Match).ThenInclude(m => m.Penalties)
                 .Where(f => f.GameSaveId == gameSaveId && f.Date.Date == today)
+                .AsNoTracking()
                 .ToListAsync();
 
             var hasUnplayedMatchesToday = todayMatches.Any(m => m.Status == 0);
@@ -171,6 +205,110 @@
                 matches
             });
         }
+
+            //[HttpPost("simulate/{gameSaveId}")]
+            //public async Task<IActionResult> SimulateMatches(int gameSaveId)
+            //{
+            //    var gameSave = await _context.GameSaves
+            //        .Include(gs => gs.Fixtures)
+            //            .ThenInclude(f => f.Match)
+            //        .Include(gs => gs.Seasons)
+            //        .Include(gs => gs.UserTeam)
+            //        .FirstOrDefaultAsync(gs => gs.Id == gameSaveId);
+
+            //    if (gameSave == null)
+            //        return NotFound($"GameSave {gameSaveId} not found.");
+
+            //    var currentSeason = gameSave.Seasons
+            //        .OrderByDescending(s => s.StartDate)
+            //        .FirstOrDefault();
+
+            //    if (currentSeason == null)
+            //        return BadRequest("No active season found for this GameSave.");
+
+            //    var currentDate = currentSeason.CurrentDate.Date;
+            //    var fixtures = gameSave.Fixtures
+            //        .Where(f => f.Date.Date == currentDate &&
+            //        f.SeasonId == currentSeason.Id)
+            //        .ToList();
+
+            //    if (!fixtures.Any())
+            //        return Ok(new { message = "No fixtures to simulate." });
+
+            //    foreach (var fixture in fixtures)
+            //    {
+            //        var match = fixture.Match;
+
+            //        if (match == null)
+            //        {
+            //            match = await _matchService.GetOrCreateMatchAsync(fixture, gameSave);
+            //            fixture.Match = match;
+            //        }
+
+            //        await _matchEngine.SimulateMatchAsync(fixture, gameSave);
+
+            //        match.Status = MatchStageEnum.Played;
+            //        fixture.Status = MatchStageEnum.Played;
+            //    }
+
+            //    await _context.SaveChangesAsync();
+
+            //    _context.ChangeTracker.Clear();
+
+            //    var updatedSave = await _context.GameSaves
+            //        .Include(gs => gs.Seasons)
+            //        .Include(gs => gs.UserTeam)
+            //            .ThenInclude(ut => ut.League)
+            //                .ThenInclude(l => l.Template)
+            //        .FirstOrDefaultAsync(gs => gs.Id == gameSaveId);
+
+            //    var updatedSeason = updatedSave.Seasons?.FirstOrDefault();
+            //    var today = updatedSeason?.CurrentDate.Date ?? DateTime.Today;
+
+            //    _context.ChangeTracker.Clear();
+
+            //    var todayMatches = await _context.Fixtures
+            //        .Include(f => f.HomeTeam)
+            //        .Include(f => f.AwayTeam)
+            //        .Include(f => f.League).ThenInclude(l => l.Template)
+            //        .Include(f => f.CupRound).ThenInclude(cr => cr.Cup).ThenInclude(c => c.Template)
+            //        .Include(f => f.EuropeanCupPhase).ThenInclude(ecp => ecp.EuropeanCup).ThenInclude(ec => ec.Template)
+            //        .Include(f => f.Match).ThenInclude(m => m.Penalties)
+            //        .Where(f => f.GameSaveId == gameSaveId && f.Date.Date == today)
+            //        .ToListAsync();
+
+            //    var hasUnplayedMatchesToday = todayMatches.Any(m => m.Status == 0);
+            //    var hasMatchesToday = todayMatches.Any();
+
+            //    var matches = await _matchResponseService.GetFormattedMatchesResponseAsync(todayMatches, updatedSave);
+
+            //    return Ok(new
+            //    {
+            //        message = "Matches simulated successfully",
+            //        gameStatus = new
+            //        {
+            //            gameSave = new
+            //            {
+            //                updatedSave.Id,
+            //                updatedSave.UserTeamId,
+            //                UserTeam = new
+            //                {
+            //                    updatedSave.UserTeam.Name,
+            //                    updatedSave.UserTeam.Balance,
+            //                    LeagueName = updatedSave.UserTeam.League.Template.Name
+            //                },
+            //                Seasons = updatedSave.Seasons.Select(s => new
+            //                {
+            //                    s.Id,
+            //                    s.CurrentDate
+            //                }),
+            //            },
+            //            hasUnplayedMatchesToday,
+            //            hasMatchesToday
+            //        },
+            //        matches
+            //    });
+            //}
 
         [HttpGet("simulate-stream/{gameSaveId}")]
         public async Task SimulateMatchesStream(int gameSaveId)

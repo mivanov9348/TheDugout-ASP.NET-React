@@ -40,5 +40,10 @@ public class TransferOfferConfiguration : IEntityTypeConfiguration<TransferOffer
                .WithMany(p => p.TransferOffers)
                .HasForeignKey(to => to.PlayerId)
                .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(to => to.Season)
+              .WithMany(p => p.TransferOffers)
+              .HasForeignKey(to => to.SeasonId)
+              .OnDelete(DeleteBehavior.Restrict);
     }
 }

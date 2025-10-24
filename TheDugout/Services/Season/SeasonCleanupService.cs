@@ -130,8 +130,8 @@
             _logger.LogInformation("🧹 Cleaning up free agents for season {SeasonId}", seasonId);
 
             var playersToDelete = await _context.Players
-                .Where(p => p.TeamId == null && p.GameSave.CurrentSeasonId == seasonId)
-                .ToListAsync();
+                                .Where(p => p.TeamId == null)
+                                .ToListAsync();
 
             if (!playersToDelete.Any())
             {

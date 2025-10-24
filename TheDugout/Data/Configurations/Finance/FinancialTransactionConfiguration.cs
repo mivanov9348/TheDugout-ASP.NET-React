@@ -44,6 +44,11 @@
                .WithMany(b => b.FinancialTransactions)
                .HasForeignKey(ft => ft.GameSaveId)
                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasOne(ft => ft.Season)
+               .WithMany(b => b.FinancialTransactions)
+               .HasForeignKey(ft => ft.SeasonId)
+               .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

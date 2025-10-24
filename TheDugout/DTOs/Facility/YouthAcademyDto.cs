@@ -4,5 +4,6 @@
     {
         public int Level { get; set; }
         public int TalentPointsPerYear { get; set; }
+        public long? UpgradeCost { get; set; }
     }
 }

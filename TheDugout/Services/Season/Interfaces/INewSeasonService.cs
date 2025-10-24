@@ -6,6 +6,6 @@
     {
         Task<Season> GenerateSeason(GameSave gameSave, DateTime startDate);
         Task<bool> StartNewSeasonAsync(int seasonId);
-
+        Task<Season> GetActiveSeason(int gameSaveId);
     }
 }

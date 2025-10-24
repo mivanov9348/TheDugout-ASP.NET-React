@@ -1,5 +1,6 @@
 ﻿namespace TheDugout.Services.Finance
 {
+    using Microsoft.EntityFrameworkCore;
     using TheDugout.Data;
     using TheDugout.Models.Finance;
     using TheDugout.Models.Game;
@@ -20,6 +21,16 @@
         {
             if (tx == null)
                 throw new ArgumentNullException(nameof(tx));
+
+            var activeSeason = await _context.Seasons
+    .FirstOrDefaultAsync(s => s.GameSaveId == tx.GameSaveId && s.IsActive);
+
+            if (activeSeason == null)
+            {
+                throw new InvalidOperationException($"No active season found for GameSaveId {tx.GameSaveId}");
+            }
+
+            tx.SeasonId = activeSeason.Id;
 
             Bank? bank = null;
             Team? fromTeam = null;
@@ -149,6 +160,19 @@
                 Date = GetGameDateOrNow(from.GameSave),
                 Status = TransactionStatus.Pending
             });
+
+        public Task<FinancialTransaction> ExternalToClubAsync(Team team, decimal amount, string description, TransactionType type)
+                => ExecuteTransactionAsync(new FinancialTransaction
+                {
+                    ToTeamId = team.Id,
+                    GameSaveId = team.GameSaveId,
+                    Amount = amount,
+                    Description = description,
+                    Type = type,
+                    Date = GetGameDateOrNow(team.GameSave),
+                    Status = TransactionStatus.Pending
+                });
+
 
         private static DateTime GetGameDateOrNow(GameSave? gameSave)
         {

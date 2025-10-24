@@ -78,6 +78,21 @@
                     .WithOne(a => a.Season)
                     .HasForeignKey(a => a.SeasonId)
                     .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasMany(c => c.TransferOffers)
+                    .WithOne(a => a.Season)
+                    .HasForeignKey(a => a.SeasonId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasMany(c => c.Matches)
+                    .WithOne(a => a.Season)
+                    .HasForeignKey(a => a.SeasonId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasMany(c => c.FinancialTransactions)
+                    .WithOne(a => a.Season)
+                    .HasForeignKey(a => a.SeasonId)
+                    .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

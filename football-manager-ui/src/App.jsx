@@ -9,6 +9,7 @@ import StartScreen from "./components/StartScreen";
 import ProcessingOverlay from "./components/ProcessingOverlay";
 import SeasonOverview from "./pages/season/SeasonOverview";
 import LoadGameModal from "./components/LoadGameModal";
+import TeamSelectionModal from "./components/TeamSelectionModal";
 
 import { ProcessingProvider } from "./context/ProcessingContext";
 import { GameProvider, useGame } from "./context/GameContext";
@@ -82,7 +83,29 @@ function AppInner() {
             ) : (
               <StartScreen
                 username={username}
-                onNewGame={() => console.log("new game")}
+                onNewGame={async (setLoadingMessage) => {
+                  try {
+                    setLoadingMessage("Създаваме нова игра...");
+
+                    const res = await fetch("/api/games/new", {
+                      method: "POST",
+                      credentials: "include",
+                    });
+
+                    if (!res.ok) throw new Error("Failed to create new game");
+
+                    const newGameSave = await res.json();
+
+                    // 🔹 Показваме TeamSelectionModal вместо да навигираме
+                    setPendingSaveId(newGameSave.id);
+                    setShowTeamSelection(true);
+
+                  } catch (err) {
+                    console.error("Error starting new game:", err);
+                    Swal.fire("Грешка", "Възникна проблем при стартирането на нова игра.", "error");
+                  }
+                }}
+
                 onLoadGame={async () => {
                   try {
                     const res = await fetch("/api/games/saves", { credentials: "include" });
@@ -197,10 +220,45 @@ function AppInner() {
           }}
 
 
-          onDeleteSave={(id) => {
-            setUserSaves((prev) => prev.filter((s) => s.id !== id));
-            // Тук може и fetch към API-то ти:
-            // await fetch(`/api/saves/${id}`, { method: "DELETE" });
+          onDeleteSave={async (id) => {
+            try {
+              // 1. Изпращаме заявка към правилния API endpoint
+              const res = await fetch(`/api/games/${id}`, {
+                method: "DELETE",
+                credentials: "include", // Важно, защото endpoint-ът е [Authorize]
+              });
+
+              if (!res.ok) {
+                // 2. Хващаме грешки от сървъра
+                throw new Error("Failed to delete save");
+              }
+
+              // 3. Обновяваме локалния state САМО ако изтриването е успешно
+              setUserSaves((prev) => prev.filter((s) => s.id !== id));
+
+              // 4. (Опционално) Показваме съобщение за успех
+              Swal.fire("Изтрито!", "Сейфът беше изтрит успешно.", "success");
+
+            } catch (err) {
+              // 5. Показваме съобщение при грешка
+              console.error("Error deleting save:", err);
+              Swal.fire("Грешка", "Не успяхме да изтрием сейфа.", "error");
+            }
+          }}
+        />
+      )}
+      {showTeamSelection && pendingSaveId && (
+        <TeamSelectionModal
+          saveId={pendingSaveId}
+          onClose={() => {
+            setShowTeamSelection(false);
+            setPendingSaveId(null);
+          }}
+          onSelected={(fullSave) => {
+            setShowTeamSelection(false);
+            setPendingSaveId(null);
+            setCurrentGameSave(fullSave);
+            navigate(`/season/${fullSave.seasons?.[0]?.id}/overview`);
           }}
         />
       )}

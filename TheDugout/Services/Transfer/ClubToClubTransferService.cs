@@ -5,6 +5,8 @@
     using TheDugout.DTOs.Transfer;
     using TheDugout.Models.Messages;
     using TheDugout.Models.Seasons;
+    using TheDugout.Models.Teams;
+    using TheDugout.Models.Players;
     using TheDugout.Models.Transfers;
     using TheDugout.Services.Finance.Interfaces;
     using TheDugout.Services.Message.Interfaces;
@@ -44,6 +46,7 @@
             var season = await _context.Seasons
                 .Include(s => s.Events)
                 .FirstOrDefaultAsync(s => s.GameSaveId == request.GameSaveId &&
+                                           s.IsActive &&
                                           s.StartDate <= DateTime.UtcNow &&
                                           s.EndDate >= DateTime.UtcNow);
 
@@ -68,6 +71,7 @@
                 var offer = new TransferOffer
                 {
                     GameSaveId = request.GameSaveId,
+                    SeasonId = season.Id,
                     FromTeamId = request.FromTeamId,
                     ToTeamId = request.ToTeamId,
                     PlayerId = request.PlayerId,
@@ -83,9 +87,9 @@
         }
 
         private async Task<bool> CpuDecideToSell(
-            Models.Players.Player player,
-            Models.Teams.Team buyer,
-            Models.Teams.Team seller,
+           Player player,
+           Team buyer,
+           Team seller,
             decimal offer)
         {
             decimal ratio = offer / player.Price;

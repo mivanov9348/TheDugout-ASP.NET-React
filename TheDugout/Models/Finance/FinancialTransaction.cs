@@ -1,6 +1,7 @@
 ﻿namespace TheDugout.Models.Finance
 {
     using TheDugout.Models.Game;
+    using TheDugout.Models.Seasons;
     using TheDugout.Models.Staff;
     using TheDugout.Models.Teams;
     public enum TransactionType
@@ -9,6 +10,7 @@
         TransferIn,
         TransferOut,
         TransferFee,
+        MatchIncome,
         BankFee,
         Wage,
         Prize,
@@ -31,8 +33,10 @@
         public int? ToTeamId { get; set; }
         public Team? ToTeam { get; set; }
         public int? FromAgencyId { get; set; }
-        public int GameSaveId { get; set; }
-        public GameSave GameSave  { get; set; }
+        public int? GameSaveId { get; set; }
+        public GameSave GameSave { get; set; } = null!;
+        public int? SeasonId { get; set; }
+        public Season Season { get; set; } = null!;
         public Agency? FromAgency { get; set; }
         public int? ToAgencyId { get; set; }
         public Agency? ToAgency { get; set; }
