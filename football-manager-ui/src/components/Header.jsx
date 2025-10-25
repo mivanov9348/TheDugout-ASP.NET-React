@@ -22,39 +22,35 @@ function Header({ username }) {
 
   // 🔄 Проверка при смяна на страница (веднъж, без полинг)
   useEffect(() => {
-    const updateStatus = async () => {
-      const status = await refreshGameStatus();
+  const updateStatus = async () => {
+    const status = await refreshGameStatus();
 
-      if (
-        status?.hasUnplayedMatchesToday &&
-        !location.pathname.includes("/today-matches")
-      ) {
-        const gid = status.gameSave?.id ?? currentGameSave?.id;
-        navigate(`/today-matches/${gid}`);
-      }
-    };
+    // просто ъпдейтваме флага, без navigate()
+    if (status?.hasUnplayedMatchesToday !== undefined) {
+      setHasUnplayedMatchesToday(status.hasUnplayedMatchesToday);
+    }
+  };
 
-    updateStatus();
-  }, [location.pathname]);
+  updateStatus();
+}, [location.pathname]);
+
 
   // 🧩 Ръчно опресняване чрез бутон 🔃
   const handleRefresh = async () => {
-    setIsRefreshing(true);
-    try {
-      const status = await refreshGameStatus();
-      if (
-        status?.hasUnplayedMatchesToday &&
-        !location.pathname.includes("/today-matches")
-      ) {
-        const gid = status.gameSave?.id ?? currentGameSave?.id;
-        navigate(`/today-matches/${gid}`);
-      }
-    } catch (err) {
-      console.error("Refresh failed:", err);
-    } finally {
-      setIsRefreshing(false);
+  setIsRefreshing(true);
+  try {
+    const status = await refreshGameStatus();
+    if (status?.hasUnplayedMatchesToday !== undefined) {
+      setHasUnplayedMatchesToday(status.hasUnplayedMatchesToday);
     }
-  };
+    // ❌ без navigate()
+  } catch (err) {
+    console.error("Refresh failed:", err);
+  } finally {
+    setIsRefreshing(false);
+  }
+};
+
 
   // 🕒 Бутон "Next Day"
   const handleNextDay = async () => {

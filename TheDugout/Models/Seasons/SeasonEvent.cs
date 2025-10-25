@@ -1,18 +1,8 @@
 ﻿namespace TheDugout.Models.Seasons
 {
+    using TheDugout.Models.Enums;
     using TheDugout.Models.Game;
-    public enum SeasonEventType
-    {
-        StartSeason,
-        ChampionshipMatch,
-        CupMatch,
-        EuropeanMatch,
-        FriendlyMatch,
-        TransferWindow,
-        TrainingDay,
-        EndOfSeason,
-        Other
-    }
+    
     public class SeasonEvent
     {
         public int Id { get; set; }

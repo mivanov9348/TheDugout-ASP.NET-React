@@ -6,24 +6,24 @@
     using TheDugout.Models.Game;
     using TheDugout.Models.Players;
     using TheDugout.Models.Seasons;
-   
-        public class Match
-        {
-            public int Id { get; set; }
-            public int GameSaveId { get; set; }
-            public GameSave GameSave { get; set; } = null!;
-            public int? SeasonId { get; set; }
-            public Season Season { get; set; } = null!;
-            public int FixtureId { get; set; }
-            public Fixture Fixture { get; set; } = null!;
-            public int CurrentMinute { get; set; } = 0;
-            public Competition? Competition { get; set; } = null!;
-            public int CompetitionId { get; set; }
-            public int Attendance { get; set; } = 0;
-            public MatchStageEnum Status { get; set; } = MatchStageEnum.Scheduled;
-            public MatchTurn CurrentTurn { get; set; } = MatchTurn.Home;
-            public ICollection<MatchEvent> Events { get; set; } = new List<MatchEvent>();
-            public ICollection<PlayerMatchStats> PlayerStats { get; set; } = new List<PlayerMatchStats>();
-            public ICollection<Penalty> Penalties { get; set; } = new List<Penalty>();
-        }
+
+    public class Match
+    {
+        public int Id { get; set; }
+        public int GameSaveId { get; set; }
+        public GameSave GameSave { get; set; } = null!;
+        public int? SeasonId { get; set; }
+        public Season Season { get; set; } = null!;
+        public int FixtureId { get; set; }
+        public Fixture Fixture { get; set; } = null!;
+        public int CurrentMinute { get; set; } = 0;
+        public Competition? Competition { get; set; } = null!;
+        public int CompetitionId { get; set; }
+        public int Attendance { get; set; } = 0;
+        public MatchStageEnum Status { get; set; } = MatchStageEnum.Scheduled;
+        public MatchTurn CurrentTurn { get; set; } = MatchTurn.Home;
+        public ICollection<MatchEvent> Events { get; set; } = new List<MatchEvent>();
+        public ICollection<PlayerMatchStats> PlayerStats { get; set; } = new List<PlayerMatchStats>();
+        public ICollection<Penalty> Penalties { get; set; } = new List<Penalty>();
+    }
 }

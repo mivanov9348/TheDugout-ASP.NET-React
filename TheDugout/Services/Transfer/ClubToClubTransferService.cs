@@ -10,6 +10,7 @@
     using TheDugout.Models.Transfers;
     using TheDugout.Services.Finance.Interfaces;
     using TheDugout.Services.Message.Interfaces;
+    using TheDugout.Models.Enums;
 
     public class ClubToClubTransferService : IClubToClubTransferService
     {

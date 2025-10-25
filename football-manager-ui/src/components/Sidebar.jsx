@@ -25,8 +25,8 @@ function Sidebar({ onExitGame }) {
   return (
     <aside className="bg-slate-800 text-white w-56 h-screen p-4 flex flex-col">
       <h2 className="text-xl font-bold mb-6 text-center text-sky-400">The Dugout</h2>
-      <ul className="space-y-2 flex-1">
-        {menus.map((menu) => (
+<ul className="space-y-2 flex-1 overflow-y-auto 
+  scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-slate-800 hover:scrollbar-thumb-slate-600">          {menus.map((menu) => (
           <li key={menu.name}>
             <NavLink
               to={menu.path}

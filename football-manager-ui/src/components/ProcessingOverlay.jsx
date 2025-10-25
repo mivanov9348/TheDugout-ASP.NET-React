@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from "react";
+import { Loader2, TerminalSquare, XCircle } from "lucide-react";
 
 export default function ProcessingOverlay({
   logs,
@@ -17,29 +18,55 @@ export default function ProcessingOverlay({
   if (!isProcessing) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 backdrop-blur-sm">
-      <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col">
-        <div className="bg-sky-700 text-white px-5 py-3 font-bold text-lg">
-          Processing...
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 backdrop-blur-md">
+      <div className="relative bg-gradient-to-br from-sky-700 via-sky-600 to-sky-800 w-full max-w-4xl rounded-2xl shadow-2xl overflow-hidden flex flex-col border border-sky-400/40">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 bg-sky-900/60 border-b border-sky-500/40">
+          <div className="flex items-center space-x-3 text-white">
+            <Loader2 className="animate-spin h-6 w-6 text-cyan-300" />
+            <h2 className="font-bold text-xl tracking-wide drop-shadow">
+              Processing Matches...
+            </h2>
+          </div>
+          <div className="flex items-center text-sm text-sky-200 italic">
+            <TerminalSquare className="h-5 w-5 mr-1 text-sky-300" />
+            Live Log Console
+          </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 bg-gray-50 font-mono text-sm text-gray-800 space-y-1 max-h-[400px]">
-          {logs.map((line, idx) => (
-            <div key={idx}>{line}</div>
-          ))}
+        {/* Logs section */}
+        <div className="flex-1 bg-gray-900 text-gray-100 font-mono text-sm overflow-y-auto px-6 py-4 space-y-2 max-h-[600px] custom-scrollbar">
+          {logs.length === 0 ? (
+            <div className="text-gray-400 italic">Waiting for updates...</div>
+          ) : (
+            logs.map((line, idx) => (
+              <div
+                key={idx}
+                className="whitespace-pre-wrap break-words transition-all duration-150 hover:text-sky-300"
+              >
+                {line}
+              </div>
+            ))
+          )}
           <div ref={logEndRef} />
         </div>
 
-        {allowCancel && (
-          <div className="p-3 flex justify-end bg-gray-100 border-t">
+        {/* Footer */}
+        <div className="flex justify-between items-center px-6 py-3 bg-sky-900/50 border-t border-sky-500/40">
+          <div className="text-xs text-sky-200">
+            Showing last {logs.length > 500 ? "500+" : logs.length} lines
+          </div>
+
+          {allowCancel && (
             <button
               onClick={stopProcessing}
-              className="px-4 py-2 rounded-lg bg-red-500 text-white font-semibold hover:bg-red-600 transition"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold shadow-lg hover:shadow-red-500/40 hover:scale-105 transition-all"
             >
+              <XCircle className="w-5 h-5" />
               Cancel
             </button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

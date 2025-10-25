@@ -4,6 +4,7 @@
     using Microsoft.EntityFrameworkCore;
     using TheDugout.Data;
     using TheDugout.Models.Competitions;
+    using TheDugout.Models.Enums;
     using TheDugout.Models.Game;
     using TheDugout.Models.Seasons;
     using TheDugout.Services.Cup.Interfaces;
@@ -208,6 +209,7 @@
                 DayOfWeek.Tuesday => SeasonEventType.EuropeanMatch,
                 DayOfWeek.Thursday => SeasonEventType.CupMatch,
                 DayOfWeek.Saturday => SeasonEventType.ChampionshipMatch,
+                DayOfWeek.Sunday => SeasonEventType.ChampionshipMatch,
                 _ => SeasonEventType.TrainingDay
             };
         }

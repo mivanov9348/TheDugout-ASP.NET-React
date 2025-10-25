@@ -8,8 +8,6 @@
     using TheDugout.Data;
     using TheDugout.Models.Enums;
     using TheDugout.Models.Fixtures;
-    using TheDugout.Models.Game;
-    using TheDugout.Models.Matches;
     using TheDugout.Services.Match.Interfaces;
     using TheDugout.Services.Player.Interfaces;
 
@@ -45,12 +43,17 @@
         {
             var save = await _context.GameSaves
                 .Include(gs => gs.Seasons)
-                .Include(gs => gs.Fixtures)
-                    .ThenInclude(f => f.Match)
-                        .ThenInclude(m => m.Penalties)
+                .Include(gs => gs.UserTeam)
+                    .ThenInclude(ut => ut.League)
+                        .ThenInclude(l => l.Template)
+                .Include(gs => gs.UserTeam)
+                    .ThenInclude(ut => ut.CupTeams)
+                        .ThenInclude(cp => cp.Cup)
+                            .ThenInclude(c => c.Template)
                 .FirstOrDefaultAsync(gs => gs.Id == gameSaveId);
 
-            if (save == null) return NotFound();
+            if (save == null)
+                return NotFound();
 
             var today = save.Seasons.First().CurrentDate.Date;
 
@@ -64,10 +67,58 @@
                 .Where(f => f.GameSaveId == gameSaveId && f.Date.Date == today)
                 .ToListAsync();
 
+            // 🧩 Определяме "основната" конкуренция на user team
+            string? userCompetitionName = null;
+
+            if (save.UserTeam?.League?.Template != null)
+                userCompetitionName = save.UserTeam.League.Template.Name;
+            else if (save.UserTeam?.CupTeams?.Any() == true)
+                userCompetitionName = save.UserTeam.CupTeams
+                    .FirstOrDefault()?.Cup?.Template?.Name;
+
+            // ⚡️ Сортираме — първо мачовете от същата лига/купа като на UserTeam
+            fixtures = fixtures
+                .OrderByDescending(f =>
+                    (f.League != null && f.League.Template.Name == userCompetitionName) ||
+                    (f.CupRound != null && f.CupRound.Cup.Template.Name == userCompetitionName) ||
+                    (f.EuropeanCupPhase != null && f.EuropeanCupPhase.EuropeanCup.Template.Name == userCompetitionName)
+                )
+                .ThenBy(f => f.League?.Template?.Name ?? f.CupRound?.Cup?.Template?.Name ?? f.EuropeanCupPhase?.EuropeanCup?.Template?.Name ?? "")
+                .ToList();
+
             var matches = await _matchResponseService.GetFormattedMatchesResponseAsync(fixtures, save);
 
             return Ok(new { matches });
         }
+
+        //[HttpGet("today/{gameSaveId}")]
+        //public async Task<IActionResult> GetTodayMatches(int gameSaveId)
+        //{
+        //    var save = await _context.GameSaves
+        //        .Include(gs => gs.Seasons)
+        //        .Include(gs => gs.Fixtures)
+        //            .ThenInclude(f => f.Match)
+        //                .ThenInclude(m => m.Penalties)
+        //        .FirstOrDefaultAsync(gs => gs.Id == gameSaveId);
+
+        //    if (save == null) return NotFound();
+
+        //    var today = save.Seasons.First().CurrentDate.Date;
+
+        //    var fixtures = await _context.Fixtures
+        //        .Include(f => f.HomeTeam)
+        //        .Include(f => f.AwayTeam)
+        //        .Include(f => f.League).ThenInclude(l => l.Template)
+        //        .Include(f => f.CupRound).ThenInclude(cr => cr.Cup).ThenInclude(c => c.Template)
+        //        .Include(f => f.EuropeanCupPhase).ThenInclude(p => p.EuropeanCup).ThenInclude(ec => ec.Template)
+        //        .Include(f => f.Match).ThenInclude(m => m.Penalties)
+        //        .Where(f => f.GameSaveId == gameSaveId && f.Date.Date == today)
+        //        .ToListAsync();
+
+        //    var matches = await _matchResponseService.GetFormattedMatchesResponseAsync(fixtures, save);
+
+        //    return Ok(new { matches });
+        //}
 
         [HttpPost("simulate/{gameSaveId}")]
         public async Task<IActionResult> SimulateMatches(int gameSaveId)
@@ -401,11 +452,10 @@
             await Response.Body.FlushAsync();
         }
 
-
-        [HttpGet("{matchId}")]
-        public async Task<IActionResult> GetMatchDetails(int matchId)
+        [HttpGet("{fixtureId}")]
+        public async Task<IActionResult> GetMatchDetails(int fixtureId)
         {
-            _logger.LogInformation("==== GetMatchDetails called with matchId={MatchId} ====", matchId);
+            _logger.LogInformation("==== GetMatchDetails called with matchId={MatchId} ====", fixtureId);
 
             var match = await _context.Matches
                 .Include(m => m.Fixture)
@@ -420,18 +470,18 @@
                     .ThenInclude(e => e.Player)
                 .Include(m => m.Competition)
                 .AsSplitQuery()
-                .FirstOrDefaultAsync(m => m.Id == matchId);
+                .FirstOrDefaultAsync(m => m.FixtureId == fixtureId);
 
             if (match == null)
             {
-                _logger.LogWarning("Match {MatchId} not found", matchId);
+                _logger.LogWarning("Match {MatchId} not found", match.Id);
                 return NotFound();
             }
 
             var fixture = match.Fixture;
             if (fixture == null)
             {
-                _logger.LogWarning("Match {MatchId} has no fixture", matchId);
+                _logger.LogWarning("Match {MatchId} has no fixture", match.Id);
                 return BadRequest("Match has no fixture assigned.");
             }
 
@@ -515,6 +565,14 @@
                 fixture.HomeTeamGoals, fixture.AwayTeamGoals
             );
 
+            // 🔹 Логваме какво точно се връща към фронтенда (в JSON формат)
+            var dtoJson = System.Text.Json.JsonSerializer.Serialize(dto, new JsonSerializerOptions
+            {
+                WriteIndented = true
+            });
+
+            _logger.LogInformation("=== Sending DTO to frontend ===\n{DtoJson}", dtoJson);
+
             return Ok(dto);
         }
         private string GetCompetitionDisplayName(Fixture fixture)
@@ -552,14 +610,11 @@
                     : $"{euroCupTemplateName} — {phaseName}";
             }
 
-            // 4) As a last attempt look into Competition navigation through related entities
             // (if you have Competition navigation filled on League/Cup/EuropeanCup)
             var compFromLeague = fixture.League?.Competition;
             if (compFromLeague != null)
             {
-                // Competition няма Name поле в примера ти — но ако има някаква полезна навигация,
-                // можеш да extend-неш тук. За момента ще паднем обратно на template или enum.
-                // return compFromLeague.SomeNameProperty ?? compFromLeague.Id.ToString();
+                
             }
 
             // 5) Fallbacks: use CupRound.Name if present, or EuropeanCupPhase info, or enum name

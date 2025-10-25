@@ -29,7 +29,6 @@ const Fixtures = ({ gameSaveId, seasonId }) => {
           setLeague(data.leagues[0].id.toString());
           setMaxRounds(data.leagues[0].rounds || 38);
         }
-
       } catch (err) {
         console.error("Error fetching leagues:", err);
         setLeagues([]);
@@ -67,9 +66,10 @@ const Fixtures = ({ gameSaveId, seasonId }) => {
     fetchFixtures();
   }, [gameSaveId, seasonId, round, league]);
 
+  // ✅ При смяна на лига, връща рунда на 1
   useEffect(() => {
     if (league && leagues.length > 0) {
-      const selectedLeague = leagues.find(l => l.id.toString() === league);
+      const selectedLeague = leagues.find((l) => l.id.toString() === league);
       if (selectedLeague) {
         setMaxRounds(selectedLeague.rounds || 38);
         setRound("1");
@@ -77,7 +77,7 @@ const Fixtures = ({ gameSaveId, seasonId }) => {
     }
   }, [league, leagues]);
 
-  const selectedLeague = leagues.find(l => l.id.toString() === league);
+  const selectedLeague = leagues.find((l) => l.id.toString() === league);
 
   const formatMatchDate = (dateString) => {
     if (!dateString) return "—";
@@ -86,13 +86,18 @@ const Fixtures = ({ gameSaveId, seasonId }) => {
       day: date.getDate(),
       month: date.toLocaleDateString("en-GB", { month: "short" }),
       weekday: date.toLocaleDateString("en-GB", { weekday: "short" }),
-      time: date.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })
+      time: date.toLocaleTimeString("en-GB", {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
     };
   };
 
   const MatchRow = ({ match, index }) => {
     const dateInfo = formatMatchDate(match.date);
-    const isPlayed = typeof match.homeTeamGoals === "number" && typeof match.awayTeamGoals === "number";
+    const isPlayed =
+      typeof match.homeTeamGoals === "number" &&
+      typeof match.awayTeamGoals === "number";
 
     return (
       <Link
@@ -107,9 +112,7 @@ const Fixtures = ({ gameSaveId, seasonId }) => {
             <div className="text-sm font-semibold text-gray-900">
               {dateInfo.day} {dateInfo.month}
             </div>
-            <div className="text-xs text-gray-500 mt-1">
-              {dateInfo.time}
-            </div>
+            <div className="text-xs text-gray-500 mt-1">{dateInfo.time}</div>
           </div>
         </div>
 
@@ -172,7 +175,6 @@ const Fixtures = ({ gameSaveId, seasonId }) => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
-
         {/* Контроли */}
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-6 mb-8">
           <div className="flex flex-col sm:flex-row gap-4">
@@ -251,9 +253,11 @@ const Fixtures = ({ gameSaveId, seasonId }) => {
               </div>
             </div>
             <div className="divide-y divide-gray-100">
-              {fixtures.map((match, index) => (
-                <MatchRow key={match.id} match={match} index={index} />
-              ))}
+              {fixtures.map((match, index) =>
+                match?.id ? (
+                  <MatchRow key={match.id} match={match} index={index} />
+                ) : null
+              )}
             </div>
           </div>
         )}

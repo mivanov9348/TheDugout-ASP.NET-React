@@ -2,6 +2,7 @@
 {
     using Microsoft.EntityFrameworkCore;
     using TheDugout.Data;
+    using TheDugout.Models.Enums;
     using TheDugout.Models.Seasons;
     using TheDugout.Services.Season.Interfaces;
 

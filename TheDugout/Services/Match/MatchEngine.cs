@@ -87,8 +87,8 @@
             await GrantMatchPrizesAsync(match, fixture);
         }
         public void PlayNextMinute(Match match)
-        {
-            int increment = _random.Next(1, 21);
+        {   
+            int increment = _random.Next(1, 16);
             match.CurrentMinute += increment;
         }
         public void ChangeTurn(Match match)

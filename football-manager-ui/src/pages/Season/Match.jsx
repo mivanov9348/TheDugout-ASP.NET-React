@@ -1,6 +1,7 @@
 // src/pages/Match.jsx
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
+import TeamLogo from "../../components/TeamLogo";
 import {
   ArrowLeft,
   Trophy,
@@ -187,12 +188,12 @@ const Match = () => {
         <div className="mt-8 md:mt-10 flex flex-col md:flex-row justify-between items-center gap-6">
           {/* Home */}
           <div className="flex flex-col items-center w-full md:w-1/3">
-            <img
-              src={home.logo || placeholderLogo}
-              alt={home.name}
-              onError={(e) => (e.currentTarget.src = placeholderLogo)}
-              className="w-20 h-20 object-contain drop-shadow-[0_0_20px_rgba(37,99,235,0.45)]"
-            />
+            <TeamLogo
+  teamName={home.name}
+  logoUrl={home.logo}
+  className="w-20 h-20 drop-shadow-[0_0_20px_rgba(37,99,235,0.45)]"
+/>
+
             <h2 className="text-lg md:text-xl font-bold mt-3 text-white text-center">
               {home.name}
             </h2>
@@ -216,12 +217,12 @@ const Match = () => {
 
           {/* Away */}
           <div className="flex flex-col items-center w-full md:w-1/3">
-            <img
-              src={away.logo || placeholderLogo}
-              alt={away.name}
-              onError={(e) => (e.currentTarget.src = placeholderLogo)}
-              className="w-20 h-20 object-contain drop-shadow-[0_0_20px_rgba(239,68,68,0.45)]"
-            />
+            <TeamLogo
+  teamName={away.name}
+  logoUrl={away.logo}
+  className="w-20 h-20 drop-shadow-[0_0_20px_rgba(239,68,68,0.45)]"
+/>
+
             <h2 className="text-lg md:text-xl font-bold mt-3 text-white text-center">
               {away.name}
             </h2>
@@ -336,7 +337,6 @@ const Match = () => {
 
         {/* Footer */}
         <div className="mt-8 text-center text-gray-400 text-sm">
-          Match ID: {match.id ?? matchId}
         </div>
       </div>
     </div>

@@ -1,6 +1,5 @@
 import { useState } from "react";
 
-
 const TeamLogo = ({ teamName, logoFileName, className = "" }) => {
   const [imgError, setImgError] = useState(false);
 

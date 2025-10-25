@@ -3,6 +3,8 @@
     using TheDugout.Models.Seasons;
     using TheDugout.Models.Fixtures;
     using TheDugout.Services.Season.Interfaces;
+    using TheDugout.Models.Enums;
+
     public class CupScheduleService : ICupScheduleService
     {
         public CupScheduleService()

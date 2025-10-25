@@ -4,9 +4,16 @@ import TeamLogo from "../../../components/TeamLogo";
 export default function LeagueStandings() {
   const { league } = useOutletContext();
 
+  // Приемаме, че 3 отбора изпадат. Промени това число, ако е нужно.
+  const relegationSpots = 3;
+  // Приемаме, че първите 3 се класират за Европа.
+  const promotionSpots = 3;
+
   if (!league) return <p className="text-center text-slate-500 italic">No league selected.</p>;
   if (!league.standings || league.standings.length === 0)
     return <p className="text-center text-slate-500 italic">No standings to show.</p>;
+
+  const totalTeams = league.standings.length;
 
   return (
     <div className="bg-white shadow-xl rounded-2xl p-5 transition-all">
@@ -27,7 +34,19 @@ export default function LeagueStandings() {
         </thead>
         <tbody>
           {league.standings.map((s) => (
-            <tr key={s.teamId} className="border-b hover:bg-slate-50 transition">
+            <tr
+              key={s.teamId}
+              // ТУК Е ОСНОВНАТА ПРОМЯНА
+              className={`
+                border-b transition
+                ${s.ranking <= promotionSpots
+                  ? "bg-green-50 hover:bg-green-100" // Места за Европа (зелено)
+                  : s.ranking > totalTeams - relegationSpots
+                  ? "bg-red-50 hover:bg-red-100"     // Места за изпадане (червено)
+                  : "hover:bg-slate-50"               // Всички останали
+                }
+              `}
+            >
               <td className="p-2 font-medium text-slate-600 text-center">{s.ranking}</td>
               <td className="p-2 flex items-center gap-2">
                 <TeamLogo teamName={s.teamName} logoFileName={s.teamLogo} className="w-6 h-6" />
@@ -45,6 +64,18 @@ export default function LeagueStandings() {
           ))}
         </tbody>
       </table>
+
+      {/* ТУК Е ЛЕГЕНДАТА */}
+      <div className="mt-4 flex flex-col sm:flex-row gap-x-4 gap-y-1 text-xs text-slate-600">
+        <div className="flex items-center gap-2">
+          <span className="block w-3 h-3 bg-green-50 border border-green-200 rounded-sm"></span>
+          <span>European Qualification</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="block w-3 h-3 bg-red-50 border border-red-200 rounded-sm"></span>
+          <span>Relegation Zone</span>
+        </div>
+      </div>
     </div>
   );
 }
