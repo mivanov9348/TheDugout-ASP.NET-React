@@ -11,6 +11,9 @@ export default function League({ gameSaveId }) {
   const location = useLocation();
 
   // 🟢 Зареждаме всички лиги + първата по подразбиране
+  // League.jsx
+
+  // 🟢 Зареждаме всички лиги + първата по подразбиране
   useEffect(() => {
     if (!gameSaveId) return;
 
@@ -27,26 +30,46 @@ export default function League({ gameSaveId }) {
           setLeagues(data.leagues);
           setSeasonId(data.seasonId);
 
-          // ❗ Не презаписвай избраната лига, ако вече има такава
-          if (!selectedLeague) {
-            const firstLeague = data.leagues[0];
+          // --- ❌ ИЗТРИЙ СТАРАТА ЛОГИКА ---
+          // if (!selectedLeague) { ... }
 
-            const res2 = await fetch(
-              `/api/League/current?gameSaveId=${gameSaveId}&seasonId=${data.seasonId}&leagueId=${firstLeague.id}`,
-              { credentials: "include" }
-            );
-            const leagueData = await res2.json();
+          // --- ✅ ДОБАВИ НОВАТА ЛОГИКА ---
 
-            setSelectedLeague(
-              leagueData.exists
-                ? { ...firstLeague, standings: leagueData.standings }
-                : { ...firstLeague, standings: [] }
-            );
+          // 1. Опитай се да намериш текущо избраната лига в новия списък
+          // (Това ще се провали при смяна на gameSaveId, защото ID-тата ще са различни, 
+          // но ще работи, ако просто презареждаш същия save)
+          let leagueToLoad = data.leagues.find(
+            (l) => l.id === selectedLeague?.id
+          );
 
-            if (location.pathname.endsWith("/league")) {
-              navigate(`/competitions/league/standings`, { replace: true });
-            }
+          // 2. Ако не е намерена (или при първо зареждане), вземи първата от списъка
+          if (!leagueToLoad) {
+            leagueToLoad = data.leagues[0];
           }
+
+          // 3. Винаги зареждай класирането за тази лига
+          const res2 = await fetch(
+            `/api/League/current?gameSaveId=${gameSaveId}&seasonId=${data.seasonId}&leagueId=${leagueToLoad.id}`,
+            { credentials: "include" }
+          );
+          const leagueData = await res2.json();
+
+          setSelectedLeague(
+            leagueData.exists
+              ? { ...leagueToLoad, standings: leagueData.standings }
+              : { ...leagueToLoad, standings: [] }
+          );
+
+          if (location.pathname.endsWith("/league")) {
+            navigate(`/competitions/league/standings`, { replace: true });
+          }
+          // --- Край на новата логика ---
+
+        } else {
+          // Ако новият save няма лиги, изчисти всичко
+          setLeagues([]);
+          setSeasonId(null);
+          setSelectedLeague(null);
         }
       } catch (err) {
         console.error("❌ Error loading leagues:", err);
@@ -56,7 +79,8 @@ export default function League({ gameSaveId }) {
     };
 
     loadLeagues();
-  }, [gameSaveId, navigate]);
+    // Добави `location.pathname`, за да се изпълни навигацията, ако е нужно
+  }, [gameSaveId, navigate, location.pathname]);
 
 
   // 🟢 Смяна на лига от dropdown

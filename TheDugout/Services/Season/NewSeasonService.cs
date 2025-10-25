@@ -112,12 +112,13 @@
                 await _leagueService.CopyTeamsFromPreviousSeasonAsync(previousSeason, newLeagues);
                 _logger.LogInformation("Copied all teams from previous season to new season leagues");
 
-                await _leagueService.ProcessPromotionsAndRelegationsAsync(previousSeason.GameSave, previousSeason, newLeagues);
-                _logger.LogInformation("Processed promotions and relegations");
+                    await _leagueService.ProcessPromotionsAndRelegationsAsync(previousSeason.GameSave, previousSeason, newLeagues);
+                    _logger.LogInformation("Processed promotions and relegations");
+
 
                 // 5️⃣ Създай standings за всички лиги
                 await _leagueService.InitializeStandingsAsync(previousSeason.GameSave, newSeason);
-                _logger.LogInformation("Initialized new standings");
+                    _logger.LogInformation("Initialized new standings");
 
                 // new eurocup for season with qualified from previous season + random other teams
                 var euroTemplates = await _context.Set<EuropeanCupTemplate>()
@@ -154,6 +155,7 @@
                 // Agencies (Solidarity & New Players)
                 var agencies = _context.Agencies.Where(a => a.GameSaveId == gameSave.Id).ToList();
                 await _agencyService.DistributeSolidarityPaymentsAsync(gameSave);
+
                 await _playerGenerationService.GeneratePlayersForAgenciesAsync(gameSave, agencies);
 
                 // 💾 7. Save and Commit

@@ -40,6 +40,7 @@
                 .Include(e => e.Phases)
                     .ThenInclude(p => p.Fixtures)
                         .ThenInclude(f => f.AwayTeam)
+                .Include(e=>e.Competition)
                 .Where(e => e.SeasonId == seasonId && e.IsFinished)
                 .ToListAsync();
 
@@ -138,7 +139,7 @@
                 };
 
                 results.Add(result);
-            }         
+            }
 
             return results;
         }

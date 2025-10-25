@@ -44,26 +44,37 @@
             });
         }
 
-        [HttpGet("current")]
-        public async Task<IActionResult> GetCurrentLeague(int gameSaveId, int seasonId, int leagueId)
-        {
-            var league = await _context.Leagues
-                .Include(l => l.Template)
-                .Include(l => l.Country)
-                .Include(l => l.Standings)
-                    .ThenInclude(s => s.Team)
-                .FirstOrDefaultAsync(l => l.Id == leagueId && l.GameSaveId == gameSaveId && l.SeasonId == seasonId);
-
-            if (league == null)
-                return Ok(new { exists = false });
-
-            var data = new
+            [HttpGet("current")]
+            public async Task<IActionResult> GetCurrentLeague(int gameSaveId, int seasonId, int leagueId)
             {
-                exists = true,
-                id = league.Id,
-                name = league.Template.Name,
-                country = league.Country.Name,
-                standings = league.Standings
+                // 🟢 1. Опитваме се да намерим активния сезон
+                var activeSeason = await _context.Seasons
+                    .FirstOrDefaultAsync(s => s.GameSaveId == gameSaveId && s.IsActive);
+
+                // 🟢 2. Ако няма активен сезон, fallback към подадения
+                var targetSeasonId = activeSeason?.Id ?? seasonId;
+
+                if (targetSeasonId == 0)
+                    return Ok(new { exists = false, message = "❌ No active or provided season found." });
+
+                // 🟢 3. Взимаме лигата (без Standings, за да не се мешат сезони)
+                var league = await _context.Leagues
+                    .Include(l => l.Template)
+                    .Include(l => l.Country)
+                    .FirstOrDefaultAsync(l =>
+                        l.Id == leagueId &&
+                        l.GameSaveId == gameSaveId &&
+                        l.SeasonId == targetSeasonId);
+
+                if (league == null)
+                    return Ok(new { exists = false, message = "❌ League not found for active season." });
+
+                var standings = await _context.LeagueStandings
+                    .Include(s => s.Team)
+                    .Where(s =>
+                        s.GameSaveId == gameSaveId &&
+                        s.LeagueId == leagueId &&
+                        s.SeasonId == targetSeasonId)
                     .OrderBy(s => s.Ranking)
                     .Select(s => new
                     {
@@ -80,10 +91,23 @@
                         s.GoalDifference,
                         s.Points
                     })
-            };
+                    .ToListAsync();
 
-            return Ok(data);
-        }
+                // 🟢 5. Връщаме всичко
+                var data = new
+                {
+                    exists = true,
+                    id = league.Id,
+                    name = league.Template.Name,
+                    country = league.Country.Name,
+                    seasonId = targetSeasonId,
+                    standings
+                };
+
+                return Ok(data);
+            }
+
+
 
         [HttpGet("{gameSaveId}/{leagueId}/top-scorers")]
         public async Task<IActionResult> GetTopScorersByLeague(int gameSaveId, int leagueId)

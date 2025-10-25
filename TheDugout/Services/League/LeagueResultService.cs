@@ -14,10 +14,12 @@
     {
         private readonly DugoutDbContext _context;
         private readonly IMoneyPrizeService _moneyPrizeService;
-        public LeagueResultService(DugoutDbContext context, IMoneyPrizeService moneyPrizeService)
+        private readonly ILogger<LeagueResultService> _logger;
+        public LeagueResultService(DugoutDbContext context, IMoneyPrizeService moneyPrizeService, ILogger<LeagueResultService> logger)
         {
             _context = context;
             _moneyPrizeService = moneyPrizeService;
+            _logger = logger;
         }
 
         public async Task<List<CompetitionSeasonResult>> GenerateLeagueResultsAsync(int seasonId)
@@ -41,6 +43,7 @@
                 .Include(l => l.Teams)
                 .Include(l => l.Standings)
                 .Include(l => l.Template)
+                .Include(l=>l.Competition)
                 .Where(l => l.SeasonId == seasonId && l.IsFinished)
                 .ToListAsync();
 
@@ -59,6 +62,8 @@
                 if (!orderedStandings.Any())
                     continue;
 
+                var competition = _context.Competitions.FirstOrDefault(x => x.LeagueId == league.Id);
+
                 var champion = orderedStandings.First().Team;
                 var runnerUp = orderedStandings.Skip(1).FirstOrDefault()?.Team;
 
@@ -70,7 +75,7 @@
                 {
                     SeasonId = seasonId,
                     CompetitionType = CompetitionTypeEnum.League,
-                    CompetitionId = league.CompetitionId,
+                    CompetitionId = competition.Id,
                     GameSaveId = league.GameSaveId,
                     ChampionTeamId = champion.Id,
                     RunnerUpTeamId = runnerUp?.Id,
@@ -129,7 +134,14 @@
 
                 results.Add(result);
             }
-            
+
+            foreach (var r in results)
+            {
+                _logger.LogInformation("🏆 League '{LeagueName}' -> CompetitionId={CompetitionId}",
+                    r.Notes, r.CompetitionId);
+            }
+
+
             return results;
         }
 

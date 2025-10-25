@@ -22,34 +22,34 @@ function Header({ username }) {
 
   // 🔄 Проверка при смяна на страница (веднъж, без полинг)
   useEffect(() => {
-  const updateStatus = async () => {
-    const status = await refreshGameStatus();
+    const updateStatus = async () => {
+      const status = await refreshGameStatus();
 
-    // просто ъпдейтваме флага, без navigate()
-    if (status?.hasUnplayedMatchesToday !== undefined) {
-      setHasUnplayedMatchesToday(status.hasUnplayedMatchesToday);
-    }
-  };
+      // просто ъпдейтваме флага, без navigate()
+      if (status?.hasUnplayedMatchesToday !== undefined) {
+        setHasUnplayedMatchesToday(status.hasUnplayedMatchesToday);
+      }
+    };
 
-  updateStatus();
-}, [location.pathname]);
+    updateStatus();
+  }, [location.pathname]);
 
 
   // 🧩 Ръчно опресняване чрез бутон 🔃
   const handleRefresh = async () => {
-  setIsRefreshing(true);
-  try {
-    const status = await refreshGameStatus();
-    if (status?.hasUnplayedMatchesToday !== undefined) {
-      setHasUnplayedMatchesToday(status.hasUnplayedMatchesToday);
+    setIsRefreshing(true);
+    try {
+      const status = await refreshGameStatus();
+      if (status?.hasUnplayedMatchesToday !== undefined) {
+        setHasUnplayedMatchesToday(status.hasUnplayedMatchesToday);
+      }
+      // ❌ без navigate()
+    } catch (err) {
+      console.error("Refresh failed:", err);
+    } finally {
+      setIsRefreshing(false);
     }
-    // ❌ без navigate()
-  } catch (err) {
-    console.error("Refresh failed:", err);
-  } finally {
-    setIsRefreshing(false);
-  }
-};
+  };
 
 
   // 🕒 Бутон "Next Day"
@@ -129,74 +129,80 @@ function Header({ username }) {
   };
 
   // 🏁 Бутон "End Season"
-  const handleEndSeason = async () => {
-    const confirm = await Swal.fire({
-      title: "🏁 End of Season",
-      text: "Are you sure you want to end the season?",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Yes, end it",
-      cancelButtonText: "Cancel",
-      confirmButtonColor: "#e11d48",
-      cancelButtonColor: "#334155",
+const handleEndSeason = async () => {
+  const confirm = await Swal.fire({
+    title: "🏁 End of Season",
+    text: "Are you sure you want to end the season?",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "Yes, end it",
+    cancelButtonText: "Cancel",
+    confirmButtonColor: "#e11d48",
+    cancelButtonColor: "#334155",
+    background: "#1e293b",
+    color: "#fff",
+  });
+
+  if (!confirm.isConfirmed) return;
+
+  const seasonId = currentGameSave?.seasons?.[0]?.id;
+  if (!seasonId) {
+    Swal.fire({
+      title: "❌ Error",
+      text: "No active season found.",
+      icon: "error",
+      background: "#1e293b",
+      color: "#fff",
+    });
+    return;
+  }
+
+  startProcessing("Ending current season...");
+  try {
+    // 🔹 1. Само приключваме сезона
+    const res = await fetch(`/api/season/season/${seasonId}/end`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      await Swal.fire({
+        title: "⚠️ Cannot End Season",
+        text: data.message || "Unknown error",
+        icon: "error",
+        background: "#1e293b",
+        color: "#fff",
+      });
+      return;
+    }
+
+    await Swal.fire({
+      title: "✅ Season Ended!",
+      text: data.message || "Season has been successfully completed.",
+      icon: "success",
       background: "#1e293b",
       color: "#fff",
     });
 
-    if (!confirm.isConfirmed) return;
+    // 🔹 2. Без start-new-season, директно пращаме към overview
+    navigate(`/season/${seasonId}/overview`);
 
-    startProcessing("Ending current season...");
-    try {
-      const res = await fetch(
-        `/api/season/season/${currentGameSave.seasons[0].id}/end`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-        }
-      );
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        await Swal.fire({
-          title: "⚠️ Cannot End Season",
-          text: data.message || "Unknown error",
-          icon: "error",
-          background: "#1e293b",
-          color: "#fff",
-        });
-        return;
-      }
-
-      await Swal.fire({
-        title: "✅ Season Ended!",
-        text: data.message || "Next season has been generated.",
-        icon: "success",
-        background: "#1e293b",
-        color: "#fff",
-      });
-
-      // 🔄 Обнови текущия статус на играта
-      const refreshed = await refreshGameStatus();
-      if (refreshed?.gameSave) {
-        setCurrentGameSave(refreshed.gameSave);
-
-        // 🆕 взимаме id на новия сезон
-        const newSeasonId = refreshed.gameSave?.seasons?.[0]?.id;
-        if (newSeasonId) {
-          navigate(`/season/${newSeasonId}/overview`);
-        }
-
-        return;
-      }
-    } catch (err) {
-      console.error("End season failed:", err);
-    } finally {
-      stopProcessing();
-    }
-  };
-
+  } catch (err) {
+    console.error("End season failed:", err);
+    Swal.fire({
+      title: "❌ Error",
+      text: "Unexpected error while ending season.",
+      icon: "error",
+      background: "#1e293b",
+      color: "#fff",
+    });
+  } finally {
+    stopProcessing();
+  }
+};
 
 
   // 🧩 Формат на дата

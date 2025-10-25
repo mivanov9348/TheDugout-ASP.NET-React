@@ -42,6 +42,7 @@
             var cups = await _context.Cups
                 .Include(c => c.Country)
                 .Include(c => c.Template)
+                .Include(c=>c.Competition)
                 .Include(c => c.Rounds)
                     .ThenInclude(r => r.Fixtures)
                         .ThenInclude(f => f.HomeTeam)
