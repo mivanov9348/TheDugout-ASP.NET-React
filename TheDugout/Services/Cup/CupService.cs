@@ -118,7 +118,7 @@
             if ((allRoundsFinished || onlyOneTeamLeft) && !cup.IsFinished)
             {
                 cup.IsFinished = true;
-                cup.IsActive = false; // Deactivate the cup
+                cup.IsActive = false;
                 await _context.SaveChangesAsync();
             }
 

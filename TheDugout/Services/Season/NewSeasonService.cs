@@ -112,9 +112,11 @@
                 await _leagueService.CopyTeamsFromPreviousSeasonAsync(previousSeason, newLeagues);
                 _logger.LogInformation("Copied all teams from previous season to new season leagues");
 
-                    await _leagueService.ProcessPromotionsAndRelegationsAsync(previousSeason.GameSave, previousSeason, newLeagues);
+                await _leagueService.ProcessPromotionsAndRelegationsAsync(previousSeason.GameSave, previousSeason, newLeagues);
                     _logger.LogInformation("Processed promotions and relegations");
 
+                await _context.SaveChangesAsync(); // за всеки случай
+                await _context.Entry(gameSave).ReloadAsync(); // освежи game save
 
                 // 5️⃣ Създай standings за всички лиги
                 await _leagueService.InitializeStandingsAsync(previousSeason.GameSave, newSeason);

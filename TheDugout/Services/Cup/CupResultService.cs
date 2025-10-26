@@ -42,7 +42,7 @@
             var cups = await _context.Cups
                 .Include(c => c.Country)
                 .Include(c => c.Template)
-                .Include(c=>c.Competition)
+                .Include(c => c.Competition)
                 .Include(c => c.Rounds)
                     .ThenInclude(r => r.Fixtures)
                         .ThenInclude(f => f.HomeTeam)
@@ -141,10 +141,17 @@
                     }
 
                     // Добави шампиона (или заместника) като квалифициран
-                    result.EuropeanQualifiedTeams.Add(new CompetitionEuropeanQualifiedTeam
+                    //result.EuropeanQualifiedTeams.Add(new CompetitionEuropeanQualifiedTeam
+                    //{
+                    //    TeamId = championTeamId.Value,
+                    //    GameSaveId = cup.GameSaveId
+                    //});
+
+                    _context.CompetitionEuropeanQualifiedTeams.Add(new CompetitionEuropeanQualifiedTeam
                     {
                         TeamId = championTeamId.Value,
-                        GameSaveId = cup.GameSaveId
+                        GameSaveId = cup.GameSaveId,
+                        CompetitionSeasonResult = result
                     });
 
                     alreadyQualified.Add(championTeamId.Value);

@@ -116,65 +116,65 @@ export default function SeasonOverview() {
   };
 
   const handleStartNextSeason = async () => {
-  const result = await Swal.fire({
-    title: "Start New Season?",
-    text: "Are you sure you want to proceed to the next season?",
-    icon: "question",
-    showCancelButton: true,
-    confirmButtonText: "To Next Season!",
-    cancelButtonText: "Cancel",
-    background: "#1e293b",
-    color: "#f8fafc",
-    confirmButtonColor: "#10b981",
-    cancelButtonColor: "#64748b",
-  });
-
-  if (!result.isConfirmed) return;
-
-  Swal.fire({
-    title: "Starting...",
-    text: "Please wait while the new season is being created.",
-    allowOutsideClick: false,
-    didOpen: () => Swal.showLoading(),
-    background: "#1e293b",
-    color: "#f8fafc",
-  });
-
-  try {
-    const res = await fetch(`/api/season/${seasonId}/start-new-season`, {
-      method: "POST",
-    });
-
-    if (!res.ok) throw new Error("Failed to start new season");
-
-    const data = await res.json();
-
-    Swal.close();
-    await Swal.fire({
-      icon: "success",
-      title: "New Season Created!",
-      text: "Redirecting to the next season overview...",
+    const result = await Swal.fire({
+      title: "Start New Season?",
+      text: "Are you sure you want to proceed to the next season?",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "To Next Season!",
+      cancelButtonText: "Cancel",
+      background: "#1e293b",
+      color: "#f8fafc",
       confirmButtonColor: "#10b981",
-      background: "#1e293b",
-      color: "#f8fafc",
-      timer: 2000,
-      showConfirmButton: false,
+      cancelButtonColor: "#64748b",
     });
 
-    navigate(`/season/${data.newSeasonId}/overview`);
-  } catch (err) {
-    Swal.close();
+    if (!result.isConfirmed) return;
+
     Swal.fire({
-      icon: "error",
-      title: "Failed",
-      text: "Could not start new season.",
-      confirmButtonColor: "#ef4444",
+      title: "Starting...",
+      text: "Please wait while the new season is being created.",
+      allowOutsideClick: false,
+      didOpen: () => Swal.showLoading(),
       background: "#1e293b",
       color: "#f8fafc",
     });
-    console.error(err);
-  }
-};
+
+    try {
+      const res = await fetch(`/api/season/${seasonId}/start-new-season`, {
+        method: "POST",
+      });
+
+      if (!res.ok) throw new Error("Failed to start new season");
+
+      const data = await res.json();
+
+      Swal.close();
+      await Swal.fire({
+        icon: "success",
+        title: "New Season Created!",
+        text: "Redirecting to the next season overview...",
+        confirmButtonColor: "#10b981",
+        background: "#1e293b",
+        color: "#f8fafc",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+
+      navigate("/");
+    } catch (err) {
+      Swal.close();
+      Swal.fire({
+        icon: "error",
+        title: "Failed",
+        text: "Could not start new season.",
+        confirmButtonColor: "#ef4444",
+        background: "#1e293b",
+        color: "#f8fafc",
+      });
+      console.error(err);
+    }
+  };
 
 
   return (

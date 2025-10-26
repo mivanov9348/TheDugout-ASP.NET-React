@@ -11,27 +11,32 @@
     {
         private readonly DugoutDbContext _context;
         private readonly IMoneyPrizeService _moneyPrizeService;
-        public EuropeanCupResultService(DugoutDbContext context, IMoneyPrizeService moneyPrizeService)
+        private readonly ILogger<EuroCupTeamService> _logger;
+        public EuropeanCupResultService(DugoutDbContext context, IMoneyPrizeService moneyPrizeService, ILogger<EuroCupTeamService> logger)
         {
             _context = context;
             _moneyPrizeService = moneyPrizeService;
+            _logger = logger;
         }
         public async Task<List<CompetitionSeasonResult>> GenerateEuropeanCupResultsAsync(int seasonId)
         {
+            // Проверка дали вече има записани резултати
             bool alreadyExists = await _context.CompetitionSeasonResults
-       .AnyAsync(r => r.SeasonId == seasonId && r.CompetitionType == CompetitionTypeEnum.EuropeanCup);
+                .AnyAsync(r => r.SeasonId == seasonId && r.CompetitionType == CompetitionTypeEnum.EuropeanCup);
 
             if (alreadyExists)
-                return new List<CompetitionSeasonResult>();
-
-            var gameSave = _context.GameSaves
-                    .FirstOrDefault(gs => gs.CurrentSeasonId == seasonId);
-
-            if (gameSave == null)
             {
-                throw new Exception("No Game Save");
+                _logger.LogInformation("⚠️ European cup results already exist for season {SeasonId}", seasonId);
+                return new List<CompetitionSeasonResult>();
             }
 
+            var gameSave = await _context.GameSaves
+                .FirstOrDefaultAsync(gs => gs.CurrentSeasonId == seasonId);
+
+            if (gameSave == null)
+                throw new Exception("No Game Save found!");
+
+            // Зареждаме всички еврокупи, които са приключили
             var europeanCups = await _context.EuropeanCups
                 .Include(e => e.Template)
                 .Include(e => e.Phases)
@@ -40,36 +45,33 @@
                 .Include(e => e.Phases)
                     .ThenInclude(p => p.Fixtures)
                         .ThenInclude(f => f.AwayTeam)
-                .Include(e=>e.Competition)
+                .Include(e => e.Competition)
+                // ⚠️ Без AsNoTracking(), за да може EF да track-ва навигациите
                 .Where(e => e.SeasonId == seasonId && e.IsFinished)
                 .ToListAsync();
+
+            _logger.LogInformation("🔎 Found {Count} finished european cups for season {SeasonId}", europeanCups.Count, seasonId);
 
             var results = new List<CompetitionSeasonResult>();
 
             foreach (var euro in europeanCups)
             {
-                var phases = _context.EuropeanCupPhases
-                            .Where(ph => ph.EuropeanCupId == euro.Id)
-                            .Include(ph => ph.PhaseTemplate)
-                            .Include(ph => ph.Fixtures)
-                            .AsNoTracking() 
-                            .ToList();
-
-                // Last phase = final
+                // Намираме финалната фаза
                 var finalPhase = await _context.EuropeanCupPhases
-                                .Include(ph => ph.PhaseTemplate)
-                                .Include(ph => ph.Fixtures)
-                                    .ThenInclude(f => f.HomeTeam)
-                                .Include(ph => ph.Fixtures)
-                                    .ThenInclude(f => f.AwayTeam)
-                                .Where(ph => ph.EuropeanCupId == euro.Id)
-                                .OrderByDescending(ph => ph.PhaseTemplate.Order)
-                                .AsNoTracking()
-                                .FirstOrDefaultAsync();
-
+                    .Include(ph => ph.PhaseTemplate)
+                    .Include(ph => ph.Fixtures)
+                        .ThenInclude(f => f.HomeTeam)
+                    .Include(ph => ph.Fixtures)
+                        .ThenInclude(f => f.AwayTeam)
+                    .Where(ph => ph.EuropeanCupId == euro.Id)
+                    .OrderByDescending(ph => ph.PhaseTemplate.Order)
+                    .FirstOrDefaultAsync();
 
                 if (finalPhase == null)
-                    continue;               
+                {
+                    _logger.LogWarning("⚠️ No final phase found for European Cup {CupId}", euro.Id);
+                    continue;
+                }
 
                 // Финален мач
                 var finalMatch = finalPhase.Fixtures
@@ -78,7 +80,10 @@
                     .FirstOrDefault();
 
                 if (finalMatch == null)
+                {
+                    _logger.LogWarning("⚠️ No final match found for European Cup {CupId}", euro.Id);
                     continue;
+                }
 
                 // Определяне на шампиона и финалиста
                 int? championTeamId = finalMatch.WinnerTeamId;
@@ -106,7 +111,10 @@
                 // 💰 Награди
                 if (championTeamId.HasValue)
                 {
-                    var champion = finalMatch.HomeTeamId == championTeamId ? finalMatch.HomeTeam : finalMatch.AwayTeam;
+                    var champion = finalMatch.HomeTeamId == championTeamId
+                        ? finalMatch.HomeTeam
+                        : finalMatch.AwayTeam;
+
                     await _moneyPrizeService.GrantToTeamAsync(
                         gameSave,
                         "EURO_CHAMPION",
@@ -117,7 +125,10 @@
 
                 if (runnerUpTeamId.HasValue)
                 {
-                    var runnerUp = finalMatch.HomeTeamId == runnerUpTeamId ? finalMatch.HomeTeam : finalMatch.AwayTeam;
+                    var runnerUp = finalMatch.HomeTeamId == runnerUpTeamId
+                        ? finalMatch.HomeTeam
+                        : finalMatch.AwayTeam;
+
                     await _moneyPrizeService.GrantToTeamAsync(
                         gameSave,
                         "EURO_RUNNER_UP",
@@ -126,7 +137,7 @@
                     );
                 }
 
-                // 🏆 Записваме резултата
+                // 🏆 Създаваме и добавяме резултата в контекста
                 var result = new CompetitionSeasonResult
                 {
                     SeasonId = seasonId,
@@ -138,10 +149,21 @@
                     Notes = $"Еврокупа {euro.Template.Name} - Финал: {finalMatch.HomeTeam?.Name} {finalMatch.HomeTeamGoals}:{finalMatch.AwayTeamGoals} {finalMatch.AwayTeam?.Name}"
                 };
 
+                // Задължително зануляваме навигацията, за да не се опита да attach-не detached обект
+                result.Competition = null;
+
+                _context.CompetitionSeasonResults.Add(result);
                 results.Add(result);
+
+                _logger.LogInformation("✅ Added European Cup result for {CupName}", euro.Template.Name);
             }
+
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("💾 Saved {Count} European Cup results for season {SeasonId}", results.Count, seasonId);
 
             return results;
         }
+
     }
 }

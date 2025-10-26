@@ -200,11 +200,21 @@
 
             try
             {
+                var currentSeason = await _context.Seasons.FindAsync(seasonId);
+
+                if (currentSeason == null)
+                    return NotFound("Season not found.");
+
+                // 🛑 Проверка дали сезонът е все още активен
+                if (currentSeason.IsActive)
+                {
+                    return BadRequest("Cannot start a new season while the current one is still active.");
+                }
+
                 var newSeasonId = await _newSeasonService.StartNewSeasonAsync(seasonId);
 
                 _logger.LogInformation("✅ New season created with ID {NewSeasonId}", newSeasonId);
                 return Ok(new { newSeasonId });
-          
             }
             catch (Exception ex)
             {
@@ -212,6 +222,7 @@
                 return StatusCode(500, "Failed to start a new season");
             }
         }
+
 
         [Authorize]
         [HttpGet("status/{gameSaveId}")]

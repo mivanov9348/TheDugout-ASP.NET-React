@@ -164,22 +164,26 @@
 
         private async Task<List<Team>> GetPromotedTeamsAsync(League league, int seasonId)
         {
-            if (league.PromotionSpots == 0)
+            if (league.PromotionSpots == 0 || league.Tier == 1)
                 return new List<Team>();
 
-            var lowerLeagueStandings = await _context.LeagueStandings
+            var orderedStandings = await _context.LeagueStandings
                 .Include(s => s.Team)
-                .Where(s => s.League.CountryId == league.CountryId &&
-                            s.League.Tier == league.Tier + 1 &&
-                            s.SeasonId == seasonId)
+                .Where(s => s.LeagueId == league.Id && s.SeasonId == seasonId)
                 .OrderByDescending(s => s.Points)
                 .ThenByDescending(s => s.GoalDifference)
                 .ThenByDescending(s => s.GoalsFor)
                 .Take(league.PromotionSpots)
                 .ToListAsync();
 
-            return lowerLeagueStandings.Select(s => s.Team).ToList();
+            _logger.LogInformation(
+                "⬆️ Promotion check for {LeagueName} (Tier {Tier}) found {Count} promoted teams",
+                league.Template.Name, league.Tier, orderedStandings.Count
+            );
+
+            return orderedStandings.Select(s => s.Team).ToList();
         }
+
 
         private List<Team> GetEuropeanQualifiedTeams(League league, List<LeagueStanding> orderedStandings, HashSet<int?> alreadyQualifiedTeamIds)
         {

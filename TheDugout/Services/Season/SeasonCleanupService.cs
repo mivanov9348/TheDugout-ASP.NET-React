@@ -42,11 +42,53 @@
             await CleanupTrainingSessionsAsync(seasonId);
             await CleanupTransfersAsync(seasonId);
             await CleanupFreeAgentsAsync(seasonId);
+            await CleanupCupTeamsAsync(seasonId);
 
             await _context.SaveChangesAsync();
 
             _logger.LogInformation("✅ Cleanup complete for season {SeasonId}", seasonId);
         }
+
+        private async Task CleanupCupTeamsAsync(int seasonId)
+        {
+            _logger.LogInformation("🏆 Cleaning CupTeams for season {SeasonId}", seasonId);
+
+            // Намери всички купи за сезона
+            var cups = await _context.Cups
+                .Where(c => c.SeasonId == seasonId)
+                .ToListAsync();
+
+            if (!cups.Any())
+            {
+                _logger.LogWarning("⚠️ No cups found for season {SeasonId}", seasonId);
+                return;
+            }
+
+            var cupIds = cups.Select(c => c.Id).ToList();
+
+            // Намери всички CupTeams, които принадлежат към тези купи
+            var cupTeams = await _context.CupTeams
+                .Where(ct => cupIds.Contains(ct.CupId ?? 0))
+                .ToListAsync();
+
+            if (!cupTeams.Any())
+            {
+                _logger.LogWarning("⚠️ No CupTeams found for season {SeasonId}", seasonId);
+                return;
+            }
+
+            _logger.LogInformation("📊 Found {CupCount} cups and {CupTeamCount} cup teams to delete",
+                cups.Count, cupTeams.Count);
+
+            // Изтрий cup teams
+            _context.CupTeams.RemoveRange(cupTeams);
+
+            // Изтрий и самите купи
+            _context.Cups.RemoveRange(cups);
+
+            _logger.LogInformation("✅ Deleted all CupTeams and Cups for season {SeasonId}", seasonId);
+        }
+
 
         private async Task CleanupFixturesAndMatchesAsync(int seasonId)
         {
