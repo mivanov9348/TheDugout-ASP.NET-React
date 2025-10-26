@@ -168,10 +168,20 @@
             if (competition == null)
                 return string.Empty;
 
-            return competition.League?.Template?.Name
-                ?? competition.Cup?.Template?.Name
-                ?? competition.EuropeanCup?.Template?.Name
-                ?? string.Empty;
+            return competition.Type switch
+            {
+                CompetitionTypeEnum.League =>
+                    competition.League?.Template?.Name ?? "Unknown League",
+
+                CompetitionTypeEnum.DomesticCup =>
+                    competition.Cup?.Template?.Name ?? "Unknown Cup",
+
+                CompetitionTypeEnum.EuropeanCup =>
+                    competition.EuropeanCup?.Template?.Name ?? "Unknown European Cup",
+
+                _ => "Unknown Competition"
+            };
         }
+
     }
 }

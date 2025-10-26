@@ -15,17 +15,18 @@
         public string Name { get; set; } = string.Empty;
         public CompetitionTypeEnum Type { get; set; }
 
+        public string? CompetitionLogo { get; set; } 
+
         public TeamSummaryDto? ChampionTeam { get; set; }
         public TeamSummaryDto? RunnerUpTeam { get; set; }
-
         public List<TeamSummaryDto> PromotedTeams { get; set; } = new();
         public List<TeamSummaryDto> RelegatedTeams { get; set; } = new();
         public List<TeamSummaryDto> EuropeanQualifiedTeams { get; set; } = new();
-
         public List<AwardDto> Awards { get; set; } = new();
-        public List<LeagueStandingDto>? LeagueStandings { get; set; }
-        public List<TopScorerDto>? TopScorers { get; set; }
+        public List<LeagueStandingDto> LeagueStandings { get; set; } = new();
+        public List<TopScorerDto> TopScorers { get; set; } = new();
     }
+
 
     public class AwardDto
     {
