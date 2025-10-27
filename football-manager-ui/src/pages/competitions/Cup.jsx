@@ -1,17 +1,19 @@
 import { useEffect, useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
-
-const Cup = ({ gameSaveId, seasonId }) => {
+import { useActiveSeason } from "../../components/useActiveSeason";
+const Cup = ({ gameSaveId }) => {
+  const { season, loading: seasonLoading, error: seasonError } = useActiveSeason(gameSaveId);
   const [cups, setCups] = useState([]);
   const [selectedCupId, setSelectedCupId] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Зареждане на купите след като имаме активен сезон
   useEffect(() => {
     const fetchCups = async () => {
-      if (!gameSaveId || !seasonId) return;
+      if (!gameSaveId || !season?.id) return;
       try {
         setLoading(true);
-        const res = await fetch(`/api/cup/${gameSaveId}/${seasonId}`, {
+        const res = await fetch(`/api/cup/${gameSaveId}/${season.id}`, {
           credentials: "include",
         });
         if (!res.ok) throw new Error("Error loading cups");
@@ -19,16 +21,23 @@ const Cup = ({ gameSaveId, seasonId }) => {
         setCups(data);
         if (data.length > 0) setSelectedCupId(data[0].id);
       } catch (err) {
-        console.error(err);
+        console.error("❌ Error loading cups:", err);
       } finally {
         setLoading(false);
       }
     };
 
     fetchCups();
-  }, [gameSaveId, seasonId]);
+  }, [gameSaveId, season]); // 👈 когато сезонът се зареди или смени
 
   const selectedCup = cups.find((c) => c.id === selectedCupId);
+
+  // Ако сезонът още се зарежда
+  if (seasonLoading)
+    return <div className="text-gray-500 p-6">Loading active season...</div>;
+
+  if (seasonError)
+    return <div className="text-red-600 p-6">Error: {seasonError}</div>;
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen rounded-xl shadow">
@@ -61,8 +70,9 @@ const Cup = ({ gameSaveId, seasonId }) => {
         <NavLink
           to="/competitions/cup/knockouts"
           className={({ isActive }) =>
-            `px-4 py-2 rounded-lg font-bold transition 
-    ${isActive ? "bg-sky-600 text-white" : "bg-slate-200 hover:bg-slate-300"}`
+            `px-4 py-2 rounded-lg font-bold transition ${
+              isActive ? "bg-sky-600 text-white" : "bg-slate-200 hover:bg-slate-300"
+            }`
           }
         >
           Knockouts
@@ -71,8 +81,9 @@ const Cup = ({ gameSaveId, seasonId }) => {
         <NavLink
           to="/competitions/cup/player-stats"
           className={({ isActive }) =>
-            `px-4 py-2 rounded-lg font-bold transition 
-    ${isActive ? "bg-sky-600 text-white" : "bg-slate-200 hover:bg-slate-300"}`
+            `px-4 py-2 rounded-lg font-bold transition ${
+              isActive ? "bg-sky-600 text-white" : "bg-slate-200 hover:bg-slate-300"
+            }`
           }
         >
           Player Stats
@@ -82,7 +93,7 @@ const Cup = ({ gameSaveId, seasonId }) => {
       {/* Съдържание на подстраниците */}
       <div className="p-4 bg-white rounded-xl shadow">
         {loading ? (
-          <div className="text-gray-500">Loading...</div>
+          <div className="text-gray-500">Loading cups...</div>
         ) : !selectedCup ? (
           <div className="text-gray-500">No cups available</div>
         ) : (

@@ -14,6 +14,8 @@
         public IEnumerable<LeagueDto> Leagues { get; set; } = new List<LeagueDto>();
         public IEnumerable<SeasonDto> Seasons { get; set; } = new List<SeasonDto>();
 
+        public SeasonDto? ActiveSeason { get; set; }
+
         public string? NextDayActionKey { get; set; }
         public string NextDayActionLabel { get; set; } = "Next Day →";
 
@@ -57,6 +59,7 @@
     public class SeasonDto
     {
         public int Id { get; set; }
+        public bool IsActive { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public DateTime CurrentDate { get; set; }

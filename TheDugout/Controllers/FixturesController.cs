@@ -16,42 +16,34 @@
             _context = context;
         }
 
-
         [Authorize]
-        [HttpGet("{gameSaveId}/{seasonId}")]
+        [HttpGet("{gameSaveId}")]
         public async Task<IActionResult> GetFixtures(
-    int gameSaveId,
-    int seasonId,
-    [FromQuery] int? round = 1,
-    [FromQuery] int? leagueId = null)
+            int gameSaveId,
+            [FromQuery] int? seasonId = null,
+            [FromQuery] int? round = 1,
+            [FromQuery] int? leagueId = null)
         {
-            var activeSeason = _context.Seasons.FirstOrDefault(s => s.GameSaveId == gameSaveId && s.IsActive == true);
+            // 🔍 Взимаме активния сезон, ако не е подаден seasonId
+            var targetSeasonId = seasonId ?? await _context.Seasons
+                .Where(s => s.GameSaveId == gameSaveId && s.IsActive)
+                .Select(s => (int?)s.Id)
+                .FirstOrDefaultAsync();
 
-            // ПРОМЯНА 3: Валидация. Ако няма активен сезон, връщаме грешка.
-            if (activeSeason == null)
-            {
-                return NotFound($"Не е намерен активен сезон за GameSaveId: {gameSaveId}");
-            }
+            if (targetSeasonId == null)
+                return NotFound($"❌ Не е намерен активен сезон за GameSaveId: {gameSaveId}");
 
-            // Базов филтър – винаги по GameSaveId и Season
             var query = _context.Fixtures
                 .Include(f => f.League).ThenInclude(l => l.Template)
                 .Include(f => f.HomeTeam)
                 .Include(f => f.AwayTeam)
-                // ПРОМЯНА 4: Използваме ID-то на намерения активен сезон
-                .Where(f => f.GameSaveId == gameSaveId && f.SeasonId == activeSeason.Id);
+                .Where(f => f.GameSaveId == gameSaveId && f.SeasonId == targetSeasonId);
 
-            // Филтрирай по кръг
             if (round.HasValue && round.Value > 0)
                 query = query.Where(f => f.Round == round.Value);
 
-            // Ако има избрана лига — филтрирай по нея
             if (leagueId.HasValue && leagueId.Value > 0)
-            {
                 query = query.Where(f => f.LeagueId == leagueId.Value);
-            }
-            // АКО НЯМА ИЗБРАНА ЛИГА - ВРЪЩАМЕ ВСИЧКИ МАЧОВЕ ЗА ТОЗИ SEASON
-            // Не филтрираме автоматично по първата лига!
 
             var fixtures = await query
                 .OrderBy(f => f.League.Tier)

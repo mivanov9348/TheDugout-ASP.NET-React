@@ -54,6 +54,7 @@
                 var cup = new Cup
                 {
                     Competition = competition,
+                    CompetitionId = competition.Id,
                     TemplateId = template.Id,
                     GameSaveId = gameSave.Id,
                     SeasonId = seasonId,

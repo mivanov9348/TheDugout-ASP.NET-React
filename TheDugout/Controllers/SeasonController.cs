@@ -152,7 +152,6 @@
                 dto.Competitions.Add(competitionDto);
             }
 
-
             // 🧠 ЛОКАЛЕН ЛОГ НА ЦЕЛИЯ DTO
             try
             {
@@ -237,9 +236,14 @@
 
             if (save == null) return NotFound();
 
-            var season = _context.Seasons.FirstOrDefault(s => s.GameSaveId == gameSaveId && s.IsActive == true);
+            var activeSeason = await _context.Seasons
 
-            if (season == null)
+    .Where(s => s.GameSaveId == gameSaveId)
+    .OrderByDescending(s => s.IsActive)
+    .ThenByDescending(s => s.StartDate)
+    .FirstOrDefaultAsync();
+
+            if (activeSeason == null)
             {
                 return Ok(new
                 {
@@ -253,7 +257,7 @@
                             Balance = save.UserTeam?.Balance ?? 0,
                             LeagueName = save.UserTeam?.League?.Template?.Name ?? "Unknown League"
                         },
-                        Seasons = Array.Empty<object>()
+                        ActiveSeason = (object)null
                     },
                     hasUnplayedMatchesToday = false,
                     hasMatchesToday = false,
@@ -261,7 +265,7 @@
                 });
             }
 
-            var today = season.CurrentDate.Date;
+            var today = activeSeason.CurrentDate.Date;
 
             var matches = await _context.Fixtures
                 .Include(f => f.HomeTeam)
@@ -285,16 +289,13 @@
                         save.UserTeam.Balance,
                         LeagueName = save.UserTeam.League.Template.Name
                     },
-                    Seasons = save.Seasons
-                     .Where(s => s.IsActive)
-                     .OrderByDescending(s => s.StartDate)
-                    .Select(s => new
+                    ActiveSeason = new
                     {
-                        s.Id,
-                        s.CurrentDate,
-                        s.EndDate,
-                        s.StartDate
-                    }),
+                        activeSeason.Id,
+                        activeSeason.CurrentDate,
+                        activeSeason.StartDate,
+                        activeSeason.EndDate
+                    }
                 },
                 hasUnplayedMatchesToday,
                 hasMatchesToday,
@@ -320,7 +321,7 @@
             var saveId = user.CurrentSave.Id;
             var save = user.CurrentSave;
 
-            var season = save.Seasons.FirstOrDefault(s => s.IsActive);
+            var season = _context.Seasons.FirstOrDefault(x => x.GameSaveId == saveId && x.IsActive == true);
             if (season == null) return BadRequest("No season found.");
 
             var today = season.CurrentDate.Date;
@@ -380,6 +381,26 @@
                 await Send("error", $"Error: {ex.Message}");
             }
         }
+
+        [Authorize]
+        [HttpGet("active/{gameSaveId}")]
+        public IActionResult GetActiveSeason(int gameSaveId)
+        {
+            var activeSeason = _context.Seasons
+                .FirstOrDefault(s => s.GameSaveId == gameSaveId && s.IsActive);
+
+            if (activeSeason == null)
+                return NotFound(new { message = $"No active season for GameSaveId={gameSaveId}" });
+
+            return Ok(new
+            {
+                id = activeSeason.Id,
+                startDate = activeSeason.StartDate,
+                currentDate = activeSeason.CurrentDate,
+                endDate = activeSeason.EndDate
+            });
+        }
+
 
 
     }

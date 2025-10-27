@@ -77,7 +77,7 @@
            PlayerName = pms.Player.FirstName + " " + pms.Player.LastName,
            TeamId = pms.Player.TeamId,
            Goals = pms.Goals,
-           Minute = pms.Match.CurrentMinute // или специално поле за минута на гол, ако имате такова
+           Minute = pms.Match.CurrentMinute 
        })
        .ToListAsync();
 
@@ -106,7 +106,6 @@
                     .ThenBy(p => p.Name)
                     .ToListAsync();
             }
-
 
             var result = new
             {

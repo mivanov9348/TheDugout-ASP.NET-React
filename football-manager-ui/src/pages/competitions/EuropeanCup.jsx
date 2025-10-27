@@ -1,35 +1,40 @@
 import { useEffect, useState } from "react";
 import GroupStage from "./europe/GroupStage";
-import Knockouts from "./europe/Knockouts"
+import Knockouts from "./europe/Knockouts";
 import PlayerStats from "./europe/PlayerStats";
-export default function EuropeanCup({ gameSaveId, seasonId }) {
+import { useActiveSeason } from "../../components/useActiveSeason";
+
+export default function EuropeanCup({ gameSaveId }) {
+  const { season, loading: seasonLoading, error: seasonError } = useActiveSeason(gameSaveId);
   const [cup, setCup] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("group");
 
   useEffect(() => {
-    if (!gameSaveId || !seasonId) return;
-
     const loadCup = async () => {
+      if (!gameSaveId || !season?.id) return;
       try {
+        setLoading(true);
         const res = await fetch(
-          `/api/EuropeanCup/current?gameSaveId=${gameSaveId}&seasonId=${seasonId}`,
+          `/api/EuropeanCup/current?gameSaveId=${gameSaveId}&seasonId=${season.id}`,
           { credentials: "include" }
         );
         if (!res.ok) throw new Error("Error while loading European Cup");
         const data = await res.json();
         setCup(data);
       } catch (err) {
-        console.error(err);
+        console.error("❌ Error loading European Cup:", err);
       } finally {
         setLoading(false);
       }
     };
 
     loadCup();
-  }, [gameSaveId, seasonId]);
+  }, [gameSaveId, season]); // 👈 следи за промени в сейв и сезон
 
-  if (loading) return <p>Loading...</p>;
+  if (seasonLoading) return <p>Loading active season...</p>;
+  if (seasonError) return <p className="text-red-600">Error: {seasonError}</p>;
+  if (loading) return <p>Loading European Cup...</p>;
   if (!cup?.exists) return <p>No European Cup for this season.</p>;
 
   const competitionLogoUrl = cup.logoFileName

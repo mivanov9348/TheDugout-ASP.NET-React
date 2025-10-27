@@ -42,7 +42,7 @@
             await CleanupTrainingSessionsAsync(seasonId);
             await CleanupTransfersAsync(seasonId);
             await CleanupFreeAgentsAsync(seasonId);
-            await CleanupCupTeamsAsync(seasonId);
+            //await CleanupCupTeamsAsync(seasonId);
 
             await _context.SaveChangesAsync();
 

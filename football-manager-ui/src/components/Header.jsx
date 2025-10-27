@@ -145,7 +145,7 @@ const handleEndSeason = async () => {
 
   if (!confirm.isConfirmed) return;
 
-  const seasonId = currentGameSave?.seasons?.[0]?.id;
+  const seasonId = currentGameSave?.activeSeason.id;
   if (!seasonId) {
     Swal.fire({
       title: "❌ Error",
@@ -231,7 +231,7 @@ const handleEndSeason = async () => {
     );
   }
 
-  const season = currentGameSave.seasons?.[0];
+  const season = currentGameSave.activeSeason;
   const team = currentGameSave.userTeam;
 
   // Проверяваме дали е последният ден от сезона

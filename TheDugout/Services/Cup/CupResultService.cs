@@ -92,12 +92,14 @@
                         runnerUpTeamId = finalMatch.HomeTeamId;
                     }
                 }
+                             
 
                 // 🏆 Резултатен запис
                 var result = new CompetitionSeasonResult
                 {
                     SeasonId = seasonId,
                     CompetitionType = CompetitionTypeEnum.DomesticCup,
+                    Competition = cup.Competition,
                     CompetitionId = cup.CompetitionId,
                     GameSaveId = cup.GameSaveId,
                     ChampionTeamId = championTeamId,

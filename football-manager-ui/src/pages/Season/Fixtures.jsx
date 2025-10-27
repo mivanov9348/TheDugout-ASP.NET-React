@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import TeamLogo from "../../components/TeamLogo";
+import { useActiveSeason } from "../../components/useActiveSeason";
 
-const Fixtures = ({ gameSaveId, seasonId }) => {
+const Fixtures = ({ gameSaveId }) => {
+  const { season, loading: seasonLoading, error: seasonError } = useActiveSeason(gameSaveId);
   const [fixtures, setFixtures] = useState([]);
   const [loading, setLoading] = useState(false);
   const [round, setRound] = useState("1");
@@ -10,7 +12,7 @@ const Fixtures = ({ gameSaveId, seasonId }) => {
   const [leagues, setLeagues] = useState([]);
   const [maxRounds, setMaxRounds] = useState(38);
 
-  // ✅ Зарежда лигите
+  // 🏆 Зареждане на лигите
   useEffect(() => {
     if (!gameSaveId) return;
 
@@ -19,33 +21,29 @@ const Fixtures = ({ gameSaveId, seasonId }) => {
         const res = await fetch(`/api/league/${gameSaveId}`, {
           credentials: "include",
         });
-
         if (!res.ok) throw new Error("Failed to load leagues");
 
         const data = await res.json();
         setLeagues(data.leagues || []);
 
-        if (data.leagues && data.leagues.length > 0) {
+        if (data.leagues?.length > 0) {
           setLeague(data.leagues[0].id.toString());
           setMaxRounds(data.leagues[0].rounds || 38);
         }
       } catch (err) {
         console.error("Error fetching leagues:", err);
-        setLeagues([]);
       }
     };
 
     fetchLeagues();
   }, [gameSaveId]);
 
-  // ✅ Зарежда мачовете при промяна
+  // ⚽ Зареждане на мачовете по активен сезон
   useEffect(() => {
-    if (!gameSaveId || !seasonId) return;
+    if (!gameSaveId || !season?.id) return;
 
-    let url = `/api/fixtures/${gameSaveId}/${seasonId}?round=${round}`;
-    if (league) {
-      url += `&leagueId=${league}`;
-    }
+    let url = `/api/fixtures/${gameSaveId}?round=${round}&seasonId=${season.id}`;
+    if (league) url += `&leagueId=${league}`;
 
     const fetchFixtures = async () => {
       try {
@@ -64,20 +62,18 @@ const Fixtures = ({ gameSaveId, seasonId }) => {
     };
 
     fetchFixtures();
-  }, [gameSaveId, seasonId, round, league]);
+  }, [gameSaveId, season?.id, round, league]);
 
-  // ✅ При смяна на лига, връща рунда на 1
+  // 🔄 При смяна на лига, рестартираме рунда
   useEffect(() => {
     if (league && leagues.length > 0) {
-      const selectedLeague = leagues.find((l) => l.id.toString() === league);
-      if (selectedLeague) {
-        setMaxRounds(selectedLeague.rounds || 38);
+      const selected = leagues.find((l) => l.id.toString() === league);
+      if (selected) {
+        setMaxRounds(selected.rounds || 38);
         setRound("1");
       }
     }
   }, [league, leagues]);
-
-  const selectedLeague = leagues.find((l) => l.id.toString() === league);
 
   const formatMatchDate = (dateString) => {
     if (!dateString) return "—";
@@ -85,7 +81,6 @@ const Fixtures = ({ gameSaveId, seasonId }) => {
     return {
       day: date.getDate(),
       month: date.toLocaleDateString("en-GB", { month: "short" }),
-      weekday: date.toLocaleDateString("en-GB", { weekday: "short" }),
       time: date.toLocaleTimeString("en-GB", {
         hour: "2-digit",
         minute: "2-digit",
@@ -104,21 +99,16 @@ const Fixtures = ({ gameSaveId, seasonId }) => {
         to={`/match/${match.id}`}
         className={`flex items-center justify-between p-6 ${
           index % 2 === 0 ? "bg-white" : "bg-gray-50"
-        } hover:bg-blue-50 transition-colors duration-200 border-b border-gray-100 last:border-b-0`}
+        } hover:bg-blue-50 transition-colors duration-200 border-b border-gray-100`}
       >
-        {/* Дата */}
-        <div className="w-24 flex-shrink-0">
-          <div className="text-center">
-            <div className="text-sm font-semibold text-gray-900">
-              {dateInfo.day} {dateInfo.month}
-            </div>
-            <div className="text-xs text-gray-500 mt-1">{dateInfo.time}</div>
+        <div className="w-24 text-center">
+          <div className="text-sm font-semibold text-gray-900">
+            {dateInfo.day} {dateInfo.month}
           </div>
+          <div className="text-xs text-gray-500 mt-1">{dateInfo.time}</div>
         </div>
 
-        {/* Отбори и резултат */}
         <div className="flex-1 flex items-center justify-between max-w-2xl mx-8">
-          {/* Домакин */}
           <div className="flex items-center space-x-4 flex-1 justify-end">
             <span className="font-semibold text-gray-900 text-right">
               {match.homeTeam ?? "—"}
@@ -130,10 +120,9 @@ const Fixtures = ({ gameSaveId, seasonId }) => {
             />
           </div>
 
-          {/* Резултат */}
           <div className="mx-6">
             {isPlayed ? (
-              <div className="bg-gray-100 px-4 py-2 rounded-lg min-w-[70px] text-center">
+              <div className="bg-gray-100 px-4 py-2 rounded-lg text-center">
                 <span className="font-bold text-gray-900 text-lg">
                   {match.homeTeamGoals} - {match.awayTeamGoals}
                 </span>
@@ -143,7 +132,6 @@ const Fixtures = ({ gameSaveId, seasonId }) => {
             )}
           </div>
 
-          {/* Гост */}
           <div className="flex items-center space-x-4 flex-1 justify-start">
             <TeamLogo
               teamName={match.awayTeam}
@@ -156,8 +144,7 @@ const Fixtures = ({ gameSaveId, seasonId }) => {
           </div>
         </div>
 
-        {/* Статус */}
-        <div className="w-20 flex-shrink-0 text-right">
+        <div className="w-20 text-right">
           <span
             className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
               isPlayed
@@ -172,18 +159,19 @@ const Fixtures = ({ gameSaveId, seasonId }) => {
     );
   };
 
+  if (seasonLoading) return <div className="text-center py-20">Loading active season...</div>;
+  if (seasonError) return <div className="text-center py-20 text-red-500">Error loading season.</div>;
+  if (!season) return <div className="text-center py-20 text-gray-500">No active season.</div>;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
-        {/* Контроли */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-6 mb-8">
+        <div className="bg-white rounded-2xl shadow-xl p-6 mb-8">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                📊 League
-              </label>
+              <label className="block text-sm font-semibold mb-2">League</label>
               <select
-                className="w-full p-3 rounded-xl border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 shadow-sm"
+                className="w-full p-3 rounded-xl border border-gray-200"
                 value={league}
                 onChange={(e) => setLeague(e.target.value)}
               >
@@ -196,14 +184,12 @@ const Fixtures = ({ gameSaveId, seasonId }) => {
             </div>
 
             <div className="flex-1">
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                🔄 Round
-              </label>
+              <label className="block text-sm font-semibold mb-2">Round</label>
               <select
-                className="w-full p-3 rounded-xl border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 shadow-sm"
+                className="w-full p-3 rounded-xl border border-gray-200"
                 value={round}
                 onChange={(e) => setRound(e.target.value)}
-                disabled={loading || fixtures.length === 0}
+                disabled={loading}
               >
                 {[...Array(maxRounds)].map((_, i) => (
                   <option key={i + 1} value={i + 1}>
@@ -215,50 +201,17 @@ const Fixtures = ({ gameSaveId, seasonId }) => {
           </div>
         </div>
 
-        {/* Инфо за селекцията */}
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl shadow-lg p-6 mb-8 text-white">
-          <h2 className="text-2xl font-bold mb-2">
-            {selectedLeague?.name || "Fixtures"}
-          </h2>
-          <p className="text-blue-100">
-            Round {round} • {fixtures.length} matches
-          </p>
-        </div>
-
-        {/* Списък с мачове */}
         {loading ? (
-          <div className="flex justify-center items-center py-20">
-            <div className="text-center">
-              <div className="animate-spin h-16 w-16 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-              <p className="text-gray-600 text-lg">Loading fixtures...</p>
-            </div>
-          </div>
+          <div className="text-center py-20">Loading fixtures...</div>
         ) : fixtures.length === 0 ? (
-          <div className="bg-white/80 rounded-2xl shadow-xl p-12 text-center">
-            <div className="text-6xl mb-4">⚽</div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-2">
-              No Fixtures Found
-            </h3>
-            <p className="text-gray-600 max-w-md mx-auto">
-              There are no matches scheduled for the selected round and league.
-            </p>
+          <div className="text-center py-20 text-gray-500">
+            No fixtures found.
           </div>
         ) : (
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 overflow-hidden">
-            <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
-              <div className="flex items-center text-sm font-semibold text-gray-700 uppercase tracking-wide">
-                <div className="w-24">Date & Time</div>
-                <div className="flex-1 text-center">Match</div>
-                <div className="w-20 text-right">Status</div>
-              </div>
-            </div>
-            <div className="divide-y divide-gray-100">
-              {fixtures.map((match, index) =>
-                match?.id ? (
-                  <MatchRow key={match.id} match={match} index={index} />
-                ) : null
-              )}
-            </div>
+          <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+            {fixtures.map((match, index) => (
+              <MatchRow key={match.id} match={match} index={index} />
+            ))}
           </div>
         )}
       </div>

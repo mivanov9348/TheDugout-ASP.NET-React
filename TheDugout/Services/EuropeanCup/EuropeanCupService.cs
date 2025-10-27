@@ -91,17 +91,20 @@
             {
                 Type = CompetitionTypeEnum.EuropeanCup,
                 GameSaveId = gameSaveId,
-                SeasonId = seasonId // ID-то на новия сезон
+                SeasonId = seasonId 
             };
+
+            _context.Competitions.Add(competition);
+            await _context.SaveChangesAsync(ct);
 
             var euroCup = new EuropeanCup
             {
                 TemplateId = template.Id,
                 GameSaveId = gameSaveId,
-                SeasonId = seasonId, // ID-то на новия сезон
+                SeasonId = seasonId,
                 LogoFileName = $"{template.Name}.png",
                 IsActive = template.IsActive,
-                Competition = competition,
+                CompetitionId = competition.Id // вече е генериран
             };
 
             _context.EuropeanCups.Add(euroCup);

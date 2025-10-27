@@ -4,6 +4,7 @@
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.EntityFrameworkCore;
     using TheDugout.Data;
+    using TheDugout.DTOs.DtoGameSave;
     using TheDugout.Models.Messages;
     using TheDugout.Services.Game.Interfaces;
     using TheDugout.Services.Message.Interfaces;
@@ -172,7 +173,7 @@
             .Include(u => u.CurrentSave).ThenInclude(gs => gs.Leagues).ThenInclude(l => l.Template)
             .Include(u => u.CurrentSave).ThenInclude(gs => gs.Leagues).ThenInclude(l => l.Teams).ThenInclude(t => t.Country)
 
-            .Include(u => u.CurrentSave).ThenInclude(gs => gs.Seasons.Where(s => s.IsActive))
+            .Include(u => u.CurrentSave).ThenInclude(gs => gs.Seasons)
     .ThenInclude(s => s.Events)
             .Include(u => u.CurrentSave).ThenInclude(gs => gs.Seasons.Where(s => s.IsActive))
                 .ThenInclude(s => s.Fixtures)

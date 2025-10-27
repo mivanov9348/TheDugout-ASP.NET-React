@@ -1,25 +1,22 @@
 import React, { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useGame } from "../../context/GameContext";
+import { useActiveSeason } from "../../components/useActiveSeason";
 
 const Calendar = ({ gameSaveId }) => {
-  const { currentGameSave } = useGame();
-  const [currentDate, setCurrentDate] = useState(new Date(2025, 6, 1));
+  const { season, loading, error } = useActiveSeason(gameSaveId);
+  const [currentDate, setCurrentDate] = useState(new Date());
   const [events, setEvents] = useState([]);
 
-  // Взимаме директно от контекста
-  const season = currentGameSave?.seasons?.[0];
-  const seasonCurrentDate = season?.currentDate; // 🔥 винаги актуално
-
+  // 📅 Когато сезонът се зареди, обновяваме календара
   useEffect(() => {
-    if (seasonCurrentDate) {
-      const parts = seasonCurrentDate.split("-");
+    if (season?.currentDate) {
+      const parts = season.currentDate.split("-");
       const [year, month] = parts.map(Number);
       setCurrentDate(new Date(year, month - 1, 1));
     }
-  }, [seasonCurrentDate]);
+  }, [season]);
 
-  // Зареждане на събитията от бекенда
+  // 🧠 Зареждане на събитията от бекенда
   useEffect(() => {
     const fetchEvents = async () => {
       if (!gameSaveId) return;
@@ -28,9 +25,8 @@ const Calendar = ({ gameSaveId }) => {
           credentials: "include",
         });
         if (!res.ok) throw new Error("Грешка при зареждане на календара");
-
-        const seasonData = await res.json();
-        setEvents(seasonData.events || []);
+        const data = await res.json();
+        setEvents(data.events || []);
       } catch (err) {
         console.error(err);
       }
@@ -39,6 +35,11 @@ const Calendar = ({ gameSaveId }) => {
     fetchEvents();
   }, [gameSaveId]);
 
+  if (loading) return <div className="text-center text-gray-500">Зареждане на сезон...</div>;
+  if (error) return <div className="text-center text-red-500">Грешка: {error}</div>;
+  if (!season) return <div className="text-center text-gray-500">Няма активен сезон.</div>;
+
+  // 🧾 Календарна логика
   const daysInMonth = new Date(
     currentDate.getFullYear(),
     currentDate.getMonth() + 1,
@@ -52,6 +53,8 @@ const Calendar = ({ gameSaveId }) => {
   ).getDay();
 
   const offset = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1;
+
+  const normalizedSeasonDate = season.currentDate?.split("T")[0];
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
@@ -86,24 +89,19 @@ const Calendar = ({ gameSaveId }) => {
       {/* Legend */}
       <div className="flex gap-4 mb-4 text-sm flex-wrap text-gray-700">
         <span className="flex items-center gap-1">
-          <span className="w-3 h-3 bg-yellow-500 inline-block rounded"></span>{" "}
-          Transfer
+          <span className="w-3 h-3 bg-yellow-500 inline-block rounded"></span> Transfer
         </span>
         <span className="flex items-center gap-1">
-          <span className="w-3 h-3 bg-blue-600 inline-block rounded"></span>{" "}
-          League
+          <span className="w-3 h-3 bg-blue-600 inline-block rounded"></span> League
         </span>
         <span className="flex items-center gap-1">
-          <span className="w-3 h-3 bg-purple-600 inline-block rounded"></span>{" "}
-          Europe
+          <span className="w-3 h-3 bg-purple-600 inline-block rounded"></span> Europe
         </span>
         <span className="flex items-center gap-1">
-          <span className="w-3 h-3 bg-green-600 inline-block rounded"></span>{" "}
-          Cup
+          <span className="w-3 h-3 bg-green-600 inline-block rounded"></span> Cup
         </span>
         <span className="flex items-center gap-1">
-          <span className="w-3 h-3 bg-gray-600 inline-block rounded"></span>{" "}
-          Training
+          <span className="w-3 h-3 bg-gray-600 inline-block rounded"></span> Training
         </span>
       </div>
 
@@ -127,16 +125,15 @@ const Calendar = ({ gameSaveId }) => {
           ).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 
           const dayEvents = events.filter((e) => e.date === isoDay);
-          const normalizedSeasonDate = seasonCurrentDate?.split("T")[0];
           const isCurrentDay = normalizedSeasonDate === isoDay;
 
           return (
             <div
               key={idx}
               className={`h-32 rounded-xl shadow-md flex flex-col items-start p-2 text-gray-200
-        ${dayEvents.length > 0 ? "bg-gray-800" : "bg-gray-700"}
-        ${isCurrentDay ? "border-4 border-red-500 shadow-[0_0_10px_rgba(239,68,68,0.8)]" : ""}
-      `}
+                ${dayEvents.length > 0 ? "bg-gray-800" : "bg-gray-700"}
+                ${isCurrentDay ? "border-4 border-red-500 shadow-[0_0_10px_rgba(239,68,68,0.8)]" : ""}
+              `}
             >
               {/* Денят */}
               <div className="w-full flex justify-between items-center mb-1">
@@ -156,18 +153,19 @@ const Calendar = ({ gameSaveId }) => {
                         {parts.map((part, j) => (
                           <div
                             key={j}
-                            className={`px-1 py-0.5 rounded truncate ${ev.type === "TransferWindow"
-                              ? "bg-yellow-500 text-black font-bold"
-                              : ev.type === "ChampionshipMatch"
+                            className={`px-1 py-0.5 rounded truncate ${
+                              ev.type === "TransferWindow"
+                                ? "bg-yellow-500 text-black font-bold"
+                                : ev.type === "ChampionshipMatch"
                                 ? "bg-blue-600"
                                 : ev.type === "EuropeanMatch"
-                                  ? "bg-purple-600"
-                                  : ev.type === "CupMatch"
-                                    ? "bg-green-600"
-                                    : ev.type === "TrainingDay"
-                                      ? "bg-gray-600"
-                                      : "bg-gray-700"
-                              }`}
+                                ? "bg-purple-600"
+                                : ev.type === "CupMatch"
+                                ? "bg-green-600"
+                                : ev.type === "TrainingDay"
+                                ? "bg-gray-600"
+                                : "bg-gray-700"
+                            }`}
                           >
                             {part}
                           </div>
@@ -185,9 +183,7 @@ const Calendar = ({ gameSaveId }) => {
                 <button
                   className="mt-1 px-2 py-1 bg-yellow-500 text-black text-[10px] font-bold rounded hover:bg-yellow-400 transition w-full"
                   onClick={() =>
-                    alert(
-                      `Assign Friendly for ${day}/${currentDate.getMonth() + 1}`
-                    )
+                    alert(`Assign Friendly for ${day}/${currentDate.getMonth() + 1}`)
                   }
                 >
                   Assign Friendly

@@ -2,9 +2,8 @@
 {
     using Microsoft.EntityFrameworkCore;
     using TheDugout.Data;
+    using TheDugout.DTOs.DtoGameSave;
     using TheDugout.Models.Enums;
-    using TheDugout.Models.Fixtures;
-    using TheDugout.Models.Seasons;
     using TheDugout.Services.CPUManager;
     using TheDugout.Services.Game.Interfaces;
     using TheDugout.Services.Season.Interfaces;

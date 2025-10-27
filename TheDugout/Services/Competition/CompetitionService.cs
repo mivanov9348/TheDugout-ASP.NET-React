@@ -129,7 +129,8 @@
                         topScorer.PlayerId, topScorer.Goals, competition.Id);
                 }
 
-                _context.CompetitionSeasonResults.Add(result);
+                if (_context.Entry(result).State == EntityState.Detached)
+                    _context.CompetitionSeasonResults.Add(result);
             }
 
             // 3️⃣ Запазваме всички промени
