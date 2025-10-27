@@ -1,14 +1,13 @@
 import { useEffect, useState } from "react";
-import { ArrowUpCircle } from "lucide-react";
+import { ArrowUpCircle, Loader2 } from "lucide-react";
 import Swal from "sweetalert2";
 import { useGame } from "../../context/GameContext";
 
-export default function Facilities({ gameSaveId, teamId }) {
+export default function Facilities({ gameSaveId, teamId, logoUrl }) {
   const [facilities, setFacilities] = useState(null);
   const [loading, setLoading] = useState(true);
   const { refreshGameStatus } = useGame();
 
-  // 🔹 функция за зареждане на facilities
   const fetchFacilities = async () => {
     try {
       setLoading(true);
@@ -17,8 +16,7 @@ export default function Facilities({ gameSaveId, teamId }) {
       });
       if (!res.ok) throw new Error("Грешка при зареждане на Facilities");
       const data = await res.json();
-      
-      // ПРОМЯНА: Добавяме upgradeCost към state-а
+
       setFacilities({
         stadium: data.stadium
           ? {
@@ -26,7 +24,7 @@ export default function Facilities({ gameSaveId, teamId }) {
               level: data.stadium.level,
               capacity: data.stadium.capacity,
               ticketPrice: data.stadium.ticketPrice,
-              upgradeCost: data.stadium.upgradeCost, // 👈 ПРОЧЕТИ ОТ API
+              upgradeCost: data.stadium.upgradeCost,
             }
           : null,
         training: data.trainingFacility
@@ -34,7 +32,7 @@ export default function Facilities({ gameSaveId, teamId }) {
               name: "💪 Training Facilities",
               level: data.trainingFacility.level,
               quality: data.trainingFacility.trainingQuality,
-              upgradeCost: data.trainingFacility.upgradeCost, // 👈 ПРОЧЕТИ ОТ API
+              upgradeCost: data.trainingFacility.upgradeCost,
             }
           : null,
         youth: data.youthAcademy
@@ -42,7 +40,7 @@ export default function Facilities({ gameSaveId, teamId }) {
               name: "👶 Youth Academy",
               level: data.youthAcademy.level,
               talentPoints: data.youthAcademy.talentPointsPerYear,
-              upgradeCost: data.youthAcademy.upgradeCost, // 👈 ПРОЧЕТИ ОТ API
+              upgradeCost: data.youthAcademy.upgradeCost,
             }
           : null,
       });
@@ -54,12 +52,9 @@ export default function Facilities({ gameSaveId, teamId }) {
   };
 
   useEffect(() => {
-    if (teamId) {
-      fetchFacilities();
-    }
+    if (teamId) fetchFacilities();
   }, [teamId]);
 
-  // 🔹 Upgrade бутон (ОСТАВА БЕЗ ПРОМЯНА)
   const handleUpgrade = async (key) => {
     try {
       let url;
@@ -80,7 +75,6 @@ export default function Facilities({ gameSaveId, teamId }) {
           confirmButtonColor: "#2563eb",
         });
 
-        // 🔄 обновяваме facilities след успех
         fetchFacilities();
         await refreshGameStatus();
       } else {
@@ -103,94 +97,92 @@ export default function Facilities({ gameSaveId, teamId }) {
     }
   };
 
-  const renderFacility = (key, facility) => {
-    return (
-      <div
-        key={key}
-        className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-6 flex flex-col hover:scale-[1.02] transition-transform duration-200"
-      >
-        <h3 className="text-xl font-semibold mb-2 flex items-center gap-2">
-          {facility.name}
-        </h3>
-        <div className="mb-4 text-sm text-gray-600 space-y-1">
-          <div>
-            Level: <span className="font-bold">{facility.level}</span>
-          </div>
-          {facility.capacity && (
-            <div>
-              Capacity: <span className="font-bold">{facility.capacity.toLocaleString()}</span>
-            </div>
-          )}
-          {facility.ticketPrice && (
-            <div>
-              Ticket price:{" "}
-              <span className="font-bold">${facility.ticketPrice}</span>
-            </div>
-          )}
-          {facility.quality && (
-            <div>
-              Training quality:{" "}
-              <span className="font-bold">{facility.quality}</span>
-            </div>
-          )}
-          {facility.talentPoints && (
-            <div>
-              Talent points / year:{" "}
-              <span className="font-bold">{facility.talentPoints}</span>
-            </div>
-          )}
-
-          {/* 👇 ПРОМЯНА: Използваме facility.upgradeCost директно */}
-          {facility.upgradeCost ? (
-            <div>
-              Next upgrade cost:{" "}
-              <span className="font-bold text-green-600">
-                {/* Добавяме .toLocaleString() за форматиране (напр. 1,200,000) */}
-                ${facility.upgradeCost.toLocaleString()}
-              </span>
-            </div>
-          ) : (
-            <div className="text-red-600 font-bold">Max level reached</div>
-          )}
-          <div className="w-full bg-gray-200 rounded-full h-3 mt-3">
-            <div
-              className="bg-blue-500 h-3 rounded-full"
-              style={{ width: `${(facility.level / 10) * 100}%` }}
-            ></div>
-          </div>
-        </div>
-
-        {/* 👇 ПРОМЯНА: Проверяваме срещу facility.upgradeCost (по-надеждно е) */}
-        {facility.upgradeCost ? (
-          <button
-            onClick={() => handleUpgrade(key)}
-            className="mt-auto flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-xl shadow transition"
-          >
-            <ArrowUpCircle size={18} />
-            Upgrade
-          </button>
-        ) : (
-          <div className="mt-auto text-center text-gray-500 font-semibold">
-            ✅ Max level
-          </div>
+  const renderFacility = (key, facility) => (
+    <div
+      key={key}
+      className="bg-gradient-to-br from-white/90 to-blue-50/70 backdrop-blur-md rounded-2xl shadow-lg border border-blue-100 p-6 flex flex-col hover:shadow-2xl hover:scale-[1.02] transition-all duration-200"
+    >
+      <h3 className="text-xl font-semibold mb-3 flex items-center gap-2">
+        {facility.name}
+      </h3>
+      <div className="mb-4 text-sm text-gray-700 space-y-1">
+        <div>Level: <span className="font-bold">{facility.level}</span></div>
+        {facility.capacity && (
+          <div>Capacity: <span className="font-bold">{facility.capacity.toLocaleString()}</span></div>
         )}
+        {facility.ticketPrice && (
+          <div>Ticket price: <span className="font-bold">${facility.ticketPrice}</span></div>
+        )}
+        {facility.quality && (
+          <div>Training quality: <span className="font-bold">{facility.quality}</span></div>
+        )}
+        {facility.talentPoints && (
+          <div>Talent points/year: <span className="font-bold">{facility.talentPoints}</span></div>
+        )}
+        {facility.upgradeCost ? (
+          <div>
+            Next upgrade cost:{" "}
+            <span className="font-bold text-green-700">
+              ${facility.upgradeCost.toLocaleString()}
+            </span>
+          </div>
+        ) : (
+          <div className="text-red-600 font-bold">Max level reached</div>
+        )}
+
+        <div className="w-full bg-gray-200 rounded-full h-3 mt-3">
+          <div
+            className="bg-blue-500 h-3 rounded-full"
+            style={{ width: `${(facility.level / 10) * 100}%` }}
+          ></div>
+        </div>
+      </div>
+
+      {facility.upgradeCost ? (
+        <button
+          onClick={() => handleUpgrade(key)}
+          className="mt-auto flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-xl shadow transition-all"
+        >
+          <ArrowUpCircle size={18} />
+          Upgrade
+        </button>
+      ) : (
+        <div className="mt-auto text-center text-gray-500 font-semibold">
+          ✅ Max level
+        </div>
+      )}
+    </div>
+  );
+
+  if (loading)
+    return (
+      <div className="p-8 text-center text-gray-600 flex flex-col items-center justify-center gap-3">
+        <Loader2 className="animate-spin" size={32} />
+        Loading facilities...
       </div>
     );
-  };
 
-  if (loading) {
-    return <div className="p-6 text-center">Loading facilities...</div>;
-  }
-
-  if (!facilities) {
-    return (
-      <div className="p-6 text-center text-red-500">No facilities found</div>
-    );
-  }
+  if (!facilities)
+    return <div className="p-6 text-center text-red-500">No facilities found</div>;
 
   return (
-    <div className="p-6">
-      <h2 className="text-2xl font-bold mb-2 text-center">🏗️ Facilities</h2>
+    <div className="relative p-8 min-h-screen bg-gradient-to-b from-slate-50 to-blue-100/30 rounded-3xl shadow-inner">
+      {/* HEADER */}
+      <div className="flex flex-col items-center justify-center mb-8">
+        {logoUrl && (
+          <img
+            src={logoUrl}
+            alt="Team Logo"
+            className="w-24 h-24 object-contain mb-3 drop-shadow-md transition-transform hover:scale-110"
+          />
+        )}
+        <h2 className="text-3xl font-extrabold text-blue-800 tracking-wide drop-shadow-sm">
+          Team Facilities
+        </h2>
+        <p className="text-gray-500 text-sm">Manage and upgrade your club’s infrastructure</p>
+      </div>
+
+      {/* FACILITY GRID */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {Object.entries(facilities)
           .filter(([_, facility]) => facility !== null)

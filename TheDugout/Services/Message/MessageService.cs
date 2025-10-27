@@ -1,6 +1,7 @@
 ﻿namespace TheDugout.Services.Message
 {
     using Microsoft.EntityFrameworkCore;
+    using System.Collections.Concurrent;
     using System.Text.RegularExpressions;
     using TheDugout.Data;
     using TheDugout.Models.Messages;
@@ -11,13 +12,19 @@
         private readonly DugoutDbContext _context;
         private readonly ILogger<MessageService> _logger;
         private readonly Random _random = new();
-        private static readonly Dictionary<MessageCategory, List<MessageTemplate>> _templateCache = new();
+
+        // ✅ Thread-safe кеш за шаблоните (заменя статичния Dictionary)
+        private static readonly ConcurrentDictionary<MessageCategory, List<MessageTemplate>> _templateCache = new();
+
+        // ✅ Regex оставен както е, няма нужда от промяна
         private static readonly Regex _placeholderRegex = new(@"\{([^}|]+)(?:\|([^}]+))?\}", RegexOptions.Compiled);
+
         public MessageService(DugoutDbContext context, ILogger<MessageService> logger)
         {
             _context = context;
             _logger = logger;
         }
+
         public async Task<Message> CreateMessageAsync(
             MessageCategory category,
             Dictionary<string, string> placeholders,
@@ -30,17 +37,19 @@
                 if (!templates.Any())
                     throw new InvalidOperationException($"No templates found for category {category}");
 
+                // ✅ Използваме инстанционния Random, не нов всеки път
                 var template = PickRandomWeighted(templates);
+
                 var subject = ReplacePlaceholders(template.SubjectTemplate, placeholders, strict);
                 var body = ReplacePlaceholders(template.BodyTemplate, placeholders, strict);
 
-                var season = await _context.Seasons
+                // ✅ Season fallback, за да не гърми, ако няма активен сезон
+                var seasonDate = await _context.Seasons
                     .Where(s => s.GameSaveId == gameSaveId && s.IsActive)
                     .Select(s => s.CurrentDate)
                     .FirstOrDefaultAsync();
 
-                if (season == default)
-                    throw new InvalidOperationException("No active season found for this game save");
+                var createdAt = seasonDate != default ? seasonDate : DateTime.UtcNow;
 
                 return new Message
                 {
@@ -49,7 +58,7 @@
                     Body = body,
                     Category = category,
                     SenderType = template.SenderType,
-                    CreatedAt = season,
+                    CreatedAt = createdAt,
                     IsRead = false,
                     MessageTemplateId = template.Id
                 };
@@ -60,6 +69,7 @@
                 throw;
             }
         }
+
         public async Task<Message> CreateAndSaveMessageAsync(
             MessageCategory category,
             Dictionary<string, string> placeholders,
@@ -71,6 +81,8 @@
             await _context.SaveChangesAsync();
             return message;
         }
+
+        // ✅ Thread-safe кеширане на шаблоните
         private async Task<List<MessageTemplate>> GetTemplatesAsync(MessageCategory category)
         {
             if (_templateCache.TryGetValue(category, out var cached))
@@ -83,25 +95,54 @@
             _templateCache[category] = templates;
             return templates;
         }
-        private static MessageTemplate PickRandomWeighted(List<MessageTemplate> templates)
+
+        // ✅ Позволява ръчно инвалидиране на кеша (ако се добавят нови шаблони)
+        public static void ClearCache(MessageCategory? category = null)
         {
-            var roll = new Random().Next(templates.Sum(t => t.Weight));
-            return templates.First(t => (roll -= t.Weight) < 0);
+            if (category.HasValue)
+                _templateCache.TryRemove(category.Value, out _);
+            else
+                _templateCache.Clear();
         }
-        private static string ReplacePlaceholders(string template, Dictionary<string, string> placeholders, bool strict)
+
+        // ✅ Използва общия Random (по-надежден)
+        private MessageTemplate PickRandomWeighted(List<MessageTemplate> templates)
+        {
+            var totalWeight = templates.Sum(t => t.Weight);
+            var roll = _random.Next(totalWeight);
+
+            foreach (var t in templates)
+            {
+                roll -= t.Weight;
+                if (roll < 0) return t;
+            }
+
+            // fallback (ако нещо стане — но теоретично никога няма да стигне тук)
+            return templates.Last();
+        }
+
+        // ✅ Safe strict режим и чист fallback
+        private string ReplacePlaceholders(string template, Dictionary<string, string> placeholders, bool strict)
         {
             if (string.IsNullOrEmpty(template)) return template;
 
             return _placeholderRegex.Replace(template, match =>
             {
                 var key = match.Groups[1].Value;
-                var fallback = match.Groups[2].Success ? match.Groups[2].Value : match.Value;
+                var fallback = match.Groups[2].Success ? match.Groups[2].Value : "";
+
                 if (placeholders.TryGetValue(key, out var value))
                     return value;
+
                 if (strict)
-                    throw new InvalidOperationException($"Missing placeholder: {key}");
+                {
+                    _logger.LogWarning("Missing placeholder: {PlaceholderKey}", key);
+                }
+
+                // Връщаме fallback или празно, вместо да чупим текста
                 return fallback;
             });
         }
     }
+
 }

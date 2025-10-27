@@ -231,9 +231,9 @@
             if (weights == null || weights.Count == 0)
                 throw new InvalidOperationException($"No position weights found for position '{position.Code}'.");
 
-            int attributeCount = 20; // фиксирано, ако е различно → вземи от DB
+            int attributeCount = 20; 
             int maxAttributeValue = 20;
-            int maxSum = attributeCount * maxAttributeValue; // 400 при 20 атрибута
+            int maxSum = attributeCount * maxAttributeValue; 
             double scaleFactor = 200.0 / maxSum; // 0.5 при 20 атрибута
 
             int sum = 0;

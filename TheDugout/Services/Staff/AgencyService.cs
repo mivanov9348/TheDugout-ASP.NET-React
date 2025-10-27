@@ -98,7 +98,6 @@
                             t.Status == TransactionStatus.Completed)
                 .SumAsync(t => t.Amount);
 
-            // използваме параметъра percentage (примерно 20 → 0.20)
             var percentageDecimal = percentage / 100m;
             var solidarityPool = totalTransferFees * percentageDecimal;
 

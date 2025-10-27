@@ -14,7 +14,6 @@
         {
             _context = context;
         }
-
         public async Task<TeamDto?> GetMyTeamAsync(int userId)
         {
             var user = await _context.Users
@@ -65,7 +64,6 @@
                 }).ToList()
             };
         }
-
         public async Task<TeamDto?> GetTeamBySaveAsync(int saveId)
         {
             var save = await _context.GameSaves
