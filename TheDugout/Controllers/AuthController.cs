@@ -34,18 +34,32 @@
             using var sha = SHA256.Create();
             var hash = Convert.ToBase64String(sha.ComputeHash(Encoding.UTF8.GetBytes(request.Password)));
 
+            var isFirstUser = !_context.Users.Any();
+
             var user = new User
             {
                 Username = request.Username,
                 Email = request.Email,
-                PasswordHash = hash
+                PasswordHash = hash,
+                IsAdmin = isFirstUser,
             };
 
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = "User registered successfully" });
+            // 🔹 Добавяме автоматичен login след регистрация
+            var token = GenerateJwtToken(user);
+            Response.Cookies.Append("jwt", token, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Lax,
+                Expires = DateTime.UtcNow.AddDays(7)
+            });
+
+            return Ok(new { message = "User registered and logged in", token });
         }
+
 
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
@@ -83,7 +97,7 @@
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
             if (user == null) return Unauthorized();
 
-            return Ok(new { user.Id, user.Username, user.Email });
+            return Ok(new { user.Id, user.Username, user.Email, user.IsAdmin });
         }
 
         // Logout
@@ -93,7 +107,6 @@
             Response.Cookies.Delete("jwt");
             return Ok(new { message = "Logged out successfully" });
         }
-
         private string GenerateJwtToken(User user)
         {
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
@@ -101,9 +114,10 @@
 
             var claims = new[]
             {
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()), 
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Name, user.Username),
-                new Claim(ClaimTypes.Email, user.Email)
+                new Claim(ClaimTypes.Email, user.Email),
+                new Claim(ClaimTypes.Role, user.IsAdmin ? "Admin" : "User")
     };
 
             var token = new JwtSecurityToken(

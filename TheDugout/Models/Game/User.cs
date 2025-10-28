@@ -9,5 +9,7 @@
         public int? CurrentSaveId { get; set; }
         public GameSave? CurrentSave { get; set; }
         public ICollection<GameSave> GameSaves { get; set; } = new List<GameSave>();
+        public bool IsAdmin { get; set; } = false;
+
     }
 }

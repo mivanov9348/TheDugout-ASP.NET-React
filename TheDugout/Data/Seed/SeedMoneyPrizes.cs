@@ -7,26 +7,41 @@
     {
         public static async Task RunAsync(DugoutDbContext db, string seedDir, ILogger logger)
         {
-            var path = Path.Combine(seedDir, "moneyprizes.json");
-            if (!File.Exists(path)) return;
+            var moneyPrizesPath = Path.Combine(seedDir, "moneyprizes.json");
+            var moneyPrizes = await SeedData.ReadJsonAsync<List<MoneyPrize>>(moneyPrizesPath);
 
-            var prizes = await SeedData.ReadJsonAsync<List<MoneyPrize>>(path);
-
-            foreach (var mp in prizes)
+            foreach (var mp in moneyPrizes)
             {
                 var existing = await db.MoneyPrizes.FirstOrDefaultAsync(x => x.Code == mp.Code);
                 if (existing == null)
-                    db.MoneyPrizes.Add(mp);
+                {
+                    db.MoneyPrizes.Add(new MoneyPrize
+                    {
+                        Code = mp.Code,
+                        Name = mp.Name,
+                        Amount = mp.Amount,
+                        Description = mp.Description,
+                        IsActive = mp.IsActive
+                    });
+                }
                 else
                 {
-                    existing.Name = mp.Name;
-                    existing.Amount = mp.Amount;
-                    existing.Description = mp.Description;
+                    bool updated = false;
+
+                    if (existing.Name != mp.Name) { existing.Name = mp.Name; updated = true; }
+                    if (existing.Amount != mp.Amount) { existing.Amount = mp.Amount; updated = true; }
+                    if (existing.Description != mp.Description) { existing.Description = mp.Description; updated = true; }
+                    if (existing.IsActive != mp.IsActive) { existing.IsActive = mp.IsActive; updated = true; }
+
+                    if (updated)
+                        db.MoneyPrizes.Update(existing);
                 }
             }
 
             await db.SaveChangesAsync();
-            logger.LogInformation("Seeded {Count} money prizes.", prizes.Count);
+
+            var moneyPrizesByCode = await db.MoneyPrizes.ToDictionaryAsync(x => x.Code, x => x);
+            logger.LogInformation("Seeded {Count} money prizes.", moneyPrizes.Count);
         }
     }
 }

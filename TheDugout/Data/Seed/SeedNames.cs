@@ -6,7 +6,6 @@
     using System.IO;
     using System.Threading.Tasks;
     using TheDugout.Models.Common;
-
     public static class SeedNames
     {
         public static async Task RunAsync(DugoutDbContext db, string seedDir, ILogger logger)

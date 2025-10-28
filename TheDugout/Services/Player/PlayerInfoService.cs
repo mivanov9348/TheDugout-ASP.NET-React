@@ -5,6 +5,7 @@
     using TheDugout.DTOs.Player;
     using TheDugout.Services.Competition.Interfaces;
     using TheDugout.Services.Player.Interfaces;
+    using TheDugout.Models.Players;
 
     public class PlayerInfoService : IPlayerInfoService
     {
@@ -82,8 +83,6 @@
                 })
                 .FirstOrDefaultAsync();
         }
-
-
         public async Task<ICollection<PlayerDto>> GetPlayersByTeamIdAsync(int teamId)
         {
             return await _context.Players
@@ -108,7 +107,6 @@
                 })
                 .ToListAsync();
         }
-
         public async Task<ICollection<PlayerAttributeDto>> GetPlayerAttributesAsync(int playerId)
         {
             return await _context.PlayerAttributes
@@ -122,7 +120,6 @@
                 })
                 .ToListAsync();
         }
-
         public async Task<ICollection<PlayerSeasonStatsDto>> GetPlayerSeasonStatsAsync(int playerId)
         {
             return await _context.PlayerSeasonStats
@@ -134,6 +131,38 @@
                     Goals = s.Goals
                 })
                 .ToListAsync();
+        }
+
+        public async Task Aging(int gameSaveId)
+        {
+            var players = await _context.Players
+                .Where(p => p.IsActive && p.GameSaveId == gameSaveId)
+                .ToListAsync();
+
+            foreach (var player in players)
+            {
+                if (player.Age >= 35)
+                {
+                    await RetirePlayer(player.Id);
+                }
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task RetirePlayer(int playerId)
+        {
+            var player = _context.Players.FirstOrDefault(x => x.Id == playerId);
+
+            if(player == null)
+            {
+                throw new ArgumentException("Null Player!");
+            }
+
+            Console.WriteLine($"{player.FirstName} {player.LastName} is retiring!");
+
+            _context.Players.Remove(player);
+            await _context.SaveChangesAsync();
         }
     }
 }

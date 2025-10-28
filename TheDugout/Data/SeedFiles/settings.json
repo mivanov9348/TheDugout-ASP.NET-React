@@ -1,38 +1,56 @@
 [
   {
     "Key": "bankInitial",
-    "Value": "5000000000"
+    "Value": "5000000000",
+    "Category": "Finance",
+    "Description": "Initial balance of the banking system in the game."
   },
   {
     "Key": "bankFeePercent",
-    "Value": "0.10"
+    "Value": "0.10",
+    "Category": "Finance",
+    "Description": "Percentage fee that the bank takes from all transactions."
   },
   {
     "Key": "SignFreePlayerBankTax",
-    "Value": "0.10"
+    "Value": "0.10",
+    "Category": "Transfers",
+    "Description": "Fee charged when signing a free player."
   },
   {
     "Key": "startingGoalkeepers",
-    "Value": "1"
+    "Value": "1",
+    "Category": "Gameplay",
+    "Description": "Number of goalkeepers the team starts a new game with."
   },
   {
     "Key": "startingDefenders",
-    "Value": "4"
+    "Value": "4",
+    "Category": "Gameplay",
+    "Description": "Number of defenders at the start."
   },
   {
-    "Key": "startingMidfielder",
-    "Value": "4"
+    "Key": "startingMidfielders",
+    "Value": "4",
+    "Category": "Gameplay",
+    "Description": "Number of midfielders at the start."
   },
   {
     "Key": "startingAttackers",
-    "Value": "2"
+    "Value": "2",
+    "Category": "Gameplay",
+    "Description": "Number of attackers at the start."
   },
   {
     "Key": "StartingAny",
-    "Value": "5"
+    "Value": "5",
+    "Category": "Gameplay",
+    "Description": "Additional number of free players to choose from."
   },
   {
     "Key": "InitialAgencyBudget",
-    "Value": "1000000"
+    "Value": "1000000",
+    "Category": "Finance",
+    "Description": "Initial budget for the player (agency)."
   }
 ]

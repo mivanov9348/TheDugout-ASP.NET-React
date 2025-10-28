@@ -1,10 +1,13 @@
-// src/components/StartScreen.jsx
 import React, { useState } from "react";
 import Swal from "sweetalert2";
+import { useNavigate } from "react-router-dom";
 
-function StartScreen({ username, onNewGame, onLoadGame, onLogout }) {
+function StartScreen({ username, onNewGame, onLoadGame, onLogout, isAdmin }) {
   const [loading, setLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
+  const navigate = useNavigate();
+
+  // 🔹 Засега твърдо — после ще идва от бекенда
 
   const confirmNewGame = () => {
     Swal.fire({
@@ -19,7 +22,6 @@ function StartScreen({ username, onNewGame, onLoadGame, onLogout }) {
         setLoading(true);
         setLoadingMessage("Стартиране на нова игра...");
 
-        // извикваме onNewGame и му подаваме setLoadingMessage
         onNewGame((msg) => setLoadingMessage(msg)).finally(() => {
           setLoading(false);
         });
@@ -49,6 +51,17 @@ function StartScreen({ username, onNewGame, onLoadGame, onLogout }) {
         >
           Load Game
         </button>
+
+        {/* 🔹 Покажи бутона само ако е админ */}
+        {isAdmin && (
+          <button
+            onClick={() => navigate("/admin")}
+            className="px-8 py-3 bg-yellow-500 rounded-2xl hover:bg-yellow-400 transition"
+          >
+            Admin Panel
+          </button>
+        )}
+
         <button
           onClick={onLogout}
           className="px-8 py-3 bg-red-600 rounded-2xl hover:bg-red-500 transition"
@@ -58,11 +71,13 @@ function StartScreen({ username, onNewGame, onLoadGame, onLogout }) {
         </button>
       </div>
 
-      {/* 🔹 Loading анимация под бутоните */}
       {loading && (
         <div className="mt-8 flex flex-col items-center space-y-3">
           <div className="w-64 bg-gray-700 rounded-full h-4">
-            <div className="bg-green-500 h-4 rounded-full animate-pulse" style={{ width: "70%" }} />
+            <div
+              className="bg-green-500 h-4 rounded-full animate-pulse"
+              style={{ width: "70%" }}
+            />
           </div>
           <p className="text-sm text-gray-300">{loadingMessage}</p>
         </div>

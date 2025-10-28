@@ -10,6 +10,7 @@ import ProcessingOverlay from "./components/ProcessingOverlay";
 import SeasonOverview from "./pages/season/SeasonOverview";
 import LoadGameModal from "./components/LoadGameModal";
 import TeamSelectionModal from "./components/TeamSelectionModal";
+import AdminPage from "./pages/admin/AdminPage";
 
 import { ProcessingProvider } from "./context/ProcessingContext";
 import { GameProvider, useGame } from "./context/GameContext";
@@ -26,6 +27,7 @@ function AppInner() {
   const [userSaves, setUserSaves] = useState([]);
   const [showTeamSelection, setShowTeamSelection] = useState(false);
   const [pendingSaveId, setPendingSaveId] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const { currentGameSave, setCurrentGameSave } = useGame();
 
@@ -37,9 +39,11 @@ function AppInner() {
         if (!res.ok) return setIsAuthenticated(false);
 
         const user = await res.json();
+
         if (user?.username) {
           setIsAuthenticated(true);
           setUsername(user.username);
+          setIsAdmin(user.isAdmin); 
 
           const resSave = await fetch("/api/games/current", { credentials: "include" });
           if (resSave.ok) {
@@ -83,6 +87,7 @@ function AppInner() {
             ) : (
               <StartScreen
                 username={username}
+                isAdmin = {isAdmin}
                 onNewGame={async (setLoadingMessage) => {
                   try {
                     setLoadingMessage("Създаваме нова игра...");
@@ -180,6 +185,15 @@ function AppInner() {
             </ProtectedRoute>
           }
         />
+        <Route
+  path="/admin"
+  element={
+    <ProtectedRoute isAuthenticated={isAuthenticated}>
+      <AdminPage />
+    </ProtectedRoute>
+  }
+/>
+
       </Routes>
       {showLoadModal && (
         <LoadGameModal
