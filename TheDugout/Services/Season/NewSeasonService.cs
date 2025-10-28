@@ -13,6 +13,8 @@
     using TheDugout.Services.Player.Interfaces;
     using TheDugout.Services.Season.Interfaces;
     using TheDugout.Services.Staff.Interfaces;
+    using TheDugout.Services.Team;
+    using TheDugout.Services.Team.Interfaces;
 
     public class NewSeasonService : INewSeasonService
     {
@@ -24,8 +26,11 @@
         private readonly IEuropeanCupService _europeanCupService;
         private readonly ILeagueFixturesService _leagueFixturesService;
         private readonly IPlayerGenerationService _playerGenerationService;
+        private readonly IPlayerInfoService _playerInfoService;
         private readonly IAgencyService _agencyService;
-        public NewSeasonService(DugoutDbContext context, ILogger<NewSeasonService> logger, ICupService cupService, ISeasonCleanupService seasonCleanupService, ILeagueService leagueService, IEuropeanCupService europeanCupService, ILeagueFixturesService leagueFixturesService, IPlayerGenerationService playerGenerationService,IAgencyService agencyService)
+        private readonly ITeamGenerationService _teamGenerationService;
+
+        public NewSeasonService(DugoutDbContext context, ILogger<NewSeasonService> logger, ICupService cupService, ISeasonCleanupService seasonCleanupService, ILeagueService leagueService, IEuropeanCupService europeanCupService, ILeagueFixturesService leagueFixturesService, IPlayerGenerationService playerGenerationService,IAgencyService agencyService, IPlayerInfoService playerInfoService,   ITeamGenerationService teamGenerationService)
         {
             _context = context;
             _logger = logger;
@@ -36,6 +41,8 @@
             _leagueFixturesService = leagueFixturesService;
             _playerGenerationService = playerGenerationService;
             _agencyService = agencyService;
+            _playerInfoService = playerInfoService;
+            _teamGenerationService = teamGenerationService;
         }
         public async Task<Season> GenerateSeason(GameSave gameSave, DateTime startDate)
         {
@@ -146,6 +153,16 @@
                         // Помисли дали да не хвърлиш грешката нагоре, за да предизвикаш rollback
                     }
                 }
+
+                // Aging process before creating new season teams
+                _logger.LogInformation("⚙️ Aging players and retiring old ones...");
+
+                await _playerInfoService.Aging(gameSave.Id);
+
+                // Check team rosters and regenerate missing players
+                await _teamGenerationService.EnsureTeamRostersAsync(gameSave.Id);
+                _logger.LogInformation("✅ Teams updated with necessary players after retirements");
+
                 // new domestic cups same rules
                 await _cupService.InitializeCupsForGameSaveAsync(gameSave, newSeason.Id);
                 _logger.LogInformation("Initialized Domestic Cups");

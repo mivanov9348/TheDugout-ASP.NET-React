@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, Filter, Flag } from "lucide-react";
+import { Search, Filter, Flag, Users } from "lucide-react";
 import Swal from "sweetalert2";
 
 const Squad = ({ gameSaveId }) => {
@@ -95,38 +95,46 @@ const Squad = ({ gameSaveId }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-4 md:p-6">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-blue-600 to-sky-500 bg-clip-text text-transparent mb-2">
-            {teamName || "Loading Squad..."}
-          </h1>
-          <p className="text-gray-500 text-lg">Click a player to view full profile</p>
-        </div>
+    <div className="relative min-h-screen overflow-hidden">
+      {/* Animated background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-900 via-slate-800 to-slate-900 animate-gradient-x"></div>
+      <div className="absolute inset-0 bg-[url('/stadium-lights.png')] bg-cover bg-center opacity-10"></div>
+      <div className="absolute inset-0 bg-black/30 backdrop-blur-sm"></div>
 
-        {/* Filters */}
-        <div className="bg-white shadow-xl rounded-2xl p-5 mb-6 border border-gray-100">
-          <div className="flex flex-wrap gap-4 items-center">
-            <div className="relative flex-1 min-w-[280px]">
-              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                <Search className="w-5 h-5 text-gray-400" />
+      {/* Content container */}
+      <div className="relative z-10 p-6 md:p-10 text-gray-100">
+        <div className="max-w-7xl mx-auto">
+          {/* Header */}
+          <div className="text-center mb-10">
+            <div className="flex justify-center items-center gap-3 mb-4">
+              <Users className="w-10 h-10 text-blue-400" />
+              <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight bg-gradient-to-r from-sky-300 via-blue-400 to-indigo-500 bg-clip-text text-transparent drop-shadow-lg">
+                {teamName || "Loading Squad..."}
+              </h1>
+            </div>      
+          </div>
+
+          {/* Filters */}
+          <div className="bg-white/10 backdrop-blur-md border border-white/10 shadow-2xl rounded-2xl p-5 mb-8">
+            <div className="flex flex-wrap gap-4 items-center">
+              <div className="relative flex-1 min-w-[280px]">
+                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                  <Search className="w-5 h-5 text-gray-300" />
+                </div>
+                <input
+                  type="text"
+                  placeholder="Search by name..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 border border-white/20 rounded-xl bg-white/10 text-gray-100 placeholder-gray-400 focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none transition-all"
+                />
               </div>
-              <input
-                type="text"
-                placeholder="Search by name..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none shadow-sm"
-              />
-            </div>
 
-            <div className="flex gap-3 flex-wrap">
-              <div className="relative">
+              <div className="flex gap-3 flex-wrap">
                 <select
                   value={positionFilter}
                   onChange={(e) => setPositionFilter(e.target.value)}
-                  className="appearance-none bg-white border border-gray-200 rounded-xl px-4 py-3 pr-8 focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer shadow-sm"
+                  className="bg-white/10 text-gray-100 border border-white/20 rounded-xl px-4 py-3 pr-8 focus:ring-2 focus:ring-blue-400 cursor-pointer"
                 >
                   <option value="">All Positions</option>
                   {uniquePositions.map((pos) => (
@@ -135,16 +143,11 @@ const Squad = ({ gameSaveId }) => {
                     </option>
                   ))}
                 </select>
-                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                  <Filter className="w-4 h-4 text-gray-400" />
-                </div>
-              </div>
 
-              <div className="relative">
                 <select
                   value={countryFilter}
                   onChange={(e) => setCountryFilter(e.target.value)}
-                  className="appearance-none bg-white border border-gray-200 rounded-xl px-4 py-3 pr-8 focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer shadow-sm"
+                  className="bg-white/10 text-gray-100 border border-white/20 rounded-xl px-4 py-3 pr-8 focus:ring-2 focus:ring-blue-400 cursor-pointer"
                 >
                   <option value="">All Countries</option>
                   {uniqueCountries.map((c) => (
@@ -153,225 +156,222 @@ const Squad = ({ gameSaveId }) => {
                     </option>
                   ))}
                 </select>
-                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                  <Flag className="w-4 h-4 text-gray-400" />
-                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Toggles */}
-        <div className="flex flex-wrap gap-3 mb-6 justify-center">
-          {[
-            { label: "Player Info", checked: showInfo, setter: setShowInfo },
-            { label: "Attributes", checked: showAttributes, setter: setShowAttributes },
-            { label: "Stats", checked: showStats, setter: setShowStats },
-          ].map((toggle, idx) => (
-            <label
-              key={idx}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium cursor-pointer transition-all duration-200 border-2 ${
-                toggle.checked
-                  ? "bg-blue-500 text-white border-blue-500 shadow-md"
-                  : "bg-white text-gray-700 border-gray-300 hover:border-gray-400"
-              }`}
-            >
-              <input
-                type="checkbox"
-                checked={toggle.checked}
-                onChange={() => toggle.setter(!toggle.checked)}
-                className="hidden"
-              />
-              {toggle.label}
-            </label>
-          ))}
-        </div>
+          {/* Toggles */}
+          <div className="flex flex-wrap gap-3 mb-6 justify-center">
+            {[
+              { label: "Player Info", checked: showInfo, setter: setShowInfo },
+              { label: "Attributes", checked: showAttributes, setter: setShowAttributes },
+              { label: "Stats", checked: showStats, setter: setShowStats },
+            ].map((toggle, idx) => (
+              <label
+                key={idx}
+                className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium cursor-pointer transition-all duration-200 border-2 shadow-sm ${
+                  toggle.checked
+                    ? "bg-blue-500 text-white border-blue-400 shadow-blue-500/50"
+                    : "bg-white/10 text-gray-300 border-white/20 hover:border-blue-400"
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  checked={toggle.checked}
+                  onChange={() => toggle.setter(!toggle.checked)}
+                  className="hidden"
+                />
+                {toggle.label}
+              </label>
+            ))}
+          </div>
 
-        {/* Table */}
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200 text-sm">
-              <thead className="bg-gradient-to-r from-blue-50 to-sky-50">
-                <tr>
-                  <th
-                    className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase cursor-pointer hover:text-blue-600"
-                    onClick={() => sortPlayers("fullName")}
-                  >
-                    Player {getSortIndicator("fullName")}
-                  </th>
-                  <th
-                    className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase cursor-pointer hover:text-blue-600"
-                    onClick={() => sortPlayers("position")}
-                  >
-                    Position {getSortIndicator("position")}
-                  </th>
-
-                  {showInfo && (
-                    <>
-                      {["age", "country", "heightCm", "weightKg", "price"].map((key, i) => (
-                        <th
-                          key={i}
-                          className="px-6 py-4 text-center text-xs font-bold text-gray-700 uppercase cursor-pointer hover:text-blue-600"
-                          onClick={() => sortPlayers(key)}
-                        >
-                          {key === "heightCm"
-                            ? "Height"
-                            : key === "weightKg"
-                            ? "Weight"
-                            : key === "price"
-                            ? "Value"
-                            : key.charAt(0).toUpperCase() + key.slice(1)}
-                          {getSortIndicator(key)}
-                        </th>
-                      ))}
-                    </>
-                  )}
-
-                  {showAttributes &&
-                    allAttributeNames.map((attr) => (
-                      <th
-                        key={attr}
-                        onClick={() => sortPlayers(attr)}
-                        className="px-3 py-4 text-center text-xs font-bold text-gray-700 uppercase cursor-pointer hover:text-blue-600"
-                      >
-                        {attr}
-                        {getSortIndicator(attr)}
-                      </th>
-                    ))}
-
-                  {showStats && (
-                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase">
-                      Season Stats
+          {/* Table */}
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl overflow-hidden border border-white/10">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-white/10 text-sm text-gray-100">
+                <thead className="bg-gradient-to-r from-blue-900/60 to-sky-800/60">
+                  <tr>
+                    <th
+                      className="px-6 py-4 text-left text-xs font-bold uppercase cursor-pointer hover:text-sky-300"
+                      onClick={() => sortPlayers("fullName")}
+                    >
+                      Player {getSortIndicator("fullName")}
                     </th>
-                  )}
-
-                  <th className="px-6 py-4 text-center text-xs font-bold text-gray-700 uppercase">
-                    Release
-                  </th>
-                </tr>
-              </thead>
-
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredPlayers.map((p) => (
-                  <tr
-                    key={p.id}
-                    className="hover:bg-blue-50 transition-colors duration-150 cursor-pointer"
-                    onClick={() => navigate(`/player/${p.id}`)}
-                  >
-                    <td className="px-6 py-4 whitespace-nowrap text-blue-600 hover:text-blue-800 font-medium">
-                      {p.fullName}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">{p.position}</td>
+                    <th
+                      className="px-6 py-4 text-left text-xs font-bold uppercase cursor-pointer hover:text-sky-300"
+                      onClick={() => sortPlayers("position")}
+                    >
+                      Position {getSortIndicator("position")}
+                    </th>
 
                     {showInfo && (
                       <>
-                        <td className="px-6 py-4 text-center">{p.age}</td>
-                        <td className="px-6 py-4 text-center">{p.country}</td>
-                        <td className="px-6 py-4 text-center">{p.heightCm} cm</td>
-                        <td className="px-6 py-4 text-center">{p.weightKg} kg</td>
-                        <td className="px-6 py-4 text-right">{formatPrice(p.price)}</td>
+                        {["age", "country", "heightCm", "weightKg", "price"].map((key, i) => (
+                          <th
+                            key={i}
+                            className="px-6 py-4 text-center text-xs font-bold uppercase cursor-pointer hover:text-sky-300"
+                            onClick={() => sortPlayers(key)}
+                          >
+                            {key === "heightCm"
+                              ? "Height"
+                              : key === "weightKg"
+                              ? "Weight"
+                              : key === "price"
+                              ? "Value"
+                              : key.charAt(0).toUpperCase() + key.slice(1)}
+                            {getSortIndicator(key)}
+                          </th>
+                        ))}
                       </>
                     )}
 
                     {showAttributes &&
-                      allAttributeNames.map((attr) => {
-                        const a = p.attributes?.find((x) => x.name === attr);
-                        return (
-                          <td
-                            key={attr}
-                            className={`px-3 py-4 text-center ${
-                              a ? getAttributeColor(a.value) : "text-gray-400"
-                            }`}
-                          >
-                            {a ? a.value : "-"}
-                          </td>
-                        );
-                      })}
+                      allAttributeNames.map((attr) => (
+                        <th
+                          key={attr}
+                          onClick={() => sortPlayers(attr)}
+                          className="px-3 py-4 text-center text-xs font-bold uppercase cursor-pointer hover:text-sky-300"
+                        >
+                          {attr}
+                          {getSortIndicator(attr)}
+                        </th>
+                      ))}
 
                     {showStats && (
-                      <td className="px-6 py-4">
-                        {p.seasonStats?.length > 0 ? (
-                          <div className="flex flex-wrap gap-2">
-                            {p.seasonStats.map((s, i) => (
-                              <span
-                                key={i}
-                                className="bg-gray-100 text-gray-700 px-2 py-1 rounded-md text-xs"
-                              >
-                                S{s.seasonId}: {s.goals}G {s.assists}A
-                              </span>
-                            ))}
-                          </div>
-                        ) : (
-                          <span className="text-gray-400">-</span>
-                        )}
-                      </td>
+                      <th className="px-6 py-4 text-left text-xs font-bold uppercase">
+                        Season Stats
+                      </th>
                     )}
 
-                    <td className="px-6 py-4 text-center">
-                      <button
-                        className="bg-red-500 hover:bg-red-600 text-white text-xs font-semibold px-4 py-2 rounded-full shadow-sm transition"
-                        onClick={async (e) => {
-                          e.stopPropagation();
-                          const result = await Swal.fire({
-                            title: `Release ${p.fullName}?`,
-                            text: "Are you sure you want to release this player?",
-                            icon: "warning",
-                            showCancelButton: true,
-                            confirmButtonColor: "#d33",
-                            cancelButtonColor: "#3085d6",
-                            confirmButtonText: "Yes, release",
-                            cancelButtonText: "Cancel",
-                          });
-                          if (!result.isConfirmed) return;
-                          try {
-                            const res = await fetch("/api/transfers/release", {
-                              method: "POST",
-                              headers: { "Content-Type": "application/json" },
-                              credentials: "include",
-                              body: JSON.stringify({ gameSaveId, playerId: p.id }),
+                    <th className="px-6 py-4 text-center text-xs font-bold uppercase">
+                      Release
+                    </th>
+                  </tr>
+                </thead>
+
+                <tbody className="divide-y divide-white/10">
+                  {filteredPlayers.map((p) => (
+                    <tr
+                      key={p.id}
+                      className="hover:bg-blue-800/30 transition-colors duration-150 cursor-pointer"
+                      onClick={() => navigate(`/player/${p.id}`)}
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap text-sky-300 font-semibold">
+                        {p.fullName}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">{p.position}</td>
+
+                      {showInfo && (
+                        <>
+                          <td className="px-6 py-4 text-center">{p.age}</td>
+                          <td className="px-6 py-4 text-center">{p.country}</td>
+                          <td className="px-6 py-4 text-center">{p.heightCm} cm</td>
+                          <td className="px-6 py-4 text-center">{p.weightKg} kg</td>
+                          <td className="px-6 py-4 text-right">{formatPrice(p.price)}</td>
+                        </>
+                      )}
+
+                      {showAttributes &&
+                        allAttributeNames.map((attr) => {
+                          const a = p.attributes?.find((x) => x.name === attr);
+                          return (
+                            <td
+                              key={attr}
+                              className={`px-3 py-4 text-center ${
+                                a ? getAttributeColor(a.value) : "text-gray-400"
+                              }`}
+                            >
+                              {a ? a.value : "-"}
+                            </td>
+                          );
+                        })}
+
+                      {showStats && (
+                        <td className="px-6 py-4">
+                          {p.seasonStats?.length > 0 ? (
+                            <div className="flex flex-wrap gap-2">
+                              {p.seasonStats.map((s, i) => (
+                                <span
+                                  key={i}
+                                  className="bg-white/10 border border-white/20 text-gray-100 px-2 py-1 rounded-md text-xs"
+                                >
+                                  S{s.seasonId}: {s.goals}G {s.assists}A
+                                </span>
+                              ))}
+                            </div>
+                          ) : (
+                            <span className="text-gray-400">-</span>
+                          )}
+                        </td>
+                      )}
+
+                      <td className="px-6 py-4 text-center">
+                        <button
+                          className="bg-red-600/90 hover:bg-red-500 text-white text-xs font-semibold px-4 py-2 rounded-full shadow-lg transition"
+                          onClick={async (e) => {
+                            e.stopPropagation();
+                            const result = await Swal.fire({
+                              title: `Release ${p.fullName}?`,
+                              text: "Are you sure you want to release this player?",
+                              icon: "warning",
+                              showCancelButton: true,
+                              confirmButtonColor: "#d33",
+                              cancelButtonColor: "#3085d6",
+                              confirmButtonText: "Yes, release",
+                              cancelButtonText: "Cancel",
                             });
-                            const data = await res.json();
-                            if (res.ok && data.success) {
-                              await Swal.fire({
-                                title: "Released!",
-                                text: `${p.fullName} has been successfully released.`,
-                                icon: "success",
+                            if (!result.isConfirmed) return;
+                            try {
+                              const res = await fetch("/api/transfers/release", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                credentials: "include",
+                                body: JSON.stringify({ gameSaveId, playerId: p.id }),
                               });
-                              setPlayers((prev) => prev.filter((x) => x.id !== p.id));
-                            } else {
+                              const data = await res.json();
+                              if (res.ok && data.success) {
+                                await Swal.fire({
+                                  title: "Released!",
+                                  text: `${p.fullName} has been successfully released.`,
+                                  icon: "success",
+                                });
+                                setPlayers((prev) => prev.filter((x) => x.id !== p.id));
+                              } else {
+                                await Swal.fire({
+                                  title: "Error",
+                                  text: data.error || "Error releasing player.",
+                                  icon: "error",
+                                });
+                              }
+                            } catch {
                               await Swal.fire({
                                 title: "Error",
-                                text: data.error || "Error releasing player.",
+                                text: "Unexpected error while releasing player.",
                                 icon: "error",
                               });
                             }
-                          } catch {
-                            await Swal.fire({
-                              title: "Error",
-                              text: "Unexpected error while releasing player.",
-                              icon: "error",
-                            });
-                          }
-                        }}
-                      >
-                        Release
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                          }}
+                        >
+                          Release
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
 
-                {filteredPlayers.length === 0 && (
-                  <tr>
-                    <td
-                      colSpan={100}
-                      className="px-6 py-12 text-center text-gray-500 text-lg font-medium"
-                    >
-                      🔍 No players match your filters.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+                  {filteredPlayers.length === 0 && (
+                    <tr>
+                      <td
+                        colSpan={100}
+                        className="px-6 py-12 text-center text-gray-300 text-lg font-medium"
+                      >
+                        🔍 No players match your filters.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>

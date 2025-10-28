@@ -45,7 +45,6 @@
                 throw new InvalidOperationException($"No avatar files found in {_avatarFolder}");
             }
         }
-
         public List<Player> GenerateTeamPlayers(GameSave save, Team team)
         {
             if (save == null)
@@ -160,9 +159,7 @@
 
             await _context.SaveChangesAsync(ct);
         }
-
-
-        private Player CreateBasePlayer(GameSave save, Team? team, Country country, Position position, Agency? agency = null)
+        public Player CreateBasePlayer(GameSave save, Team? team, Country country, Position position, Agency? agency = null)
         {
             if (save == null) throw new ArgumentNullException(nameof(save));
             if (country == null) throw new ArgumentNullException(nameof(country));

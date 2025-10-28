@@ -9,7 +9,7 @@ namespace TheDugout.Services.Player.Interfaces
     {
         Task<PlayerDto?> GetPlayerByIdAsync(int playerId);
         Task<ICollection<PlayerDto>> GetPlayersByTeamIdAsync(int teamId);
-
+        Task Aging(int gameSaveId);
         Task<ICollection<PlayerAttributeDto>> GetPlayerAttributesAsync(int playerId);
         Task<ICollection<PlayerSeasonStatsDto>> GetPlayerSeasonStatsAsync(int playerId);
     }

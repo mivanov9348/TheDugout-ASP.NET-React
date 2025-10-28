@@ -12,7 +12,7 @@
                 GameSave gameSave,
                 League league,
                 IEnumerable<TeamTemplate> templates);
-
+        Task EnsureTeamRostersAsync(int gameSaveId);
         Task<List<Team>> GenerateIndependentTeamsAsync(GameSave gameSave);
     }
 }

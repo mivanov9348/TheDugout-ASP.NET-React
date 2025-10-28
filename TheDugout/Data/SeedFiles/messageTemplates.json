@@ -12,6 +12,13 @@
     "BodyTemplate": "The transfer of {PlayerName} to {ClubName} has been confirmed for a fee of {Amount}. Fans are excited to see the player in action."
   },
   {
+    "Category": "Retirement",
+    "Sender": "Media",
+    "SubjectTemplate": "{PlayerName} announces retirement from football",
+    "BodyTemplate": "{PlayerName}, aged {Age}, has officially announced his retirement from professional football. Fans of {TeamName} will remember him as one of the most dedicated players of his generation."
+  },
+
+  {
     "Category": "MatchResult",
     "Sender": "System",
     "SubjectTemplate": "Full-time: {ClubName} {Score} {OpponentName}",

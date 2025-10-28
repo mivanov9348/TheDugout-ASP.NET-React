@@ -3,19 +3,22 @@
     using Microsoft.EntityFrameworkCore;
     using TheDugout.Data;
     using TheDugout.DTOs.Player;
+    using TheDugout.Models.Messages;
     using TheDugout.Services.Competition.Interfaces;
+    using TheDugout.Services.Message.Interfaces;
     using TheDugout.Services.Player.Interfaces;
-    using TheDugout.Models.Players;
 
     public class PlayerInfoService : IPlayerInfoService
     {
         private readonly DugoutDbContext _context;
         private readonly ICompetitionService _competitionService;
+        private readonly IMessageOrchestrator _messageOrchestrator;
 
-        public PlayerInfoService(DugoutDbContext context, ICompetitionService competitionService)
+        public PlayerInfoService(DugoutDbContext context, ICompetitionService competitionService, IMessageOrchestrator messageOrchestrator)
         {
             _context = context;
             _competitionService = competitionService;
+            _messageOrchestrator = messageOrchestrator;
         }
 
         public async Task<PlayerDto?> GetPlayerByIdAsync(int playerId)
@@ -139,12 +142,17 @@
                 .Where(p => p.IsActive && p.GameSaveId == gameSaveId)
                 .ToListAsync();
 
+            var currentSeason = await _context.Seasons
+                .FirstOrDefaultAsync(s => s.GameSaveId == gameSaveId && s.IsActive);
+
+            var gameDate = currentSeason?.CurrentDate ?? DateTime.UtcNow;
+
             foreach (var player in players)
             {
-                if (player.Age >= 35)
-                {
+                var age = player.GetAge(gameDate);
+
+                if (age >= 35)
                     await RetirePlayer(player.Id);
-                }
             }
 
             await _context.SaveChangesAsync();
@@ -152,17 +160,23 @@
 
         public async Task RetirePlayer(int playerId)
         {
-            var player = _context.Players.FirstOrDefault(x => x.Id == playerId);
+            var player = await _context.Players.FirstOrDefaultAsync(x => x.Id == playerId);
 
-            if(player == null)
-            {
+            if (player == null)
                 throw new ArgumentException("Null Player!");
-            }
 
-            Console.WriteLine($"{player.FirstName} {player.LastName} is retiring!");
+            player.IsActive = false;
+            player.TeamId = null;
 
-            _context.Players.Remove(player);
+            await _messageOrchestrator.SendMessageAsync(
+        MessageCategory.Retirement,
+        player.GameSaveId,
+        player
+    );
+
             await _context.SaveChangesAsync();
+
         }
+
     }
 }

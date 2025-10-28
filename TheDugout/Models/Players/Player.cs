@@ -22,6 +22,12 @@
                 return age;
             }
         }
+        public int GetAge(DateTime gameDate)
+        {
+            var age = gameDate.Year - BirthDate.Year;
+            if (BirthDate.Date > gameDate.AddYears(-age)) age--;
+            return age;
+        }
         public int? TeamId { get; set; }
         public Team Team { get; set; } = null!;
         public int? AgencyId { get; set; }

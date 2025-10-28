@@ -4,11 +4,12 @@
     using TheDugout.Data;
     using TheDugout.Models.Facilities;
     using TheDugout.Models.Game;
+    using TheDugout.Models.Leagues;
     using TheDugout.Models.Teams;
     using TheDugout.Services.Facilities;
     using TheDugout.Services.Player.Interfaces;
+    using TheDugout.Models.Players;
     using TheDugout.Services.Team.Interfaces;
-    using TheDugout.Models.Leagues;
 
     public class TeamGenerationService : ITeamGenerationService
     {
@@ -16,15 +17,17 @@
         private readonly IStadiumService _stadiumService;
         private readonly ITrainingFacilitiesService _trainingService;
         private readonly IYouthAcademyService _academyService;
+        private readonly ITeamPlanService _teamPlanService;
         private readonly DugoutDbContext _context;
 
-        public TeamGenerationService(IPlayerGenerationService playerGenerator, DugoutDbContext context, IStadiumService stadiumService, ITrainingFacilitiesService trainingFacilitiesService, IYouthAcademyService youthAcademyService)
+        public TeamGenerationService(IPlayerGenerationService playerGenerator, DugoutDbContext context, IStadiumService stadiumService, ITrainingFacilitiesService trainingFacilitiesService, IYouthAcademyService youthAcademyService, ITeamPlanService teamPlanService)
         {
             _playerGenerator = playerGenerator;
             _context = context;
             _stadiumService = stadiumService;
             _trainingService = trainingFacilitiesService;
             _academyService = youthAcademyService;
+            _teamPlanService = teamPlanService;
         }
 
         public async Task<List<Team>> GenerateTeamsAsync(
@@ -157,6 +160,55 @@
             }
 
             return teams;
+        }
+        public async Task EnsureTeamRostersAsync(int gameSaveId)
+        {
+            var teams = await _context.Teams
+                .Include(t => t.Players)
+                .Where(t => t.GameSaveId == gameSaveId)
+                .ToListAsync();
+
+            var save = await _context.GameSaves.FindAsync(gameSaveId);
+            var rosterPlan = _teamPlanService.GetDefaultRosterPlan();
+
+            foreach (var team in teams)
+            {
+                // групиране по позиция
+                var positionCounts = team.Players
+                    .Where(p => p.IsActive)
+                    .GroupBy(p => p.Position.Code)
+                    .ToDictionary(g => g.Key, g => g.Count());
+
+                var newPlayersNeeded = new List<Player>();
+
+                foreach (var kv in rosterPlan)
+                {
+                    string positionCode = kv.Key;
+                    int requiredCount = kv.Value;
+
+                    if (positionCode == "ANY") continue; // ANY е за допълнителни играчи
+
+                    positionCounts.TryGetValue(positionCode, out int currentCount);
+                    int missing = requiredCount - currentCount;
+
+                    if (missing > 0)
+                    {
+                        for (int i = 0; i < missing; i++)
+                        {
+                            var newPlayer = _playerGenerator.CreateBasePlayer(save, team, team.Country,
+                                _context.Positions.First(p => p.Code == positionCode));
+                            newPlayersNeeded.Add(newPlayer);
+                        }
+                    }
+                }
+
+                if (newPlayersNeeded.Any())
+                {
+                    _context.Players.AddRange(newPlayersNeeded);
+                }
+            }
+
+            await _context.SaveChangesAsync();
         }
 
 

@@ -12,6 +12,7 @@
         Injury,
         Training,
         YouthAcademy,
+        Retirement,
         Finance,
         Milestone,
         Scouting,
