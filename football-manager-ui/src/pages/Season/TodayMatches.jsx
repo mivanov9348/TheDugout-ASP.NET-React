@@ -60,9 +60,16 @@ export default function TodayMatches() {
 
   const handleSimulate = async () => {
     try {
-      const data = await runSimulateMatches(gameSaveId);
-      if (!data) return;
+      const res = await runSimulateMatches(gameSaveId);
+      if (!res) return;
 
+      if (res.status && res.status >= 400) {
+        const msg = await res.text();
+        alert(msg || "Simulation failed.");
+        return;
+      }
+
+      const data = res;
       if (data.matches) {
         const normalized = data.matches.map(normalizeMatch);
         setMatches(normalized);
@@ -85,6 +92,7 @@ export default function TodayMatches() {
       stopProcessing();
     }
   };
+
 
   const hasUnplayedMatches = matches.some((m) => m.status === 0);
 

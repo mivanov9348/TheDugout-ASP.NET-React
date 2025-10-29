@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Swal from "sweetalert2";
+import { Dumbbell, PlayCircle, Sparkles } from "lucide-react";
 
 const Training = ({ gameSaveId }) => {
   const [team, setTeam] = useState(null);
@@ -22,7 +23,6 @@ const Training = ({ gameSaveId }) => {
   // Зареждане на отбора + играчи
   useEffect(() => {
     if (!gameSaveId) return;
-
     const loadTeam = async () => {
       try {
         const res = await fetch(`/api/team/by-save/${gameSaveId}`, {
@@ -31,7 +31,6 @@ const Training = ({ gameSaveId }) => {
         if (!res.ok) throw new Error("Грешка при зареждане на отбора");
         const data = await res.json();
         setTeam(data);
-        // сортиране по positionId ако го има
         const sortedPlayers = (data.players ?? []).sort(
           (a, b) => (a.positionId ?? 0) - (b.positionId ?? 0)
         );
@@ -41,7 +40,6 @@ const Training = ({ gameSaveId }) => {
         showError(err.message);
       }
     };
-
     loadTeam();
   }, [gameSaveId]);
 
@@ -55,13 +53,10 @@ const Training = ({ gameSaveId }) => {
       showError("Играчите или отборът не са заредени още.");
       return;
     }
-
     try {
       setLoadingAuto(true);
-
       const url = `/api/training/auto-assign/${team.teamId}/${gameSaveId}`;
       const res = await fetch(url, { credentials: "include" });
-
       if (!res.ok) {
         let errText = await res.text();
         let errData = null;
@@ -72,7 +67,6 @@ const Training = ({ gameSaveId }) => {
           errData?.message || "Грешка при авто-назначаване на уменията"
         );
       }
-
       const data = await res.json();
       const autoSelected = {};
       const proposals = {};
@@ -80,7 +74,6 @@ const Training = ({ gameSaveId }) => {
         autoSelected[a.playerId] = a.attributeId;
         proposals[a.playerId] = { name: a.attributeName, value: a.currentValue };
       });
-
       setSelectedSkills(autoSelected);
       setAutoProposals(proposals);
     } catch (err) {
@@ -136,18 +129,17 @@ const Training = ({ gameSaveId }) => {
       const data = await res.json();
 
       setTrainingProgress(
-  data.map((result) => ({
-    playerId: result.playerId,
-    name: result.playerName,
-    skill: result.attributeName,
-    efficiency: result.newValue - result.oldValue,
-    progressGain: result.progressGain,
-    totalProgress: result.totalProgress,
-    currentValue: result.newValue, 
-    sessions: 1,
-  }))
-);
-
+        data.map((result) => ({
+          playerId: result.playerId,
+          name: result.playerName,
+          skill: result.attributeName,
+          efficiency: result.newValue - result.oldValue,
+          progressGain: result.progressGain,
+          totalProgress: result.totalProgress,
+          currentValue: result.newValue,
+          sessions: 1,
+        }))
+      );
 
       Swal.fire({
         icon: "success",
@@ -162,35 +154,38 @@ const Training = ({ gameSaveId }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
-      <div className="max-w-6xl mx-auto">
-        <h1 className="text-3xl font-bold text-center mb-8 text-gray-800">
-          Training Management
+    <div className="relative min-h-screen bg-gradient-to-br from-green-900 via-emerald-800 to-teal-700 text-gray-100 p-8 overflow-hidden">
+      {/* subtle football texture */}
+      <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/football-no-lines.png')] opacity-10 pointer-events-none"></div>
+
+      <div className="relative z-10 max-w-7xl mx-auto">
+        <h1 className="text-5xl font-extrabold text-center mb-10 text-white drop-shadow-lg flex justify-center items-center gap-3">
+          <Dumbbell className="text-yellow-400 w-10 h-10" /> Training Management
         </h1>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
           {/* Лява част - Assign Training */}
-          <div>
-            <h2 className="text-2xl font-semibold mb-4 text-gray-800">
-              Assign Training
+          <div className="bg-white/15 backdrop-blur-md rounded-2xl border border-white/10 shadow-lg p-6">
+            <h2 className="text-2xl font-semibold mb-6 text-white flex items-center gap-2">
+              <Sparkles className="text-green-300" /> Assign Training
             </h2>
-            <div className="bg-white shadow-md rounded-lg overflow-hidden">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+            <div className="overflow-hidden rounded-xl border border-white/10">
+              <table className="min-w-full text-sm text-gray-800 bg-white/80">
+                <thead className="bg-emerald-100">
                   <tr>
-                    <th className="px-6 py-3">Name</th>
-                    <th className="px-6 py-3">Position</th>
-                    <th className="px-6 py-3">Skill to Train</th>
+                    <th className="px-4 py-2 text-left font-semibold">Name</th>
+                    <th className="px-4 py-2 text-left font-semibold">Position</th>
+                    <th className="px-4 py-2 text-left font-semibold">Skill to Train</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody>
                   {players.map((player) => (
-                    <tr key={player.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4">{player.fullName}</td>
-                      <td className="px-6 py-4">{player.position}</td>
-                      <td className="px-6 py-4">
+                    <tr key={player.id} className="hover:bg-emerald-50 transition">
+                      <td className="px-4 py-3">{player.fullName}</td>
+                      <td className="px-4 py-3">{player.position}</td>
+                      <td className="px-4 py-3">
                         <select
-                          className="block w-full border rounded-md"
+                          className="block w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-green-400"
                           value={selectedSkills[player.id] || ""}
                           onChange={(e) =>
                             handleSkillChange(player.id, e.target.value)
@@ -206,11 +201,13 @@ const Training = ({ gameSaveId }) => {
                             </option>
                           ))}
                         </select>
-
                         {autoProposals[player.id] && (
-                          <p className="text-xs text-gray-500 mt-1">
-                            Suggested: {autoProposals[player.id].name} (
-                            {autoProposals[player.id].value})
+                          <p className="text-xs text-gray-600 mt-1 italic">
+                            Suggested:{" "}
+                            <span className="text-green-600 font-semibold">
+                              {autoProposals[player.id].name}
+                            </span>{" "}
+                            ({autoProposals[player.id].value})
                           </p>
                         )}
                       </td>
@@ -220,60 +217,64 @@ const Training = ({ gameSaveId }) => {
               </table>
             </div>
 
-            <div className="mt-4 flex gap-2">
+            <div className="mt-6 flex gap-3">
               <button
                 onClick={handleAutoComplete}
                 disabled={!players.length || loadingAuto}
-                className={`px-4 py-2 rounded-md text-white ${
-                  !players.length || loadingAuto ? "bg-gray-400" : "bg-green-600"
+                className={`flex-1 px-4 py-3 rounded-lg font-semibold flex items-center justify-center gap-2 transition ${
+                  !players.length || loadingAuto
+                    ? "bg-gray-400 text-gray-100"
+                    : "bg-green-600 hover:bg-green-700 text-white shadow-md"
                 }`}
               >
-                {loadingAuto ? "Assigning..." : "Auto Complete Attributes"}
+                <Sparkles className="w-5 h-5" />
+                {loadingAuto ? "Assigning..." : "Auto Complete"}
               </button>
 
               <button
                 onClick={handleStartTraining}
-                className="px-4 py-2 bg-indigo-600 text-white rounded-md"
+                className="flex-1 px-4 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold flex items-center justify-center gap-2 shadow-md transition"
               >
-                Start Training
+                <PlayCircle className="w-5 h-5" /> Start Training
               </button>
             </div>
           </div>
 
           {/* Дясна част - Training Progress */}
-          <div>
-            <h2 className="text-2xl font-semibold mb-4 text-gray-800">
-              Training Progress
+          <div className="bg-white/15 backdrop-blur-md rounded-2xl border border-white/10 shadow-lg p-6">
+            <h2 className="text-2xl font-semibold mb-6 text-white flex items-center gap-2">
+              <Dumbbell className="text-blue-300" /> Training Progress
             </h2>
-            <div className="bg-white shadow-md rounded-lg overflow-hidden">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+            <div className="overflow-hidden rounded-xl border border-white/10">
+              <table className="min-w-full text-sm text-gray-800 bg-white/80">
+                <thead className="bg-indigo-100">
                   <tr>
-                    <th className="px-6 py-3">Name</th>
-                    <th className="px-6 py-3">Skill</th>
-                    <th className="px-6 py-3">Efficiency Gain</th>
-                    <th className="px-6 py-3">Sessions</th>
+                    <th className="px-4 py-2 text-left font-semibold">Name</th>
+                    <th className="px-4 py-2 text-left font-semibold">Skill</th>
+                    <th className="px-4 py-2 text-left font-semibold">Efficiency Gain</th>
+                    <th className="px-4 py-2 text-left font-semibold">Sessions</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody>
                   {trainingProgress.map((progress) => (
-                    <tr key={progress.playerId}>
-                      <td className="px-6 py-4">{progress.name}</td>
-                      <td className="px-6 py-4">{progress.skill} ({progress.currentValue})</td>
-                      <td className="px-6 py-4 text-green-600 font-semibold">
+                    <tr key={progress.playerId} className="hover:bg-indigo-50 transition">
+                      <td className="px-4 py-3 font-medium">{progress.name}</td>
+                      <td className="px-4 py-3">
+                        {progress.skill} ({progress.currentValue})
+                      </td>
+                      <td className="px-4 py-3 text-green-600 font-semibold">
                         +{progress.efficiency}
                         {progress.progressGain > 0 && (
                           <span className="text-sm text-gray-500">
                             {" "}({progress.progressGain.toFixed(3)})
                           </span>
                         )}
-                        <div className="text-xs text-blue-500">
+                        <div className="text-xs text-blue-600">
                           Total: {progress.totalProgress.toFixed(3)}
                         </div>
-                        {/* progress bar */}
                         <div className="w-full bg-gray-200 rounded h-2 mt-1">
                           <div
-                            className="bg-blue-500 h-2 rounded"
+                            className="bg-blue-500 h-2 rounded transition-all"
                             style={{
                               width: `${Math.min(
                                 (progress.totalProgress % 1) * 100,
@@ -283,7 +284,7 @@ const Training = ({ gameSaveId }) => {
                           ></div>
                         </div>
                       </td>
-                      <td className="px-6 py-4">{progress.sessions}</td>
+                      <td className="px-4 py-3">{progress.sessions}</td>
                     </tr>
                   ))}
                 </tbody>

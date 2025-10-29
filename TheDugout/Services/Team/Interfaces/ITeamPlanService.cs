@@ -14,7 +14,6 @@
     string? customName,
     Dictionary<string, string?> lineup,
     Dictionary<string, string?>? substitutes = null);
-        Task InitializeDefaultTacticsAsync(GameSave gameSave);
         Task<TeamTactic> AutoPickTacticAsync(int teamId, int gameSaveId);
         Task<List<Models.Players.Player>> GetStartingLineupAsync(Models.Teams.Team team, bool includeDetails = true);
     }

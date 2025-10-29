@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useRef } from "react";
 import { flushSync } from "react-dom";
 import ProcessingOverlay from "../components/ProcessingOverlay";
+import Swal from "sweetalert2";
 
 const ProcessingContext = createContext();
 
@@ -70,12 +71,29 @@ export function ProcessingProvider({ children }) {
           const data = JSON.parse(e.data);
 
           if (data.error) {
-            addLog(`❌ ${data.error}`);
             stopProcessing();
             es.close();
+
+            // 🧠 Показваме SweetAlert
+            Swal.fire({
+  icon: "error",
+  title: "No tactic found ⚠️",
+  html: `
+    <p>Your team has a scheduled match today but no tactic is saved.</p>
+    <p class="mt-2 text-sm text-gray-500">Please create or load a tactic before simulating matches.</p>
+  `,
+  confirmButtonColor: "#1d4ed8",
+  confirmButtonText: "Go to Tactics",
+}).then((r) => {
+  if (r.isConfirmed) window.location.href = "http://localhost:5173/tactics";
+});
+
+
+            addLog(`❌ ${data.error}`);
             resolve(null);
             return;
           }
+
 
           if (data.message === "done") {
             addLog("✔️ Simulation completed!");

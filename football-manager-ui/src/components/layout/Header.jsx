@@ -1,7 +1,7 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { useProcessing } from "../context/ProcessingContext";
-import { useGame } from "../context/GameContext";
+import { useProcessing } from "../../context/ProcessingContext";
+import { useGame } from "../../context/GameContext";
 import Swal from "sweetalert2";
 import { RotateCcw } from "lucide-react";
 

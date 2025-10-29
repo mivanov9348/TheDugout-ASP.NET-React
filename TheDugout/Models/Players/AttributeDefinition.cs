@@ -1,8 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
-
-namespace TheDugout.Models.Players
+﻿namespace TheDugout.Models.Players
 {
+    using System.ComponentModel.DataAnnotations;
     public enum AttributeCategory
     {
         Physical = 1,

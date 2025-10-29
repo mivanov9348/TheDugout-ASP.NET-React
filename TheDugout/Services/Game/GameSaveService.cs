@@ -6,7 +6,6 @@
     using TheDugout.Data;
     using TheDugout.Models.Competitions;
     using TheDugout.Models.Game;
-    using TheDugout.Models.Teams;
     using TheDugout.Services.Cup.Interfaces;
     using TheDugout.Services.EuropeanCup.Interfaces;
     using TheDugout.Services.Finance.Interfaces;
@@ -25,12 +24,9 @@
         private readonly ILeagueService _leagueGenerator;
         private readonly INewSeasonService _seasonGenerator;
         private readonly ILeagueFixturesService _leagueFixturesService;
-        private readonly IEurocupFixturesService _eurocupFixturesService;
-        private readonly IPlayerGenerationService _playerGenerator;
         private readonly IBankService _bankService;
         private readonly ITeamFinanceService _teamFinanceService;
         private readonly ITeamGenerationService _teamGenerator;
-        private readonly ITeamPlanService _teamPlanService;
         private readonly IEuropeanCupService _europeanCupService;
         private readonly ICupService _cupService;
         private readonly IAgencyService _agencyService;
@@ -41,16 +37,13 @@
             ILogger<GameSaveService> logger,
             ILeagueService leagueGenerator,
             INewSeasonService seasonGenerator,
-            IPlayerGenerationService playerGenerator,
             IBankService bankService,
             ITeamFinanceService teamFinanceService,
-            ITeamPlanService teamPlanService,
             IEuropeanCupService europeanCupService,
             ITeamGenerationService teamGenerator,
             ICupService cupService,
             IAgencyService agencyService,
             ILeagueFixturesService leagueFixturesService,
-            IEurocupFixturesService eurocupFixturesService,
             IGameSettingsService gameSettings
         )
         {
@@ -58,16 +51,13 @@
             _logger = logger;
             _leagueGenerator = leagueGenerator;
             _seasonGenerator = seasonGenerator;
-            _playerGenerator = playerGenerator;
             _bankService = bankService;
             _teamFinanceService = teamFinanceService;
-            _teamPlanService = teamPlanService;
             _europeanCupService = europeanCupService;
             _teamGenerator = teamGenerator;
             _cupService = cupService;
             _agencyService = agencyService;
             _leagueFixturesService = leagueFixturesService;
-            _eurocupFixturesService = eurocupFixturesService;
             _gameSettings = gameSettings;
         }
 
@@ -347,11 +337,7 @@ WHERE T.{Quote("GameSaveId")} = @p0;";
                 // 9️⃣ Standings
                 await _context.SaveChangesAsync(ct);
                 await _leagueGenerator.InitializeStandingsAsync(gameSave, season);
-                LogStep("Initialized League Standings");
-
-                // 🔟 Дефолтни тактики
-                await _teamPlanService.InitializeDefaultTacticsAsync(gameSave);
-                LogStep("Initialized Default Tactics");
+                LogStep("Initialized League Standings");               
 
                 // ✅ Commit
                 await transaction.CommitAsync(ct);

@@ -120,6 +120,10 @@
 
             if (dbFixture is null) throw new InvalidOperationException($"Fixture {fixture.Id} not found.");
 
+            await _teamPlanService.AutoPickTacticAsync(dbFixture.HomeTeam.Id, gameSave.Id);
+            await _teamPlanService.AutoPickTacticAsync(dbFixture.AwayTeam.Id, gameSave.Id);
+            _logger.LogInformation("🔁 Auto tactics reinitialized for both teams before match");
+
             sw.Restart();
             var match = await _matchService.GetOrCreateMatchAsync(fixture, gameSave);
             await _matchService.GenerateAttendanceAsync(match);

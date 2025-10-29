@@ -29,7 +29,6 @@
                 { "ANY", 5 }
             };
         }
-
         public async Task<TeamTactic?> GetTeamTacticAsync(int teamId, int gameSaveId)
         {
             return await _context.TeamTactics
@@ -98,81 +97,28 @@
             await _context.SaveChangesAsync();
             return team.TeamTactic!;
         }
-        public async Task InitializeDefaultTacticsAsync(GameSave gameSave)
-        {
-            var teams = await _context.Teams
-                .Include(t => t.Players)
-                    .ThenInclude(p => p.Position)
-                .Where(t => t.GameSaveId == gameSave.Id)
-                .ToListAsync();
-
-            var defaultTactic = await _context.Tactics.FirstOrDefaultAsync(t =>
-                t.Defenders == 4 && t.Midfielders == 4 && t.Forwards == 2);
-
-            if (defaultTactic == null)
-                throw new Exception("Тактиката 4-4-2 липсва в базата.");
-
-            foreach (var team in teams)
-            {
-                if (await _context.TeamTactics.AnyAsync(tt => tt.TeamId == team.Id))
-                    continue;
-
-                var lineup = new Dictionary<string, string?>();
-                var players = team.Players.ToList();
-
-                var gk = players.Where(p => p.Position.Code == "GK").Take(1).ToList();
-                var df = players.Where(p => p.Position.Code == "DF").Take(4).ToList();
-                var mid = players.Where(p => p.Position.Code == "MID").Take(4).ToList();
-                var att = players.Where(p => p.Position.Code == "ATT").Take(2).ToList();
-
-                int index = 1;
-                foreach (var p in gk) lineup.Add($"GK{index++}", p.Id.ToString());
-                index = 1;
-                foreach (var p in df) lineup.Add($"DF{index++}", p.Id.ToString());
-                index = 1;
-                foreach (var p in mid) lineup.Add($"MID{index++}", p.Id.ToString());
-                index = 1;
-                foreach (var p in att) lineup.Add($"ATT{index++}", p.Id.ToString());
-
-                // Резерви като Dictionary със SUB ключове
-                var startersIds = gk.Concat(df).Concat(mid).Concat(att).Select(p => p.Id).ToHashSet();
-                var subsList = players.Where(p => !startersIds.Contains(p.Id))
-                                      .Select(p => p.Id.ToString())
-                                      .ToList();
-
-                var subsDict = new Dictionary<string, string?>();
-                int subIndex = 1;
-                foreach (var s in subsList)
-                {
-                    subsDict.Add($"SUB{subIndex++}", s);
-                }
-
-                var tactic = new TeamTactic
-                {
-                    TeamId = team.Id,
-                    TacticId = defaultTactic.Id,
-                    GameSaveId = gameSave.Id,
-                    CustomName = "Default 4-4-2",
-                    LineupJson = System.Text.Json.JsonSerializer.Serialize(lineup),
-                    SubstitutesJson = System.Text.Json.JsonSerializer.Serialize(subsDict)
-                };
-
-                _context.TeamTactics.Add(tactic);
-            }
-
-            await _context.SaveChangesAsync();
-        }
-
+        
         public async Task<TeamTactic> AutoPickTacticAsync(int teamId, int gameSaveId)
         {
             var team = await _context.Teams
-                .Include(t => t.Players)
-                    .ThenInclude(p => p.Attributes)
-                .Include(t => t.TeamTactic)
-                .FirstOrDefaultAsync(t => t.Id == teamId && t.GameSaveId == gameSaveId);
+                 .Include(t => t.Players)
+            .ThenInclude(p => p.Position)
+        .Include(t => t.Players)
+            .ThenInclude(p => p.Attributes)
+                .ThenInclude(a => a.Attribute)
+        .Include(t => t.TeamTactic)
+        .FirstOrDefaultAsync(t => t.Id == teamId && t.GameSaveId == gameSaveId);
 
             if (team == null)
                 throw new Exception("Team not found");
+
+            if (team.GameSave.UserTeamId == team.Id)
+            {
+                if (team.TeamTactic == null)
+                    throw new InvalidOperationException("User team has no tactic set. Please create one before playing.");
+
+                return team.TeamTactic;
+            }
 
             var tactic = await _context.Tactics.FirstOrDefaultAsync(t =>
                 t.Defenders == 4 && t.Midfielders == 4 && t.Forwards == 2);
@@ -260,6 +206,5 @@
 
             return await query.ToListAsync();
         }
-
     }
 }

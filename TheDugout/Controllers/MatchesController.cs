@@ -126,12 +126,34 @@
                 .ToListAsync();
 
             if (!fixtures.Any())
-                return Ok(new { message = "No fixtures to simulate." }); // Това не е грешка
+                return Ok(new { message = "No fixtures to simulate." }); 
+
+            if (gameSave.UserTeamId.HasValue)
+            {
+                var userTeamId = gameSave.UserTeamId.Value;
+
+                var userFixturesToday = fixtures
+                    .Where(f => f.HomeTeamId == userTeamId || f.AwayTeamId == userTeamId)
+                    .ToList();
+
+                if (userFixturesToday.Any())
+                {
+                    bool hasTactic = await _context.TeamTactics
+                        .AnyAsync(tt => tt.TeamId == userTeamId && tt.GameSaveId == gameSaveId);
+
+                    if (!hasTactic)
+                    {
+                        return BadRequest("❌ Your team has a scheduled match today but no tactic is saved. Please create one before simulating.");
+                    }
+                }
+            }
 
             // *** ПРОМЯНА: Обвиваме всичко в транзакция ***
             await using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
+                
+
                 foreach (var fixture in fixtures)
                 {
                     var match = fixture.Match;
@@ -274,6 +296,32 @@
                 await Response.WriteAsync("data: {\"message\":\"No fixtures to simulate.\"}\n\n");
                 await Response.Body.FlushAsync();
                 return;
+            }
+
+            if (gameSave.UserTeamId.HasValue)
+            {
+                var userTeamId = gameSave.UserTeamId.Value;
+
+                var userFixturesToday = fixtures
+                    .Where(f => f.HomeTeamId == userTeamId || f.AwayTeamId == userTeamId)
+                    .ToList();
+
+                if (userFixturesToday.Any())
+                {
+                    bool hasTactic = await _context.TeamTactics
+                        .AnyAsync(tt => tt.TeamId == userTeamId && tt.GameSaveId == gameSaveId);
+
+                    if (!hasTactic)
+                    {
+                        var errorJson = JsonSerializer.Serialize(new
+                        {
+                            error = "❌ Your team has a scheduled match today but no tactic is saved. Please create one before simulating."
+                        });
+                        await Response.WriteAsync($"data: {errorJson}\n\n");
+                        await Response.Body.FlushAsync();
+                        return;
+                    }
+                }
             }
 
             foreach (var fixture in fixtures)
