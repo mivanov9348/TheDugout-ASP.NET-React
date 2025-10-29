@@ -44,18 +44,7 @@ export default function EuropeanCup({ gameSaveId }) {
   return (
     <div className="p-4">
       {/* Header */}
-      <div className="flex items-center justify-center gap-4 mb-6">
-        <img
-          src={competitionLogoUrl}
-          alt={cup.name}
-          className="w-16 h-16 object-contain border rounded-full shadow-md"
-          onError={(e) => {
-            e.target.src = "/competitionsLogos/default.png";
-          }}
-        />
-        <h2 className="text-3xl font-bold text-center">{cup.name}</h2>
-      </div>
-
+      
       {/* Tabs */}
       <div className="flex justify-center mb-6">
         {[

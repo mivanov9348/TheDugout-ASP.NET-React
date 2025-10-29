@@ -10,10 +10,7 @@ export default function League({ gameSaveId }) {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // 🟢 Зареждаме всички лиги + първата по подразбиране
-  // League.jsx
-
-  // 🟢 Зареждаме всички лиги + първата по подразбиране
+  // 🟢 Зареждане на лиги + първа по подразбиране
   useEffect(() => {
     if (!gameSaveId) return;
 
@@ -30,24 +27,14 @@ export default function League({ gameSaveId }) {
           setLeagues(data.leagues);
           setSeasonId(data.seasonId);
 
-          // --- ❌ ИЗТРИЙ СТАРАТА ЛОГИКА ---
-          // if (!selectedLeague) { ... }
-
-          // --- ✅ ДОБАВИ НОВАТА ЛОГИКА ---
-
-          // 1. Опитай се да намериш текущо избраната лига в новия списък
-          // (Това ще се провали при смяна на gameSaveId, защото ID-тата ще са различни, 
-          // но ще работи, ако просто презареждаш същия save)
           let leagueToLoad = data.leagues.find(
             (l) => l.id === selectedLeague?.id
           );
 
-          // 2. Ако не е намерена (или при първо зареждане), вземи първата от списъка
           if (!leagueToLoad) {
             leagueToLoad = data.leagues[0];
           }
 
-          // 3. Винаги зареждай класирането за тази лига
           const res2 = await fetch(
             `/api/League/current?gameSaveId=${gameSaveId}&seasonId=${data.seasonId}&leagueId=${leagueToLoad.id}`,
             { credentials: "include" }
@@ -63,10 +50,7 @@ export default function League({ gameSaveId }) {
           if (location.pathname.endsWith("/league")) {
             navigate(`/competitions/league/standings`, { replace: true });
           }
-          // --- Край на новата логика ---
-
         } else {
-          // Ако новият save няма лиги, изчисти всичко
           setLeagues([]);
           setSeasonId(null);
           setSelectedLeague(null);
@@ -79,9 +63,7 @@ export default function League({ gameSaveId }) {
     };
 
     loadLeagues();
-    // Добави `location.pathname`, за да се изпълни навигацията, ако е нужно
   }, [gameSaveId, navigate, location.pathname]);
-
 
   // 🟢 Смяна на лига от dropdown
   const handleLeagueChange = async (e) => {
@@ -103,7 +85,6 @@ export default function League({ gameSaveId }) {
         setSelectedLeague({ ...league, standings: [] });
       }
 
-      // 🟢 Навигация към текущия таб
       const currentTab = location.pathname.includes("player-stats")
         ? "player-stats"
         : "standings";
@@ -116,36 +97,33 @@ export default function League({ gameSaveId }) {
   };
 
   // 🟢 UI Rendering
-  if (loading && !selectedLeague) return <p>Loading leagues...</p>;
-  if (!leagues.length) return <p>No leagues found.</p>;
+  if (loading && !selectedLeague)
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 text-gray-300">
+        Loading leagues...
+      </div>
+    );
+
+  if (!leagues.length)
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 text-gray-400">
+        No leagues found.
+      </div>
+    );
 
   return (
-    <div className="p-4">
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 text-gray-200 p-6 rounded-2xl shadow-2xl">
       {/* Header */}
-      <div className="flex items-center justify-center gap-4 mb-6">
-        <img
-          src={
-            selectedLeague?.standings?.[0]?.teamLogo ??
-            "/competitionsLogos/default.png"
-          }
-          alt={selectedLeague?.name ?? "League"}
-          className="w-16 h-16 object-contain border rounded-full shadow-md"
-          onError={(e) => (e.target.src = "/competitionsLogos/default.png")}
-        />
-        <h2 className="text-3xl font-bold text-center">
-          {selectedLeague?.name ?? "Unknown League"}
-        </h2>
-      </div>
-
+     
       {/* Dropdown за смяна на лигата */}
-      <div className="flex justify-center mb-4">
+      <div className="flex justify-center mb-6">
         <select
-          className="border rounded px-3 py-1 text-sm"
+          className="bg-gray-800/80 border border-gray-700 rounded-lg px-4 py-2 text-sm text-gray-200 focus:outline-none focus:ring-2 focus:ring-sky-600"
           value={selectedLeague?.id ?? ""}
           onChange={handleLeagueChange}
         >
           {leagues.map((l) => (
-            <option key={l.id} value={l.id}>
+            <option key={l.id} value={l.id} className="bg-gray-900 text-gray-200">
               {l.name} ({l.country})
             </option>
           ))}
@@ -153,24 +131,29 @@ export default function League({ gameSaveId }) {
       </div>
 
       {/* Навигация между табове */}
-      <div className="flex justify-center mb-6 gap-2">
+      <div className="flex justify-center mb-8 gap-3">
         <NavLink
           to="/competitions/league/standings"
           className={({ isActive }) =>
-            `px-4 py-2 rounded-md font-medium ${isActive
-              ? "bg-blue-600 text-white"
-              : "bg-slate-200 text-slate-700 hover:bg-slate-300"
+            `px-5 py-2 rounded-lg font-semibold transition-all duration-200 
+            ${
+              isActive
+                ? "bg-sky-600 text-white shadow-md shadow-sky-700/40"
+                : "bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-700"
             }`
           }
         >
           Standings
         </NavLink>
+
         <NavLink
           to="/competitions/league/player-stats"
           className={({ isActive }) =>
-            `px-4 py-2 rounded-md font-medium ${isActive
-              ? "bg-blue-600 text-white"
-              : "bg-slate-200 text-slate-700 hover:bg-slate-300"
+            `px-5 py-2 rounded-lg font-semibold transition-all duration-200 
+            ${
+              isActive
+                ? "bg-sky-600 text-white shadow-md shadow-sky-700/40"
+                : "bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-700"
             }`
           }
         >
@@ -179,7 +162,9 @@ export default function League({ gameSaveId }) {
       </div>
 
       {/* Outlet с контекста на избраната лига */}
-      <Outlet context={{ gameSaveId, league: selectedLeague }} />
+      <div className="bg-gray-800/60 backdrop-blur-sm border border-gray-700 rounded-xl shadow-lg p-5 transition-all">
+        <Outlet context={{ gameSaveId, league: selectedLeague }} />
+      </div>
     </div>
   );
 }

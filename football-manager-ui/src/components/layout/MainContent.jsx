@@ -1,17 +1,19 @@
-import Club from "../pages/Club";
-import Finances from "../pages/Finances";
+// src/components/MainContent.jsx
+import Club from "../../pages/club/Club";
 import Home from "../../pages/Home";
 import Inbox from "../../pages/Inbox";
-import Squad from "../pages/Squad";
-import Tactics from "../pages/Tactics";
-import Training from "../pages/Training";
+import Calendar from "../../pages/season/Calendar";
+import Squad from "../../pages/club/Squad";
+import Tactics from "../../pages/club/Tactics";
+import Training from "../../pages/club/Training";
+import Fixtures from "../../pages/season/Fixtures";
 import Transfers from "../../pages/Transfers";
-import Calendar from "../pages/Calendar";
-import Fixtures from "../pages/Fixtures";
+import Finances from "../../pages/club/Finances";
 
 function MainContent({ activePage }) {
   return (
-   <main className="flex-1 bg-transparent p-0 overflow-y-auto">
+    <main className="flex-1 bg-transparent p-0 overflow-y-auto">
+      {/* Всяка страница да има собствен container/padding */}
       {activePage === "Home" && <Home />}
       {activePage === "Inbox" && <Inbox />}
       {activePage === "Calendar" && <Calendar />}

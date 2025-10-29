@@ -1,4 +1,5 @@
-import { NavLink, useNavigate } from "react-router-dom";
+// src/components/Sidebar.jsx
+import { NavLink } from "react-router-dom";
 import {
   Home, Mail, Users, Activity, Dumbbell, Calendar,
   Trophy, ShoppingCart, Building, Wallet, Calendar1, LogOut, BarChart
@@ -19,34 +20,39 @@ function Sidebar({ onExitGame }) {
     { name: "Club", path: "/club", icon: <Building size={18} /> },
     { name: "Finances", path: "/finances", icon: <Wallet size={18} /> },
     { name: "Stats", path: "/all-time-stats", icon: <BarChart size={18} /> },
-
   ];
 
   return (
-    <aside className="bg-slate-800 text-white w-56 h-screen p-4 flex flex-col">
+    <aside className="bg-slate-800 text-white w-56 min-h-screen p-4 flex flex-col border-r border-slate-700">
+      {/* Заглавие */}
       <h2 className="text-xl font-bold mb-6 text-center text-sky-400">The Dugout</h2>
-      <ul className="space-y-2 flex-1 overflow-y-auto 
-  scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-slate-800 hover:scrollbar-thumb-slate-600">          {menus.map((menu) => (
-        <li key={menu.name}>
-          <NavLink
-            to={menu.path}
-            end
-            className={({ isActive }) =>
-              `flex items-center gap-3 px-4 py-2 rounded-md transition 
-                ${isActive ? "bg-sky-600 font-bold" : "hover:bg-slate-700"}`
-            }
-          >
-            {menu.icon}
-            <span>{menu.name}</span>
-          </NavLink>
-        </li>
-      ))}
+
+      {/* Меню */}
+      <ul className="space-y-1 flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-slate-800">
+        {menus.map((menu) => (
+          <li key={menu.name}>
+            <NavLink
+              to={menu.path}
+              end
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-4 py-2 rounded-md transition ${
+                  isActive
+                    ? "bg-sky-600 text-white font-semibold"
+                    : "hover:bg-slate-700 text-slate-300"
+                }`
+              }
+            >
+              {menu.icon}
+              <span>{menu.name}</span>
+            </NavLink>
+          </li>
+        ))}
       </ul>
 
-      {/* Exit Game бутон */}
+      {/* Изход */}
       <button
         onClick={onExitGame}
-        className="flex items-center gap-3 px-4 py-2 rounded-md hover:bg-red-600 transition bg-red-500 text-white font-bold"
+        className="flex items-center gap-3 px-4 py-2 rounded-md hover:bg-red-600 transition bg-red-500 text-white font-bold mt-4"
       >
         <LogOut size={18} />
         Exit Game

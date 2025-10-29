@@ -1,30 +1,24 @@
-// src/components/layout/GameLayout.jsx
-import React, { useState } from "react";
-import Sidebar from "../Sidebar";
-import Header from "../Header";
-import MainContent from "../MainContent";
+// src/components/GameLayout.jsx
+import React from "react";
+import { useLocation } from "react-router-dom";
+import Sidebar from "./Sidebar";
+import Header from "./Header";
 
-export default function GameLayout({ initialPage = "Home", username }) {
-  const [activePage, setActivePage] = useState(initialPage);
-  const handleExitGame = () => {
-    // твоят exit handler - например redirect към меню
-    window.location.href = "/";
-  };
+export default function GameLayout({ username, onExitGame, children }) {
+  const location = useLocation();
 
   return (
-    <div className="flex min-h-screen">
-      {/* Sidebar: фиксирана ширина, full-height */}
-      <Sidebar onExitGame={handleExitGame} setActivePage={setActivePage} />
+    <div className="flex min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-700">
+      {/* Sidebar и Header си остават тъмни с бял текст */}
+      <Sidebar onExitGame={onExitGame} />
 
-      {/* Main area: header + scrollable content */}
       <div className="flex-1 flex flex-col min-h-screen overflow-hidden">
-        <Header username={username} />
+        <Header key={location.pathname} username={username} />
 
-        {/* съдържанието ще скролва вътре в тази зона */}
-        <div className="flex-1 overflow-y-auto bg-gradient-to-br from-slate-900 via-slate-800 to-slate-700">
-          {/* важно: MainContent трябва да е без собствен белез фон (bg-transparent) */}
-          <MainContent activePage={activePage} />
-        </div>
+        {/* Основно съдържание – фон по избор, не наследява text-white */}
+        <main className="flex-1 overflow-y-auto p-0.3 bg-slate-100 text-slate-800">
+          {children}
+        </main>
       </div>
     </div>
   );

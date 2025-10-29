@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
+import GameLayout from "./components/layout/GameLayout";
 
-import Header from "./components/Header";
-import Sidebar from "./components/Sidebar";
 import AuthForm from "./components/AuthForm";
 import StartScreen from "./components/StartScreen";
 import ProcessingOverlay from "./components/ProcessingOverlay";
@@ -43,7 +42,7 @@ function AppInner() {
         if (user?.username) {
           setIsAuthenticated(true);
           setUsername(user.username);
-          setIsAdmin(user.isAdmin); 
+          setIsAdmin(user.isAdmin);
 
           const resSave = await fetch("/api/games/current", { credentials: "include" });
           if (resSave.ok) {
@@ -87,7 +86,7 @@ function AppInner() {
             ) : (
               <StartScreen
                 username={username}
-                isAdmin = {isAdmin}
+                isAdmin={isAdmin}
                 onNewGame={async (setLoadingMessage) => {
                   try {
                     setLoadingMessage("Създаваме нова игра...");
@@ -145,54 +144,45 @@ function AppInner() {
               {!currentGameSave ? (
                 <Navigate to="/start" replace />
               ) : (
-                <div className="flex h-screen bg-slate-100">
-                  <Sidebar
-                    onExitGame={() => {
-                      Swal.fire({
-                        title: "Изход от играта?",
-                        text: "Прогресът ти ще бъде запазен.",
-                        icon: "question",
-                        showCancelButton: true,
-                        confirmButtonText: "Да, излез",
-                        cancelButtonText: "Отказ",
-                      }).then(async (result) => {
-                        if (result.isConfirmed) {
-                          // 👉 махаме текущия сейв (примерно на бекенда)
-                          await fetch("/api/games/exit", { method: "POST", credentials: "include" }).catch(() => { });
-                          // 👉 изчистваме локалното състояние
-                          setCurrentGameSave(null);
-                          // 👉 прехвърляме към старт екрана
-                          navigate("/start");
-                        }
-                      });
-                    }}
-                  />
-
-                  <div className="flex flex-col flex-1">
-                    <Header username={username} />
-                    <main className="flex-1 overflow-y-auto p-4">
-                      <Routes>
-                        {AppRoutes(
-                          currentGameSave?.id,
-                          currentGameSave?.userTeamId,
-                          currentGameSave?.seasons?.[0]?.id
-                        )}
-                      </Routes>
-                    </main>
-                  </div>
-                </div>
+                <GameLayout
+                  username={username}
+                  onExitGame={() => {
+                    Swal.fire({
+                      title: "Изход от играта?",
+                      text: "Прогресът ти ще бъде запазен.",
+                      icon: "question",
+                      showCancelButton: true,
+                      confirmButtonText: "Да, излез",
+                      cancelButtonText: "Отказ",
+                    }).then(async (result) => {
+                      if (result.isConfirmed) {
+                        await fetch("/api/games/exit", { method: "POST", credentials: "include" }).catch(() => { });
+                        setCurrentGameSave(null);
+                        navigate("/start");
+                      }
+                    });
+                  }}
+                >
+                  <Routes>
+                    {AppRoutes(
+                      currentGameSave?.id,
+                      currentGameSave?.userTeamId,
+                      currentGameSave?.seasons?.[0]?.id
+                    )}
+                  </Routes>
+                </GameLayout>
               )}
             </ProtectedRoute>
           }
         />
         <Route
-  path="/admin"
-  element={
-    <ProtectedRoute isAuthenticated={isAuthenticated}>
-      <AdminPage />
-    </ProtectedRoute>
-  }
-/>
+          path="/admin"
+          element={
+            <ProtectedRoute isAuthenticated={isAuthenticated}>
+              <AdminPage />
+            </ProtectedRoute>
+          }
+        />
 
       </Routes>
       {showLoadModal && (

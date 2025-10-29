@@ -7,8 +7,8 @@ export default function PlayerStats({ cup }) {
 
   if (!cup?.playerStats || cup.playerStats.length === 0)
     return (
-      <div className="text-center text-slate-400 italic py-10 bg-gradient-to-b from-gray-900 to-gray-950 rounded-2xl border border-gray-800 shadow-lg">
-        ⚽ Loading....
+      <div className="text-center text-gray-400 italic py-10 bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 rounded-2xl border border-gray-800 shadow-lg">
+        ⚽ Loading...
       </div>
     );
 
@@ -38,37 +38,37 @@ export default function PlayerStats({ cup }) {
 
   const SortIcon = ({ column }) => {
     if (sortConfig.key !== column)
-      return <span className="opacity-30 text-slate-500">↕</span>;
+      return <span className="opacity-30 text-gray-500">↕</span>;
     return sortConfig.direction === "asc" ? (
-      <ChevronUp className="inline w-4 h-4 ml-1 text-green-400" />
+      <ChevronUp className="inline w-4 h-4 ml-1 text-sky-400" />
     ) : (
-      <ChevronDown className="inline w-4 h-4 ml-1 text-green-400" />
+      <ChevronDown className="inline w-4 h-4 ml-1 text-sky-400" />
     );
   };
 
   return (
-    <div className="p-6 bg-gradient-to-b from-gray-900 to-gray-950 rounded-2xl shadow-2xl border border-gray-800 max-w-4xl mx-auto">
-
+    <div className="p-6 bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 rounded-2xl shadow-2xl border border-gray-800 max-w-4xl mx-auto text-gray-100">
+      <h2 className="text-2xl font-bold text-sky-400 mb-6 text-center">Player Statistics</h2>
 
       <div className="overflow-x-auto">
         <table className="min-w-full text-sm text-gray-300 rounded-xl overflow-hidden">
           <thead>
-            <tr className="bg-gray-800/70 uppercase text-xs tracking-wide">
+            <tr className="bg-gray-800/70 uppercase text-xs tracking-wide text-gray-300">
               <th className="px-3 py-3 text-center w-10">#</th>
               <th
-                className="px-3 py-3 text-left cursor-pointer hover:bg-gray-800/50 transition"
+                className="px-3 py-3 text-left cursor-pointer hover:bg-gray-800/50 transition-colors"
                 onClick={() => handleSort("name")}
               >
                 Player <SortIcon column="name" />
               </th>
               <th
-                className="px-3 py-3 text-left cursor-pointer hover:bg-gray-800/50 transition"
+                className="px-3 py-3 text-left cursor-pointer hover:bg-gray-800/50 transition-colors"
                 onClick={() => handleSort("teamName")}
               >
                 Team <SortIcon column="teamName" />
               </th>
               <th
-                className="px-3 py-3 text-center cursor-pointer hover:bg-gray-800/50 transition"
+                className="px-3 py-3 text-center cursor-pointer hover:bg-gray-800/50 transition-colors"
                 onClick={() => handleSort("goals")}
               >
                 ⚽ Goals <SortIcon column="goals" />
@@ -81,25 +81,26 @@ export default function PlayerStats({ cup }) {
             {sortedStats.map((p, i) => (
               <tr
                 key={p.id}
-                className={`transition-all duration-150 ${i % 2 === 0 ? "bg-gray-900/60" : "bg-gray-800/60"
-                  } hover:bg-gray-700/60`}
+                className={`transition-all duration-150 ${
+                  i % 2 === 0 ? "bg-gray-900/60" : "bg-gray-800/60"
+                } hover:bg-gray-700/60`}
               >
-                <td className="px-3 py-3 text-center font-semibold text-slate-400">
+                <td className="px-3 py-3 text-center font-semibold text-gray-400">
                   {i + 1}
                 </td>
-                <td className="p-2 font-medium text-slate-800">
+                <td className="p-2 font-medium text-gray-200">
                   <Link
                     to={`/player/${p.id}`}
-                    className="text-blue-500 hover:text-blue-700 transition-colors font-semibold hover:underline"
+                    className="text-sky-400 hover:text-sky-300 transition-colors font-semibold hover:underline underline-offset-4"
                   >
                     {p.name}
                   </Link>
                 </td>
-                <td className="px-3 py-3 text-slate-400">{p.teamName}</td>
+                <td className="px-3 py-3 text-gray-400">{p.teamName}</td>
                 <td className="px-3 py-3 text-center font-extrabold text-green-400">
                   {p.goals}
                 </td>
-                <td className="px-3 py-3 text-center text-slate-400">
+                <td className="px-3 py-3 text-center text-gray-400">
                   {p.matches}
                 </td>
               </tr>
@@ -108,8 +109,8 @@ export default function PlayerStats({ cup }) {
         </table>
       </div>
 
-      <div className="text-center mt-6 text-sm text-slate-500 italic">
-        📊 Sort by column.
+      <div className="text-center mt-6 text-sm text-gray-500 italic">
+        📊 Click a column to sort.
       </div>
     </div>
   );

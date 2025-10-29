@@ -98,19 +98,19 @@ const Fixtures = ({ gameSaveId }) => {
       <Link
         to={`/match/${match.id}`}
         className={`flex items-center justify-between p-6 ${
-          index % 2 === 0 ? "bg-white" : "bg-gray-50"
-        } hover:bg-blue-50 transition-colors duration-200 border-b border-gray-100`}
+          index % 2 === 0 ? "bg-gray-800" : "bg-gray-900"
+        } hover:bg-gray-700 transition-colors duration-200 border-b border-gray-700`}
       >
         <div className="w-24 text-center">
-          <div className="text-sm font-semibold text-gray-900">
+          <div className="text-sm font-semibold text-white">
             {dateInfo.day} {dateInfo.month}
           </div>
-          <div className="text-xs text-gray-500 mt-1">{dateInfo.time}</div>
+          <div className="text-xs text-gray-400 mt-1">{dateInfo.time}</div>
         </div>
 
         <div className="flex-1 flex items-center justify-between max-w-2xl mx-8">
           <div className="flex items-center space-x-4 flex-1 justify-end">
-            <span className="font-semibold text-gray-900 text-right">
+            <span className="font-semibold text-white text-right">
               {match.homeTeam ?? "—"}
             </span>
             <TeamLogo
@@ -122,8 +122,8 @@ const Fixtures = ({ gameSaveId }) => {
 
           <div className="mx-6">
             {isPlayed ? (
-              <div className="bg-gray-100 px-4 py-2 rounded-lg text-center">
-                <span className="font-bold text-gray-900 text-lg">
+              <div className="bg-gray-700 px-4 py-2 rounded-lg text-center">
+                <span className="font-bold text-white text-lg">
                   {match.homeTeamGoals} - {match.awayTeamGoals}
                 </span>
               </div>
@@ -138,7 +138,7 @@ const Fixtures = ({ gameSaveId }) => {
               logoFileName={match.awayLogoFileName}
               className="w-10 h-10"
             />
-            <span className="font-semibold text-gray-900">
+            <span className="font-semibold text-white">
               {match.awayTeam ?? "—"}
             </span>
           </div>
@@ -148,8 +148,8 @@ const Fixtures = ({ gameSaveId }) => {
           <span
             className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
               isPlayed
-                ? "bg-green-100 text-green-800"
-                : "bg-blue-100 text-blue-800"
+                ? "bg-green-900 text-green-200"
+                : "bg-blue-900 text-blue-200"
             }`}
           >
             {isPlayed ? "FT" : "SCH"}
@@ -159,24 +159,24 @@ const Fixtures = ({ gameSaveId }) => {
     );
   };
 
-  if (seasonLoading) return <div className="text-center py-20">Loading active season...</div>;
-  if (seasonError) return <div className="text-center py-20 text-red-500">Error loading season.</div>;
-  if (!season) return <div className="text-center py-20 text-gray-500">No active season.</div>;
+  if (seasonLoading) return <div className="text-center py-20 text-white">Loading active season...</div>;
+  if (seasonError) return <div className="text-center py-20 text-red-400">Error loading season.</div>;
+  if (!season) return <div className="text-center py-20 text-gray-400">No active season.</div>;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
-        <div className="bg-white rounded-2xl shadow-xl p-6 mb-8">
+        <div className="bg-gray-800 rounded-2xl shadow-xl p-6 mb-8 border border-gray-700">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
-              <label className="block text-sm font-semibold mb-2">League</label>
+              <label className="block text-sm font-semibold mb-2 text-white">League</label>
               <select
-                className="w-full p-3 rounded-xl border border-gray-200"
+                className="w-full p-3 rounded-xl border border-gray-600 bg-gray-700 text-white focus:border-gray-500 focus:ring-2 focus:ring-gray-500"
                 value={league}
                 onChange={(e) => setLeague(e.target.value)}
               >
                 {leagues.map((l) => (
-                  <option key={l.id} value={l.id}>
+                  <option key={l.id} value={l.id} className="bg-gray-700">
                     {l.name}
                   </option>
                 ))}
@@ -184,15 +184,15 @@ const Fixtures = ({ gameSaveId }) => {
             </div>
 
             <div className="flex-1">
-              <label className="block text-sm font-semibold mb-2">Round</label>
+              <label className="block text-sm font-semibold mb-2 text-white">Round</label>
               <select
-                className="w-full p-3 rounded-xl border border-gray-200"
+                className="w-full p-3 rounded-xl border border-gray-600 bg-gray-700 text-white focus:border-gray-500 focus:ring-2 focus:ring-gray-500"
                 value={round}
                 onChange={(e) => setRound(e.target.value)}
                 disabled={loading}
               >
                 {[...Array(maxRounds)].map((_, i) => (
-                  <option key={i + 1} value={i + 1}>
+                  <option key={i + 1} value={i + 1} className="bg-gray-700">
                     Round {i + 1}
                   </option>
                 ))}
@@ -202,13 +202,13 @@ const Fixtures = ({ gameSaveId }) => {
         </div>
 
         {loading ? (
-          <div className="text-center py-20">Loading fixtures...</div>
+          <div className="text-center py-20 text-white">Loading fixtures...</div>
         ) : fixtures.length === 0 ? (
-          <div className="text-center py-20 text-gray-500">
+          <div className="text-center py-20 text-gray-400">
             No fixtures found.
           </div>
         ) : (
-          <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+          <div className="bg-gray-800 rounded-2xl shadow-xl overflow-hidden border border-gray-700">
             {fixtures.map((match, index) => (
               <MatchRow key={match.id} match={match} index={index} />
             ))}

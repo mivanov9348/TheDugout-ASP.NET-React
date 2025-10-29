@@ -7,7 +7,6 @@ const Calendar = ({ gameSaveId }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [events, setEvents] = useState([]);
 
-  // 📅 Когато сезонът се зареди, обновяваме календара
   useEffect(() => {
     if (season?.currentDate) {
       const parts = season.currentDate.split("-");
@@ -16,7 +15,6 @@ const Calendar = ({ gameSaveId }) => {
     }
   }, [season]);
 
-  // 🧠 Зареждане на събитията от бекенда
   useEffect(() => {
     const fetchEvents = async () => {
       if (!gameSaveId) return;
@@ -35,11 +33,13 @@ const Calendar = ({ gameSaveId }) => {
     fetchEvents();
   }, [gameSaveId]);
 
-  if (loading) return <div className="text-center text-gray-500">Зареждане на сезон...</div>;
-  if (error) return <div className="text-center text-red-500">Грешка: {error}</div>;
-  if (!season) return <div className="text-center text-gray-500">Няма активен сезон.</div>;
+  if (loading)
+    return <div className="text-center text-gray-400">Зареждане на сезон...</div>;
+  if (error)
+    return <div className="text-center text-red-400">Грешка: {error}</div>;
+  if (!season)
+    return <div className="text-center text-gray-400">Няма активен сезон.</div>;
 
-  // 🧾 Календарна логика
   const daysInMonth = new Date(
     currentDate.getFullYear(),
     currentDate.getMonth() + 1,
@@ -53,67 +53,68 @@ const Calendar = ({ gameSaveId }) => {
   ).getDay();
 
   const offset = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1;
-
   const normalizedSeasonDate = season.currentDate?.split("T")[0];
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
+    <div className="min-h-screen w-full bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 text-gray-100 p-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6 text-gray-700">
+      <div className="flex items-center justify-between mb-8">
         <button
-          className="p-2 rounded-full hover:bg-gray-200"
+          className="p-2 rounded-full hover:bg-gray-700 text-gray-100 transition"
           onClick={() =>
             setCurrentDate(
               new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1)
             )
           }
         >
-          <ChevronLeft size={20} />
+          <ChevronLeft size={24} />
         </button>
-        <h2 className="text-2xl font-bold">
+
+        <h2 className="text-3xl font-bold tracking-wide text-sky-400">
           {currentDate.toLocaleString("default", { month: "long" })}{" "}
           {currentDate.getFullYear()}
         </h2>
+
         <button
-          className="p-2 rounded-full hover:bg-gray-200"
+          className="p-2 rounded-full hover:bg-gray-700 text-gray-100 transition"
           onClick={() =>
             setCurrentDate(
               new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1)
             )
           }
         >
-          <ChevronRight size={20} />
+          <ChevronRight size={24} />
         </button>
       </div>
 
       {/* Legend */}
-      <div className="flex gap-4 mb-4 text-sm flex-wrap text-gray-700">
-        <span className="flex items-center gap-1">
-          <span className="w-3 h-3 bg-yellow-500 inline-block rounded"></span> Transfer
+      <div className="flex flex-wrap gap-4 mb-6 text-sm">
+        <span className="flex items-center gap-1 text-gray-300">
+          <span className="w-3 h-3 bg-yellow-500 rounded"></span> Transfer
         </span>
-        <span className="flex items-center gap-1">
-          <span className="w-3 h-3 bg-blue-600 inline-block rounded"></span> League
+        <span className="flex items-center gap-1 text-gray-300">
+          <span className="w-3 h-3 bg-blue-600 rounded"></span> League
         </span>
-        <span className="flex items-center gap-1">
-          <span className="w-3 h-3 bg-purple-600 inline-block rounded"></span> Europe
+        <span className="flex items-center gap-1 text-gray-300">
+          <span className="w-3 h-3 bg-purple-600 rounded"></span> Europe
         </span>
-        <span className="flex items-center gap-1">
-          <span className="w-3 h-3 bg-green-600 inline-block rounded"></span> Cup
+        <span className="flex items-center gap-1 text-gray-300">
+          <span className="w-3 h-3 bg-green-600 rounded"></span> Cup
         </span>
-        <span className="flex items-center gap-1">
-          <span className="w-3 h-3 bg-gray-600 inline-block rounded"></span> Training
+        <span className="flex items-center gap-1 text-gray-300">
+          <span className="w-3 h-3 bg-gray-600 rounded"></span> Training
         </span>
       </div>
 
       {/* Days of week */}
-      <div className="grid grid-cols-7 gap-2 text-center font-medium text-gray-700 mb-2">
-        {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day, idx) => (
-          <div key={idx}>{day}</div>
+      <div className="grid grid-cols-7 gap-2 text-center font-semibold text-gray-300 mb-2">
+        {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => (
+          <div key={day}>{day}</div>
         ))}
       </div>
 
       {/* Calendar grid */}
-      <div className="grid grid-cols-7 gap-2">
+      <div className="grid grid-cols-7 gap-3 auto-rows-[160px]">
         {Array.from({ length: offset }).map((_, idx) => (
           <div key={`empty-${idx}`} />
         ))}
@@ -123,31 +124,25 @@ const Calendar = ({ gameSaveId }) => {
           const isoDay = `${currentDate.getFullYear()}-${String(
             currentDate.getMonth() + 1
           ).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-
           const dayEvents = events.filter((e) => e.date === isoDay);
           const isCurrentDay = normalizedSeasonDate === isoDay;
 
           return (
             <div
               key={idx}
-              className={`h-32 rounded-xl shadow-md flex flex-col items-start p-2 text-gray-200
-                ${dayEvents.length > 0 ? "bg-gray-800" : "bg-gray-700"}
-                ${isCurrentDay ? "border-4 border-red-500 shadow-[0_0_10px_rgba(239,68,68,0.8)]" : ""}
+              className={`rounded-xl shadow-md flex flex-col items-start p-2 transition-all duration-200
+                ${dayEvents.length > 0 ? "bg-gray-700 hover:bg-gray-600" : "bg-gray-800 hover:bg-gray-700"}
+                ${isCurrentDay ? "border-4 border-red-500 shadow-[0_0_12px_rgba(239,68,68,0.8)]" : ""}
               `}
             >
-              {/* Денят */}
               <div className="w-full flex justify-between items-center mb-1">
-                <span className="font-bold">{day}</span>
+                <span className="font-bold text-gray-100">{day}</span>
               </div>
 
-              {/* Събития */}
               <div className="flex-1 w-full overflow-y-auto space-y-1 text-xs">
                 {dayEvents.length > 0 ? (
                   dayEvents.map((ev, i) => {
-                    const parts = ev.description
-                      .split(",")
-                      .map((p) => p.trim());
-
+                    const parts = ev.description.split(",").map((p) => p.trim());
                     return (
                       <div key={i} className="space-y-0.5">
                         {parts.map((part, j) => (
@@ -155,16 +150,16 @@ const Calendar = ({ gameSaveId }) => {
                             key={j}
                             className={`px-1 py-0.5 rounded truncate ${
                               ev.type === "TransferWindow"
-                                ? "bg-yellow-500 text-black font-bold"
+                                ? "bg-yellow-500 text-gray-900 font-bold"
                                 : ev.type === "ChampionshipMatch"
-                                ? "bg-blue-600"
+                                ? "bg-blue-600 text-gray-100"
                                 : ev.type === "EuropeanMatch"
-                                ? "bg-purple-600"
+                                ? "bg-purple-600 text-gray-100"
                                 : ev.type === "CupMatch"
-                                ? "bg-green-600"
+                                ? "bg-green-600 text-gray-100"
                                 : ev.type === "TrainingDay"
-                                ? "bg-gray-600"
-                                : "bg-gray-700"
+                                ? "bg-gray-600 text-gray-100"
+                                : "bg-gray-700 text-gray-100"
                             }`}
                           >
                             {part}
@@ -174,14 +169,13 @@ const Calendar = ({ gameSaveId }) => {
                     );
                   })
                 ) : (
-                  <div className="text-gray-400 italic">Training</div>
+                  <div className="text-gray-500 italic">Training</div>
                 )}
               </div>
 
-              {/* Бутон за TransferWindow */}
               {dayEvents.some((ev) => ev.type === "TransferWindow") && (
                 <button
-                  className="mt-1 px-2 py-1 bg-yellow-500 text-black text-[10px] font-bold rounded hover:bg-yellow-400 transition w-full"
+                  className="mt-1 px-2 py-1 bg-yellow-500 text-gray-900 text-[10px] font-bold rounded hover:bg-yellow-400 transition w-full"
                   onClick={() =>
                     alert(`Assign Friendly for ${day}/${currentDate.getMonth() + 1}`)
                   }

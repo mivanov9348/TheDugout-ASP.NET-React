@@ -72,7 +72,7 @@ export default function Facilities({ gameSaveId, teamId, logoUrl }) {
           icon: "success",
           title: "Upgrade successful!",
           text: data.message || "Facility upgraded successfully.",
-          confirmButtonColor: "#2563eb",
+          confirmButtonColor: "#4b5563",
         });
 
         fetchFacilities();
@@ -100,39 +100,39 @@ export default function Facilities({ gameSaveId, teamId, logoUrl }) {
   const renderFacility = (key, facility) => (
     <div
       key={key}
-      className="bg-gradient-to-br from-white/90 to-blue-50/70 backdrop-blur-md rounded-2xl shadow-lg border border-blue-100 p-6 flex flex-col hover:shadow-2xl hover:scale-[1.02] transition-all duration-200"
+      className="bg-gradient-to-br from-gray-700 to-gray-600 backdrop-blur-md rounded-2xl shadow-lg border border-gray-500 p-6 flex flex-col hover:shadow-2xl hover:scale-[1.02] transition-all duration-200"
     >
-      <h3 className="text-xl font-semibold mb-3 flex items-center gap-2">
+      <h3 className="text-xl font-semibold mb-3 flex items-center gap-2 text-gray-100">
         {facility.name}
       </h3>
-      <div className="mb-4 text-sm text-gray-700 space-y-1">
-        <div>Level: <span className="font-bold">{facility.level}</span></div>
+      <div className="mb-4 text-sm text-gray-300 space-y-1">
+        <div>Level: <span className="font-bold text-gray-100">{facility.level}</span></div>
         {facility.capacity && (
-          <div>Capacity: <span className="font-bold">{facility.capacity.toLocaleString()}</span></div>
+          <div>Capacity: <span className="font-bold text-gray-100">{facility.capacity.toLocaleString()}</span></div>
         )}
         {facility.ticketPrice && (
-          <div>Ticket price: <span className="font-bold">${facility.ticketPrice}</span></div>
+          <div>Ticket price: <span className="font-bold text-gray-100">${facility.ticketPrice}</span></div>
         )}
         {facility.quality && (
-          <div>Training quality: <span className="font-bold">{facility.quality}</span></div>
+          <div>Training quality: <span className="font-bold text-gray-100">{facility.quality}</span></div>
         )}
         {facility.talentPoints && (
-          <div>Talent points/year: <span className="font-bold">{facility.talentPoints}</span></div>
+          <div>Talent points/year: <span className="font-bold text-gray-100">{facility.talentPoints}</span></div>
         )}
         {facility.upgradeCost ? (
           <div>
             Next upgrade cost:{" "}
-            <span className="font-bold text-green-700">
+            <span className="font-bold text-green-400">
               ${facility.upgradeCost.toLocaleString()}
             </span>
           </div>
         ) : (
-          <div className="text-red-600 font-bold">Max level reached</div>
+          <div className="text-red-400 font-bold">Max level reached</div>
         )}
 
-        <div className="w-full bg-gray-200 rounded-full h-3 mt-3">
+        <div className="w-full bg-gray-600 rounded-full h-3 mt-3">
           <div
-            className="bg-blue-500 h-3 rounded-full"
+            className="bg-gray-400 h-3 rounded-full"
             style={{ width: `${(facility.level / 10) * 100}%` }}
           ></div>
         </div>
@@ -141,13 +141,13 @@ export default function Facilities({ gameSaveId, teamId, logoUrl }) {
       {facility.upgradeCost ? (
         <button
           onClick={() => handleUpgrade(key)}
-          className="mt-auto flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-xl shadow transition-all"
+          className="mt-auto flex items-center justify-center gap-2 bg-gray-600 hover:bg-gray-500 text-gray-100 font-semibold py-2 px-4 rounded-xl shadow transition-all"
         >
           <ArrowUpCircle size={18} />
           Upgrade
         </button>
       ) : (
-        <div className="mt-auto text-center text-gray-500 font-semibold">
+        <div className="mt-auto text-center text-gray-400 font-semibold">
           ✅ Max level
         </div>
       )}
@@ -156,17 +156,17 @@ export default function Facilities({ gameSaveId, teamId, logoUrl }) {
 
   if (loading)
     return (
-      <div className="p-8 text-center text-gray-600 flex flex-col items-center justify-center gap-3">
+      <div className="p-8 text-center text-gray-400 flex flex-col items-center justify-center gap-3">
         <Loader2 className="animate-spin" size={32} />
         Loading facilities...
       </div>
     );
 
   if (!facilities)
-    return <div className="p-6 text-center text-red-500">No facilities found</div>;
+    return <div className="p-6 text-center text-red-400">No facilities found</div>;
 
   return (
-    <div className="relative p-8 min-h-screen bg-gradient-to-b from-slate-50 to-blue-100/30 rounded-3xl shadow-inner">
+    <div className="relative p-8 min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 shadow-inner">
       {/* HEADER */}
       <div className="flex flex-col items-center justify-center mb-8">
         {logoUrl && (
@@ -176,10 +176,10 @@ export default function Facilities({ gameSaveId, teamId, logoUrl }) {
             className="w-24 h-24 object-contain mb-3 drop-shadow-md transition-transform hover:scale-110"
           />
         )}
-        <h2 className="text-3xl font-extrabold text-blue-800 tracking-wide drop-shadow-sm">
+        <h2 className="text-3xl font-extrabold text-gray-100 tracking-wide drop-shadow-sm">
           Team Facilities
         </h2>
-        <p className="text-gray-500 text-sm">Manage and upgrade your club’s infrastructure</p>
+        <p className="text-gray-400 text-sm">Manage and upgrade your club's infrastructure</p>
       </div>
 
       {/* FACILITY GRID */}

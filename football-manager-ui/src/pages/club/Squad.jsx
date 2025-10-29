@@ -71,7 +71,7 @@ const Squad = ({ gameSaveId }) => {
 
   const getSortIndicator = (key) =>
     sortConfig.key === key ? (
-      <span className="ml-1 text-xs text-gray-500">
+      <span className="ml-1 text-xs text-gray-400">
         {sortConfig.direction === "asc" ? "▲" : "▼"}
       </span>
     ) : null;
@@ -89,15 +89,15 @@ const Squad = ({ gameSaveId }) => {
   };
 
   const getAttributeColor = (val) => {
-    if (val >= 80) return "text-emerald-600 font-semibold";
-    if (val >= 60) return "text-amber-600 font-medium";
-    return "text-rose-600";
+    if (val >= 80) return "text-emerald-400 font-semibold";
+    if (val >= 60) return "text-amber-400 font-medium";
+    return "text-rose-400";
   };
 
   return (
     <div className="relative min-h-screen overflow-hidden">
       {/* Animated background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-900 via-slate-800 to-slate-900 animate-gradient-x"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-gray-100"></div>
       <div className="absolute inset-0 bg-[url('/stadium-lights.png')] bg-cover bg-center opacity-10"></div>
       <div className="absolute inset-0 bg-black/30 backdrop-blur-sm"></div>
 
@@ -107,26 +107,26 @@ const Squad = ({ gameSaveId }) => {
           {/* Header */}
           <div className="text-center mb-10">
             <div className="flex justify-center items-center gap-3 mb-4">
-              <Users className="w-10 h-10 text-blue-400" />
-              <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight bg-gradient-to-r from-sky-300 via-blue-400 to-indigo-500 bg-clip-text text-transparent drop-shadow-lg">
+              <Users className="w-10 h-10 text-gray-300" />
+              <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight bg-gradient-to-r from-gray-300 via-gray-400 to-gray-500 bg-clip-text text-transparent drop-shadow-lg">
                 {teamName || "Loading Squad..."}
               </h1>
-            </div>      
+            </div>
           </div>
 
           {/* Filters */}
-          <div className="bg-white/10 backdrop-blur-md border border-white/10 shadow-2xl rounded-2xl p-5 mb-8">
+          <div className="bg-gray-700 backdrop-blur-md border border-gray-600 shadow-2xl rounded-2xl p-5 mb-8">
             <div className="flex flex-wrap gap-4 items-center">
               <div className="relative flex-1 min-w-[280px]">
                 <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                  <Search className="w-5 h-5 text-gray-300" />
+                  <Search className="w-5 h-5 text-gray-400" />
                 </div>
                 <input
                   type="text"
                   placeholder="Search by name..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-white/20 rounded-xl bg-white/10 text-gray-100 placeholder-gray-400 focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none transition-all"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-600 rounded-xl bg-gray-800 text-gray-100 placeholder-gray-400 focus:ring-2 focus:ring-gray-400 focus:border-transparent outline-none transition-all"
                 />
               </div>
 
@@ -134,7 +134,7 @@ const Squad = ({ gameSaveId }) => {
                 <select
                   value={positionFilter}
                   onChange={(e) => setPositionFilter(e.target.value)}
-                  className="bg-white/10 text-gray-100 border border-white/20 rounded-xl px-4 py-3 pr-8 focus:ring-2 focus:ring-blue-400 cursor-pointer"
+                  className="bg-gray-800 text-gray-100 border border-gray-600 rounded-xl px-4 py-3 pr-8 focus:ring-2 focus:ring-gray-400 cursor-pointer"
                 >
                   <option value="">All Positions</option>
                   {uniquePositions.map((pos) => (
@@ -147,7 +147,7 @@ const Squad = ({ gameSaveId }) => {
                 <select
                   value={countryFilter}
                   onChange={(e) => setCountryFilter(e.target.value)}
-                  className="bg-white/10 text-gray-100 border border-white/20 rounded-xl px-4 py-3 pr-8 focus:ring-2 focus:ring-blue-400 cursor-pointer"
+                  className="bg-gray-800 text-gray-100 border border-gray-600 rounded-xl px-4 py-3 pr-8 focus:ring-2 focus:ring-gray-400 cursor-pointer"
                 >
                   <option value="">All Countries</option>
                   {uniqueCountries.map((c) => (
@@ -169,11 +169,10 @@ const Squad = ({ gameSaveId }) => {
             ].map((toggle, idx) => (
               <label
                 key={idx}
-                className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium cursor-pointer transition-all duration-200 border-2 shadow-sm ${
-                  toggle.checked
-                    ? "bg-blue-500 text-white border-blue-400 shadow-blue-500/50"
-                    : "bg-white/10 text-gray-300 border-white/20 hover:border-blue-400"
-                }`}
+                className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium cursor-pointer transition-all duration-200 border-2 shadow-sm ${toggle.checked
+                    ? "bg-gray-600 text-gray-100 border-gray-500 shadow-gray-500/50"
+                    : "bg-gray-700 text-gray-300 border-gray-600 hover:border-gray-400"
+                  }`}
               >
                 <input
                   type="checkbox"
@@ -187,19 +186,19 @@ const Squad = ({ gameSaveId }) => {
           </div>
 
           {/* Table */}
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl overflow-hidden border border-white/10">
+          <div className="bg-gray-700 backdrop-blur-md rounded-2xl shadow-2xl overflow-hidden border border-gray-600">
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-white/10 text-sm text-gray-100">
-                <thead className="bg-gradient-to-r from-blue-900/60 to-sky-800/60">
+              <table className="min-w-full divide-y divide-gray-600 text-sm text-gray-100">
+                <thead className="bg-gradient-to-r from-gray-800 to-gray-700">
                   <tr>
                     <th
-                      className="px-6 py-4 text-left text-xs font-bold uppercase cursor-pointer hover:text-sky-300"
+                      className="px-6 py-4 text-left text-xs font-bold uppercase cursor-pointer hover:text-gray-300"
                       onClick={() => sortPlayers("fullName")}
                     >
                       Player {getSortIndicator("fullName")}
                     </th>
                     <th
-                      className="px-6 py-4 text-left text-xs font-bold uppercase cursor-pointer hover:text-sky-300"
+                      className="px-6 py-4 text-left text-xs font-bold uppercase cursor-pointer hover:text-gray-300"
                       onClick={() => sortPlayers("position")}
                     >
                       Position {getSortIndicator("position")}
@@ -210,16 +209,16 @@ const Squad = ({ gameSaveId }) => {
                         {["age", "country", "heightCm", "weightKg", "price"].map((key, i) => (
                           <th
                             key={i}
-                            className="px-6 py-4 text-center text-xs font-bold uppercase cursor-pointer hover:text-sky-300"
+                            className="px-6 py-4 text-center text-xs font-bold uppercase cursor-pointer hover:text-gray-300"
                             onClick={() => sortPlayers(key)}
                           >
                             {key === "heightCm"
                               ? "Height"
                               : key === "weightKg"
-                              ? "Weight"
-                              : key === "price"
-                              ? "Value"
-                              : key.charAt(0).toUpperCase() + key.slice(1)}
+                                ? "Weight"
+                                : key === "price"
+                                  ? "Value"
+                                  : key.charAt(0).toUpperCase() + key.slice(1)}
                             {getSortIndicator(key)}
                           </th>
                         ))}
@@ -231,7 +230,7 @@ const Squad = ({ gameSaveId }) => {
                         <th
                           key={attr}
                           onClick={() => sortPlayers(attr)}
-                          className="px-3 py-4 text-center text-xs font-bold uppercase cursor-pointer hover:text-sky-300"
+                          className="px-3 py-4 text-center text-xs font-bold uppercase cursor-pointer hover:text-gray-300"
                         >
                           {attr}
                           {getSortIndicator(attr)}
@@ -250,14 +249,14 @@ const Squad = ({ gameSaveId }) => {
                   </tr>
                 </thead>
 
-                <tbody className="divide-y divide-white/10">
+                <tbody className="divide-y divide-gray-600">
                   {filteredPlayers.map((p) => (
                     <tr
                       key={p.id}
-                      className="hover:bg-blue-800/30 transition-colors duration-150 cursor-pointer"
+                      className="hover:bg-gray-600 transition-colors duration-150 cursor-pointer"
                       onClick={() => navigate(`/player/${p.id}`)}
                     >
-                      <td className="px-6 py-4 whitespace-nowrap text-sky-300 font-semibold">
+                      <td className="px-6 py-4 whitespace-nowrap text-gray-200 font-semibold">
                         {p.fullName}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">{p.position}</td>
@@ -278,9 +277,8 @@ const Squad = ({ gameSaveId }) => {
                           return (
                             <td
                               key={attr}
-                              className={`px-3 py-4 text-center ${
-                                a ? getAttributeColor(a.value) : "text-gray-400"
-                              }`}
+                              className={`px-3 py-4 text-center ${a ? getAttributeColor(a.value) : "text-gray-400"
+                                }`}
                             >
                               {a ? a.value : "-"}
                             </td>
@@ -294,7 +292,7 @@ const Squad = ({ gameSaveId }) => {
                               {p.seasonStats.map((s, i) => (
                                 <span
                                   key={i}
-                                  className="bg-white/10 border border-white/20 text-gray-100 px-2 py-1 rounded-md text-xs"
+                                  className="bg-gray-600 border border-gray-500 text-gray-100 px-2 py-1 rounded-md text-xs"
                                 >
                                   S{s.seasonId}: {s.goals}G {s.assists}A
                                 </span>
@@ -308,7 +306,7 @@ const Squad = ({ gameSaveId }) => {
 
                       <td className="px-6 py-4 text-center">
                         <button
-                          className="bg-red-600/90 hover:bg-red-500 text-white text-xs font-semibold px-4 py-2 rounded-full shadow-lg transition"
+                          className="bg-red-700 hover:bg-red-600 text-white text-xs font-semibold px-4 py-2 rounded-full shadow-lg transition"
                           onClick={async (e) => {
                             e.stopPropagation();
                             const result = await Swal.fire({
@@ -317,7 +315,7 @@ const Squad = ({ gameSaveId }) => {
                               icon: "warning",
                               showCancelButton: true,
                               confirmButtonColor: "#d33",
-                              cancelButtonColor: "#3085d6",
+                              cancelButtonColor: "#6b7280",
                               confirmButtonText: "Yes, release",
                               cancelButtonText: "Cancel",
                             });
@@ -363,7 +361,7 @@ const Squad = ({ gameSaveId }) => {
                     <tr>
                       <td
                         colSpan={100}
-                        className="px-6 py-12 text-center text-gray-300 text-lg font-medium"
+                        className="px-6 py-12 text-center text-gray-400 text-lg font-medium"
                       >
                         🔍 No players match your filters.
                       </td>

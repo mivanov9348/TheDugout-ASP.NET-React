@@ -10,17 +10,15 @@ const Training = ({ gameSaveId }) => {
   const [loadingAuto, setLoadingAuto] = useState(false);
   const [autoProposals, setAutoProposals] = useState({});
 
-  // helper за грешки
   const showError = (message) => {
     Swal.fire({
       icon: "error",
       title: "Грешка",
       text: message || "Възникна проблем",
-      confirmButtonColor: "#d33",
+      confirmButtonColor: "#ef4444",
     });
   };
 
-  // Зареждане на отбора + играчи
   useEffect(() => {
     if (!gameSaveId) return;
     const loadTeam = async () => {
@@ -47,7 +45,6 @@ const Training = ({ gameSaveId }) => {
     setSelectedSkills((prev) => ({ ...prev, [playerId]: Number(attrId) }));
   };
 
-  // Auto Assign Attributes
   const handleAutoComplete = async () => {
     if (!team || !players.length) {
       showError("Играчите или отборът не са заредени още.");
@@ -84,7 +81,6 @@ const Training = ({ gameSaveId }) => {
     }
   };
 
-  // Стартиране на тренировката
   const handleStartTraining = async () => {
     if (!team || !players.length) {
       showError("Играчите или отборът не са заредени още.");
@@ -154,24 +150,20 @@ const Training = ({ gameSaveId }) => {
   };
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-green-900 via-emerald-800 to-teal-700 text-gray-100 p-8 overflow-hidden">
-      {/* subtle football texture */}
+    <div className="relative min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-gray-100 p-8 overflow-hidden">
+      {/* Текстура за фон */}
       <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/football-no-lines.png')] opacity-10 pointer-events-none"></div>
 
       <div className="relative z-10 max-w-7xl mx-auto">
-        <h1 className="text-5xl font-extrabold text-center mb-10 text-white drop-shadow-lg flex justify-center items-center gap-3">
-          <Dumbbell className="text-yellow-400 w-10 h-10" /> Training Management
-        </h1>
-
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-          {/* Лява част - Assign Training */}
-          <div className="bg-white/15 backdrop-blur-md rounded-2xl border border-white/10 shadow-lg p-6">
+          {/* Лява част */}
+          <div className="bg-white/10 hover:bg-white/15 backdrop-blur-md rounded-2xl border border-white/10 shadow-xl p-6 transition-all duration-300">
             <h2 className="text-2xl font-semibold mb-6 text-white flex items-center gap-2">
-              <Sparkles className="text-green-300" /> Assign Training
+              <Sparkles className="text-green-400" /> Assign Training
             </h2>
             <div className="overflow-hidden rounded-xl border border-white/10">
-              <table className="min-w-full text-sm text-gray-800 bg-white/80">
-                <thead className="bg-emerald-100">
+              <table className="min-w-full text-sm text-gray-200">
+                <thead className="bg-gray-800/60 text-gray-100">
                   <tr>
                     <th className="px-4 py-2 text-left font-semibold">Name</th>
                     <th className="px-4 py-2 text-left font-semibold">Position</th>
@@ -180,12 +172,15 @@ const Training = ({ gameSaveId }) => {
                 </thead>
                 <tbody>
                   {players.map((player) => (
-                    <tr key={player.id} className="hover:bg-emerald-50 transition">
+                    <tr
+                      key={player.id}
+                      className="hover:bg-gray-800/40 transition"
+                    >
                       <td className="px-4 py-3">{player.fullName}</td>
                       <td className="px-4 py-3">{player.position}</td>
                       <td className="px-4 py-3">
                         <select
-                          className="block w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-green-400"
+                          className="block w-full bg-gray-900/70 border border-gray-600 rounded-md p-2 text-gray-200 focus:ring-2 focus:ring-green-400"
                           value={selectedSkills[player.id] || ""}
                           onChange={(e) =>
                             handleSkillChange(player.id, e.target.value)
@@ -202,9 +197,9 @@ const Training = ({ gameSaveId }) => {
                           ))}
                         </select>
                         {autoProposals[player.id] && (
-                          <p className="text-xs text-gray-600 mt-1 italic">
+                          <p className="text-xs text-gray-400 mt-1 italic">
                             Suggested:{" "}
-                            <span className="text-green-600 font-semibold">
+                            <span className="text-green-400 font-semibold">
                               {autoProposals[player.id].name}
                             </span>{" "}
                             ({autoProposals[player.id].value})
@@ -221,9 +216,9 @@ const Training = ({ gameSaveId }) => {
               <button
                 onClick={handleAutoComplete}
                 disabled={!players.length || loadingAuto}
-                className={`flex-1 px-4 py-3 rounded-lg font-semibold flex items-center justify-center gap-2 transition ${
+                className={`flex-1 px-4 py-3 rounded-lg font-semibold flex items-center justify-center gap-2 transition-all duration-300 ${
                   !players.length || loadingAuto
-                    ? "bg-gray-400 text-gray-100"
+                    ? "bg-gray-600 text-gray-300 cursor-not-allowed"
                     : "bg-green-600 hover:bg-green-700 text-white shadow-md"
                 }`}
               >
@@ -233,21 +228,21 @@ const Training = ({ gameSaveId }) => {
 
               <button
                 onClick={handleStartTraining}
-                className="flex-1 px-4 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold flex items-center justify-center gap-2 shadow-md transition"
+                className="flex-1 px-4 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold flex items-center justify-center gap-2 shadow-md transition-all duration-300"
               >
                 <PlayCircle className="w-5 h-5" /> Start Training
               </button>
             </div>
           </div>
 
-          {/* Дясна част - Training Progress */}
-          <div className="bg-white/15 backdrop-blur-md rounded-2xl border border-white/10 shadow-lg p-6">
+          {/* Дясна част */}
+          <div className="bg-white/10 hover:bg-white/15 backdrop-blur-md rounded-2xl border border-white/10 shadow-xl p-6 transition-all duration-300">
             <h2 className="text-2xl font-semibold mb-6 text-white flex items-center gap-2">
-              <Dumbbell className="text-blue-300" /> Training Progress
+              <Dumbbell className="text-blue-400" /> Training Progress
             </h2>
             <div className="overflow-hidden rounded-xl border border-white/10">
-              <table className="min-w-full text-sm text-gray-800 bg-white/80">
-                <thead className="bg-indigo-100">
+              <table className="min-w-full text-sm text-gray-200">
+                <thead className="bg-gray-800/60 text-gray-100">
                   <tr>
                     <th className="px-4 py-2 text-left font-semibold">Name</th>
                     <th className="px-4 py-2 text-left font-semibold">Skill</th>
@@ -257,24 +252,31 @@ const Training = ({ gameSaveId }) => {
                 </thead>
                 <tbody>
                   {trainingProgress.map((progress) => (
-                    <tr key={progress.playerId} className="hover:bg-indigo-50 transition">
+                    <tr
+                      key={progress.playerId}
+                      className="hover:bg-gray-800/40 transition"
+                    >
                       <td className="px-4 py-3 font-medium">{progress.name}</td>
                       <td className="px-4 py-3">
-                        {progress.skill} ({progress.currentValue})
+                        {progress.skill}{" "}
+                        <span className="text-gray-400">
+                          ({progress.currentValue})
+                        </span>
                       </td>
-                      <td className="px-4 py-3 text-green-600 font-semibold">
+                      <td className="px-4 py-3 text-green-400 font-semibold">
                         +{progress.efficiency}
                         {progress.progressGain > 0 && (
-                          <span className="text-sm text-gray-500">
-                            {" "}({progress.progressGain.toFixed(3)})
+                          <span className="text-sm text-gray-400">
+                            {" "}
+                            ({progress.progressGain.toFixed(3)})
                           </span>
                         )}
-                        <div className="text-xs text-blue-600">
+                        <div className="text-xs text-blue-400">
                           Total: {progress.totalProgress.toFixed(3)}
                         </div>
-                        <div className="w-full bg-gray-200 rounded h-2 mt-1">
+                        <div className="w-full bg-gray-700 rounded h-2 mt-1">
                           <div
-                            className="bg-blue-500 h-2 rounded transition-all"
+                            className="bg-blue-500 h-2 rounded transition-all duration-300"
                             style={{
                               width: `${Math.min(
                                 (progress.totalProgress % 1) * 100,
