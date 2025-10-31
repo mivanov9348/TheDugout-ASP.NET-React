@@ -52,5 +52,11 @@
     "Value": "1000000",
     "Category": "Finance",
     "Description": "Initial budget for the player (agency)."
+  },
+  {
+    "Key": "TransferDays",
+    "Value": "3",
+    "Category": "Transfers",
+    "Description": "Transfer Days"
   }
 ]

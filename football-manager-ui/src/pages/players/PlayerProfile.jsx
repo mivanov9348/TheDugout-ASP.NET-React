@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Flag, Activity, TrendingUp, Star } from "lucide-react";
+import PlayerAvatar from "../../components/PlayerAvatar";
 
 const categoryLabels = {
   1: "⚡ Physical",
@@ -78,16 +79,12 @@ const PlayerProfile = () => {
           {/* Player Info */}
           <div className="flex flex-col items-center lg:items-start flex-1">
             <div className="relative group">
-              <img
-                src={
-                  imgError
-                    ? "https://via.placeholder.com/150"
-                    : `https://localhost:7117/Avatars/${player.avatarUrl}`
-                }
-                alt={`${player.fullName} avatar`}
-                onError={() => setImgError(true)}
-                className="w-44 h-44 rounded-full object-cover border-4 border-blue-400 shadow-[0_0_25px_rgba(59,130,246,0.8)] group-hover:scale-105 transition-transform duration-500"
+              <PlayerAvatar
+                playerName={player.fullName}
+                imageFileName={player.avatarFileName}
+                className="w-44 h-44 border-4 border-blue-400 shadow-[0_0_25px_rgba(59,130,246,0.8)] group-hover:scale-105 transition-transform duration-500"
               />
+
               <div className="absolute -bottom-2 -right-2 bg-blue-600 text-white text-xs px-3 py-1 rounded-md shadow-lg font-semibold">
                 {player.position}
               </div>

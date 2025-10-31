@@ -9,8 +9,8 @@ export default function Knockouts({ cup }) {
     );
 
   return (
-    <div className="p-6 bg-gradient-to-b from-gray-900 to-gray-950 rounded-2xl shadow-2xl border border-gray-800 max-w-5xl mx-auto">
-      
+    <div className="p-6 bg-gradient-to-b from-gray-900 to-gray-950 rounded-2xl shadow-2xl border border-gray-800  mx-auto">
+
 
       {cup.knockoutFixtures.map((round, i) => (
         <div
@@ -43,25 +43,23 @@ export default function Knockouts({ cup }) {
                   {m.homeTeamGoals != null && m.awayTeamGoals != null ? (
                     <>
                       <span
-                        className={`${
-                          m.homeTeamGoals > m.awayTeamGoals
+                        className={`${m.homeTeamGoals > m.awayTeamGoals
                             ? "text-green-400"
                             : m.homeTeamGoals < m.awayTeamGoals
-                            ? "text-red-400"
-                            : "text-yellow-400"
-                        }`}
+                              ? "text-red-400"
+                              : "text-yellow-400"
+                          }`}
                       >
                         {m.homeTeamGoals}
                       </span>{" "}
                       :{" "}
                       <span
-                        className={`${
-                          m.awayTeamGoals > m.homeTeamGoals
+                        className={`${m.awayTeamGoals > m.homeTeamGoals
                             ? "text-green-400"
                             : m.awayTeamGoals < m.homeTeamGoals
-                            ? "text-red-400"
-                            : "text-yellow-400"
-                        }`}
+                              ? "text-red-400"
+                              : "text-yellow-400"
+                          }`}
                       >
                         {m.awayTeamGoals}
                       </span>

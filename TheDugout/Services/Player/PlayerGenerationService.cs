@@ -144,7 +144,7 @@
 
             foreach (var agency in agencies)
             {
-                var freeAgents = new List<Models.Players.Player>();
+                var freeAgents = new List<Player>();
 
                 while (true)
                 {

@@ -51,6 +51,29 @@ function Header({ username }) {
     }
   };
 
+  const getEventDisplay = (type) => {
+  switch (type) {
+    case "StartSeason":
+      return { label: "Season Kickoff", icon: "🚀" };
+    case "ChampionshipMatch":
+      return { label: "League Match Day", icon: "🏆" };
+    case "CupMatch":
+      return { label: "Cup Match Day", icon: "🥇" };
+    case "EuropeanMatch":
+      return { label: "European Night", icon: "🌍" };
+    case "FriendlyMatch":
+      return { label: "Friendly Match", icon: "🤝" };
+    case "TransferWindow":
+      return { label: "Transfer Window", icon: "💰" };
+    case "TrainingDay":
+      return { label: "Training Day", icon: "💪" };
+    case "EndOfSeason":
+      return { label: "End of Season", icon: "🎉" };
+    default:
+      return { label: "Regular Day", icon: "📅" };
+  }
+};
+
 
   // 🕒 Бутон "Next Day"
   const handleNextDay = async () => {
@@ -282,6 +305,12 @@ const handleEndSeason = async () => {
             className={`w-5 h-5 ${isRefreshing ? "animate-spin text-sky-300" : ""}`}
           />
         </button>
+{season?.currentEventType && (
+  <div className="flex items-center gap-2 text-sm text-sky-300 font-semibold">
+    <span>{getEventDisplay(season.currentEventType).icon}</span>
+    <span>{getEventDisplay(season.currentEventType).label}</span>
+  </div>
+)}
 
         <span>{season ? formatDate(season.currentDate) : ""}</span>
         <span className="font-semibold">{username}</span>

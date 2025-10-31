@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TheDugout.Data;
 
@@ -11,9 +12,11 @@ using TheDugout.Data;
 namespace TheDugout.Migrations
 {
     [DbContext(typeof(DugoutDbContext))]
-    partial class DugoutDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251030062007_addseasontoplayertraining")]
+    partial class addseasontoplayertraining
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -2000,33 +2003,6 @@ namespace TheDugout.Migrations
                     b.ToTable("PositionWeights", (string)null);
                 });
 
-            modelBuilder.Entity("TheDugout.Models.Players.YouthPlayer", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<bool>("IsPromoted")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("PlayerId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("YouthAcademyId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PlayerId")
-                        .IsUnique();
-
-                    b.HasIndex("YouthAcademyId");
-
-                    b.ToTable("YouthPlayer");
-                });
-
             modelBuilder.Entity("TheDugout.Models.Seasons.Season", b =>
                 {
                     b.Property<int>("Id")
@@ -3578,25 +3554,6 @@ namespace TheDugout.Migrations
                     b.Navigation("Position");
                 });
 
-            modelBuilder.Entity("TheDugout.Models.Players.YouthPlayer", b =>
-                {
-                    b.HasOne("TheDugout.Models.Players.Player", "Player")
-                        .WithOne("YouthProfile")
-                        .HasForeignKey("TheDugout.Models.Players.YouthPlayer", "PlayerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("TheDugout.Models.Facilities.YouthAcademy", "YouthAcademy")
-                        .WithMany("YouthPlayers")
-                        .HasForeignKey("YouthAcademyId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Player");
-
-                    b.Navigation("YouthAcademy");
-                });
-
             modelBuilder.Entity("TheDugout.Models.Seasons.Season", b =>
                 {
                     b.HasOne("TheDugout.Models.Game.GameSave", "GameSave")
@@ -3955,11 +3912,6 @@ namespace TheDugout.Migrations
                     b.Navigation("Fixtures");
                 });
 
-            modelBuilder.Entity("TheDugout.Models.Facilities.YouthAcademy", b =>
-                {
-                    b.Navigation("YouthPlayers");
-                });
-
             modelBuilder.Entity("TheDugout.Models.Finance.Bank", b =>
                 {
                     b.Navigation("Transactions");
@@ -4121,8 +4073,6 @@ namespace TheDugout.Migrations
                     b.Navigation("SeasonStats");
 
                     b.Navigation("TransferOffers");
-
-                    b.Navigation("YouthProfile");
                 });
 
             modelBuilder.Entity("TheDugout.Models.Players.Position", b =>

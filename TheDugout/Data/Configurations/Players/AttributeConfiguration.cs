@@ -1,8 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-
-namespace TheDugout.Data.Configurations
+﻿namespace TheDugout.Data.Configurations
 {
+    using Microsoft.EntityFrameworkCore;
+    using Microsoft.EntityFrameworkCore.Metadata.Builders;
     public class AttributeConfiguration : IEntityTypeConfiguration<Models.Players.AttributeDefinition>
     {
         public void Configure(EntityTypeBuilder<Models.Players.AttributeDefinition> builder)

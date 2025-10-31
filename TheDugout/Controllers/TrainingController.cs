@@ -1,10 +1,11 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using TheDugout.Services.Training;
-
-namespace TheDugout.Controllers
+﻿namespace TheDugout.Controllers
 {
+    using Microsoft.AspNetCore.Authorization;
+    using Microsoft.AspNetCore.Mvc;
+    using Microsoft.EntityFrameworkCore;
+    using TheDugout.Services.Training;
+    using TheDugout.Services.Training.Interfaces;
+
     [ApiController]
     [Route("api/[controller]")]
     [Authorize]
@@ -58,8 +59,6 @@ namespace TheDugout.Controllers
                 var results = await _trainingService.RunTrainingSessionAsync(
                     request.GameSaveId,
                     request.TeamId ?? -1,
-                    request.SeasonId,
-                    request.Date,
                     request.Assignments
                 );
 

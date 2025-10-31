@@ -176,10 +176,7 @@ export default function Facilities({ gameSaveId, teamId, logoUrl }) {
             className="w-24 h-24 object-contain mb-3 drop-shadow-md transition-transform hover:scale-110"
           />
         )}
-        <h2 className="text-3xl font-extrabold text-gray-100 tracking-wide drop-shadow-sm">
-          Team Facilities
-        </h2>
-        <p className="text-gray-400 text-sm">Manage and upgrade your club's infrastructure</p>
+        
       </div>
 
       {/* FACILITY GRID */}

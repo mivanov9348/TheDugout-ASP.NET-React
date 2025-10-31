@@ -1,6 +1,5 @@
 ﻿namespace TheDugout.Services.Season
 {
-    using Bogus;
     using Microsoft.EntityFrameworkCore;
     using TheDugout.Data;
     using TheDugout.Models.Competitions;
@@ -9,6 +8,7 @@
     using TheDugout.Models.Seasons;
     using TheDugout.Services.Cup.Interfaces;
     using TheDugout.Services.EuropeanCup.Interfaces;
+    using TheDugout.Services.GameSettings.Interfaces;
     using TheDugout.Services.League.Interfaces;
     using TheDugout.Services.Player.Interfaces;
     using TheDugout.Services.Season.Interfaces;
@@ -29,8 +29,9 @@
         private readonly IPlayerInfoService _playerInfoService;
         private readonly IAgencyService _agencyService;
         private readonly ITeamGenerationService _teamGenerationService;
+        private readonly IGameSettingsService _gameSettingsService;
 
-        public NewSeasonService(DugoutDbContext context, ILogger<NewSeasonService> logger, ICupService cupService, ISeasonCleanupService seasonCleanupService, ILeagueService leagueService, IEuropeanCupService europeanCupService, ILeagueFixturesService leagueFixturesService, IPlayerGenerationService playerGenerationService,IAgencyService agencyService, IPlayerInfoService playerInfoService,   ITeamGenerationService teamGenerationService)
+        public NewSeasonService(DugoutDbContext context, ILogger<NewSeasonService> logger, ICupService cupService, ISeasonCleanupService seasonCleanupService, ILeagueService leagueService, IEuropeanCupService europeanCupService, ILeagueFixturesService leagueFixturesService, IPlayerGenerationService playerGenerationService, IAgencyService agencyService, IPlayerInfoService playerInfoService, ITeamGenerationService teamGenerationService, IGameSettingsService gameSettigsService)
         {
             _context = context;
             _logger = logger;
@@ -43,6 +44,7 @@
             _agencyService = agencyService;
             _playerInfoService = playerInfoService;
             _teamGenerationService = teamGenerationService;
+            _gameSettingsService = gameSettigsService;
         }
         public async Task<Season> GenerateSeason(GameSave gameSave, DateTime startDate)
         {
@@ -73,8 +75,8 @@
                 {
                     SeasonId = season.Id,
                     Date = currentDate,
-                    Type = GetEventType(currentDate, season.StartDate, season.EndDate),
-                    Description = GetDescription(currentDate, season.StartDate, season.EndDate),
+                    Type = await GetEventTypeAsync(currentDate, season.StartDate, season.EndDate),
+                    Description = await GetDescriptionAsync(currentDate, season.StartDate, season.EndDate),
                     GameSaveId = gameSave.Id,
                     IsOccupied = false
                 });
@@ -120,14 +122,14 @@
                 _logger.LogInformation("Copied all teams from previous season to new season leagues");
 
                 await _leagueService.ProcessPromotionsAndRelegationsAsync(previousSeason.GameSave, previousSeason, newLeagues);
-                    _logger.LogInformation("Processed promotions and relegations");
+                _logger.LogInformation("Processed promotions and relegations");
 
                 await _context.SaveChangesAsync(); // за всеки случай
                 await _context.Entry(gameSave).ReloadAsync(); // освежи game save
 
                 // 5️⃣ Създай standings за всички лиги
                 await _leagueService.InitializeStandingsAsync(previousSeason.GameSave, newSeason);
-                    _logger.LogInformation("Initialized new standings");
+                _logger.LogInformation("Initialized new standings");
 
                 // new eurocup for season with qualified from previous season + random other teams
                 var euroTemplates = await _context.Set<EuropeanCupTemplate>()
@@ -203,11 +205,11 @@
 
             return await _context.Seasons
                 .Where(x => x.GameSaveId == gameSaveId)
-                .OrderByDescending(x=>x.Id)
+                .OrderByDescending(x => x.Id)
                 .FirstOrDefaultAsync();
         }
 
-        private SeasonEventType GetEventType(DateTime date, DateTime seasonStart, DateTime seasonEnd)
+        private async Task<SeasonEventType> GetEventTypeAsync(DateTime date, DateTime seasonStart, DateTime seasonEnd)
         {
             if (date.Date == seasonStart.Date)
                 return SeasonEventType.StartSeason;
@@ -215,13 +217,15 @@
             if (date.Date == seasonEnd.Date)
                 return SeasonEventType.EndOfSeason;
 
+            var transferDays = await _gameSettingsService.GetIntAsync("TransferDays");
+
             // First 7 days of the season = transfer window
-            if (date >= seasonStart && date < seasonStart.AddDays(7))
+            if (date >= seasonStart && date < seasonStart.AddDays(transferDays ?? 3))
                 return SeasonEventType.TransferWindow;
 
             // Middle 7 days of the season = transfer window
             var midSeason = seasonStart.AddDays((seasonEnd - seasonStart).Days / 2);
-            if (date >= midSeason && date < midSeason.AddDays(7))
+            if (date >= midSeason && date < midSeason.AddDays(transferDays ?? 3))
                 return SeasonEventType.TransferWindow;
 
             // Weekly events
@@ -234,8 +238,12 @@
                 _ => SeasonEventType.TrainingDay
             };
         }
-        private string GetDescription(DateTime date, DateTime seasonStart, DateTime seasonEnd) =>
-            GetEventType(date, seasonStart, seasonEnd) switch
+
+        private async Task<string> GetDescriptionAsync(DateTime date, DateTime seasonStart, DateTime seasonEnd)
+        {
+            var eventType = await GetEventTypeAsync(date, seasonStart, seasonEnd);
+
+            return eventType switch
             {
                 SeasonEventType.StartSeason => "Start of New Season",
                 SeasonEventType.EndOfSeason => "End of the Season",
@@ -246,5 +254,7 @@
                 SeasonEventType.TrainingDay => "Training Day",
                 _ => "Other"
             };
+        }
+
     }
 }

@@ -5,6 +5,7 @@ import { Trophy, Play } from "lucide-react";
 import TeamLogo from "../../components/TeamLogo";
 import { useProcessing } from "../../context/ProcessingContext";
 import { useGame } from "../../context/GameContext";
+import { Link } from "react-router-dom";
 
 export default function TodayMatches() {
   const { gameSaveId } = useParams();
@@ -15,6 +16,7 @@ export default function TodayMatches() {
     setHasUnplayedMatchesToday,
     setActiveMatch,
     refreshGameStatus,
+    currentGameSave
   } = useGame();
 
   const { isProcessing, stopProcessing, runSimulateMatches } = useProcessing();
@@ -55,8 +57,14 @@ export default function TodayMatches() {
   };
 
   useEffect(() => {
+    if (!gameSaveId) return;
     loadMatches();
   }, [gameSaveId]);
+
+  useEffect(() => {
+    if (!gameSaveId) return;
+    loadMatches();
+  }, [gameSaveId, currentGameSave?.activeSeason?.currentDate]);
 
   const handleSimulate = async () => {
     try {
@@ -160,68 +168,69 @@ export default function TodayMatches() {
                 m.winner && m.winner.toLowerCase() === team.toLowerCase();
 
               return (
-                <div
-                  key={idx}
-                  className={`flex items-center justify-between px-6 py-4 rounded-2xl border shadow-md transition-transform hover:-translate-y-1 hover:shadow-lg
-                    ${m.isUserTeamMatch
-                      ? "bg-sky-900/40 border-sky-700 ring-1 ring-sky-700"
-                      : "bg-gray-900/40 border-gray-700"
-                    }`}
-                >
-                  {/* HOME */}
-                  <div className="flex-1 flex items-center justify-end gap-2">
-                    <span
-                      className={`font-semibold text-right text-lg ${isWinner(m.home)
-                        ? "text-amber-400 drop-shadow-sm"
-                        : "text-gray-200"
-                        }`}
-                    >
-                      {m.home}
-                    </span>
-                    <TeamLogo
-                      teamName={m.home}
-                      logoFileName={m.homeLogoFileName}
-                      className={`w-9 h-9 rounded-full shadow ${isWinner(m.home) ? "ring-2 ring-amber-400" : ""
-                        }`}
-                    />
-                  </div>
+                <Link
+  key={idx}
+  to={`/match/${m.fixtureId}`}
+  className={`flex items-center justify-between px-6 py-4 rounded-2xl border shadow-md transition-transform hover:-translate-y-1 hover:shadow-lg
+    ${m.isUserTeamMatch
+      ? "bg-sky-900/40 border-sky-700 ring-1 ring-sky-700"
+      : "bg-gray-900/40 border-gray-700"
+    } hover:bg-white/10 cursor-pointer`}
+>
+  {/* HOME */}
+  <div className="flex-1 flex items-center justify-end gap-2">
+    <span
+      className={`font-semibold text-right text-lg ${isWinner(m.home)
+        ? "text-amber-400 drop-shadow-sm"
+        : "text-gray-200"
+        }`}
+    >
+      {m.home}
+    </span>
+    <TeamLogo
+      teamName={m.home}
+      logoFileName={m.homeLogoFileName}
+      className={`w-9 h-9 rounded-full shadow ${isWinner(m.home) ? "ring-2 ring-amber-400" : ""
+        }`}
+    />
+  </div>
 
-                  {/* SCORE */}
-                  <div className="flex flex-col items-center px-4 text-center">
-                    <span className="text-gray-100 font-extrabold text-xl">
-                      {m.homeGoals != null && m.awayGoals != null
-                        ? `${m.homeGoals} : ${m.awayGoals}`
-                        : "vs"}
-                      {m.isElimination &&
-                        m.homeGoals === m.awayGoals &&
-                        (m.homePenalties > 0 || m.awayPenalties > 0) && (
-                          <span className="text-sm text-gray-400 ml-1">
-                            ({m.homePenalties}:{m.awayPenalties} pens)
-                          </span>
-                        )}
-                    </span>
+  {/* SCORE */}
+  <div className="flex flex-col items-center px-4 text-center">
+    <span className="text-gray-100 font-extrabold text-xl hover:scale-110 transition-transform">
+      {m.homeGoals != null && m.awayGoals != null
+        ? `${m.homeGoals} : ${m.awayGoals}`
+        : "vs"}
+      {m.isElimination &&
+        m.homeGoals === m.awayGoals &&
+        (m.homePenalties > 0 || m.awayPenalties > 0) && (
+          <span className="text-sm text-gray-400 ml-1">
+            ({m.homePenalties}:{m.awayPenalties} pens)
+          </span>
+        )}
+    </span>
+    <div className="mt-1">{renderStatus(m.status)}</div>
+  </div>
 
-                    <div className="mt-1">{renderStatus(m.status)}</div>
-                  </div>
+  {/* AWAY */}
+  <div className="flex-1 flex items-center justify-start gap-2">
+    <TeamLogo
+      teamName={m.away}
+      logoFileName={m.awayLogoFileName}
+      className={`w-9 h-9 rounded-full shadow ${isWinner(m.away) ? "ring-2 ring-amber-400" : ""
+        }`}
+    />
+    <span
+      className={`font-semibold text-left text-lg ${isWinner(m.away)
+        ? "text-amber-400 drop-shadow-sm"
+        : "text-gray-200"
+        }`}
+    >
+      {m.away}
+    </span>
+  </div>
+</Link>
 
-                  {/* AWAY */}
-                  <div className="flex-1 flex items-center justify-start gap-2">
-                    <TeamLogo
-                      teamName={m.away}
-                      logoFileName={m.awayLogoFileName}
-                      className={`w-9 h-9 rounded-full shadow ${isWinner(m.away) ? "ring-2 ring-amber-400" : ""
-                        }`}
-                    />
-                    <span
-                      className={`font-semibold text-left text-lg ${isWinner(m.away)
-                        ? "text-amber-400 drop-shadow-sm"
-                        : "text-gray-200"
-                        }`}
-                    >
-                      {m.away}
-                    </span>
-                  </div>
-                </div>
               );
             })}
           </div>

@@ -24,9 +24,14 @@
                    .HasForeignKey(pt => pt.AttributeId)
                    .OnDelete(DeleteBehavior.Restrict);
 
-            builder.HasOne(pt => pt.GameSave)
+            builder.HasOne(ts => ts.GameSave)
                    .WithMany(gs => gs.PlayerTrainings)
-                   .HasForeignKey(pt => pt.GameSaveId)
+                   .HasForeignKey(ts => ts.GameSaveId)
+                   .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasOne(ts => ts.Season)
+                   .WithMany(s => s.PlayerTrainings)
+                   .HasForeignKey(ts => ts.SeasonId)
                    .OnDelete(DeleteBehavior.Restrict);
 
             builder.Property(pt => pt.ChangeValue)

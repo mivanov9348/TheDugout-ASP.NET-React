@@ -34,13 +34,13 @@ const Finances = ({ gameSaveId }) => {
         );
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6 bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 min-h-screen text-gray-100">
       {/* Баланс */}
-      <div className="bg-white shadow-md rounded-2xl p-6 flex justify-between items-center">
-        <h2 className="text-xl font-semibold text-gray-700">Club Balance</h2>
+      <div className="bg-gray-800/70 backdrop-blur-sm shadow-lg rounded-2xl p-6 flex justify-between items-center border border-gray-700">
+        <h2 className="text-xl font-semibold text-gray-200">Club Balance</h2>
         <p
-          className={`text-2xl font-bold ${
-            balance >= 0 ? "text-green-600" : "text-red-600"
+          className={`text-3xl font-bold ${
+            balance >= 0 ? "text-green-400" : "text-red-400"
           }`}
         >
           ${balance.toLocaleString()}
@@ -51,30 +51,30 @@ const Finances = ({ gameSaveId }) => {
       <div className="flex gap-4">
         <button
           onClick={() => setFilter("all")}
-          className={`px-4 py-2 rounded-xl ${
+          className={`px-4 py-2 rounded-xl font-medium transition ${
             filter === "all"
-              ? "bg-blue-600 text-white"
-              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              ? "bg-blue-600 text-white shadow-md"
+              : "bg-gray-700 hover:bg-gray-600 text-gray-300"
           }`}
         >
           All
         </button>
         <button
           onClick={() => setFilter("income")}
-          className={`px-4 py-2 rounded-xl ${
+          className={`px-4 py-2 rounded-xl font-medium transition ${
             filter === "income"
-              ? "bg-green-600 text-white"
-              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              ? "bg-green-600 text-white shadow-md"
+              : "bg-gray-700 hover:bg-gray-600 text-gray-300"
           }`}
         >
           Income
         </button>
         <button
           onClick={() => setFilter("expense")}
-          className={`px-4 py-2 rounded-xl ${
+          className={`px-4 py-2 rounded-xl font-medium transition ${
             filter === "expense"
-              ? "bg-red-600 text-white"
-              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              ? "bg-red-600 text-white shadow-md"
+              : "bg-gray-700 hover:bg-gray-600 text-gray-300"
           }`}
         >
           Expenses
@@ -82,9 +82,9 @@ const Finances = ({ gameSaveId }) => {
       </div>
 
       {/* Таблица */}
-      <div className="bg-white shadow-md rounded-2xl overflow-hidden">
+      <div className="bg-gray-800/70 backdrop-blur-sm shadow-lg rounded-2xl overflow-hidden border border-gray-700">
         <table className="w-full table-auto">
-          <thead className="bg-gray-100 text-gray-600 uppercase text-sm">
+          <thead className="bg-gray-700 text-gray-300 uppercase text-sm">
             <tr>
               <th className="px-6 py-3 text-left">Date</th>
               <th className="px-6 py-3 text-left">Description</th>
@@ -95,13 +95,15 @@ const Finances = ({ gameSaveId }) => {
             {filteredTransactions.map((t) => (
               <tr
                 key={t.id}
-                className="border-b last:border-none hover:bg-gray-50 transition"
+                className="border-b border-gray-700 last:border-none hover:bg-gray-700/50 transition"
               >
-                <td className="px-6 py-3">{new Date(t.date).toLocaleDateString()}</td>
-                <td className="px-6 py-3">{t.description}</td>
+                <td className="px-6 py-3 text-gray-300">
+                  {new Date(t.date).toLocaleDateString()}
+                </td>
+                <td className="px-6 py-3 text-gray-200">{t.description}</td>
                 <td
-                  className={`px-6 py-3 text-right font-medium ${
-                    t.amount >= 0 ? "text-green-600" : "text-red-600"
+                  className={`px-6 py-3 text-right font-semibold ${
+                    t.amount >= 0 ? "text-green-400" : "text-red-400"
                   }`}
                 >
                   {t.amount >= 0 ? "+" : "-"}$
@@ -111,6 +113,12 @@ const Finances = ({ gameSaveId }) => {
             ))}
           </tbody>
         </table>
+
+        {filteredTransactions.length === 0 && (
+          <div className="text-center py-8 text-gray-400">
+            No transactions found.
+          </div>
+        )}
       </div>
     </div>
   );

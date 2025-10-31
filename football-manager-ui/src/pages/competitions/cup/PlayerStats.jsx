@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { ChevronUp, ChevronDown } from "lucide-react";
-import { useOutletContext } from "react-router-dom";
-import { Link } from "react-router-dom";
+import { useOutletContext, Link } from "react-router-dom";
 
 export default function CupPlayerStats() {
   const { selectedCup } = useOutletContext();
@@ -11,7 +10,6 @@ export default function CupPlayerStats() {
   const [sortConfig, setSortConfig] = useState({ key: "goals", direction: "desc" });
 
   useEffect(() => {
-    // ако няма избрана купа, не правим заявка
     if (!selectedCup || !selectedCup.id) return;
 
     const fetchStats = async () => {
@@ -38,7 +36,7 @@ export default function CupPlayerStats() {
     };
 
     fetchStats();
-  }, [selectedCup?.id]); // изрично следим ID на купата
+  }, [selectedCup?.id]);
 
   const sortedStats = useMemo(() => {
     const sorted = [...playerStats];
@@ -70,24 +68,23 @@ export default function CupPlayerStats() {
   const SortIcon = ({ column }) => {
     if (sortConfig.key !== column) return <span className="opacity-20">↕</span>;
     return sortConfig.direction === "asc" ? (
-      <ChevronUp className="inline w-4 h-4 ml-1 text-slate-600" />
+      <ChevronUp className="inline w-4 h-4 ml-1 text-gray-400" />
     ) : (
-      <ChevronDown className="inline w-4 h-4 ml-1 text-slate-600" />
+      <ChevronDown className="inline w-4 h-4 ml-1 text-gray-400" />
     );
   };
 
-  // различни състояния на UI
   if (!selectedCup) {
-    return <div className="text-slate-500 italic">Select a cup to see stats.</div>;
+    return <div className="text-gray-400 italic">Select a cup to see stats.</div>;
   }
 
   if (loading) {
-    return <div className="text-gray-500">Loading player stats...</div>;
+    return <div className="text-gray-400">Loading player stats...</div>;
   }
 
   if (error) {
     return (
-      <div className="bg-red-100 border border-red-400 text-red-700 p-4 rounded-lg">
+      <div className="bg-red-900/40 border border-red-700 text-red-300 p-4 rounded-xl">
         <p className="font-semibold">Failed to load stats:</p>
         <p>{error}</p>
       </div>
@@ -96,48 +93,44 @@ export default function CupPlayerStats() {
 
   if (!playerStats.length) {
     return (
-      <div className="bg-white shadow-xl rounded-2xl p-5">
-        <h2 className="text-xl font-bold mb-4 text-sky-700">
+      <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-2xl shadow-xl p-6 border border-gray-700">
+        <h2 className="text-xl font-bold mb-4 text-gray-200">
           {selectedCup.templateName} – Top Scorers
         </h2>
-        <p className="text-center text-slate-500 italic">
+        <p className="text-center text-gray-400 italic">
           No player statistics available for this cup.
         </p>
       </div>
     );
   }
 
-  // таблица с резултати
   return (
-    <div className="bg-white shadow-xl rounded-2xl p-5 transition-all">
-      <h2 className="text-xl font-bold mb-4 text-sky-700">
-        {selectedCup.templateName} – Top Scorers
-      </h2>
-
+    <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-2xl shadow-xl p-6 border border-gray-700">
+    
       <table className="w-full text-sm border-collapse">
         <thead>
-          <tr className="bg-slate-100 text-slate-700">
-            <th className="p-2 text-left w-10">#</th>
+          <tr className="bg-gray-800 text-gray-300">
+            <th className="p-3 text-left w-10">#</th>
             <th
-              className="p-2 text-left cursor-pointer hover:bg-slate-200"
+              className="p-3 text-left cursor-pointer hover:bg-gray-700/50 transition"
               onClick={() => handleSort("name")}
             >
               Player <SortIcon column="name" />
             </th>
             <th
-              className="p-2 text-left cursor-pointer hover:bg-slate-200"
+              className="p-3 text-left cursor-pointer hover:bg-gray-700/50 transition"
               onClick={() => handleSort("teamName")}
             >
               Team <SortIcon column="teamName" />
             </th>
             <th
-              className="p-2 text-center cursor-pointer hover:bg-slate-200"
+              className="p-3 text-center cursor-pointer hover:bg-gray-700/50 transition"
               onClick={() => handleSort("goals")}
             >
               Goals <SortIcon column="goals" />
             </th>
             <th
-              className="p-2 text-center cursor-pointer hover:bg-slate-200"
+              className="p-3 text-center cursor-pointer hover:bg-gray-700/50 transition"
               onClick={() => handleSort("matches")}
             >
               Matches <SortIcon column="matches" />
@@ -148,20 +141,22 @@ export default function CupPlayerStats() {
           {sortedStats.map((player, index) => (
             <tr
               key={player.id}
-              className={`border-b hover:bg-slate-50 transition ${index % 2 === 0 ? "bg-white" : "bg-slate-50/50"
-                }`}
+              className={`border-b border-gray-700 hover:bg-gray-700/30 transition ${
+                index % 2 === 0 ? "bg-gray-900/50" : "bg-gray-800/50"
+              }`}
             >
-              <td className="p-2 font-medium text-slate-600 text-center">{index + 1}</td>
-              <td className="p-2 font-medium text-slate-800">
+              <td className="p-3 font-medium text-gray-400 text-center">{index + 1}</td>
+              <td className="p-3 font-semibold text-gray-100">
                 <Link
                   to={`/player/${player.id}`}
-                  className="text-blue-500 hover:text-blue-700 transition-colors font-semibold hover:underline"
+                  className="text-blue-400 hover:text-blue-300 transition-colors hover:underline"
                 >
                   {player.name}
                 </Link>
-              </td>              <td className="p-2 text-slate-700">{player.teamName}</td>
-              <td className="p-2 text-center font-semibold text-slate-900">{player.goals}</td>
-              <td className="p-2 text-center text-slate-600">{player.matches}</td>
+              </td>
+              <td className="p-3 text-gray-300">{player.teamName}</td>
+              <td className="p-3 text-center font-bold text-gray-100">{player.goals}</td>
+              <td className="p-3 text-center text-gray-400">{player.matches}</td>
             </tr>
           ))}
         </tbody>

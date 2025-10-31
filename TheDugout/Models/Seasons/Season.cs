@@ -36,6 +36,7 @@
         public ICollection<TransferOffer> TransferOffers { get; set; } = new List<TransferOffer>();
         public ICollection<Match> Matches { get; set; } = new List<Match>();
         public ICollection<FinancialTransaction> FinancialTransactions { get; set; } = new List<FinancialTransaction>();
+        public ICollection<PlayerTraining> PlayerTrainings { get; set; } = new List<PlayerTraining>();
 
     }
 }

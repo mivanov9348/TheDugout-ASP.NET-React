@@ -40,7 +40,7 @@ const Cup = ({ gameSaveId }) => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 text-gray-100 p-6">
-      <div className="max-w-5xl mx-auto">       
+      <div >       
 
         {/* Cup selector */}
         <div className="mb-10">
@@ -96,7 +96,7 @@ const Cup = ({ gameSaveId }) => {
         </div>
 
         {/* Съдържание */}
-        <div className="p-6 bg-gray-800 rounded-xl shadow-lg border border-gray-700">
+        <div >
           {loading ? (
             <div className="text-gray-400">Loading cups...</div>
           ) : !selectedCup ? (

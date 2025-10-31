@@ -127,6 +127,48 @@ export function ProcessingProvider({ children }) {
     });
   };
 
+  const runNextDay = async (gameSaveId) => {
+  startProcessing("⏩ Advancing to next day...", { allowCancel: false });
+
+  const es = new EventSource(`/api/gameday/current/next-day-stream/${gameSaveId}`);
+  eventSourceRef.current = es;
+
+  return new Promise((resolve) => {
+    es.onmessage = (e) => {
+      if (!e.data) return;
+      try {
+        const data = JSON.parse(e.data);
+
+        if (data.error) {
+          addLog(`❌ ${data.error}`);
+          stopProcessing();
+          es.close();
+          resolve(null);
+          return;
+        }
+
+        if (data.message === "done") {
+          addLog("✔️ Day advanced successfully!");
+          stopProcessing();
+          es.close();
+          resolve(true);
+          return;
+        }
+
+        addLog(data.message);
+      } catch {
+        addLog("⚠️ Invalid data received.");
+      }
+    };
+
+    es.onerror = () => {
+      addLog("❌ Connection error");
+      stopProcessing();
+      es.close();
+      resolve(null);
+    };
+  });
+};
 
 
   return (
@@ -136,6 +178,7 @@ export function ProcessingProvider({ children }) {
         addLog,
         stopProcessing,
         runSimulateMatches,
+        runNextDay,
         isProcessing,
         logs,
         allowCancel,

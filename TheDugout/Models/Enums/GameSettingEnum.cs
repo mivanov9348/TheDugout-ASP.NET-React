@@ -8,6 +8,6 @@
         Transfers,
         Teams,
         Players,
-        Match
+        Match,
     }
 }

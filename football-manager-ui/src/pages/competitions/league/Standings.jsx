@@ -14,8 +14,8 @@ export default function LeagueStandings() {
   const totalTeams = league.standings.length;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 text-gray-200 p-6 rounded-2xl shadow-2xl">
-      <div className="bg-gray-800/60 backdrop-blur-sm border border-gray-700 rounded-2xl p-5 shadow-lg transition-all">
+    <div>
+      <div >
         <table className="w-full text-sm border-collapse">
           <thead>
             <tr className="bg-gray-700/60 text-gray-300 uppercase tracking-wider text-xs">

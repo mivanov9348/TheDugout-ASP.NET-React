@@ -237,11 +237,10 @@
             if (save == null) return NotFound();
 
             var activeSeason = await _context.Seasons
-
-    .Where(s => s.GameSaveId == gameSaveId)
-    .OrderByDescending(s => s.IsActive)
-    .ThenByDescending(s => s.StartDate)
-    .FirstOrDefaultAsync();
+                .Where(s => s.GameSaveId == gameSaveId)
+                .OrderByDescending(s => s.IsActive)
+                .ThenByDescending(s => s.StartDate)
+                .FirstOrDefaultAsync();
 
             if (activeSeason == null)
             {
@@ -276,6 +275,7 @@
             var hasUnplayedMatchesToday = matches.Any(m => m.Status == MatchStageEnum.Scheduled);
             var activeMatch = matches.FirstOrDefault(m => m.Status == MatchStageEnum.Scheduled);
             var hasMatchesToday = matches.Any();
+            var currentEvent = _context.SeasonEvents.FirstOrDefault(x=>x.GameSaveId==gameSaveId && x.Date.Date == today && x.SeasonId == activeSeason.Id);
 
             return Ok(new
             {
@@ -294,7 +294,8 @@
                         activeSeason.Id,
                         activeSeason.CurrentDate,
                         activeSeason.StartDate,
-                        activeSeason.EndDate
+                        activeSeason.EndDate,
+                        currentEventType = currentEvent.Type.ToString() ?? ">>>"
                     }
                 },
                 hasUnplayedMatchesToday,
@@ -335,52 +336,85 @@
             return Ok(result);
         }
 
-        [HttpGet("current/next-day-stream")]
-        public async Task NextDayStream()
+        [Authorize]
+        [HttpGet("current/next-day-stream/{saveId}")]
+        public async Task NextDayStream(int saveId)
         {
-            Response.ContentType = "text/event-stream";
+            Response.Headers.Add("Content-Type", "text/event-stream");
 
-            async Task Send(string type, string msg, object? extra = null)
+            var clientDisconnected = HttpContext.RequestAborted;
+
+            async Task ProgressCallback(string message)
             {
-                var payload = JsonConvert.SerializeObject(new { type, message = msg, extra });
-                await Response.WriteAsync($"data: {payload}\n\n");
-                await Response.Body.FlushAsync();
+                if (!clientDisconnected.IsCancellationRequested)
+                {
+                    var json = System.Text.Json.JsonSerializer.Serialize(new { message });
+                    await Response.WriteAsync($"data: {json}\n\n");
+                    await Response.Body.FlushAsync();
+                }
             }
 
             try
             {
-                var userId = _userContext.GetUserId(User);
-                if (userId == null)
-                {
-                    await Send("error", "Unauthorized");
-                    return;
-                }
-
-                var user = await _context.Users
-                    .Include(u => u.CurrentSave)
-                    .FirstOrDefaultAsync(u => u.Id == userId.Value);
-
-                if (user?.CurrentSave == null)
-                {
-                    await Send("error", "No current save selected.");
-                    return;
-                }
-
-                var saveId = user.CurrentSave.Id;
-
-                await Send("progress", "Advancing to next day...");
-
-                await _gameDayService.ProcessNextDayAsync(saveId, msg => Send("progress", msg));
-
-                var result = await _gameDayService.ProcessNextDayAndGetResultAsync(saveId);
-
-                await Send("done", "Finished!", result);
+                await _gameDayService.ProcessNextDayAsync(saveId, ProgressCallback);
+                await Response.WriteAsync($"data: {System.Text.Json.JsonSerializer.Serialize(new { message = "done" })}\n\n");
+                await Response.Body.FlushAsync();
             }
             catch (Exception ex)
             {
-                await Send("error", $"Error: {ex.Message}");
+                var json = System.Text.Json.JsonSerializer.Serialize(new { error = ex.Message });
+                await Response.WriteAsync($"data: {json}\n\n");
+                await Response.Body.FlushAsync();
             }
         }
+
+
+        //[HttpGet("current/next-day-stream")]
+        //public async Task NextDayStream()
+        //{
+        //    Response.ContentType = "text/event-stream";
+
+        //    async Task Send(string type, string msg, object? extra = null)
+        //    {
+        //        var payload = JsonConvert.SerializeObject(new { type, message = msg, extra });
+        //        await Response.WriteAsync($"data: {payload}\n\n");
+        //        await Response.Body.FlushAsync();
+        //    }
+
+        //    try
+        //    {
+        //        var userId = _userContext.GetUserId(User);
+        //        if (userId == null)
+        //        {
+        //            await Send("error", "Unauthorized");
+        //            return;
+        //        }
+
+        //        var user = await _context.Users
+        //            .Include(u => u.CurrentSave)
+        //            .FirstOrDefaultAsync(u => u.Id == userId.Value);
+
+        //        if (user?.CurrentSave == null)
+        //        {
+        //            await Send("error", "No current save selected.");
+        //            return;
+        //        }
+
+        //        var saveId = user.CurrentSave.Id;
+
+        //        await Send("progress", "Advancing to next day...");
+
+        //        await _gameDayService.ProcessNextDayAsync(saveId, msg => Send("progress", msg));
+
+        //        var result = await _gameDayService.ProcessNextDayAndGetResultAsync(saveId);
+
+        //        await Send("done", "Finished!", result);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        await Send("error", $"Error: {ex.Message}");
+        //    }
+        //}
 
         [Authorize]
         [HttpGet("active/{gameSaveId}")]

@@ -89,75 +89,94 @@ const Fixtures = ({ gameSaveId }) => {
   };
 
   const MatchRow = ({ match, index }) => {
-    const dateInfo = formatMatchDate(match.date);
-    const isPlayed =
-      typeof match.homeTeamGoals === "number" &&
-      typeof match.awayTeamGoals === "number";
+  const dateInfo = formatMatchDate(match.date);
+  const isPlayed =
+    typeof match.homeTeamGoals === "number" &&
+    typeof match.awayTeamGoals === "number";
 
-    return (
-      <Link
-        to={`/match/${match.id}`}
-        className={`flex items-center justify-between p-6 ${
-          index % 2 === 0 ? "bg-gray-800" : "bg-gray-900"
-        } hover:bg-gray-700 transition-colors duration-200 border-b border-gray-700`}
-      >
-        <div className="w-24 text-center">
-          <div className="text-sm font-semibold text-white">
-            {dateInfo.day} {dateInfo.month}
-          </div>
-          <div className="text-xs text-gray-400 mt-1">{dateInfo.time}</div>
+  // 🏆 Определяне на победителя
+  let winner = null;
+  if (isPlayed) {
+    if (match.homeTeamGoals > match.awayTeamGoals) winner = "home";
+    else if (match.awayTeamGoals > match.homeTeamGoals) winner = "away";
+  }
+
+  return (
+    <Link
+      to={`/match/${match.id}`}
+      className={`flex items-center justify-between p-6 ${
+        index % 2 === 0 ? "bg-gray-800" : "bg-gray-900"
+      } hover:bg-gray-700 transition-colors duration-200 border-b border-gray-700`}
+    >
+      <div className="w-24 text-center">
+        <div className="text-sm font-semibold text-white">
+          {dateInfo.day} {dateInfo.month}
+        </div>
+        <div className="text-xs text-gray-400 mt-1">{dateInfo.time}</div>
+      </div>
+
+      <div className="flex-1 flex items-center justify-between max-w-2xl mx-8">
+        {/* 🏠 Домакин */}
+        <div
+          className={`flex items-center space-x-4 flex-1 justify-end ${
+            winner === "home" ? "text-green-400 drop-shadow-[0_0_6px_rgba(34,197,94,0.7)]" : ""
+          }`}
+        >
+          <span className={`font-semibold text-right ${winner === "home" ? "text-green-400" : "text-white"}`}>
+            {match.homeTeam ?? "—"}
+          </span>
+          <TeamLogo
+            teamName={match.homeTeam}
+            logoFileName={match.homeLogoFileName}
+            className={`w-10 h-10 ${winner === "home" ? "brightness-125" : ""}`}
+          />
         </div>
 
-        <div className="flex-1 flex items-center justify-between max-w-2xl mx-8">
-          <div className="flex items-center space-x-4 flex-1 justify-end">
-            <span className="font-semibold text-white text-right">
-              {match.homeTeam ?? "—"}
-            </span>
-            <TeamLogo
-              teamName={match.homeTeam}
-              logoFileName={match.homeLogoFileName}
-              className="w-10 h-10"
-            />
-          </div>
-
-          <div className="mx-6">
-            {isPlayed ? (
-              <div className="bg-gray-700 px-4 py-2 rounded-lg text-center">
-                <span className="font-bold text-white text-lg">
-                  {match.homeTeamGoals} - {match.awayTeamGoals}
-                </span>
-              </div>
-            ) : (
-              <div className="text-gray-400 font-semibold">VS</div>
-            )}
-          </div>
-
-          <div className="flex items-center space-x-4 flex-1 justify-start">
-            <TeamLogo
-              teamName={match.awayTeam}
-              logoFileName={match.awayLogoFileName}
-              className="w-10 h-10"
-            />
-            <span className="font-semibold text-white">
-              {match.awayTeam ?? "—"}
-            </span>
-          </div>
+        {/* ⚽ Резултат */}
+        <div className="mx-6">
+          {isPlayed ? (
+            <div className="bg-gray-700 px-4 py-2 rounded-lg text-center">
+              <span className="font-bold text-white text-lg">
+                {match.homeTeamGoals} - {match.awayTeamGoals}
+              </span>
+            </div>
+          ) : (
+            <div className="text-gray-400 font-semibold">VS</div>
+          )}
         </div>
 
-        <div className="w-20 text-right">
-          <span
-            className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-              isPlayed
-                ? "bg-green-900 text-green-200"
-                : "bg-blue-900 text-blue-200"
-            }`}
-          >
-            {isPlayed ? "FT" : "SCH"}
+        {/* 🛫 Гост */}
+        <div
+          className={`flex items-center space-x-4 flex-1 justify-start ${
+            winner === "away" ? "text-green-400 drop-shadow-[0_0_6px_rgba(34,197,94,0.7)]" : ""
+          }`}
+        >
+          <TeamLogo
+            teamName={match.awayTeam}
+            logoFileName={match.awayLogoFileName}
+            className={`w-10 h-10 ${winner === "away" ? "brightness-125" : ""}`}
+          />
+          <span className={`font-semibold ${winner === "away" ? "text-green-400" : "text-white"}`}>
+            {match.awayTeam ?? "—"}
           </span>
         </div>
-      </Link>
-    );
-  };
+      </div>
+
+      <div className="w-20 text-right">
+        <span
+          className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+            isPlayed
+              ? "bg-green-900 text-green-200"
+              : "bg-blue-900 text-blue-200"
+          }`}
+        >
+          {isPlayed ? "FT" : "SCH"}
+        </span>
+      </div>
+    </Link>
+  );
+};
+
 
   if (seasonLoading) return <div className="text-center py-20 text-white">Loading active season...</div>;
   if (seasonError) return <div className="text-center py-20 text-red-400">Error loading season.</div>;
