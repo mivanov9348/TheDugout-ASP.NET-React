@@ -20,6 +20,8 @@ function Sidebar({ onExitGame }) {
     { name: "Club", path: "/club", icon: <Building size={18} /> },
     { name: "Finances", path: "/finances", icon: <Wallet size={18} /> },
     { name: "Stats", path: "/all-time-stats", icon: <BarChart size={18} /> },
+    { name: "Academy", path: "/academy", icon: <Users size={18} /> },
+
   ];
 
   return (

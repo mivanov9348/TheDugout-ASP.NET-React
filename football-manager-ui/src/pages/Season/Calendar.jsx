@@ -1,20 +1,24 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useActiveSeason } from "../../components/useActiveSeason";
+import { useGame } from "../../context/GameContext";
 
 const Calendar = ({ gameSaveId }) => {
-  const { season, loading, error } = useActiveSeason(gameSaveId);
+  const { currentGameSave } = useGame();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [events, setEvents] = useState([]);
 
+  const season = currentGameSave?.activeSeason;
+  const normalizedSeasonDate = season?.currentDate?.split("T")[0];
+
+  // 🔁 Когато се промени сезонната дата (Next Day в Header)
   useEffect(() => {
     if (season?.currentDate) {
-      const parts = season.currentDate.split("-");
-      const [year, month] = parts.map(Number);
+      const [year, month] = season.currentDate.split("-").map(Number);
       setCurrentDate(new Date(year, month - 1, 1));
     }
-  }, [season]);
+  }, [season?.currentDate]);
 
+  // 📅 Зареждаме събитията веднъж за сейва
   useEffect(() => {
     const fetchEvents = async () => {
       if (!gameSaveId) return;
@@ -33,12 +37,12 @@ const Calendar = ({ gameSaveId }) => {
     fetchEvents();
   }, [gameSaveId]);
 
-  if (loading)
-    return <div className="text-center text-gray-400">Зареждане на сезон...</div>;
-  if (error)
-    return <div className="text-center text-red-400">Грешка: {error}</div>;
   if (!season)
-    return <div className="text-center text-gray-400">Няма активен сезон.</div>;
+    return (
+      <div className="text-center text-gray-400 mt-10">
+        Няма активен сезон.
+      </div>
+    );
 
   const daysInMonth = new Date(
     currentDate.getFullYear(),
@@ -53,7 +57,16 @@ const Calendar = ({ gameSaveId }) => {
   ).getDay();
 
   const offset = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1;
-  const normalizedSeasonDate = season.currentDate?.split("T")[0];
+
+  // ⚡️ Предварително групиране на събитията по дата (по-бързо)
+  const eventsByDate = useMemo(() => {
+    const map = {};
+    for (const e of events) {
+      if (!map[e.date]) map[e.date] = [];
+      map[e.date].push(e);
+    }
+    return map;
+  }, [events]);
 
   return (
     <div className="min-h-screen w-full bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 text-gray-100 p-6">
@@ -115,24 +128,34 @@ const Calendar = ({ gameSaveId }) => {
 
       {/* Calendar grid */}
       <div className="grid grid-cols-7 gap-3 auto-rows-[160px]">
+        {/* празни клетки в началото */}
         {Array.from({ length: offset }).map((_, idx) => (
           <div key={`empty-${idx}`} />
         ))}
 
+        {/* дни в месеца */}
         {Array.from({ length: daysInMonth }).map((_, idx) => {
           const day = idx + 1;
           const isoDay = `${currentDate.getFullYear()}-${String(
             currentDate.getMonth() + 1
           ).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-          const dayEvents = events.filter((e) => e.date === isoDay);
+          const dayEvents = eventsByDate[isoDay] || [];
           const isCurrentDay = normalizedSeasonDate === isoDay;
 
           return (
             <div
               key={idx}
               className={`rounded-xl shadow-md flex flex-col items-start p-2 transition-all duration-200
-                ${dayEvents.length > 0 ? "bg-gray-700 hover:bg-gray-600" : "bg-gray-800 hover:bg-gray-700"}
-                ${isCurrentDay ? "border-4 border-red-500 shadow-[0_0_12px_rgba(239,68,68,0.8)]" : ""}
+                ${
+                  dayEvents.length > 0
+                    ? "bg-gray-700 hover:bg-gray-600"
+                    : "bg-gray-800 hover:bg-gray-700"
+                }
+                ${
+                  isCurrentDay
+                    ? "border-4 border-red-500 shadow-[0_0_12px_rgba(239,68,68,0.8)]"
+                    : ""
+                }
               `}
             >
               <div className="w-full flex justify-between items-center mb-1">

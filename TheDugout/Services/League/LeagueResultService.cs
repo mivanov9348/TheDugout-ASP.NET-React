@@ -9,46 +9,169 @@
     using TheDugout.Models.Teams;
     using TheDugout.Services.GameSettings.Interfaces;
     using TheDugout.Services.League.Interfaces;
+    using TheDugout.Services.Team.Interfaces;
 
     public class LeagueResultService : ILeagueResultService
     {
         private readonly DugoutDbContext _context;
         private readonly IMoneyPrizeService _moneyPrizeService;
+        private readonly ITeamGenerationService _teamGeneratorService;
         private readonly ILogger<LeagueResultService> _logger;
-        public LeagueResultService(DugoutDbContext context, IMoneyPrizeService moneyPrizeService, ILogger<LeagueResultService> logger)
+        public LeagueResultService(DugoutDbContext context, IMoneyPrizeService moneyPrizeService, ITeamGenerationService teamGeneratorService, ILogger<LeagueResultService> logger)
         {
             _context = context;
             _moneyPrizeService = moneyPrizeService;
+            _teamGeneratorService = teamGeneratorService;
             _logger = logger;
         }
 
+        //public async Task<List<CompetitionSeasonResult>> GenerateLeagueResultsAsync(int seasonId)
+        //{
+        //    bool alreadyExists = await _context.CompetitionSeasonResults
+        //    .AnyAsync(r => r.SeasonId == seasonId && r.CompetitionType == CompetitionTypeEnum.League);
+
+        //    if (alreadyExists)
+        //        return new List<CompetitionSeasonResult>();
+
+        //    var gameSave = _context.GameSaves
+        //            .FirstOrDefault(gs=>gs.CurrentSeasonId == seasonId);
+
+        //    if (gameSave == null)
+        //    {
+        //        throw new Exception("No Game Save");
+        //    }
+
+        //    var leagues = await _context.Leagues
+        //        .Include(l => l.Country)
+        //        .Include(l => l.Teams)
+        //        .Include(l => l.Standings)
+        //        .Include(l => l.Template)
+        //        .Include(l=>l.Competition)
+        //        .Where(l => l.SeasonId == seasonId && l.IsFinished)
+        //        .ToListAsync();
+
+        //    var results = new List<CompetitionSeasonResult>();
+
+        //    var alreadyQualified = new HashSet<int?>();
+
+        //    foreach (var league in leagues)
+        //    {
+        //        var orderedStandings = league.Standings
+        //            .OrderByDescending(s => s.Points)
+        //            .ThenByDescending(s => s.GoalDifference)
+        //            .ThenByDescending(s => s.GoalsFor)
+        //            .ToList();
+
+        //        if (!orderedStandings.Any())
+        //            continue;
+
+        //        var competition = _context.Competitions.FirstOrDefault(x => x.LeagueId == league.Id);
+
+        //        var champion = orderedStandings.First().Team;
+        //        var runnerUp = orderedStandings.Skip(1).FirstOrDefault()?.Team;
+
+        //        var relegatedTeams = await GetRelegatedTeamsAsync(league, orderedStandings, seasonId);
+        //        var promotedTeams = await GetPromotedTeamsAsync(league, seasonId);
+        //        var europeanQualified = GetEuropeanQualifiedTeams(league, orderedStandings, alreadyQualified);
+
+        //        var result = new CompetitionSeasonResult
+        //        {
+        //            SeasonId = seasonId,
+        //            CompetitionType = CompetitionTypeEnum.League,
+        //            CompetitionId = competition.Id,
+        //            GameSaveId = league.GameSaveId,
+        //            ChampionTeamId = champion.Id,
+        //            RunnerUpTeamId = runnerUp?.Id,
+        //            Notes = $"Лига {league.Template.Name} ({league.Country.Name}) - Ниво {league.Tier}", 
+        //        };
+
+        //        foreach (var team in relegatedTeams)
+        //        {
+        //            result.RelegatedTeams.Add(new CompetitionRelegatedTeam
+        //            {
+        //                TeamId = team.Id,
+        //                GameSaveId = league.GameSaveId
+        //            });
+        //        }
+
+        //        foreach (var team in promotedTeams)
+        //        {
+        //            result.PromotedTeams.Add(new CompetitionPromotedTeam
+        //            {
+        //                TeamId = team.Id,
+        //                GameSaveId = league.GameSaveId
+        //            });
+        //        }
+
+        //        foreach (var team in europeanQualified)
+        //        {
+        //            result.EuropeanQualifiedTeams.Add(new CompetitionEuropeanQualifiedTeam
+        //            {
+        //                TeamId = team.Id,
+        //                GameSaveId = league.GameSaveId
+        //            });
+        //        }
+
+        //        for (int i = 0; i < orderedStandings.Count; i++)
+        //        {
+        //            var standing = orderedStandings[i];
+        //            var team = standing.Team;
+        //            string prizeCode;
+
+        //            if (i == 0)
+        //                prizeCode = "LEAGUE_CHAMPION";
+        //            else if (i == 1)
+        //                prizeCode = "LEAGUE_SECOND";
+        //            else if (i == 2)
+        //                prizeCode = "LEAGUE_THIRD";
+        //            else
+        //                prizeCode = "LEAGUE_SOLIDARITY";
+
+        //            await _moneyPrizeService.GrantToTeamAsync(
+        //                gameSave,
+        //                prizeCode,
+        //                team,
+        //                $"Награда за {i + 1}-во място в {league.Template.Name}"
+        //            );
+        //        }
+
+        //        results.Add(result);
+        //    }
+
+        //    foreach (var r in results)
+        //    {
+        //        _logger.LogInformation("🏆 League '{LeagueName}' -> CompetitionId={CompetitionId}",
+        //            r.Notes, r.CompetitionId);
+        //    }
+
+
+        //    return results;
+        //}
         public async Task<List<CompetitionSeasonResult>> GenerateLeagueResultsAsync(int seasonId)
         {
             bool alreadyExists = await _context.CompetitionSeasonResults
-            .AnyAsync(r => r.SeasonId == seasonId && r.CompetitionType == CompetitionTypeEnum.League);
+                .AnyAsync(r => r.SeasonId == seasonId && r.CompetitionType == CompetitionTypeEnum.League);
 
             if (alreadyExists)
                 return new List<CompetitionSeasonResult>();
 
-            var gameSave = _context.GameSaves
-                    .FirstOrDefault(gs=>gs.CurrentSeasonId == seasonId);
+            var gameSave = await _context.GameSaves
+                .FirstOrDefaultAsync(gs => gs.CurrentSeasonId == seasonId);
 
             if (gameSave == null)
-            {
                 throw new Exception("No Game Save");
-            }
 
             var leagues = await _context.Leagues
                 .Include(l => l.Country)
                 .Include(l => l.Teams)
+                    .ThenInclude(t => t.Players)
                 .Include(l => l.Standings)
                 .Include(l => l.Template)
-                .Include(l=>l.Competition)
+                .Include(l => l.Competition)
                 .Where(l => l.SeasonId == seasonId && l.IsFinished)
                 .ToListAsync();
 
             var results = new List<CompetitionSeasonResult>();
-
             var alreadyQualified = new HashSet<int?>();
 
             foreach (var league in leagues)
@@ -63,7 +186,6 @@
                     continue;
 
                 var competition = _context.Competitions.FirstOrDefault(x => x.LeagueId == league.Id);
-
                 var champion = orderedStandings.First().Team;
                 var runnerUp = orderedStandings.Skip(1).FirstOrDefault()?.Team;
 
@@ -71,58 +193,42 @@
                 var promotedTeams = await GetPromotedTeamsAsync(league, seasonId);
                 var europeanQualified = GetEuropeanQualifiedTeams(league, orderedStandings, alreadyQualified);
 
-                var result = new CompetitionSeasonResult
-                {
-                    SeasonId = seasonId,
-                    CompetitionType = CompetitionTypeEnum.League,
-                    CompetitionId = competition.Id,
-                    GameSaveId = league.GameSaveId,
-                    ChampionTeamId = champion.Id,
-                    RunnerUpTeamId = runnerUp?.Id,
-                    Notes = $"Лига {league.Template.Name} ({league.Country.Name}) - Ниво {league.Tier}", 
-                };
-
-                foreach (var team in relegatedTeams)
-                {
-                    result.RelegatedTeams.Add(new CompetitionRelegatedTeam
-                    {
-                        TeamId = team.Id,
-                        GameSaveId = league.GameSaveId
-                    });
-                }
+                // 🏆 Променяме популярност според събитията
+                await _teamGeneratorService.UpdatePopularityAsync(champion, TeamEventType.TitleWin);
 
                 foreach (var team in promotedTeams)
-                {
-                    result.PromotedTeams.Add(new CompetitionPromotedTeam
-                    {
-                        TeamId = team.Id,
-                        GameSaveId = league.GameSaveId
-                    });
-                }
+                    await _teamGeneratorService.UpdatePopularityAsync(team, TeamEventType.Promotion);
+
+                foreach (var team in relegatedTeams)
+                    await _teamGeneratorService.UpdatePopularityAsync(team, TeamEventType.Relegation);
 
                 foreach (var team in europeanQualified)
+                    await _teamGeneratorService.UpdatePopularityAsync(team, TeamEventType.EuropeanSuccess);
+
+                // 🔻 Малък decay за всички останали в лигата (естествен спад, липса на успех)
+                foreach (var t in league.Teams)
                 {
-                    result.EuropeanQualifiedTeams.Add(new CompetitionEuropeanQualifiedTeam
+                    if (!relegatedTeams.Contains(t) &&
+                        !promotedTeams.Contains(t) &&
+                        !europeanQualified.Contains(t) &&
+                        t != champion)
                     {
-                        TeamId = team.Id,
-                        GameSaveId = league.GameSaveId
-                    });
+                        await _teamGeneratorService.UpdatePopularityAsync(t, TeamEventType.SeasonDecay);
+                    }
                 }
 
+                // 💰 Финансови награди
                 for (int i = 0; i < orderedStandings.Count; i++)
                 {
                     var standing = orderedStandings[i];
                     var team = standing.Team;
-                    string prizeCode;
-
-                    if (i == 0)
-                        prizeCode = "LEAGUE_CHAMPION";
-                    else if (i == 1)
-                        prizeCode = "LEAGUE_SECOND";
-                    else if (i == 2)
-                        prizeCode = "LEAGUE_THIRD";
-                    else
-                        prizeCode = "LEAGUE_SOLIDARITY";
+                    string prizeCode = i switch
+                    {
+                        0 => "LEAGUE_CHAMPION",
+                        1 => "LEAGUE_SECOND",
+                        2 => "LEAGUE_THIRD",
+                        _ => "LEAGUE_SOLIDARITY"
+                    };
 
                     await _moneyPrizeService.GrantToTeamAsync(
                         gameSave,
@@ -132,18 +238,36 @@
                     );
                 }
 
+                // 📝 Резултат за сезона
+                var result = new CompetitionSeasonResult
+                {
+                    SeasonId = seasonId,
+                    CompetitionType = CompetitionTypeEnum.League,
+                    CompetitionId = competition.Id,
+                    GameSaveId = league.GameSaveId,
+                    ChampionTeamId = champion.Id,
+                    RunnerUpTeamId = runnerUp?.Id,
+                    Notes = $"Лига {league.Template.Name} ({league.Country.Name}) - Ниво {league.Tier}",
+                };
+
+                foreach (var team in relegatedTeams)
+                    result.RelegatedTeams.Add(new CompetitionRelegatedTeam { TeamId = team.Id, GameSaveId = league.GameSaveId });
+
+                foreach (var team in promotedTeams)
+                    result.PromotedTeams.Add(new CompetitionPromotedTeam { TeamId = team.Id, GameSaveId = league.GameSaveId });
+
+                foreach (var team in europeanQualified)
+                    result.EuropeanQualifiedTeams.Add(new CompetitionEuropeanQualifiedTeam { TeamId = team.Id, GameSaveId = league.GameSaveId });
+
                 results.Add(result);
             }
 
             foreach (var r in results)
-            {
-                _logger.LogInformation("🏆 League '{LeagueName}' -> CompetitionId={CompetitionId}",
-                    r.Notes, r.CompetitionId);
-            }
-
+                _logger.LogInformation("🏆 League '{LeagueName}' -> CompetitionId={CompetitionId}", r.Notes, r.CompetitionId);
 
             return results;
         }
+
 
         private async Task<List<Team>> GetRelegatedTeamsAsync(League league, List<LeagueStanding> orderedStandings, int seasonId)
         {

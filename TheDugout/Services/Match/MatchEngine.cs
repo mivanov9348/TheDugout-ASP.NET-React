@@ -27,6 +27,7 @@
         private readonly IPenaltyShootoutService _penaltyService;
         private readonly IMoneyPrizeService _moneyPrizeService;
         private readonly IStadiumService _stadiumService;
+        private readonly ITeamGenerationService _teamGeneratorService;
         private readonly ILogger<MatchEngine> _logger;
         private readonly DugoutDbContext _context;
 
@@ -36,10 +37,11 @@
             IPlayerStatsService playerStatsService,
             ILeagueStandingsService leagueStandingsService,
             IStandingsDispatcherService standingsDispatcher,
-        IMatchService matchService,
+            IMatchService matchService,
             IPenaltyShootoutService penaltyService,
             IMoneyPrizeService moneyPrizeService,
             IStadiumService stadiumService,
+            ITeamGenerationService teamGeneratorService,
             ILogger<MatchEngine> logger,
             DugoutDbContext context)
         {
@@ -52,6 +54,7 @@
             _penaltyService = penaltyService;
             _moneyPrizeService = moneyPrizeService;
             _stadiumService = stadiumService;
+            _teamGeneratorService = teamGeneratorService;
             _logger = logger;
             _context = context;
         }
@@ -87,8 +90,8 @@
             await GrantMatchPrizesAsync(match, fixture);
         }
         public void PlayNextMinute(Match match)
-        {   
-            int increment = _random.Next(1, 16);
+        {
+            int increment = _random.Next(1, 11);
             match.CurrentMinute += increment;
         }
         public void ChangeTurn(Match match)
@@ -100,7 +103,7 @@
         public bool IsMatchFinished(Match match)
         {
             return match.CurrentMinute >= 90;
-        }       
+        }
         public async Task<Match> SimulateMatchAsync(Fixture fixture, GameSave gameSave)
         {
             if (fixture is null) throw new ArgumentNullException(nameof(fixture));
@@ -253,14 +256,20 @@
             {
                 await _moneyPrizeService.GrantToTeamAsync(gameSave, "MATCH_DRAW", fixture.HomeTeam);
                 await _moneyPrizeService.GrantToTeamAsync(gameSave, "MATCH_DRAW", fixture.AwayTeam);
+                await _teamGeneratorService.UpdatePopularityAsync(fixture.HomeTeam, TeamEventType.Draw);
+                await _teamGeneratorService.UpdatePopularityAsync(fixture.AwayTeam, TeamEventType.Draw);
             }
             else if (fixture.WinnerTeamId == fixture.HomeTeamId)
             {
                 await _moneyPrizeService.GrantToTeamAsync(gameSave, "MATCH_WIN", fixture.HomeTeam);
+                await _teamGeneratorService.UpdatePopularityAsync(fixture.HomeTeam, TeamEventType.Win);
+
             }
             else if (fixture.WinnerTeamId == fixture.AwayTeamId)
             {
                 await _moneyPrizeService.GrantToTeamAsync(gameSave, "MATCH_WIN", fixture.AwayTeam);
+                await _teamGeneratorService.UpdatePopularityAsync(fixture.AwayTeam, TeamEventType.Win);
+
             }
         }
 

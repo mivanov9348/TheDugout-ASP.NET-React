@@ -30,8 +30,9 @@
         private readonly IAgencyService _agencyService;
         private readonly ITeamGenerationService _teamGenerationService;
         private readonly IGameSettingsService _gameSettingsService;
+        private readonly IYouthPlayerService _youthPlayerService;
 
-        public NewSeasonService(DugoutDbContext context, ILogger<NewSeasonService> logger, ICupService cupService, ISeasonCleanupService seasonCleanupService, ILeagueService leagueService, IEuropeanCupService europeanCupService, ILeagueFixturesService leagueFixturesService, IPlayerGenerationService playerGenerationService, IAgencyService agencyService, IPlayerInfoService playerInfoService, ITeamGenerationService teamGenerationService, IGameSettingsService gameSettigsService)
+        public NewSeasonService(DugoutDbContext context, ILogger<NewSeasonService> logger, ICupService cupService, ISeasonCleanupService seasonCleanupService, ILeagueService leagueService, IEuropeanCupService europeanCupService, ILeagueFixturesService leagueFixturesService, IPlayerGenerationService playerGenerationService, IAgencyService agencyService, IPlayerInfoService playerInfoService, ITeamGenerationService teamGenerationService, IGameSettingsService gameSettigsService, IYouthPlayerService youthPlayerService)
         {
             _context = context;
             _logger = logger;
@@ -45,6 +46,7 @@
             _playerInfoService = playerInfoService;
             _teamGenerationService = teamGenerationService;
             _gameSettingsService = gameSettigsService;
+            _youthPlayerService = youthPlayerService;
         }
         public async Task<Season> GenerateSeason(GameSave gameSave, DateTime startDate)
         {
@@ -164,6 +166,28 @@
                 // Check team rosters and regenerate missing players
                 await _teamGenerationService.EnsureTeamRostersAsync(gameSave.Id);
                 _logger.LogInformation("✅ Teams updated with necessary players after retirements");
+
+                _logger.LogInformation("🌱 Generating new youth intakes for academies...");
+
+                var academies = await _context.YouthAcademies
+                    .Include(a => a.Team)
+                        .ThenInclude(t => t.Country)
+                    .Where(a => a.Team.GameSaveId == gameSave.Id)
+                    .ToListAsync();
+
+                foreach (var academy in academies)
+                {
+                    try
+                    {
+                        await _youthPlayerService.GenerateYouthIntakeAsync(academy, gameSave);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "❌ Failed to generate youth intake for team {TeamName}", academy.Team?.Name);
+                    }
+                }
+
+                _logger.LogInformation("✅ Generated youth intakes for {Count} academies", academies.Count);
 
                 // new domestic cups same rules
                 await _cupService.InitializeCupsForGameSaveAsync(gameSave, newSeason.Id);

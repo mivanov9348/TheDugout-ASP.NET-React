@@ -9,6 +9,7 @@ import TransferHistory from "../pages/players/TransferHistory";
 import SearchPlayers from "../pages/players/SearchPlayers";
 import PlayerProfile from "../pages/players/PlayerProfile";
 import Club from "../pages/club/Club";
+import Academy from "../pages/club/Academy";
 import Finances from "../pages/club/Finances";
 import Facilities from "../pages/club/Facilities";
 import Squad from "../pages/club/Squad";
@@ -92,6 +93,8 @@ export const AppRoutes = (gameSaveId, userTeamId, seasonId) => (
     />
     <Route path="/club" element={<Club gameSaveId={gameSaveId} />} />
     <Route path="/finances" element={<Finances gameSaveId={gameSaveId} />} />
+<Route path="/academy" element={<Academy gameSaveId={gameSaveId} />} />
+
 
     {/* Transfers */}
     <Route path="/transfers/*" element={<Transfers gameSaveId={gameSaveId} />}>

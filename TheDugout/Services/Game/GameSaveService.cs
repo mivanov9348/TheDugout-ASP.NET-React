@@ -1,5 +1,6 @@
 ﻿namespace TheDugout.Services.Game
 {
+    using Microsoft.AspNetCore.Routing;
     using Microsoft.EntityFrameworkCore;
     using System.Diagnostics;
     using System.Linq;
@@ -31,6 +32,7 @@
         private readonly ICupService _cupService;
         private readonly IAgencyService _agencyService;
         private readonly IGameSettingsService _gameSettings;
+        private readonly IYouthPlayerService _youthPlayerService;
 
         public GameSaveService(
             DugoutDbContext context,
@@ -44,7 +46,8 @@
             ICupService cupService,
             IAgencyService agencyService,
             ILeagueFixturesService leagueFixturesService,
-            IGameSettingsService gameSettings
+            IGameSettingsService gameSettings,
+            IYouthPlayerService youthPlayerService
         )
         {
             _context = context;
@@ -59,6 +62,7 @@
             _agencyService = agencyService;
             _leagueFixturesService = leagueFixturesService;
             _gameSettings = gameSettings;
+            _youthPlayerService = youthPlayerService;
         }
 
         public async Task<List<object>> GetUserSavesAsync(int userId)
@@ -289,7 +293,7 @@ WHERE T.{Quote("GameSaveId")} = @p0;";
                 foreach (var team in independentTeams)
                 {
                     gameSave.Teams.Add(team);
-                   
+
                 }
 
                 await _context.SaveChangesAsync(ct);
@@ -297,6 +301,27 @@ WHERE T.{Quote("GameSaveId")} = @p0;";
 
                 await _teamFinanceService.InitializeClubFundsAsync(gameSave, leagues);
                 LogStep("Initialized Club Funds");
+
+                // Youth Academies &Youth Players
+                var academies = await _context.YouthAcademies
+                    .Include(a => a.Team)
+                        .ThenInclude(t => t.Country)
+                    .Where(a => a.Team.GameSaveId == gameSave.Id)
+                    .ToListAsync(ct);
+
+                foreach (var academy in academies)
+                {
+                    try
+                    {
+                        await _youthPlayerService.GenerateYouthIntakeAsync(academy, gameSave);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "❌ Failed to generate youth intake for team {TeamName}", academy.Team?.Name);
+                    }
+                }
+
+                LogStep($"Generated Youth Intakes for {academies.Count} academies");
 
                 // 6️⃣ European Cups (ако има шаблони)
                 var euroTemplates = await _context.Set<EuropeanCupTemplate>()
@@ -313,10 +338,10 @@ WHERE T.{Quote("GameSaveId")} = @p0;";
                         await _europeanCupService.InitializeTournamentAsync(
                            templateId: template.Id,
                            gameSaveId: gameSave.Id,
-                           previousSeasonId:null,
+                           previousSeasonId: null,
                            seasonId: season.Id,
-                           ct: ct);                     
-                       
+                           ct: ct);
+
                     }
                     catch (Exception ex)
                     {
@@ -337,7 +362,7 @@ WHERE T.{Quote("GameSaveId")} = @p0;";
                 // 9️⃣ Standings
                 await _context.SaveChangesAsync(ct);
                 await _leagueGenerator.InitializeStandingsAsync(gameSave, season);
-                LogStep("Initialized League Standings");               
+                LogStep("Initialized League Standings");
 
                 // ✅ Commit
                 await transaction.CommitAsync(ct);

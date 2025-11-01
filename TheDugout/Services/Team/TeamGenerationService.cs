@@ -2,13 +2,14 @@
 {
     using Microsoft.EntityFrameworkCore;
     using TheDugout.Data;
+    using TheDugout.Models.Enums;
     using TheDugout.Models.Facilities;
     using TheDugout.Models.Game;
     using TheDugout.Models.Leagues;
+    using TheDugout.Models.Players;
     using TheDugout.Models.Teams;
     using TheDugout.Services.Facilities;
     using TheDugout.Services.Player.Interfaces;
-    using TheDugout.Models.Players;
     using TheDugout.Services.Team.Interfaces;
 
     public class TeamGenerationService : ITeamGenerationService
@@ -83,23 +84,63 @@
             await _context.SaveChangesAsync();
 
             return teams;
-        }       
+        }
 
         private int CalculateTeamPopularity(Team team)
         {
             if (team.Players == null || !team.Players.Any())
-                return 10;
+                return 5;
 
             var allValues = team.Players
                 .SelectMany(p => p.Attributes)
                 .Select(pa => pa.Value);
 
-            double avgSkill = allValues.Any() ? allValues.Average() : 10;
+            double avgSkill = allValues.Any() ? allValues.Average() : 30;
 
-            int popularity = 10 + (int)(avgSkill * 2);
+            int leagueTier = team.League?.Tier ?? 4; 
+            int basePopularity = leagueTier switch
+            {
+                1 => 70, 
+                2 => 50, 
+                3 => 35, 
+                _ => 20  
+            };
+
+
+            int skillBonus = (int)((avgSkill - 40) / 2); 
+
+            int randomVariance = new Random().Next(-5, 6);
+
+            int popularity = basePopularity + skillBonus + randomVariance;
 
             return Math.Clamp(popularity, 1, 100);
         }
+
+        public async Task UpdatePopularityAsync(Team team, TeamEventType eventType)
+        {
+            double delta = eventType switch
+            {
+                TeamEventType.Win => 0.3,
+                TeamEventType.Draw => 0.1,
+                TeamEventType.Loss => -0.3,
+                TeamEventType.TitleWin => 5,
+                TeamEventType.CupWin => 3,
+                TeamEventType.Promotion => 4,
+                TeamEventType.Relegation => -4,
+                TeamEventType.EuropeanSuccess => 4,
+                TeamEventType.SeasonDecay => -1,
+                _ => 0
+            };
+
+            team.Popularity += (int)Math.Round(delta);
+
+            team.Popularity = Math.Clamp(team.Popularity, 1, 100);
+
+            _context.Update(team);
+            await _context.SaveChangesAsync();
+        }
+
+
         private string GenerateLogoFileName(string teamName)
         {
 
