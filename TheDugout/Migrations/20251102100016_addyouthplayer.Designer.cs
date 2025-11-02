@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TheDugout.Data;
 
@@ -11,9 +12,11 @@ using TheDugout.Data;
 namespace TheDugout.Migrations
 {
     [DbContext(typeof(DugoutDbContext))]
-    partial class DugoutDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251102100016_addyouthplayer")]
+    partial class addyouthplayer
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -2351,6 +2354,9 @@ namespace TheDugout.Migrations
                     b.Property<int?>("PlayerId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("PlayerId1")
+                        .HasColumnType("int");
+
                     b.Property<int?>("SeasonId")
                         .HasColumnType("int");
 
@@ -2364,6 +2370,8 @@ namespace TheDugout.Migrations
                     b.HasIndex("GameSaveId");
 
                     b.HasIndex("PlayerId");
+
+                    b.HasIndex("PlayerId1");
 
                     b.HasIndex("SeasonId");
 
@@ -3737,9 +3745,13 @@ namespace TheDugout.Migrations
                         .IsRequired();
 
                     b.HasOne("TheDugout.Models.Players.Player", "Player")
-                        .WithMany("PlayerTrainings")
+                        .WithMany()
                         .HasForeignKey("PlayerId")
                         .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("TheDugout.Models.Players.Player", null)
+                        .WithMany("PlayerTrainings")
+                        .HasForeignKey("PlayerId1");
 
                     b.HasOne("TheDugout.Models.Seasons.Season", "Season")
                         .WithMany("PlayerTrainings")

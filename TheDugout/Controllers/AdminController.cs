@@ -29,7 +29,7 @@
         public async Task<IActionResult> GetSettings()
         {
             if (!await IsAdmin())
-                return Unauthorized("Нямаш достъп");
+                return Unauthorized("No Access");
 
             var settings = await _context.GameSettings.ToListAsync();
             return Ok(settings);

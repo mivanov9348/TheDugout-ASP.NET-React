@@ -152,7 +152,6 @@
                 dto.Competitions.Add(competitionDto);
             }
 
-            // 🧠 ЛОКАЛЕН ЛОГ НА ЦЕЛИЯ DTO
             try
             {
                 string jsonOutput = JsonConvert.SerializeObject(dto, Formatting.Indented);

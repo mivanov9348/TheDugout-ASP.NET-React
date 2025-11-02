@@ -20,19 +20,19 @@
         public async Task<IActionResult> GetCups(int gameSaveId, int seasonId)
         {
             var activeSeason = await _context.Seasons
-       .FirstOrDefaultAsync(s => s.GameSaveId == gameSaveId && s.IsActive);
+                .FirstOrDefaultAsync(s => s.GameSaveId == gameSaveId && s.IsActive);
 
             if (activeSeason == null)
                 return NotFound($"No active season found for GameSave {gameSaveId}");
 
             var cups = await _context.Cups
-        .Where(c => c.GameSaveId == gameSaveId && c.SeasonId == activeSeason.Id)
-        .Include(c => c.Template)
-        .Include(c => c.Country)
-        .Include(c => c.Teams).ThenInclude(ct => ct.Team)
-        .Include(c => c.Rounds).ThenInclude(r => r.Fixtures).ThenInclude(f => f.HomeTeam)
-        .Include(c => c.Rounds).ThenInclude(r => r.Fixtures).ThenInclude(f => f.AwayTeam)
-        .ToListAsync();
+                .Where(c => c.GameSaveId == gameSaveId && c.SeasonId == activeSeason.Id)
+                .Include(c => c.Template)
+                .Include(c => c.Country)
+                .Include(c => c.Teams).ThenInclude(ct => ct.Team)
+                .Include(c => c.Rounds).ThenInclude(r => r.Fixtures).ThenInclude(f => f.HomeTeam)
+                .Include(c => c.Rounds).ThenInclude(r => r.Fixtures).ThenInclude(f => f.AwayTeam)
+                .ToListAsync();
 
             if (!cups.Any())
                 return NotFound($"No cups found for GameSave {gameSaveId}, Active Season {activeSeason.Id}");
@@ -41,16 +41,16 @@
 
             foreach (var c in cups)
             {
-                // Всички fixtures от тази купа
+                // All fixture IDs from this cup
                 var fixtureIds = c.Rounds.SelectMany(r => r.Fixtures).Select(f => f.Id).ToList();
 
-                // Зареждаме всички мачове (включително дузпите)
+                // Load all matches (including penalties)
                 var matches = await _context.Matches
-                             .Where(m => fixtureIds.Contains(m.FixtureId))
-                             .Include(m => m.Penalties)
-                             .ToListAsync();
+                    .Where(m => fixtureIds.Contains(m.FixtureId))
+                    .Include(m => m.Penalties)
+                    .ToListAsync();
 
-                // Зареждаме голмайсторите за всички тези мачове
+                // Load goal scorers for all matches
                 var matchIds = matches.Select(m => m.Id).ToList();
 
                 var goalScorersLookup = await _context.PlayerMatchStats
@@ -58,30 +58,29 @@
                     .Include(ps => ps.Player).ThenInclude(p => p.Team)
                     .ToListAsync();
 
-                // Общо голове в турнира
+                // Total goals in the tournament
                 var totalGoals = c.Rounds
                     .SelectMany(r => r.Fixtures)
                     .Sum(f => (f.HomeTeamGoals ?? 0) + (f.AwayTeamGoals ?? 0));
 
-                // Играческа статистика за турнира
+                // Player stats for the cup
                 var cupPlayerStats = await _context.PlayerCompetitionStats
-                                    .Where(p => p.CompetitionId == c.CompetitionId && p.SeasonId == activeSeason.Id)
-                                    .Include(p => p.Player)
-                                        .ThenInclude(pl => pl.Team)
-                                    .Select(p => new
-                                     {
-                                         PlayerId = p.PlayerId,
-                                         PlayerName = p.Player.FirstName + " " + p.Player.LastName,
-                                         TeamName = p.Player.Team.Name ?? "Unknown",
-                                         Goals = p.Goals,
-                                         Matches = p.MatchesPlayed
-                                     })
-                                     .OrderByDescending(p => p.Goals)
-                                     .ThenBy(p => p.PlayerName)
-                                     .ToListAsync();
+                    .Where(p => p.CompetitionId == c.CompetitionId && p.SeasonId == activeSeason.Id)
+                    .Include(p => p.Player)
+                        .ThenInclude(pl => pl.Team)
+                    .Select(p => new
+                    {
+                        PlayerId = p.PlayerId,
+                        PlayerName = p.Player.FirstName + " " + p.Player.LastName,
+                        TeamName = p.Player.Team.Name ?? "Unknown",
+                        Goals = p.Goals,
+                        Matches = p.MatchesPlayed
+                    })
+                    .OrderByDescending(p => p.Goals)
+                    .ThenBy(p => p.PlayerName)
+                    .ToListAsync();
 
-
-                // Сглобяваме финалния резултат
+                // Final result object
                 result.Add(new
                 {
                     c.Id,
@@ -117,7 +116,7 @@
                                 {
                                     var homePenalties = match.Penalties.Count(p => p.TeamId == f.HomeTeamId && p.IsScored);
                                     var awayPenalties = match.Penalties.Count(p => p.TeamId == f.AwayTeamId && p.IsScored);
-                                    penaltiesResult = $"({homePenalties} - {awayPenalties} п.)";
+                                    penaltiesResult = $"({homePenalties} - {awayPenalties} pen.)";
                                 }
 
                                 return new
@@ -161,27 +160,26 @@
             return Ok(result);
         }
 
-
         [HttpGet("{cupId}/player-stats")]
         public async Task<IActionResult> GetCupPlayerStats(int cupId)
         {
-            // намираме купата
+            // Find the cup
             var cup = await _context.Cups
                 .FirstOrDefaultAsync(c => c.Id == cupId);
 
             if (cup == null)
                 return NotFound($"Cup with id {cupId} not found");
 
-            // намираме всички competitions, които са част от тази купа
+            // Find all competitions that belong to this cup
             var competitionIds = await _context.Competitions
                 .Where(comp => comp.CupId == cupId)
                 .Select(comp => comp.Id)
                 .ToListAsync();
 
             if (!competitionIds.Any())
-                return Ok(new List<object>()); // няма competitions => няма статистики
+                return Ok(new List<object>()); // No competitions → no stats
 
-            // взимаме всички статистики от тези competitions
+            // Get all player stats for those competitions
             var playerStats = await _context.PlayerMatchStats
                 .Where(p => competitionIds.Contains(p.CompetitionId))
                 .Include(p => p.Player)
@@ -207,7 +205,5 @@
 
             return Ok(playerStats);
         }
-
     }
 }
-

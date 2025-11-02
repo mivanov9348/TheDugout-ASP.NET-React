@@ -59,6 +59,23 @@
 
             await _context.SaveChangesAsync();
         }
+        public async Task<List<Player>> GetYouthPlayersByTeamAsync(int teamId)
+        {
+            if (teamId <= 0)
+                throw new ArgumentException("Invalid team id.", nameof(teamId));
+
+            var players = await _context.YouthPlayers
+                .Include(y => y.Player)
+                    .ThenInclude(p => p.Country)
+                .Include(y => y.Player.Position)
+                .Include(y => y.Player.SeasonStats)
+                .Where(y => y.YouthAcademy.TeamId == teamId && !y.IsPromoted)
+                .Select(y => y.Player)
+                .ToListAsync();
+
+            return players;
+        }
+
 
     }
 }

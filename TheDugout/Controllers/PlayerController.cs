@@ -2,15 +2,18 @@
 {
     using Microsoft.AspNetCore.Mvc;
     using TheDugout.Services.Player.Interfaces;
+
     [ApiController]
     [Route("api/player")] 
     public class PlayerController : ControllerBase
     {
         private readonly IPlayerInfoService _playerService;
+        private readonly IYouthPlayerService _youthPlayerService;
 
-        public PlayerController(IPlayerInfoService playerService)
+        public PlayerController(IPlayerInfoService playerService, IYouthPlayerService youthPlayerService)
         {
             _playerService = playerService;
+            _youthPlayerService = youthPlayerService;
         }
 
         [HttpGet("{id}")]
@@ -23,31 +26,30 @@
             return Ok(player);
         }
 
-        [HttpGet("academy/{gameSaveId}")]
-        public async Task<IActionResult> GetAcademyPlayers(int gameSaveId)
+        [HttpGet("academy/team/{teamId}")]
+        public async Task<IActionResult> GetAcademyPlayersByTeam(int teamId)
         {
-            var players = await _playerService.GetAllPlayersAsync(gameSaveId);
+            var players = await _youthPlayerService.GetYouthPlayersByTeamAsync(teamId);
 
-            var academyPlayers = players
-                .Where(p => p.YouthProfile != null && !p.YouthProfile.IsPromoted)
-                .Select(p => new
-                {
-                    p.Id,
-                    Name = p.FirstName + " " + p.LastName,
-                    p.Age,
-                    Position = p.Position != null ? p.Position.Name : "N/A",
-                    Country = p.Country != null ? p.Country.Name : "Unknown",
-                    Nationality = p.Country != null ? p.Country.FlagEmoji : "🏳️",
-                    p.CurrentAbility,
-                    p.PotentialAbility,
-                    Photo = $"/images/players/{p.AvatarFileName}",
-                    Appearances = p.SeasonStats.Sum(s => s.Appearances),
-                    Goals = p.SeasonStats.Sum(s => s.Goals),
-                    Assists = p.SeasonStats.Sum(s => s.Assists)
-                })
-                .ToList();
+            if (players == null || !players.Any())
+                return Ok(new List<object>());
 
-            return Ok(academyPlayers);
+            var result = players.Select(p => new
+            {
+                Id = p.Id,
+                Name = p.FirstName + " " + p.LastName,
+                Age = p.Age,
+                Position = p.Position?.Name ?? "N/A",
+                Nationality = p.Country,
+                Country = p.Country?.Name ?? "Unknown",
+                CurrentAbility = p.CurrentAbility,
+                PotentialAbility = p.PotentialAbility,
+                Photo = $"/images/players/{p.AvatarFileName}",
+                Goals = p.SeasonStats?.Sum(s => s.Goals) ?? 0,
+            });
+
+            return Ok(result);
         }
+     
     }
 }

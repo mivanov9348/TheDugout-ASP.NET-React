@@ -441,9 +441,13 @@
                 if (pa.Progress >= 1.0)
                 {
                     pa.Progress -= 1.0;
-                    pa.Value += 1;
-                    changeValue = 1;
+                    if (pa.Value < 20) 
+                    {
+                        pa.Value += 1;
+                        changeValue = 1;
+                    }
                 }
+
 
                 trainingSession.PlayerTrainings.Add(new PlayerTraining
                 {

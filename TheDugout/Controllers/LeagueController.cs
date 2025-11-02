@@ -107,8 +107,6 @@
                 return Ok(data);
             }
 
-
-
         [HttpGet("{gameSaveId}/{leagueId}/top-scorers")]
         public async Task<IActionResult> GetTopScorersByLeague(int gameSaveId, int leagueId)
         {
@@ -157,6 +155,5 @@
 
             return Ok(scorers);
         }
-
     }
 }

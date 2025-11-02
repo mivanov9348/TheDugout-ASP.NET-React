@@ -93,7 +93,7 @@ export const AppRoutes = (gameSaveId, userTeamId, seasonId) => (
     />
     <Route path="/club" element={<Club gameSaveId={gameSaveId} />} />
     <Route path="/finances" element={<Finances gameSaveId={gameSaveId} />} />
-<Route path="/academy" element={<Academy gameSaveId={gameSaveId} />} />
+    <Route path="/academy" element={<Academy teamId={userTeamId} />} />
 
 
     {/* Transfers */}
@@ -110,9 +110,9 @@ export const AppRoutes = (gameSaveId, userTeamId, seasonId) => (
     <Route path="/season-review" element={<SeasonReview gameSaveId={gameSaveId} />} />
     <Route path="/today-matches/:gameSaveId" element={<TodayMatches />} />
     <Route path="/match/:matchId" element={<Match />} />
-    <Route 
-      path="/all-time-stats" 
-      element={<AllTimeStats gameSaveId={gameSaveId} />} 
+    <Route
+      path="/all-time-stats"
+      element={<AllTimeStats gameSaveId={gameSaveId} />}
     />
 
     {/* Player */}

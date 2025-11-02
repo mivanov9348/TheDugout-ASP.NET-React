@@ -10,7 +10,7 @@ const Calendar = ({ gameSaveId }) => {
   const season = currentGameSave?.activeSeason;
   const normalizedSeasonDate = season?.currentDate?.split("T")[0];
 
-  // 🔁 Когато се промени сезонната дата (Next Day в Header)
+  // 🔁 When the season date changes (Next Day in Header)
   useEffect(() => {
     if (season?.currentDate) {
       const [year, month] = season.currentDate.split("-").map(Number);
@@ -18,7 +18,7 @@ const Calendar = ({ gameSaveId }) => {
     }
   }, [season?.currentDate]);
 
-  // 📅 Зареждаме събитията веднъж за сейва
+  // 📅 Load events once per save
   useEffect(() => {
     const fetchEvents = async () => {
       if (!gameSaveId) return;
@@ -26,7 +26,7 @@ const Calendar = ({ gameSaveId }) => {
         const res = await fetch(`/api/calendar?gameSaveId=${gameSaveId}`, {
           credentials: "include",
         });
-        if (!res.ok) throw new Error("Грешка при зареждане на календара");
+        if (!res.ok) throw new Error("Error while loading the calendar");
         const data = await res.json();
         setEvents(data.events || []);
       } catch (err) {
@@ -40,7 +40,7 @@ const Calendar = ({ gameSaveId }) => {
   if (!season)
     return (
       <div className="text-center text-gray-400 mt-10">
-        Няма активен сезон.
+        No active season.
       </div>
     );
 
@@ -58,7 +58,7 @@ const Calendar = ({ gameSaveId }) => {
 
   const offset = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1;
 
-  // ⚡️ Предварително групиране на събитията по дата (по-бързо)
+  // ⚡️ Pre-group events by date (for better performance)
   const eventsByDate = useMemo(() => {
     const map = {};
     for (const e of events) {
@@ -128,12 +128,12 @@ const Calendar = ({ gameSaveId }) => {
 
       {/* Calendar grid */}
       <div className="grid grid-cols-7 gap-3 auto-rows-[160px]">
-        {/* празни клетки в началото */}
+        {/* empty cells at the start */}
         {Array.from({ length: offset }).map((_, idx) => (
           <div key={`empty-${idx}`} />
         ))}
 
-        {/* дни в месеца */}
+        {/* days in month */}
         {Array.from({ length: daysInMonth }).map((_, idx) => {
           const day = idx + 1;
           const isoDay = `${currentDate.getFullYear()}-${String(

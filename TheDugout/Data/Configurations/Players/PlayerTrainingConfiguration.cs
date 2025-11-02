@@ -15,7 +15,7 @@
                    .OnDelete(DeleteBehavior.Restrict); 
 
             builder.HasOne(pt => pt.Player)
-                   .WithMany()
+                   .WithMany(p => p.PlayerTrainings)
                    .HasForeignKey(pt => pt.PlayerId)
                    .OnDelete(DeleteBehavior.Restrict); 
 

@@ -2,26 +2,27 @@
 import React, { useEffect, useState } from "react";
 import { Users, Activity, Star } from "lucide-react";
 
-export default function Academy({ gameSaveId }) {
+export default function Academy({ teamId }) {
   const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchAcademyPlayers = async () => {
-      try {
-        const res = await fetch(`/api/player/academy/${gameSaveId}`);
-        if (!res.ok) throw new Error("Failed to load academy players");
-        const data = await res.json();
-        setPlayers(data);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchAcademyPlayers = async () => {
+    try {
+      const res = await fetch(`/api/player/academy/team/${teamId}`);
+      if (!res.ok) throw new Error("Failed to load academy players");
+      const data = await res.json();
+      setPlayers(data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetchAcademyPlayers();
-  }, [gameSaveId]);
+  if (teamId) fetchAcademyPlayers();
+}, [teamId]);
+
 
   if (loading) {
     return (

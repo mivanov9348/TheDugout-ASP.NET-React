@@ -44,6 +44,7 @@
         public DbSet<GameSave> GameSaves { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<Player> Players { get; set; }
+        public DbSet<YouthPlayer> YouthPlayers { get; set; }
         public DbSet<Message> Messages { get; set; }
         public DbSet<MessageTemplate> MessageTemplates { get; set; }
         public DbSet<Season> Seasons { get; set; }

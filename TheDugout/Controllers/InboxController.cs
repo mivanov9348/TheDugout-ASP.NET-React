@@ -1,11 +1,11 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
-using TheDugout.Data;
-
-namespace TheDugout.Controllers
+﻿namespace TheDugout.Controllers
 {
+    using Microsoft.AspNetCore.Authorization;
+    using Microsoft.AspNetCore.Mvc;
+    using Microsoft.EntityFrameworkCore;
+    using System.Security.Claims;
+    using TheDugout.Data;
+
     [ApiController]
     [Route("api/[controller]")]
     public class InboxController : ControllerBase
@@ -40,7 +40,6 @@ namespace TheDugout.Controllers
                             Date = m.CreatedAt
                         })
                         .ToListAsync();
-
 
             return Ok(messages);
         }
@@ -78,7 +77,5 @@ namespace TheDugout.Controllers
 
             return Ok(new { message = "Message deleted" });
         }
-
     }
-
 }
