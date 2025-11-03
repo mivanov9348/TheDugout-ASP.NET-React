@@ -39,7 +39,6 @@
             if (userId == null)
                 return Unauthorized();
 
-            // ✅ Взимаме активния сезон за този GameSave
             var activeSeason = await _context.Seasons
                 .AsNoTracking()
                 .FirstOrDefaultAsync(s => s.GameSaveId == gameSaveId && s.IsActive);
@@ -47,7 +46,6 @@
             if (activeSeason == null)
                 return NotFound($"No active season found for GameSave {gameSaveId}");
 
-            // ✅ Използваме ID-то на активния сезон надолу
             var season = await _context.Seasons
                 .AsNoTracking()
                 .Where(s => s.Id == activeSeason.Id && s.GameSave.UserId == userId)
@@ -88,7 +86,6 @@
             if (season.userTeamId == null)
                 return BadRequest("User team not set for this save.");
 
-            // ⚽ Мачове
             var fixtureEvents = season.fixtures.Select(f =>
             {
                 bool isHome = f.HomeTeamId == season.userTeamId;
@@ -116,7 +113,6 @@
                 };
             });
 
-            // 📅 Други събития
             var otherEvents = season.seasonEvents.Select(e => new
             {
                 id = e.Id,

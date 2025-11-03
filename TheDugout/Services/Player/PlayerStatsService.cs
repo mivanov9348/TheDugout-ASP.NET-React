@@ -198,7 +198,7 @@
         }
         public double CalculateMatchRating(PlayerMatchStats stat)
         {
-            double rating = 5.0;
+            double rating = 6.0;
             rating += stat.Goals * 1.5;
             return Math.Round(Math.Clamp(rating, 1.0, 10.0), 2);
         }

@@ -13,12 +13,14 @@
         private readonly DugoutDbContext _context;
         private readonly ICompetitionService _competitionService;
         private readonly IMessageOrchestrator _messageOrchestrator;
+        private readonly ILogger<PlayerInfoService> _logger;
 
-        public PlayerInfoService(DugoutDbContext context, ICompetitionService competitionService, IMessageOrchestrator messageOrchestrator)
+        public PlayerInfoService(DugoutDbContext context, ICompetitionService competitionService, IMessageOrchestrator messageOrchestrator, ILogger<PlayerInfoService> logger)
         {
             _context = context;
             _competitionService = competitionService;
             _messageOrchestrator = messageOrchestrator;
+            _logger = logger;
         }
 
         public async Task<PlayerDto?> GetPlayerByIdAsync(int playerId)
@@ -68,7 +70,8 @@
                     {
                         SeasonId = s.SeasonId,
                         MatchesPlayed = s.MatchesPlayed,
-                        Goals = s.Goals
+                        Goals = s.Goals,
+                        SeasonRating = s.SeasonRating
                     }).ToList(),
 
                     CompetitionStats = p.CompetitionStats.Select(cs => new PlayerCompetitionStatsDto
@@ -138,44 +141,54 @@
 
         public async Task Aging(int gameSaveId)
         {
-            var players = await _context.Players
-                .Where(p => p.IsActive && p.GameSaveId == gameSaveId)
-                .ToListAsync();
+            _logger.LogInformation("⚙️ Starting player aging for GameSave {GameSaveId}", gameSaveId);
 
             var currentSeason = await _context.Seasons
+                .AsNoTracking()
                 .FirstOrDefaultAsync(s => s.GameSaveId == gameSaveId && s.IsActive);
 
-            var gameDate = currentSeason?.CurrentDate ?? DateTime.UtcNow;
-
-            foreach (var player in players)
+            if (currentSeason == null)
             {
-                var age = player.GetAge(gameDate);
-
-                if (age >= 35)
-                    await RetirePlayer(player.Id);
+                _logger.LogWarning("⚠️ No active season found for GameSave {GameSaveId}", gameSaveId);
+                return;
             }
 
-            await _context.SaveChangesAsync();
-        }
+            var gameDate = currentSeason.CurrentDate;
 
-        public async Task RetirePlayer(int playerId)
-        {
-            var player = await _context.Players.FirstOrDefaultAsync(x => x.Id == playerId);
+            // Зареждаме само нужните колони
+            var players = await _context.Players
+                .AsNoTracking()
+                .Where(p => p.IsActive && p.GameSaveId == gameSaveId)
+                .Select(p => new { p.Id, p.BirthDate })
+                .ToListAsync();
 
-            if (player == null)
-                throw new ArgumentException("Null Player!");
+            if (!players.Any())
+            {
+                _logger.LogInformation("No active players found for aging.");
+                return;
+            }
 
-            player.IsActive = false;
-            player.TeamId = null;
+            // Проверяваме кои са на 35 или повече
+            var toDeleteIds = players
+                .Where(p => p.BirthDate.AddYears(35) <= gameDate)
+                .Select(p => p.Id)
+                .ToList();
 
-            await _messageOrchestrator.SendMessageAsync(
-        MessageCategory.Retirement,
-        player.GameSaveId,
-        player
-    );
+            if (toDeleteIds.Any())
+            {
+                await _context.Database.ExecuteSqlRawAsync($@"
+        UPDATE Players
+        SET IsActive = 0, TeamId = NULL
+        WHERE Id IN ({string.Join(",", toDeleteIds)})
+    ");
 
-            await _context.SaveChangesAsync();
+                _context.ChangeTracker.Clear();
 
+                _logger.LogInformation("⚪ Set inactive {Count} players aged 35+.", toDeleteIds.Count);
+            }
+
+
+            _logger.LogInformation("✅ Aging process complete for GameSave {GameSaveId}", gameSaveId);
         }
 
     }

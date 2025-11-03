@@ -276,30 +276,63 @@
             double final = baseValue * importanceFactor * ageFactor;
             return Math.Clamp((int)Math.Round(final), 1, 20);
         }
+
+        public void UpdateCurrentAbility(Player player, PlayerSeasonStats stats)
+        {
+            if (player == null) throw new ArgumentNullException(nameof(player));
+
+            double potentialGap = player.PotentialAbility - player.CurrentAbility;
+            if (potentialGap <= 0) potentialGap = 1; 
+
+            double growth = 0.0;
+
+            if (player.Age <= 25)
+            {
+                double matchFactor = Math.Min(stats.MatchesPlayed / 40.0, 1.0);
+                double performanceFactor = (stats.SeasonRating - 6.5) * 0.15; // 6.5 е средно
+                growth = potentialGap * (0.05 * matchFactor + performanceFactor * 0.05);
+            }
+
+            else if (player.Age <= 30)
+            {
+                double stability = Math.Clamp((stats.SeasonRating - 6.5) * 0.03, -0.02, 0.05);
+                growth = player.CurrentAbility * stability;
+            }
+            else
+            {
+                double decline = _rng.NextDouble() * 0.3; 
+                growth = -decline;
+            }
+
+            int newAbility = (int)Math.Clamp(player.CurrentAbility + growth, 1, player.PotentialAbility);
+            player.CurrentAbility = newAbility;
+        }
+
         private int CalculatePotentialAbility(Player player, Position position)
         {
-            int growthMargin = player.Age switch
+            int maxGrowth = player.Age switch
             {
-                <= 19 => _rng.Next(60, 100),
-                <= 23 => _rng.Next(30, 70),
-                <= 27 => _rng.Next(15, 40),
-                <= 30 => _rng.Next(5, 20),
-                _ => 0
+                <= 18 => _rng.Next(40, 80),
+                <= 21 => _rng.Next(30, 60),
+                <= 25 => _rng.Next(15, 40),
+                <= 28 => _rng.Next(5, 20),
+                _ => _rng.Next(0, 10)
             };
 
             double posFactor = position.Code switch
             {
-                "ATT" => 1.15,
+                "ATT" => 1.1,
                 "MID" => 1.05,
                 "DF" => 1.0,
-                "GK" => 0.95,
+                "GK" => 0.9,  
                 _ => 1.0
             };
 
-            int potential = (int)(player.CurrentAbility + growthMargin * posFactor);
+            int potential = (int)(player.CurrentAbility + maxGrowth * posFactor);
 
             return Math.Min(potential, 200);
         }
+
         private DateTime RandomBirthDate()
         {
             int age = _rng.Next(18, 36);
@@ -342,6 +375,81 @@
 
             return Math.Round((decimal)price, 0);
         }
+
+        public async Task UpdatePlayerPriceAsync(Player player)
+        {
+            var stats = await _context.PlayerSeasonStats
+                .Where(s => s.PlayerId == player.Id)
+                .OrderByDescending(s => s.SeasonId)
+                .FirstOrDefaultAsync();
+
+            player.Price = CalculateUpdatedPlayerPrice(player, stats);
+
+            _context.Update(player);
+            await _context.SaveChangesAsync();
+        }
+
+        private decimal CalculateUpdatedPlayerPrice(Player player, PlayerSeasonStats? stats)
+        {
+            if (player == null) throw new ArgumentNullException(nameof(player));
+
+            double abilityScore = (player.CurrentAbility * 0.7) + (player.PotentialAbility * 0.3);
+
+            double ageFactor = player.Age switch
+            {
+                < 20 => 1.3,
+                <= 23 => 1.2,
+                <= 28 => 1.0,
+                <= 32 => 0.8,
+                _ => 0.5
+            };
+
+            double positionFactor = player.Position.Code switch
+            {
+                "ATT" => 1.4,
+                "MID" => 1.2,
+                "DF" => 1.0,
+                "GK" => 0.8,
+                _ => 1.0
+            };
+
+            double basePrice = (abilityScore / 200.0) * 100_000;
+            double price = basePrice * ageFactor * positionFactor;
+
+            if (stats != null && stats.MatchesPlayed > 0)
+            {
+                double performanceFactor = 1.0;
+
+                double ratingEffect = (stats.SeasonRating - 6.5) * 0.2;
+                ratingEffect = Math.Clamp(ratingEffect, -0.3, 0.4);
+
+                double goalImpact = player.Position.Code switch
+                {
+                    "ATT" => stats.Goals * 0.03,
+                    "MID" => stats.Goals * 0.015,
+                    "DF" => stats.Goals * 0.01,
+                    _ => 0
+                };
+
+                double consistency = Math.Min(stats.MatchesPlayed / 40.0, 1.0);
+
+                performanceFactor += (ratingEffect + goalImpact) * consistency;
+
+              
+  
+                price *= performanceFactor;
+            }
+
+            double variation = 0.95 + (_rng.NextDouble() * 0.1);
+            price *= variation;
+
+            double smoothed = ((double)player.Price * 0.7) + (price * 0.3);
+
+            smoothed = Math.Clamp(smoothed, 5000, 120_000);
+
+            return Math.Round((decimal)smoothed, 0);
+        }
+
         public string GetRandomAvatarFileName()
         {
             var randomFile = _avatarFiles[_rng.Next(_avatarFiles.Length)];

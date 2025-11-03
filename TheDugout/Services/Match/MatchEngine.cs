@@ -22,6 +22,7 @@
         private readonly IMatchService _matchService;
         private readonly IMatchEventService _matchEventService;
         private readonly IPlayerStatsService _playerStatsService;
+        private readonly IPlayerGenerationService _playerGenerationService;
         private readonly ILeagueStandingsService _leagueStandingsService;
         private readonly IStandingsDispatcherService _standingsDispatcher;
         private readonly IPenaltyShootoutService _penaltyService;
@@ -35,6 +36,7 @@
             ITeamPlanService teamPlanService,
             IMatchEventService matchEventService,
             IPlayerStatsService playerStatsService,
+            IPlayerGenerationService playerGenerationService,
             ILeagueStandingsService leagueStandingsService,
             IStandingsDispatcherService standingsDispatcher,
             IMatchService matchService,
@@ -48,6 +50,7 @@
             _teamPlanService = teamPlanService;
             _matchEventService = matchEventService;
             _playerStatsService = playerStatsService;
+            _playerGenerationService = playerGenerationService;
             _leagueStandingsService = leagueStandingsService;
             _matchService = matchService;
             _standingsDispatcher = standingsDispatcher;
@@ -85,6 +88,29 @@
             {
                 await _playerStatsService.UpdateCompetitionStatsAfterMatchAsync(match);
                 await _playerStatsService.UpdateSeasonStatsAfterMatchAsync(match);
+
+                foreach (var ps in match.PlayerStats)
+                {
+                    var player = ps.Player;
+                    if (player == null) continue;
+
+                    // Зареждаме текущия сезонен запис
+                    var stats = await _context.PlayerSeasonStats
+                        .Where(s => s.PlayerId == player.Id)
+                        .OrderByDescending(s => s.SeasonId)
+                        .FirstOrDefaultAsync();
+
+                    if (stats != null)
+                    {
+                        // 🧠 Актуализирай текущия ability
+                        _playerGenerationService.UpdateCurrentAbility(player, stats);
+
+                        // 💰 Пресметни новата цена
+                        await _playerGenerationService.UpdatePlayerPriceAsync(player);
+                    }
+                }
+                await _context.SaveChangesAsync();
+
             }
 
             await GrantMatchPrizesAsync(match, fixture);

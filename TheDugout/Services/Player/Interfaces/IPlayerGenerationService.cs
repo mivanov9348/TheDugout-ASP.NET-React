@@ -13,6 +13,8 @@
         public Player? GenerateFreeAgent(GameSave save, Agency? agency = null);
         Player CreateBasePlayer(GameSave save, Team? team, Country country, Position position, Agency? agency = null);
         Task GeneratePlayersForAgenciesAsync(GameSave save, List<Agency> agencies, CancellationToken ct = default);
+        void UpdateCurrentAbility(Player player, PlayerSeasonStats stats);
+        Task UpdatePlayerPriceAsync(Player player);
         string GetRandomAvatarFileName();
 
     }

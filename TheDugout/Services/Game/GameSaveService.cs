@@ -158,10 +158,12 @@ WHERE T.{Quote("GameSaveId")} = @p0;";
             "Stadiums",
 
             // 🔹 Всички останали
+                        "YouthPlayers",
+
             "PlayerAttributes",
             "MatchEvents",
             "Penalties",
-                        "PlayerCompetitionStats",
+           "PlayerCompetitionStats",
             "PlayerMatchStats",
             "PlayerSeasonStats",
             "PlayerTrainings",

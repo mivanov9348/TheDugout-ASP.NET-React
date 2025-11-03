@@ -61,6 +61,8 @@
 
             // Save the new season to get its ID
             _context.Seasons.Add(season);
+            _logger.LogInformation("Saving changes after deleting matches...");
+
             await _context.SaveChangesAsync();
 
             // Update the GameSave with the new season ID

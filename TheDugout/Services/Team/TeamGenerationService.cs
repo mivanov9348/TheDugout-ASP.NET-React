@@ -48,7 +48,7 @@
                     Name = tt.Name,
                     Abbreviation = tt.Abbreviation,
                     CountryId = tt.CountryId,
-                    Popularity = 10,
+                    PopularityValue = 10,
                     LogoFileName = GenerateLogoFileName(tt.Name)
                 };
 
@@ -59,7 +59,7 @@
                     gameSave.Players.Add(player);
                 }
 
-                team.Popularity = CalculateTeamPopularity(team);
+                team.PopularityValue = CalculateTeamPopularity(team);
                 teams.Add(team);
             }
 
@@ -97,17 +97,17 @@
 
             double avgSkill = allValues.Any() ? allValues.Average() : 30;
 
-            int leagueTier = team.League?.Tier ?? 4; 
+            int leagueTier = team.League?.Tier ?? 4;
             int basePopularity = leagueTier switch
             {
-                1 => 70, 
-                2 => 50, 
-                3 => 35, 
-                _ => 20  
+                1 => 70,
+                2 => 50,
+                3 => 35,
+                _ => 20
             };
 
 
-            int skillBonus = (int)((avgSkill - 40) / 2); 
+            int skillBonus = (int)((avgSkill - 40) / 2);
 
             int randomVariance = new Random().Next(-5, 6);
 
@@ -132,13 +132,12 @@
                 _ => 0
             };
 
-            team.Popularity += (int)Math.Round(delta);
-
-            team.Popularity = Math.Clamp(team.Popularity, 1, 100);
+            team.PopularityValue = Math.Clamp(team.PopularityValue + delta, 1, 100);
 
             _context.Update(team);
             await _context.SaveChangesAsync();
         }
+
 
 
         private string GenerateLogoFileName(string teamName)
@@ -172,7 +171,7 @@
                     Abbreviation = tt.Abbreviation,
                     CountryId = tt.CountryId,
                     Country = tt.Country,
-                    Popularity = 10,
+                    PopularityValue = 10,
                     LogoFileName = GenerateLogoFileName(tt.Name)
                 };
 
@@ -184,7 +183,7 @@
                     team.Players.Add(player);
                 }
 
-                team.Popularity = CalculateTeamPopularity(team);
+                team.PopularityValue = CalculateTeamPopularity(team);
                 teams.Add(team);
             }
 
@@ -206,6 +205,7 @@
         {
             var teams = await _context.Teams
                 .Include(t => t.Players)
+                .Include(t=>t.Country)
                 .Where(t => t.GameSaveId == gameSaveId)
                 .ToListAsync();
 
@@ -216,7 +216,7 @@
             {
                 // групиране по позиция
                 var positionCounts = team.Players
-                    .Where(p => p.IsActive)
+                    .Where(p => p.IsActive && p.Position != null)
                     .GroupBy(p => p.Position.Code)
                     .ToDictionary(g => g.Key, g => g.Count());
 

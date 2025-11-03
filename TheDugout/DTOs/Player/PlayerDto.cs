@@ -32,6 +32,7 @@
         public int? MatchesPlayed { get; set; }
         public int? Goals { get; set; }
         public int? Assists { get; set; }
+        public double SeasonRating { get; set; }
     }
     public class PlayerStatsDTO
     {

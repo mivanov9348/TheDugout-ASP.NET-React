@@ -54,9 +54,13 @@ const PlayerProfile = () => {
   }, {});
 
   // Среден рейтинг (пример)
-  const avgRating =
-    player.attributes?.reduce((a, b) => a + b.value, 0) /
-    player.attributes?.length || 0;
+const avgRating =
+  player.seasonStats?.length > 0
+    ? player.seasonStats.reduce((a, b) => a + (b.seasonRating || 0), 0) /
+      player.seasonStats.length
+    : null;
+
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-800 text-gray-100 flex justify-center items-start py-14 px-6 relative overflow-hidden">
@@ -116,8 +120,8 @@ const PlayerProfile = () => {
                 <div className="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-xl border border-white/20 shadow-lg">
                   <Star className="text-yellow-400 w-5 h-5" />
                   <span className="font-semibold text-lg">
-                    Avg Rating: {avgRating.toFixed(1)}
-                  </span>
+  Avg Rating: {avgRating ? avgRating.toFixed(2) : "N/A"}
+</span>
                 </div>
               </div>
             </div>

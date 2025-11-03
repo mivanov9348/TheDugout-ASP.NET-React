@@ -1,5 +1,6 @@
 ﻿namespace TheDugout.Models.Teams
 {
+    using System.ComponentModel.DataAnnotations.Schema;
     using TheDugout.Models.Common;
     using TheDugout.Models.Competitions;
     using TheDugout.Models.Cups;
@@ -37,7 +38,9 @@
         public YouthAcademy? YouthAcademy { get; set; }
 
         public decimal Balance { get; set; }
-        public int Popularity { get; set; } = 10;
+        public double PopularityValue { get; set; } = 10; 
+        [NotMapped]
+        public int Popularity => (int)Math.Round(PopularityValue);
 
         public virtual ICollection<Player> Players { get; set; } = new List<Player>();
         public ICollection<Fixture> HomeFixtures { get; set; } = new List<Fixture>();

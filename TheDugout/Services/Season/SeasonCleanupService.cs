@@ -1,9 +1,11 @@
 ﻿namespace TheDugout.Services.Season
 {
+    using EFCore.BulkExtensions;
     using Microsoft.EntityFrameworkCore;
     using System.Linq;
     using TheDugout.Data;
     using TheDugout.Services.Season.Interfaces;
+
     public class SeasonCleanupService : ISeasonCleanupService
     {
         private readonly DugoutDbContext _context;
@@ -14,6 +16,7 @@
             _context = context;
             _logger = logger;
         }
+
         public async Task CleanupOldSeasonDataAsync(int seasonId)
         {
             if (seasonId <= 0)
@@ -37,221 +40,177 @@
 
             _logger.LogInformation("🧹 Starting cleanup for season {SeasonId}", seasonId);
 
-            await CleanupFixturesAndMatchesAsync(seasonId);
-            await CleanupPlayerMatchStatsAsync(seasonId);
-            await CleanupTrainingSessionsAsync(seasonId);
-            await CleanupTransfersAsync(seasonId);
-            await CleanupFreeAgentsAsync(seasonId);
-            //await CleanupCupTeamsAsync(seasonId);
-
-            await _context.SaveChangesAsync();
-
-            _logger.LogInformation("✅ Cleanup complete for season {SeasonId}", seasonId);
-        }
-
-        private async Task CleanupCupTeamsAsync(int seasonId)
-        {
-            _logger.LogInformation("🏆 Cleaning CupTeams for season {SeasonId}", seasonId);
-
-            // Намери всички купи за сезона
-            var cups = await _context.Cups
-                .Where(c => c.SeasonId == seasonId)
-                .ToListAsync();
-
-            if (!cups.Any())
+            try
             {
-                _logger.LogWarning("⚠️ No cups found for season {SeasonId}", seasonId);
-                return;
+                await CleanupFixturesAndMatchesAsync(seasonId);
+                await CleanupTrainingSessionsAsync(seasonId);
+                await CleanupTransfersAsync(seasonId);
+                await CleanupFreeAgentsAsync(seasonId);
+
+                _logger.LogInformation("✅ Cleanup complete for season {SeasonId}", seasonId);
             }
-
-            var cupIds = cups.Select(c => c.Id).ToList();
-
-            // Намери всички CupTeams, които принадлежат към тези купи
-            var cupTeams = await _context.CupTeams
-                .Where(ct => cupIds.Contains(ct.CupId ?? 0))
-                .ToListAsync();
-
-            if (!cupTeams.Any())
+            catch (Exception ex)
             {
-                _logger.LogWarning("⚠️ No CupTeams found for season {SeasonId}", seasonId);
-                return;
+                _logger.LogError(ex, "❌ [CleanupOldSeasonDataAsync] Failed to clean season {SeasonId}.", seasonId);
+                throw;
             }
-
-            _logger.LogInformation("📊 Found {CupCount} cups and {CupTeamCount} cup teams to delete",
-                cups.Count, cupTeams.Count);
-
-            // Изтрий cup teams
-            _context.CupTeams.RemoveRange(cupTeams);
-
-            // Изтрий и самите купи
-            _context.Cups.RemoveRange(cups);
-
-            _logger.LogInformation("✅ Deleted all CupTeams and Cups for season {SeasonId}", seasonId);
         }
 
 
+        // ==========================================================
+        // 🧩 FIXTURES & MATCHES
+        // ==========================================================
         private async Task CleanupFixturesAndMatchesAsync(int seasonId)
         {
             _logger.LogInformation("🧩 Cleaning Fixtures & Matches for season {SeasonId}", seasonId);
 
-            var fixtures = await _context.Fixtures
+            var fixtureIds = await _context.Fixtures
                 .Where(f => f.SeasonId == seasonId)
+                .Select(f => f.Id)
                 .ToListAsync();
 
-            if (!fixtures.Any())
+            if (!fixtureIds.Any())
             {
-                _logger.LogWarning("⚠️ No fixtures found for season {SeasonId}", seasonId);
+                _logger.LogInformation("⚠️ No fixtures found for season {SeasonId}", seasonId);
                 return;
             }
 
-            var fixtureIds = fixtures.Select(f => f.Id).ToList();
-            var matches = await _context.Matches
+            var matchIds = await _context.Matches
                 .Where(m => fixtureIds.Contains(m.FixtureId))
-                .Include(m => m.PlayerStats)
-                .Include(m => m.Events)
-                .Include(m => m.Penalties)
+                .Select(m => m.Id)
                 .ToListAsync();
 
-            _logger.LogInformation("📊 Found {MatchCount} matches and {FixtureCount} fixtures to delete",
-                matches.Count, fixtures.Count);
+            _logger.LogInformation("📊 Found {FixtureCount} fixtures and {MatchCount} matches to delete",
+                fixtureIds.Count, matchIds.Count);
 
-            var playerStatsCount = matches.Sum(m => m.PlayerStats.Count);
-            var eventsCount = matches.Sum(m => m.Events.Count);
-            var penaltiesCount = matches.Sum(m => m.Penalties.Count);
+            if (matchIds.Any())
+            {
+                // 🔹 Delete related data (fast direct deletes)
+                await _context.PlayerMatchStats
+                    .Where(p => matchIds.Contains(p.MatchId))
+                    .ExecuteDeleteAsync();
 
-            _context.PlayerMatchStats.RemoveRange(matches.SelectMany(m => m.PlayerStats));
-            _context.MatchEvents.RemoveRange(matches.SelectMany(m => m.Events));
-            _context.Penalties.RemoveRange(matches.SelectMany(m => m.Penalties));
+                await _context.MatchEvents
+                    .Where(e => matchIds.Contains(e.MatchId))
+                    .ExecuteDeleteAsync();
 
-            _logger.LogInformation("🧾 Deleted {StatsCount} player stats, {EventsCount} events, {PenaltiesCount} penalties",
-                playerStatsCount, eventsCount, penaltiesCount);
+                await _context.Penalties
+                    .Where(p => matchIds.Contains(p.MatchId ?? -1))
+                    .ExecuteDeleteAsync();
 
-            _context.Matches.RemoveRange(matches);
-            _context.Fixtures.RemoveRange(fixtures);
+                _logger.LogInformation("🗑️ Deleted PlayerMatchStats, Events, and Penalties");
 
-            _logger.LogInformation("✅ Deleted all fixtures & matches for season {SeasonId}", seasonId);
+                await _context.Matches
+                    .Where(m => matchIds.Contains(m.Id))
+                    .ExecuteDeleteAsync();
+
+                _logger.LogInformation("🧾 Deleted {Count} Matches", matchIds.Count);
+            }
+
+            await _context.Fixtures
+                .Where(f => fixtureIds.Contains(f.Id))
+                .ExecuteDeleteAsync();
+
+            _logger.LogInformation("✅ Deleted {Count} Fixtures", fixtureIds.Count);
+            _logger.LogInformation("🎯 Cleanup for Fixtures & Matches completed successfully.");
         }
+
+        // ==========================================================
+        // 💸 TRANSFERS
+        // ==========================================================
         private async Task CleanupTransfersAsync(int seasonId)
         {
             _logger.LogInformation("💸 Cleaning transfers for season {SeasonId}", seasonId);
 
-            // Изтриваме оферти първо, защото имат FK към Player и Transfer
-            var transferOffers = await _context.TransferOffers
+            // Изтриваме оферти (първо, защото имат FK)
+            var offersDeleted = await _context.TransferOffers
                 .Where(o => o.GameSave.CurrentSeasonId == seasonId)
-                .ToListAsync();
+                .ExecuteDeleteAsync();
 
-            if (transferOffers.Any())
-            {
-                _context.TransferOffers.RemoveRange(transferOffers);
-                _logger.LogInformation("✅ Deleted {OfferCount} transfer offers for season {SeasonId}", transferOffers.Count, seasonId);
-            }
-            else
-            {
-                _logger.LogInformation("⚠️ No transfer offers found for season {SeasonId}", seasonId);
-            }
+            _logger.LogInformation("✅ Deleted {Count} transfer offers for season {SeasonId}", offersDeleted, seasonId);
 
-            // Изтриваме трансфери за сезона
-            var transfers = await _context.Transfers
+            var transfersDeleted = await _context.Transfers
                 .Where(t => t.SeasonId == seasonId)
-                .ToListAsync();
+                .ExecuteDeleteAsync();
 
-            if (transfers.Any())
-            {
-                _context.Transfers.RemoveRange(transfers);
-                _logger.LogInformation("✅ Deleted {TransferCount} transfers for season {SeasonId}", transfers.Count, seasonId);
-            }
-            else
-            {
-                _logger.LogInformation("⚠️ No transfers found for season {SeasonId}", seasonId);
-            }
-
-            await _context.SaveChangesAsync();
+            _logger.LogInformation("✅ Deleted {Count} transfers for season {SeasonId}", transfersDeleted, seasonId);
         }
+
+        // ==========================================================
+        // 🧑‍🎓 TRAINING SESSIONS
+        // ==========================================================
+        private async Task CleanupTrainingSessionsAsync(int seasonId)
+        {
+            _logger.LogInformation("💪 Cleaning training sessions for season {SeasonId}", seasonId);
+
+            // 🔹 Първо изтрий PlayerTrainings с подзаявка
+            var playerTrainingsDeleted = await _context.Database.ExecuteSqlRawAsync($@"
+        DELETE FROM PlayerTrainings
+        WHERE TrainingSessionId IN (
+            SELECT Id FROM TrainingSessions
+            WHERE SeasonId = {seasonId} OR GameSaveId IN (
+                SELECT GameSaveId FROM Seasons WHERE Id = {seasonId}
+            )
+        )
+    ");
+
+            _logger.LogInformation("🧹 Deleted {Count} PlayerTrainings for season {SeasonId}", playerTrainingsDeleted, seasonId);
+
+            // 🔹 После изтрий самите TrainingSessions
+            var trainingSessionsDeleted = await _context.Database.ExecuteSqlRawAsync($@"
+        DELETE FROM TrainingSessions
+        WHERE SeasonId = {seasonId} OR GameSaveId IN (
+            SELECT GameSaveId FROM Seasons WHERE Id = {seasonId}
+        )
+    ");
+
+            _logger.LogInformation("✅ Deleted {Count} TrainingSessions for season {SeasonId}", trainingSessionsDeleted, seasonId);
+        }
+
+
+        // ==========================================================
+        // 🧍‍♂️ FREE AGENTS
+        // ==========================================================
         private async Task CleanupFreeAgentsAsync(int seasonId)
         {
             _logger.LogInformation("🧹 Cleaning up free agents for season {SeasonId}", seasonId);
 
-            var playersToDelete = await _context.Players
-                                .Where(p => p.TeamId == null)
-                                .ToListAsync();
+            var playerIds = await _context.Players
+                .Where(p => p.TeamId == null)
+                .Select(p => p.Id)
+                .ToListAsync();
 
-            if (!playersToDelete.Any())
+            if (!playerIds.Any())
             {
                 _logger.LogInformation("⚠️ No free agents found for season {SeasonId}", seasonId);
                 return;
             }
 
-            var playerIds = playersToDelete.Select(p => p.Id).ToList();
+            await _context.PlayerAttributes
+                .Where(a => a.PlayerId.HasValue && playerIds.Contains(a.PlayerId.Value))
+                .ExecuteDeleteAsync();
 
-            // Изтриваме атрибути
-            _context.PlayerAttributes.RemoveRange(
-                _context.PlayerAttributes
-                    .Where(a => a.PlayerId.HasValue && playerIds.Contains(a.PlayerId.Value))
-            );
+            await _context.PlayerMatchStats
+                .Where(s => playerIds.Contains(s.PlayerId))
+                .ExecuteDeleteAsync();
 
-            // Изтриваме статистики
-            _context.PlayerMatchStats.RemoveRange(
-                _context.PlayerMatchStats.Where(s => playerIds.Contains(s.PlayerId))
-            );
+            await _context.PlayerSeasonStats
+                .Where(s => playerIds.Contains(s.PlayerId))
+                .ExecuteDeleteAsync();
 
-            _context.PlayerSeasonStats.RemoveRange(
-                _context.PlayerSeasonStats.Where(s => playerIds.Contains(s.PlayerId))
-            );
+            await _context.PlayerCompetitionStats
+                .Where(c => playerIds.Contains(c.PlayerId))
+                .ExecuteDeleteAsync();
 
-            _context.PlayerCompetitionStats.RemoveRange(
-                _context.PlayerCompetitionStats.Where(c => playerIds.Contains(c.PlayerId))
-            );
+            await _context.MatchEvents
+                .Where(e => playerIds.Contains(e.PlayerId))
+                .ExecuteDeleteAsync();
 
-            // Изтриваме събития в мачове
-            _context.MatchEvents.RemoveRange(
-                _context.MatchEvents.Where(e => playerIds.Contains(e.PlayerId))
-            );
+            await _context.Players
+                .Where(p => playerIds.Contains(p.Id))
+                .ExecuteDeleteAsync();
 
-            // ⚠️ Вече не трием TransferOffers тук, защото ги трием горе в CleanupTransfersAsync
-
-            // Изтриваме самите играчи
-            _context.Players.RemoveRange(playersToDelete);
-
-            await _context.SaveChangesAsync();
-
-            _logger.LogInformation("✅ Deleted {PlayerCount} free agent players for season {SeasonId}", playersToDelete.Count, seasonId);
+            _logger.LogInformation("✅ Deleted {Count} free agent players and related data", playerIds.Count);
         }
-
-        private async Task CleanupPlayerMatchStatsAsync(int seasonId)
-        {
-            var statsToDelete = await _context.PlayerMatchStats
-                .Where(s => s.SeasonId == seasonId)
-                .ToListAsync();
-
-            if (statsToDelete.Any())
-            {
-                _context.PlayerMatchStats.RemoveRange(statsToDelete);
-                await _context.SaveChangesAsync();
-            }
-        }        
-        private async Task CleanupTrainingSessionsAsync(int seasonId)
-        {
-            // Намираме всички training sessions за сезона
-            var sessionsToDelete = await _context.TrainingSessions
-                .Where(t => t.SeasonId == seasonId || t.GameSave.CurrentSeasonId == seasonId)
-                .ToListAsync();
-
-            if (!sessionsToDelete.Any())
-                return;
-
-            var sessionIds = sessionsToDelete.Select(s => s.Id).ToList();
-
-            // Изтриваме всички PlayerTrainings, свързани с тях
-            _context.PlayerTrainings.RemoveRange(
-                _context.PlayerTrainings.Where(pt => pt.TrainingSessionId != null && sessionIds.Contains(pt.TrainingSessionId.Value))
-            );
-
-            // Изтриваме самите сесии
-            _context.TrainingSessions.RemoveRange(sessionsToDelete);
-
-            await _context.SaveChangesAsync();
-        }
-
-
     }
 }
