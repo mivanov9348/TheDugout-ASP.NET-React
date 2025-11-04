@@ -1,18 +1,114 @@
 [
-  { "name": "Dobrudzha", "shortName": "DOB", "competitionCode": "BUL_A", "countryCode": "BUL" },
-  { "name": "Montana", "shortName": "MON", "competitionCode": "BUL_A", "countryCode": "BUL" },
-  { "name": "Lokomotiv Plovdiv", "shortName": "LOP", "competitionCode": "BUL_A", "countryCode": "BUL" },
-  { "name": "Botev Vratsa", "shortName": "BOV", "competitionCode": "BUL_A", "countryCode": "BUL" },
-  { "name": "Ludogorets Razgrad", "shortName": "LUD", "competitionCode": "BUL_A", "countryCode": "BUL" },
-  { "name": "Levski Sofia", "shortName": "LEV", "competitionCode": "BUL_A", "countryCode": "BUL" },
-  { "name": "Pirin Blagoevgrad", "shortName": "PIR", "competitionCode": "BUL_A", "countryCode": "BUL" },
-  { "name": "Cherno More Varna", "shortName": "CHE", "competitionCode": "BUL_A", "countryCode": "BUL" },
-  { "name": "Lokomotiv Sofia", "shortName": "LOS", "competitionCode": "BUL_A", "countryCode": "BUL" },
-  { "name": "Botev Plovdiv", "shortName": "BOP", "competitionCode": "BUL_A", "countryCode": "BUL" },
-  { "name": "Slavia Sofia", "shortName": "SLA", "competitionCode": "BUL_A", "countryCode": "BUL" },
-  { "name": "Spartak Varna", "shortName": "SPA", "competitionCode": "BUL_A", "countryCode": "BUL" },
-  { "name": "Septemvri Sofia", "shortName": "SEP", "competitionCode": "BUL_A", "countryCode": "BUL" },
-  { "name": "CSKA Sofia", "shortName": "CSA", "competitionCode": "BUL_A", "countryCode": "BUL" },
-  { "name": "Beroe Stara Zagora", "shortName": "BER", "competitionCode": "BUL_A", "countryCode": "BUL" },
-  { "name": "Arda Kardzhali", "shortName": "ARD", "competitionCode": "BUL_A", "countryCode": "BUL" }
+  {
+    "name": "Dobrudzha",
+    "shortName": "DOB",
+    "competitionCode": "BUL_A",
+    "countryCode": "BUL",
+    "popularity": 15
+  },
+  {
+    "name": "Montana",
+    "shortName": "MON",
+    "competitionCode": "BUL_A",
+    "countryCode": "BUL",
+    "popularity": 16
+  },
+  {
+    "name": "Lokomotiv Plovdiv",
+    "shortName": "LOP",
+    "competitionCode": "BUL_A",
+    "countryCode": "BUL",
+    "popularity": 30
+  },
+  {
+    "name": "Botev Vratsa",
+    "shortName": "BOV",
+    "competitionCode": "BUL_A",
+    "countryCode": "BUL",
+    "popularity": 18
+  },
+  {
+    "name": "Ludogorets Razgrad",
+    "shortName": "LUD",
+    "competitionCode": "BUL_A",
+    "countryCode": "BUL",
+    "popularity": 38
+  },
+  {
+    "name": "Levski Sofia",
+    "shortName": "LEV",
+    "competitionCode": "BUL_A",
+    "countryCode": "BUL",
+    "popularity": 40
+  },
+  {
+    "name": "Pirin Blagoevgrad",
+    "shortName": "PIR",
+    "competitionCode": "BUL_A",
+    "countryCode": "BUL",
+    "popularity": 19
+  },
+  {
+    "name": "Cherno More Varna",
+    "shortName": "CHE",
+    "competitionCode": "BUL_A",
+    "countryCode": "BUL",
+    "popularity": 28
+  },
+  {
+    "name": "Lokomotiv Sofia",
+    "shortName": "LOS",
+    "competitionCode": "BUL_A",
+    "countryCode": "BUL",
+    "popularity": 25
+  },
+  {
+    "name": "Botev Plovdiv",
+    "shortName": "BOP",
+    "competitionCode": "BUL_A",
+    "countryCode": "BUL",
+    "popularity": 32
+  },
+  {
+    "name": "Slavia Sofia",
+    "shortName": "SLA",
+    "competitionCode": "BUL_A",
+    "countryCode": "BUL",
+    "popularity": 27
+  },
+  {
+    "name": "Spartak Varna",
+    "shortName": "SPA",
+    "competitionCode": "BUL_A",
+    "countryCode": "BUL",
+    "popularity": 20
+  },
+  {
+    "name": "Septemvri Sofia",
+    "shortName": "SEP",
+    "competitionCode": "BUL_A",
+    "countryCode": "BUL",
+    "popularity": 17
+  },
+  {
+    "name": "CSKA Sofia",
+    "shortName": "CSA",
+    "competitionCode": "BUL_A",
+    "countryCode": "BUL",
+    "popularity": 39
+  },
+  {
+    "name": "Beroe Stara Zagora",
+    "shortName": "BER",
+    "competitionCode": "BUL_A",
+    "countryCode": "BUL",
+    "popularity": 24
+  },
+  {
+    "name": "Arda Kardzhali",
+    "shortName": "ARD",
+    "competitionCode": "BUL_A",
+    "countryCode": "BUL",
+    "popularity": 22
+  }
 ]

@@ -1,24 +1,156 @@
 [
-  { "name": "Albacete", "shortName": "ALB", "competitionCode": "ESP_2", "countryCode": "ESP" },
-  { "name": "Almería", "shortName": "ALM", "competitionCode": "ESP_2", "countryCode": "ESP" },
-  { "name": "Andorra", "shortName": "AND", "competitionCode": "ESP_2", "countryCode": "ESP" },
-  { "name": "Burgos CF", "shortName": "BUR", "competitionCode": "ESP_2", "countryCode": "ESP" },
-  { "name": "Cádiz CF", "shortName": "CAD", "competitionCode": "ESP_2", "countryCode": "ESP" },
-  { "name": "Castellón", "shortName": "CAS", "competitionCode": "ESP_2", "countryCode": "ESP" },
-  { "name": "Ceuta", "shortName": "CEU", "competitionCode": "ESP_2", "countryCode": "ESP" },
-  { "name": "Córdoba CF", "shortName": "CORD", "competitionCode": "ESP_2", "countryCode": "ESP" },
-  { "name": "Cultural Leonesa", "shortName": "CLEO", "competitionCode": "ESP_2", "countryCode": "ESP" },
-  { "name": "Deportivo La Coruña", "shortName": "DEP", "competitionCode": "ESP_2", "countryCode": "ESP" },
-  { "name": "Eibar", "shortName": "EIB", "competitionCode": "ESP_2", "countryCode": "ESP" },
-  { "name": "Granada CF", "shortName": "GRA", "competitionCode": "ESP_2", "countryCode": "ESP" },
-  { "name": "Huesca", "shortName": "HUE", "competitionCode": "ESP_2", "countryCode": "ESP" },
-  { "name": "Leganés", "shortName": "LEG", "competitionCode": "ESP_2", "countryCode": "ESP" },
-  { "name": "Málaga CF", "shortName": "MAL", "competitionCode": "ESP_2", "countryCode": "ESP" },
-  { "name": "Mirandés", "shortName": "MIR", "competitionCode": "ESP_2", "countryCode": "ESP" },
-  { "name": "SD Compostela", "shortName": "RSB", "competitionCode": "ESP_2", "countryCode": "ESP" },
-  { "name": "Real Valladolid", "shortName": "VAD", "competitionCode": "ESP_2", "countryCode": "ESP" },
-  { "name": "Real Zaragoza", "shortName": "ZAR", "competitionCode": "ESP_2", "countryCode": "ESP" },
-  { "name": "Sporting Gijón", "shortName": "SPG", "competitionCode": "ESP_2", "countryCode": "ESP" },
-  { "name": "Racing de Santander", "shortName": "RAC", "competitionCode": "ESP_2", "countryCode": "ESP" },
-  { "name": "UD Las Palmas", "shortName": "LPA", "competitionCode": "ESP_2", "countryCode": "ESP" }
+  {
+    "name": "Albacete",
+    "shortName": "ALB",
+    "competitionCode": "ESP_2",
+    "countryCode": "ESP",
+    "popularity": 48
+  },
+  {
+    "name": "Almería",
+    "shortName": "ALM",
+    "competitionCode": "ESP_2",
+    "countryCode": "ESP",
+    "popularity": 55
+  },
+  {
+    "name": "Andorra",
+    "shortName": "AND",
+    "competitionCode": "ESP_2",
+    "countryCode": "ESP",
+    "popularity": 42
+  },
+  {
+    "name": "Burgos CF",
+    "shortName": "BUR",
+    "competitionCode": "ESP_2",
+    "countryCode": "ESP",
+    "popularity": 45
+  },
+  {
+    "name": "Cádiz CF",
+    "shortName": "CAD",
+    "competitionCode": "ESP_2",
+    "countryCode": "ESP",
+    "popularity": 60
+  },
+  {
+    "name": "Castellón",
+    "shortName": "CAS",
+    "competitionCode": "ESP_2",
+    "countryCode": "ESP",
+    "popularity": 43
+  },
+  {
+    "name": "Ceuta",
+    "shortName": "CEU",
+    "competitionCode": "ESP_2",
+    "countryCode": "ESP",
+    "popularity": 40
+  },
+  {
+    "name": "Córdoba CF",
+    "shortName": "CORD",
+    "competitionCode": "ESP_2",
+    "countryCode": "ESP",
+    "popularity": 52
+  },
+  {
+    "name": "Cultural Leonesa",
+    "shortName": "CLEO",
+    "competitionCode": "ESP_2",
+    "countryCode": "ESP",
+    "popularity": 46
+  },
+  {
+    "name": "Deportivo La Coruña",
+    "shortName": "DEP",
+    "competitionCode": "ESP_2",
+    "countryCode": "ESP",
+    "popularity": 65
+  },
+  {
+    "name": "Eibar",
+    "shortName": "EIB",
+    "competitionCode": "ESP_2",
+    "countryCode": "ESP",
+    "popularity": 58
+  },
+  {
+    "name": "Granada CF",
+    "shortName": "GRA",
+    "competitionCode": "ESP_2",
+    "countryCode": "ESP",
+    "popularity": 62
+  },
+  {
+    "name": "Huesca",
+    "shortName": "HUE",
+    "competitionCode": "ESP_2",
+    "countryCode": "ESP",
+    "popularity": 50
+  },
+  {
+    "name": "Leganés",
+    "shortName": "LEG",
+    "competitionCode": "ESP_2",
+    "countryCode": "ESP",
+    "popularity": 56
+  },
+  {
+    "name": "Málaga CF",
+    "shortName": "MAL",
+    "competitionCode": "ESP_2",
+    "countryCode": "ESP",
+    "popularity": 68
+  },
+  {
+    "name": "Mirandés",
+    "shortName": "MIR",
+    "competitionCode": "ESP_2",
+    "countryCode": "ESP",
+    "popularity": 47
+  },
+  {
+    "name": "SD Compostela",
+    "shortName": "RSB",
+    "competitionCode": "ESP_2",
+    "countryCode": "ESP",
+    "popularity": 44
+  },
+  {
+    "name": "Real Valladolid",
+    "shortName": "VAD",
+    "competitionCode": "ESP_2",
+    "countryCode": "ESP",
+    "popularity": 64
+  },
+  {
+    "name": "Real Zaragoza",
+    "shortName": "ZAR",
+    "competitionCode": "ESP_2",
+    "countryCode": "ESP",
+    "popularity": 70
+  },
+  {
+    "name": "Sporting Gijón",
+    "shortName": "SPG",
+    "competitionCode": "ESP_2",
+    "countryCode": "ESP",
+    "popularity": 63
+  },
+  {
+    "name": "Racing de Santander",
+    "shortName": "RAC",
+    "competitionCode": "ESP_2",
+    "countryCode": "ESP",
+    "popularity": 57
+  },
+  {
+    "name": "UD Las Palmas",
+    "shortName": "LPA",
+    "competitionCode": "ESP_2",
+    "countryCode": "ESP",
+    "popularity": 61
+  }
 ]

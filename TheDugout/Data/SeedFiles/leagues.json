@@ -8,7 +8,7 @@
     "teams": 20,
     "relegationSpots": 3,
     "promotionSpots": 0,
-    "isActive": true
+    "isActive": false
   },
   {
     "code": "EFL_CH",
@@ -19,7 +19,7 @@
     "teams": 24,
     "relegationSpots": 0,
     "promotionSpots": 3,
-    "isActive": true
+    "isActive": false
   },
   {
     "code": "ITA_A",
@@ -30,7 +30,7 @@
     "teams": 20,
     "relegationSpots": 3,
     "promotionSpots": 0,
-    "isActive": true
+    "isActive": false
   },
   {
     "code": "ITA_B",
@@ -41,7 +41,7 @@
     "teams": 20,
     "relegationSpots": 0,
     "promotionSpots": 3,
-    "isActive": true
+    "isActive": false
   },
   {
     "code": "FRA_L1",
@@ -74,7 +74,7 @@
     "teams": 18,
     "relegationSpots": 3,
     "promotionSpots": 0,
-    "isActive": true
+    "isActive": false
   },
   {
     "code": "GER_2",
@@ -85,7 +85,7 @@
     "teams": 18,
     "relegationSpots": 0,
     "promotionSpots": 3,
-    "isActive": true
+    "isActive": false
   },
   {
     "code": "ESP_1",
@@ -96,7 +96,7 @@
     "teams": 20,
     "relegationSpots": 3,
     "promotionSpots": 0,
-    "isActive": true
+    "isActive": false
   },
   {
     "code": "ESP_2",
@@ -107,7 +107,7 @@
     "teams": 22,
     "relegationSpots": 0,
     "promotionSpots": 3,
-    "isActive": true
+    "isActive": false
   },
   {
     "code": "BUL_A",

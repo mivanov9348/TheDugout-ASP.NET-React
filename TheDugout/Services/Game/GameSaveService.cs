@@ -315,7 +315,7 @@ WHERE T.{Quote("GameSaveId")} = @p0;";
                 {
                     try
                     {
-                        await _youthPlayerService.GenerateYouthIntakeAsync(academy, gameSave);
+                        await _youthPlayerService.GenerateAllYouthIntakesAsync(academy, gameSave, ct);
                     }
                     catch (Exception ex)
                     {

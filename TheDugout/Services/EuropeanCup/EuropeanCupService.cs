@@ -5,6 +5,7 @@
     using TheDugout.Models.Competitions;
     using TheDugout.Models.Enums;
     using TheDugout.Models.Fixtures;
+    using TheDugout.Models.Leagues;
     using TheDugout.Models.Teams;
     using TheDugout.Services.EuropeanCup.Interfaces;
     public class EuropeanCupService : IEuropeanCupService
@@ -59,13 +60,31 @@
             if (slotsToFill > 0)
             {
                 var qualifiedTeamIds = new HashSet<int>(chosenTeams.Select(t => t.Id));
-
-                // Вземи всички "свободни" отбори, които НЕ са вече в списъка
-                var fillerTeamPool = await _context.Set<Models.Teams.Team>()
-                    .Where(t => t.LeagueId == null &&
-                                t.GameSaveId == gameSaveId &&
-                                !qualifiedTeamIds.Contains(t.Id)) // <-- Изключваме вече класираните
+                var activeLeagueTemplateIds = await _context.Set<LeagueTemplate>()
+                    .Where(lt => lt.IsActive)
+                    .Select(lt => lt.Id)
                     .ToListAsync(ct);
+
+                // 🧩 Поправен филтър за свободни и високопопулярни отбори
+                var fillerTeamPool = await _context.Set<Team>()
+                    .Include(t => t.League)
+                        .ThenInclude(l => l.Template)
+                    .Where(t =>
+                        t.GameSaveId == gameSaveId &&
+                        !qualifiedTeamIds.Contains(t.Id) &&
+                        (
+                            // 1️⃣ Няма лига
+                            t.LeagueId == null ||
+
+                            // 2️⃣ Има лига, но лигата не е активна
+                            (t.League != null && !activeLeagueTemplateIds.Contains(t.League.TemplateId)) ||
+
+                            // 3️⃣ Има активна лига, но е достатъчно популярен
+                            (t.League != null && activeLeagueTemplateIds.Contains(t.League.TemplateId) && t.Popularity > 60)
+                        )
+                    )
+                    .ToListAsync(ct);
+
 
                 if (fillerTeamPool.Count < slotsToFill)
                 {

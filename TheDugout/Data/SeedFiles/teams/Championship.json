@@ -1,26 +1,170 @@
 [
-  { "name": "Birmingham City", "shortName": "BIR", "competitionCode": "EFL_CH", "countryCode": "ENG" },
-  { "name": "Blackburn Rovers", "shortName": "BLB", "competitionCode": "EFL_CH", "countryCode": "ENG" },
-  { "name": "Bristol City", "shortName": "BRI", "competitionCode": "EFL_CH", "countryCode": "ENG" },
-  { "name": "Burnley", "shortName": "BUR", "competitionCode": "EFL_CH", "countryCode": "ENG" },
-  { "name": "Cardiff City", "shortName": "CAR", "competitionCode": "EFL_CH", "countryCode": "ENG" },
-  { "name": "Coventry City", "shortName": "COV", "competitionCode": "EFL_CH", "countryCode": "ENG" },
-  { "name": "Derby County", "shortName": "DER", "competitionCode": "EFL_CH", "countryCode": "ENG" },
-  { "name": "Hull City", "shortName": "HUL", "competitionCode": "EFL_CH", "countryCode": "ENG" },
-  { "name": "Leeds United", "shortName": "LEE", "competitionCode": "EFL_CH", "countryCode": "ENG" },
-  { "name": "Luton Town", "shortName": "LUT", "competitionCode": "EFL_CH", "countryCode": "ENG" },
-  { "name": "Middlesbrough", "shortName": "MID", "competitionCode": "EFL_CH", "countryCode": "ENG" },
-  { "name": "Millwall", "shortName": "MIL", "competitionCode": "EFL_CH", "countryCode": "ENG" },
-  { "name": "Norwich City", "shortName": "NOR", "competitionCode": "EFL_CH", "countryCode": "ENG" },
-  { "name": "Oxford United", "shortName": "OXF", "competitionCode": "EFL_CH", "countryCode": "ENG" },
-  { "name": "Plymouth Argyle", "shortName": "PLY", "competitionCode": "EFL_CH", "countryCode": "ENG" },
-  { "name": "Portsmouth", "shortName": "POR", "competitionCode": "EFL_CH", "countryCode": "ENG" },
-  { "name": "Preston North End", "shortName": "PRE", "competitionCode": "EFL_CH", "countryCode": "ENG" },
-  { "name": "Queens Park Rangers", "shortName": "QPR", "competitionCode": "EFL_CH", "countryCode": "ENG" },
-  { "name": "Sheffield United", "shortName": "SHU", "competitionCode": "EFL_CH", "countryCode": "ENG" },
-  { "name": "Sheffield Wednesday", "shortName": "SWD", "competitionCode": "EFL_CH", "countryCode": "ENG" },
-  { "name": "Stoke City", "shortName": "STK", "competitionCode": "EFL_CH", "countryCode": "ENG" },
-  { "name": "Sunderland", "shortName": "SUN", "competitionCode": "EFL_CH", "countryCode": "ENG" },
-  { "name": "Swansea City", "shortName": "SWA", "competitionCode": "EFL_CH", "countryCode": "ENG" },
-  { "name": "West Bromwich Albion", "shortName": "WBA", "competitionCode": "EFL_CH", "countryCode": "ENG" }
+  {
+    "name": "Birmingham City",
+    "shortName": "BIR",
+    "competitionCode": "EFL_CH",
+    "countryCode": "ENG",
+    "popularity": 58
+  },
+  {
+    "name": "Blackburn Rovers",
+    "shortName": "BLB",
+    "competitionCode": "EFL_CH",
+    "countryCode": "ENG",
+    "popularity": 55
+  },
+  {
+    "name": "Bristol City",
+    "shortName": "BRI",
+    "competitionCode": "EFL_CH",
+    "countryCode": "ENG",
+    "popularity": 52
+  },
+  {
+    "name": "Burnley",
+    "shortName": "BUR",
+    "competitionCode": "EFL_CH",
+    "countryCode": "ENG",
+    "popularity": 65
+  },
+  {
+    "name": "Cardiff City",
+    "shortName": "CAR",
+    "competitionCode": "EFL_CH",
+    "countryCode": "ENG",
+    "popularity": 50
+  },
+  {
+    "name": "Coventry City",
+    "shortName": "COV",
+    "competitionCode": "EFL_CH",
+    "countryCode": "ENG",
+    "popularity": 48
+  },
+  {
+    "name": "Derby County",
+    "shortName": "DER",
+    "competitionCode": "EFL_CH",
+    "countryCode": "ENG",
+    "popularity": 62
+  },
+  {
+    "name": "Hull City",
+    "shortName": "HUL",
+    "competitionCode": "EFL_CH",
+    "countryCode": "ENG",
+    "popularity": 54
+  },
+  {
+    "name": "Leeds United",
+    "shortName": "LEE",
+    "competitionCode": "EFL_CH",
+    "countryCode": "ENG",
+    "popularity": 70
+  },
+  {
+    "name": "Luton Town",
+    "shortName": "LUT",
+    "competitionCode": "EFL_CH",
+    "countryCode": "ENG",
+    "popularity": 60
+  },
+  {
+    "name": "Middlesbrough",
+    "shortName": "MID",
+    "competitionCode": "EFL_CH",
+    "countryCode": "ENG",
+    "popularity": 57
+  },
+  {
+    "name": "Millwall",
+    "shortName": "MIL",
+    "competitionCode": "EFL_CH",
+    "countryCode": "ENG",
+    "popularity": 53
+  },
+  {
+    "name": "Norwich City",
+    "shortName": "NOR",
+    "competitionCode": "EFL_CH",
+    "countryCode": "ENG",
+    "popularity": 61
+  },
+  {
+    "name": "Oxford United",
+    "shortName": "OXF",
+    "competitionCode": "EFL_CH",
+    "countryCode": "ENG",
+    "popularity": 45
+  },
+  {
+    "name": "Plymouth Argyle",
+    "shortName": "PLY",
+    "competitionCode": "EFL_CH",
+    "countryCode": "ENG",
+    "popularity": 47
+  },
+  {
+    "name": "Portsmouth",
+    "shortName": "POR",
+    "competitionCode": "EFL_CH",
+    "countryCode": "ENG",
+    "popularity": 56
+  },
+  {
+    "name": "Preston North End",
+    "shortName": "PRE",
+    "competitionCode": "EFL_CH",
+    "countryCode": "ENG",
+    "popularity": 51
+  },
+  {
+    "name": "Queens Park Rangers",
+    "shortName": "QPR",
+    "competitionCode": "EFL_CH",
+    "countryCode": "ENG",
+    "popularity": 59
+  },
+  {
+    "name": "Sheffield United",
+    "shortName": "SHU",
+    "competitionCode": "EFL_CH",
+    "countryCode": "ENG",
+    "popularity": 68
+  },
+  {
+    "name": "Sheffield Wednesday",
+    "shortName": "SWD",
+    "competitionCode": "EFL_CH",
+    "countryCode": "ENG",
+    "popularity": 63
+  },
+  {
+    "name": "Stoke City",
+    "shortName": "STK",
+    "competitionCode": "EFL_CH",
+    "countryCode": "ENG",
+    "popularity": 64
+  },
+  {
+    "name": "Sunderland",
+    "shortName": "SUN",
+    "competitionCode": "EFL_CH",
+    "countryCode": "ENG",
+    "popularity": 67
+  },
+  {
+    "name": "Swansea City",
+    "shortName": "SWA",
+    "competitionCode": "EFL_CH",
+    "countryCode": "ENG",
+    "popularity": 58
+  },
+  {
+    "name": "West Bromwich Albion",
+    "shortName": "WBA",
+    "competitionCode": "EFL_CH",
+    "countryCode": "ENG",
+    "popularity": 66
+  }
 ]

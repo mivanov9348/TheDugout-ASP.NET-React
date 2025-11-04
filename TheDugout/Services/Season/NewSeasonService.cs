@@ -181,7 +181,7 @@
                 {
                     try
                     {
-                        await _youthPlayerService.GenerateYouthIntakeAsync(academy, gameSave);
+                        await _youthPlayerService.GenerateAllYouthIntakesAsync(academy, gameSave);
                     }
                     catch (Exception ex)
                     {

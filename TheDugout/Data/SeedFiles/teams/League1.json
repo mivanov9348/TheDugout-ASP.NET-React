@@ -1,20 +1,128 @@
 [
-  { "name": "Angers", "shortName": "ANG", "competitionCode": "FRA_L1", "countryCode": "FRA" },
-  { "name": "Auxerre", "shortName": "AUX", "competitionCode": "FRA_L1", "countryCode": "FRA" },
-  { "name": "Brest", "shortName": "BRE", "competitionCode": "FRA_L1", "countryCode": "FRA" },
-  { "name": "Le Havre", "shortName": "HAV", "competitionCode": "FRA_L1", "countryCode": "FRA" },
-  { "name": "Lens", "shortName": "LEN", "competitionCode": "FRA_L1", "countryCode": "FRA" },
-  { "name": "Lille", "shortName": "LIL", "competitionCode": "FRA_L1", "countryCode": "FRA" },
-  { "name": "Lorient", "shortName": "LOR", "competitionCode": "FRA_L1", "countryCode": "FRA" },
-  { "name": "Lyon", "shortName": "LYO", "competitionCode": "FRA_L1", "countryCode": "FRA" },
-  { "name": "Marseille", "shortName": "MAR", "competitionCode": "FRA_L1", "countryCode": "FRA" },
-  { "name": "Metz", "shortName": "MET", "competitionCode": "FRA_L1", "countryCode": "FRA" },
-  { "name": "Monaco", "shortName": "MON", "competitionCode": "FRA_L1", "countryCode": "FRA" },
-  { "name": "Nantes", "shortName": "NAN", "competitionCode": "FRA_L1", "countryCode": "FRA" },
-  { "name": "Nice", "shortName": "NIC", "competitionCode": "FRA_L1", "countryCode": "FRA" },
-  { "name": "Paris Saint-Germain", "shortName": "PSG", "competitionCode": "FRA_L1", "countryCode": "FRA" },
-  { "name": "Reims", "shortName": "REI", "competitionCode": "FRA_L1", "countryCode": "FRA" },
-  { "name": "Rennes", "shortName": "REN", "competitionCode": "FRA_L1", "countryCode": "FRA" },
-  { "name": "Strasbourg", "shortName": "STR", "competitionCode": "FRA_L1", "countryCode": "FRA" },
-  { "name": "Toulouse", "shortName": "TOU", "competitionCode": "FRA_L1", "countryCode": "FRA" }
+  {
+    "name": "Angers",
+    "shortName": "ANG",
+    "competitionCode": "FRA_L1",
+    "countryCode": "FRA",
+    "popularity": 62
+  },
+  {
+    "name": "Auxerre",
+    "shortName": "AUX",
+    "competitionCode": "FRA_L1",
+    "countryCode": "FRA",
+    "popularity": 60
+  },
+  {
+    "name": "Brest",
+    "shortName": "BRE",
+    "competitionCode": "FRA_L1",
+    "countryCode": "FRA",
+    "popularity": 65
+  },
+  {
+    "name": "Le Havre",
+    "shortName": "HAV",
+    "competitionCode": "FRA_L1",
+    "countryCode": "FRA",
+    "popularity": 61
+  },
+  {
+    "name": "Lens",
+    "shortName": "LEN",
+    "competitionCode": "FRA_L1",
+    "countryCode": "FRA",
+    "popularity": 72
+  },
+  {
+    "name": "Lille",
+    "shortName": "LIL",
+    "competitionCode": "FRA_L1",
+    "countryCode": "FRA",
+    "popularity": 78
+  },
+  {
+    "name": "Lorient",
+    "shortName": "LOR",
+    "competitionCode": "FRA_L1",
+    "countryCode": "FRA",
+    "popularity": 63
+  },
+  {
+    "name": "Lyon",
+    "shortName": "LYO",
+    "competitionCode": "FRA_L1",
+    "countryCode": "FRA",
+    "popularity": 88
+  },
+  {
+    "name": "Marseille",
+    "shortName": "MAR",
+    "competitionCode": "FRA_L1",
+    "countryCode": "FRA",
+    "popularity": 92
+  },
+  {
+    "name": "Metz",
+    "shortName": "MET",
+    "competitionCode": "FRA_L1",
+    "countryCode": "FRA",
+    "popularity": 64
+  },
+  {
+    "name": "Monaco",
+    "shortName": "MON",
+    "competitionCode": "FRA_L1",
+    "countryCode": "FRA",
+    "popularity": 85
+  },
+  {
+    "name": "Nantes",
+    "shortName": "NAN",
+    "competitionCode": "FRA_L1",
+    "countryCode": "FRA",
+    "popularity": 70
+  },
+  {
+    "name": "Nice",
+    "shortName": "NIC",
+    "competitionCode": "FRA_L1",
+    "countryCode": "FRA",
+    "popularity": 75
+  },
+  {
+    "name": "Paris Saint-Germain",
+    "shortName": "PSG",
+    "competitionCode": "FRA_L1",
+    "countryCode": "FRA",
+    "popularity": 98
+  },
+  {
+    "name": "Reims",
+    "shortName": "REI",
+    "competitionCode": "FRA_L1",
+    "countryCode": "FRA",
+    "popularity": 66
+  },
+  {
+    "name": "Rennes",
+    "shortName": "REN",
+    "competitionCode": "FRA_L1",
+    "countryCode": "FRA",
+    "popularity": 74
+  },
+  {
+    "name": "Strasbourg",
+    "shortName": "STR",
+    "competitionCode": "FRA_L1",
+    "countryCode": "FRA",
+    "popularity": 68
+  },
+  {
+    "name": "Toulouse",
+    "shortName": "TOU",
+    "competitionCode": "FRA_L1",
+    "countryCode": "FRA",
+    "popularity": 67
+  }
 ]

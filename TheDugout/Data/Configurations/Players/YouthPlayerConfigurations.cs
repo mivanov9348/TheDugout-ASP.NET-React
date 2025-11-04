@@ -10,16 +10,19 @@
         {
             builder.HasKey(y => y.Id);
 
-            // One-to-one с Player
             builder.HasOne(y => y.Player)
                    .WithOne(p => p.YouthProfile)
                    .HasForeignKey<YouthPlayer>(y => y.PlayerId)
                    .OnDelete(DeleteBehavior.Cascade);
 
-            // One-to-many с YouthAcademy
             builder.HasOne(y => y.YouthAcademy)
                    .WithMany(a => a.YouthPlayers)
                    .HasForeignKey(y => y.YouthAcademyId)
+                   .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasOne(y => y.GameSave)
+                   .WithMany(a => a.YouthPlayers)
+                   .HasForeignKey(y => y.GameSaveId)
                    .OnDelete(DeleteBehavior.Cascade);
 
             builder.Property(y => y.IsPromoted)

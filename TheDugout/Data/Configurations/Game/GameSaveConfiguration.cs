@@ -186,6 +186,11 @@
                      .HasForeignKey(pa => pa.GameSaveId)
                      .OnDelete(DeleteBehavior.Restrict);
 
+            builder.HasMany(gs => gs.YouthPlayers)
+                     .WithOne(pa => pa.GameSave)
+                     .HasForeignKey(pa => pa.GameSaveId)
+                     .OnDelete(DeleteBehavior.Restrict);
+
             // Teams
             builder.HasMany(gs => gs.Teams)
                    .WithOne(t => t.GameSave)

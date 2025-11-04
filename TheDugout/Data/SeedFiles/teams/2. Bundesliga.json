@@ -1,20 +1,128 @@
 [
-  { "name": "Holstein Kiel", "shortName": "KIE", "competitionCode": "GER_2", "countryCode": "GER" },
-  { "name": "VfL Bochum", "shortName": "BOC", "competitionCode": "GER_2", "countryCode": "GER" },
-  { "name": "SV Elversberg", "shortName": "ELV", "competitionCode": "GER_2", "countryCode": "GER" },
-  { "name": "SC Paderborn 07", "shortName": "PAD", "competitionCode": "GER_2", "countryCode": "GER" },
-  { "name": "1. FC Magdeburg", "shortName": "MDG", "competitionCode": "GER_2", "countryCode": "GER" },
-  { "name": "Fortuna Düsseldorf", "shortName": "DUS", "competitionCode": "GER_2", "countryCode": "GER" },
-  { "name": "1. FC Kaiserslautern", "shortName": "KLU", "competitionCode": "GER_2", "countryCode": "GER" },
-  { "name": "Karlsruher SC", "shortName": "KAR", "competitionCode": "GER_2", "countryCode": "GER" },
-  { "name": "Hannover 96", "shortName": "HAN", "competitionCode": "GER_2", "countryCode": "GER" },
-  { "name": "1. FC Nürnberg", "shortName": "NUE", "competitionCode": "GER_2", "countryCode": "GER" },
-  { "name": "Hertha BSC", "shortName": "HER", "competitionCode": "GER_2", "countryCode": "GER" },
-  { "name": "SV Darmstadt 98", "shortName": "DAR", "competitionCode": "GER_2", "countryCode": "GER" },
-  { "name": "SpVgg Greuther Fürth", "shortName": "FUE", "competitionCode": "GER_2", "countryCode": "GER" },
-  { "name": "FC Schalke 04", "shortName": "SCH", "competitionCode": "GER_2", "countryCode": "GER" },
-  { "name": "Preußen Münster", "shortName": "MUN", "competitionCode": "GER_2", "countryCode": "GER" },
-  { "name": "Eintracht Braunschweig", "shortName": "BRA", "competitionCode": "GER_2", "countryCode": "GER" },
-  { "name": "Arminia Bielefeld", "shortName": "BIE", "competitionCode": "GER_2", "countryCode": "GER" },
-  { "name": "Dynamo Dresden", "shortName": "DRE", "competitionCode": "GER_2", "countryCode": "GER" }
+  {
+    "name": "Holstein Kiel",
+    "shortName": "KIE",
+    "competitionCode": "GER_2",
+    "countryCode": "GER",
+    "popularity": 28
+  },
+  {
+    "name": "VfL Bochum",
+    "shortName": "BOC",
+    "competitionCode": "GER_2",
+    "countryCode": "GER",
+    "popularity": 42
+  },
+  {
+    "name": "SV Elversberg",
+    "shortName": "ELV",
+    "competitionCode": "GER_2",
+    "countryCode": "GER",
+    "popularity": 18
+  },
+  {
+    "name": "SC Paderborn 07",
+    "shortName": "PAD",
+    "competitionCode": "GER_2",
+    "countryCode": "GER",
+    "popularity": 32
+  },
+  {
+    "name": "1. FC Magdeburg",
+    "shortName": "MDG",
+    "competitionCode": "GER_2",
+    "countryCode": "GER",
+    "popularity": 30
+  },
+  {
+    "name": "Fortuna Düsseldorf",
+    "shortName": "DUS",
+    "competitionCode": "GER_2",
+    "countryCode": "GER",
+    "popularity": 48
+  },
+  {
+    "name": "1. FC Kaiserslautern",
+    "shortName": "KLU",
+    "competitionCode": "GER_2",
+    "countryCode": "GER",
+    "popularity": 52
+  },
+  {
+    "name": "Karlsruher SC",
+    "shortName": "KAR",
+    "competitionCode": "GER_2",
+    "countryCode": "GER",
+    "popularity": 38
+  },
+  {
+    "name": "Hannover 96",
+    "shortName": "HAN",
+    "competitionCode": "GER_2",
+    "countryCode": "GER",
+    "popularity": 50
+  },
+  {
+    "name": "1. FC Nürnberg",
+    "shortName": "NUE",
+    "competitionCode": "GER_2",
+    "countryCode": "GER",
+    "popularity": 54
+  },
+  {
+    "name": "Hertha BSC",
+    "shortName": "HER",
+    "competitionCode": "GER_2",
+    "countryCode": "GER",
+    "popularity": 55
+  },
+  {
+    "name": "SV Darmstadt 98",
+    "shortName": "DAR",
+    "competitionCode": "GER_2",
+    "countryCode": "GER",
+    "popularity": 40
+  },
+  {
+    "name": "SpVgg Greuther Fürth",
+    "shortName": "FUE",
+    "competitionCode": "GER_2",
+    "countryCode": "GER",
+    "popularity": 35
+  },
+  {
+    "name": "FC Schalke 04",
+    "shortName": "SCH",
+    "competitionCode": "GER_2",
+    "countryCode": "GER",
+    "popularity": 53
+  },
+  {
+    "name": "Preußen Münster",
+    "shortName": "MUN",
+    "competitionCode": "GER_2",
+    "countryCode": "GER",
+    "popularity": 25
+  },
+  {
+    "name": "Eintracht Braunschweig",
+    "shortName": "BRA",
+    "competitionCode": "GER_2",
+    "countryCode": "GER",
+    "popularity": 33
+  },
+  {
+    "name": "Arminia Bielefeld",
+    "shortName": "BIE",
+    "competitionCode": "GER_2",
+    "countryCode": "GER",
+    "popularity": 45
+  },
+  {
+    "name": "Dynamo Dresden",
+    "shortName": "DRE",
+    "competitionCode": "GER_2",
+    "countryCode": "GER",
+    "popularity": 49
+  }
 ]

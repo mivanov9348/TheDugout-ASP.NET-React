@@ -1,22 +1,142 @@
 [
-  { "name": "Chernomorets Burgas", "shortName": "CHEB", "competitionCode": "BUL_B", "countryCode": "BUL" },
-  { "name": "Sevlievo", "shortName": "SEV", "competitionCode": "BUL_B", "countryCode": "BUL" },
-  { "name": "Vihren Sandanski", "shortName": "VIH", "competitionCode": "BUL_B", "countryCode": "BUL" },
-  { "name": "Hebar Pazardzhik", "shortName": "HEB", "competitionCode": "BUL_B", "countryCode": "BUL" },
-  { "name": "Bdin Vidin", "shortName": "BDV", "competitionCode": "BUL_B", "countryCode": "BUL" },
-  { "name": "Etar Veliko Tarnovo", "shortName": "ETA", "competitionCode": "BUL_B", "countryCode": "BUL" },
-  { "name": "Marek Dupnitsa", "shortName": "MAR", "competitionCode": "BUL_B", "countryCode": "BUL" },
-  { "name": "Minyor Pernik", "shortName": "MIN", "competitionCode": "BUL_B", "countryCode": "BUL" },
-  { "name": "Dunav Ruse", "shortName": "DUN", "competitionCode": "BUL_B", "countryCode": "BUL" },
-  { "name": "Lokomotiv Gorna Oryahovitsa", "shortName": "LOGO", "competitionCode": "BUL_B", "countryCode": "BUL" },
-  { "name": "Fratria", "shortName": "FRA", "competitionCode": "BUL_B", "countryCode": "BUL" },
-  { "name": "Belasitsa Petrich", "shortName": "BEL", "competitionCode": "BUL_B", "countryCode": "BUL" },
-  { "name": "Spartak Pleven", "shortName": "SPP", "competitionCode": "BUL_B", "countryCode": "BUL" },
-  { "name": "Sportist Svoge", "shortName": "SSV", "competitionCode": "BUL_B", "countryCode": "BUL" },
-  { "name": "Yantra Gabrovo", "shortName": "YAN", "competitionCode": "BUL_B", "countryCode": "BUL" },
-  { "name": "Litex Lovech", "shortName": "LIT", "competitionCode": "BUL_B", "countryCode": "BUL" },
-  { "name": "Maritsa Plovdiv", "shortName": "MAP", "competitionCode": "BUL_B", "countryCode": "BUL" },
-  { "name": "Nesebar", "shortName": "NES", "competitionCode": "BUL_B", "countryCode": "BUL" },
-  { "name": "Sozopol", "shortName": "SOZ", "competitionCode": "BUL_B", "countryCode": "BUL" },
-  { "name": "Strumska Slava Radomir", "shortName": "STR", "competitionCode": "BUL_B", "countryCode": "BUL" }
+  {
+    "name": "Chernomorets Burgas",
+    "shortName": "CHEB",
+    "competitionCode": "BUL_B",
+    "countryCode": "BUL",
+    "popularity": 14
+  },
+  {
+    "name": "Sevlievo",
+    "shortName": "SEV",
+    "competitionCode": "BUL_B",
+    "countryCode": "BUL",
+    "popularity": 6
+  },
+  {
+    "name": "Vihren Sandanski",
+    "shortName": "VIH",
+    "competitionCode": "BUL_B",
+    "countryCode": "BUL",
+    "popularity": 7
+  },
+  {
+    "name": "Hebar Pazardzhik",
+    "shortName": "HEB",
+    "competitionCode": "BUL_B",
+    "countryCode": "BUL",
+    "popularity": 13
+  },
+  {
+    "name": "Bdin Vidin",
+    "shortName": "BDV",
+    "competitionCode": "BUL_B",
+    "countryCode": "BUL",
+    "popularity": 5
+  },
+  {
+    "name": "Etar Veliko Tarnovo",
+    "shortName": "ETA",
+    "competitionCode": "BUL_B",
+    "countryCode": "BUL",
+    "popularity": 18
+  },
+  {
+    "name": "Marek Dupnitsa",
+    "shortName": "MAR",
+    "competitionCode": "BUL_B",
+    "countryCode": "BUL",
+    "popularity": 11
+  },
+  {
+    "name": "Minyor Pernik",
+    "shortName": "MIN",
+    "competitionCode": "BUL_B",
+    "countryCode": "BUL",
+    "popularity": 15
+  },
+  {
+    "name": "Dunav Ruse",
+    "shortName": "DUN",
+    "competitionCode": "BUL_B",
+    "countryCode": "BUL",
+    "popularity": 16
+  },
+  {
+    "name": "Lokomotiv Gorna Oryahovitsa",
+    "shortName": "LOGO",
+    "competitionCode": "BUL_B",
+    "countryCode": "BUL",
+    "popularity": 10
+  },
+  {
+    "name": "Fratria",
+    "shortName": "FRA",
+    "competitionCode": "BUL_B",
+    "countryCode": "BUL",
+    "popularity": 4
+  },
+  {
+    "name": "Belasitsa Petrich",
+    "shortName": "BEL",
+    "competitionCode": "BUL_B",
+    "countryCode": "BUL",
+    "popularity": 12
+  },
+  {
+    "name": "Spartak Pleven",
+    "shortName": "SPP",
+    "competitionCode": "BUL_B",
+    "countryCode": "BUL",
+    "popularity": 13
+  },
+  {
+    "name": "Sportist Svoge",
+    "shortName": "SSV",
+    "competitionCode": "BUL_B",
+    "countryCode": "BUL",
+    "popularity": 8
+  },
+  {
+    "name": "Yantra Gabrovo",
+    "shortName": "YAN",
+    "competitionCode": "BUL_B",
+    "countryCode": "BUL",
+    "popularity": 9
+  },
+  {
+    "name": "Litex Lovech",
+    "shortName": "LIT",
+    "competitionCode": "BUL_B",
+    "countryCode": "BUL",
+    "popularity": 20
+  },
+  {
+    "name": "Maritsa Plovdiv",
+    "shortName": "MAP",
+    "competitionCode": "BUL_B",
+    "countryCode": "BUL",
+    "popularity": 14
+  },
+  {
+    "name": "Nesebar",
+    "shortName": "NES",
+    "competitionCode": "BUL_B",
+    "countryCode": "BUL",
+    "popularity": 8
+  },
+  {
+    "name": "Sozopol",
+    "shortName": "SOZ",
+    "competitionCode": "BUL_B",
+    "countryCode": "BUL",
+    "popularity": 7
+  },
+  {
+    "name": "Strumska Slava Radomir",
+    "shortName": "STR",
+    "competitionCode": "BUL_B",
+    "countryCode": "BUL",
+    "popularity": 7
+  }
 ]

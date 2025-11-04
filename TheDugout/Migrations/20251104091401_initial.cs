@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace TheDugout.Migrations
 {
     /// <inheritdoc />
-    public partial class Initial : Migration
+    public partial class initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -404,6 +404,7 @@ namespace TheDugout.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Abbreviation = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
+                    Popularity = table.Column<int>(type: "int", nullable: false),
                     CountryId = table.Column<int>(type: "int", nullable: true),
                     CountryCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     LeagueId = table.Column<int>(type: "int", nullable: true)
@@ -1728,6 +1729,7 @@ namespace TheDugout.Migrations
                     PlayerId = table.Column<int>(type: "int", nullable: true),
                     AttributeId = table.Column<int>(type: "int", nullable: true),
                     GameSaveId = table.Column<int>(type: "int", nullable: false),
+                    SeasonId = table.Column<int>(type: "int", nullable: true),
                     ChangeValue = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -1752,11 +1754,51 @@ namespace TheDugout.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
+                        name: "FK_PlayerTrainings_Seasons_SeasonId",
+                        column: x => x.SeasonId,
+                        principalTable: "Seasons",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
                         name: "FK_PlayerTrainings_TrainingSessions_TrainingSessionId",
                         column: x => x.TrainingSessionId,
                         principalTable: "TrainingSessions",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "YouthPlayers",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    PlayerId = table.Column<int>(type: "int", nullable: false),
+                    YouthAcademyId = table.Column<int>(type: "int", nullable: false),
+                    GameSaveId = table.Column<int>(type: "int", nullable: false),
+                    IsPromoted = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_YouthPlayers", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_YouthPlayers_GameSaves_GameSaveId",
+                        column: x => x.GameSaveId,
+                        principalTable: "GameSaves",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_YouthPlayers_Players_PlayerId",
+                        column: x => x.PlayerId,
+                        principalTable: "Players",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_YouthPlayers_YouthAcademies_YouthAcademyId",
+                        column: x => x.YouthAcademyId,
+                        principalTable: "YouthAcademies",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
@@ -2426,6 +2468,11 @@ namespace TheDugout.Migrations
                 column: "PlayerId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_PlayerTrainings_SeasonId",
+                table: "PlayerTrainings",
+                column: "SeasonId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_PlayerTrainings_TrainingSessionId",
                 table: "PlayerTrainings",
                 column: "TrainingSessionId");
@@ -2621,6 +2668,22 @@ namespace TheDugout.Migrations
                 column: "TeamId",
                 unique: true,
                 filter: "[TeamId] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_YouthPlayers_GameSaveId",
+                table: "YouthPlayers",
+                column: "GameSaveId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_YouthPlayers_PlayerId",
+                table: "YouthPlayers",
+                column: "PlayerId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_YouthPlayers_YouthAcademyId",
+                table: "YouthPlayers",
+                column: "YouthAcademyId");
 
             migrationBuilder.AddForeignKey(
                 name: "FK_Agencies_GameSaves_GameSaveId",
@@ -3149,7 +3212,7 @@ namespace TheDugout.Migrations
                 name: "Transfers");
 
             migrationBuilder.DropTable(
-                name: "YouthAcademies");
+                name: "YouthPlayers");
 
             migrationBuilder.DropTable(
                 name: "CompetitionSeasonResults");
@@ -3177,6 +3240,9 @@ namespace TheDugout.Migrations
 
             migrationBuilder.DropTable(
                 name: "Players");
+
+            migrationBuilder.DropTable(
+                name: "YouthAcademies");
 
             migrationBuilder.DropTable(
                 name: "EventTypes");

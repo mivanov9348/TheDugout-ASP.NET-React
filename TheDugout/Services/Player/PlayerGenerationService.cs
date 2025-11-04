@@ -45,6 +45,74 @@
                 throw new InvalidOperationException($"No avatar files found in {_avatarFolder}");
             }
         }
+        //public List<Player> GenerateTeamPlayers(GameSave save, Team team)
+        //{
+        //    if (save == null)
+        //        throw new ArgumentNullException(nameof(save), "GameSave cannot be null.");
+        //    if (team == null)
+        //        throw new ArgumentNullException(nameof(team), "Team cannot be null.");
+
+        //    var players = new List<Player>();
+        //    var plan = _teamPlan.GetDefaultRosterPlan();
+
+        //    if (plan == null || plan.Count == 0)
+        //        throw new InvalidOperationException("Roster plan is null or empty.");
+
+        //    var countries = _context.Countries.ToList();
+        //    if (countries == null || countries.Count == 0)
+        //        throw new InvalidOperationException("No countries found in the database.");
+
+        //    foreach (var kv in plan)
+        //    {
+        //        var positionCode = kv.Key;
+        //        var count = kv.Value;
+
+        //        if (string.IsNullOrWhiteSpace(positionCode))
+        //            throw new InvalidOperationException("Position code in roster plan is null or empty.");
+        //        if (count <= 0)
+        //            throw new InvalidOperationException($"Invalid player count for position '{positionCode}'.");
+
+        //        for (int i = 0; i < count; i++)
+        //        {
+        //            string selectedPositionCode = positionCode;
+        //            if (positionCode == "ANY")
+        //            {
+        //                string[] options = { "GK", "DF", "MID", "ATT" };
+        //                selectedPositionCode = options[_rng.Next(options.Length)];
+        //            }
+
+        //            var position = _context.Positions.FirstOrDefault(p => p.Code == selectedPositionCode);
+        //            if (position == null)
+        //                throw new InvalidOperationException($"Position with code '{selectedPositionCode}' not found in database.");
+
+        //            Country selectedCountry;
+        //            if (team != null && team.Country != null && countries.Any())
+        //            {
+        //                if (_rng.NextDouble() < 0.8)
+        //                {
+        //                    selectedCountry = team.Country;
+        //                }
+        //                else
+        //                {
+        //                    selectedCountry = countries[_rng.Next(countries.Count)];
+        //                }
+        //            }
+        //            else
+        //            {
+        //                selectedCountry = countries[_rng.Next(countries.Count)];
+        //            }
+
+        //            if (selectedCountry == null)
+        //                throw new InvalidOperationException("Selected country is null.");
+
+        //            var player = CreateBasePlayer(save, team, selectedCountry, position);
+        //            players.Add(player);
+        //        }
+        //    }
+
+        //    return players;
+        //}
+
         public List<Player> GenerateTeamPlayers(GameSave save, Team team)
         {
             if (save == null)
@@ -52,15 +120,19 @@
             if (team == null)
                 throw new ArgumentNullException(nameof(team), "Team cannot be null.");
 
-            var players = new List<Player>();
             var plan = _teamPlan.GetDefaultRosterPlan();
-
             if (plan == null || plan.Count == 0)
                 throw new InvalidOperationException("Roster plan is null or empty.");
 
             var countries = _context.Countries.ToList();
             if (countries == null || countries.Count == 0)
                 throw new InvalidOperationException("No countries found in the database.");
+
+            // ⚡ Оптимизация: зареждаме всички позиции само веднъж и ги слагаме в речник за бърз достъп
+            var positionsDict = _context.Positions.ToDictionary(p => p.Code, StringComparer.OrdinalIgnoreCase);
+
+            var players = new List<Player>(plan.Values.Sum()); // предварително задаваме капацитет
+            var anyOptions = new[] { "GK", "DF", "MID", "ATT" }; // кеширана константа
 
             foreach (var kv in plan)
             {
@@ -74,28 +146,21 @@
 
                 for (int i = 0; i < count; i++)
                 {
-                    string selectedPositionCode = positionCode;
-                    if (positionCode == "ANY")
-                    {
-                        string[] options = { "GK", "DF", "MID", "ATT" };
-                        selectedPositionCode = options[_rng.Next(options.Length)];
-                    }
+                    string selectedPositionCode = positionCode == "ANY"
+                        ? anyOptions[_rng.Next(anyOptions.Length)]
+                        : positionCode;
 
-                    var position = _context.Positions.FirstOrDefault(p => p.Code == selectedPositionCode);
-                    if (position == null)
+                    if (!positionsDict.TryGetValue(selectedPositionCode, out var position) || position == null)
                         throw new InvalidOperationException($"Position with code '{selectedPositionCode}' not found in database.");
 
                     Country selectedCountry;
-                    if (team != null && team.Country != null && countries.Any())
+
+                    // ⚡ Оптимизация: премахваме излишни проверки и повторни условия
+                    if (team.Country != null)
                     {
-                        if (_rng.NextDouble() < 0.8)
-                        {
-                            selectedCountry = team.Country;
-                        }
-                        else
-                        {
-                            selectedCountry = countries[_rng.Next(countries.Count)];
-                        }
+                        selectedCountry = _rng.NextDouble() < 0.8
+                            ? team.Country
+                            : countries[_rng.Next(countries.Count)];
                     }
                     else
                     {
@@ -105,13 +170,13 @@
                     if (selectedCountry == null)
                         throw new InvalidOperationException("Selected country is null.");
 
-                    var player = CreateBasePlayer(save, team, selectedCountry, position);
-                    players.Add(player);
+                    players.Add(CreateBasePlayer(save, team, selectedCountry, position));
                 }
             }
 
             return players;
         }
+
 
         public Player? GenerateFreeAgent(GameSave save, Agency agency)
         {
@@ -159,7 +224,8 @@
 
             await _context.SaveChangesAsync(ct);
         }
-        public Player CreateBasePlayer(GameSave save, Team? team, Country country, Position position, Agency? agency = null)
+        public Player CreateBasePlayer(GameSave save, Team? team, Country country, Position position,
+    Agency? agency = null, int? minAge = null, int? maxAge = null)
         {
             if (save == null) throw new ArgumentNullException(nameof(save));
             if (country == null) throw new ArgumentNullException(nameof(country));
@@ -187,14 +253,25 @@
             var firstName = firstNames[_rng.Next(firstNames.Count)];
             var lastName = lastNames[_rng.Next(lastNames.Count)];
 
+            DateTime birthDate;
+
+            if (minAge.HasValue && maxAge.HasValue)
+            {
+                birthDate = RandomBirthDateWithinAgeRange(save.CurrentSeason.CurrentDate, minAge.Value, maxAge.Value);
+            }
+            else
+            {
+                birthDate = RandomBirthDate(); // оригиналното поведение
+            }
+
             var player = new Player
             {
                 FirstName = firstName,
                 LastName = lastName,
-                BirthDate = RandomBirthDate(),
+                BirthDate = birthDate,
                 Team = team,
                 TeamId = team?.Id,
-                GameSave = save,
+                //GameSave = save,
                 GameSaveId = save.Id,
                 Position = position,
                 HeightCm = _rng.Next(165, 200),
@@ -211,6 +288,16 @@
 
             return player;
         }
+
+        private DateTime RandomBirthDateWithinAgeRange(DateTime currentDate, int minAge, int maxAge)
+        {
+            var minBirthDate = currentDate.AddYears(-maxAge); 
+            var maxBirthDate = currentDate.AddYears(-minAge); 
+            var range = (maxBirthDate - minBirthDate).Days;
+            return minBirthDate.AddDays(_rng.Next(range));
+        }
+
+
         private void AssignAttributes(Player player, Position position)
         {
             if (player == null)

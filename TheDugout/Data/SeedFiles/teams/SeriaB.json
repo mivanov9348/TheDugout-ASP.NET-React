@@ -1,22 +1,142 @@
 [
-  { "name": "Padova", "shortName": "PAD", "competitionCode": "ITA_B", "countryCode": "ITA" },
-  { "name": "Virtus Entella", "shortName": "ENT", "competitionCode": "ITA_B", "countryCode": "ITA" },
-  { "name": "Avellino", "shortName": "AVE", "competitionCode": "ITA_B", "countryCode": "ITA" },
-  { "name": "Pescara", "shortName": "PES", "competitionCode": "ITA_B", "countryCode": "ITA" },
-  { "name": "Empoli", "shortName": "EMP", "competitionCode": "ITA_B", "countryCode": "ITA" },
-  { "name": "Venezia", "shortName": "VEN", "competitionCode": "ITA_B", "countryCode": "ITA" },
-  { "name": "Monza", "shortName": "MON", "competitionCode": "ITA_B", "countryCode": "ITA" },
-  { "name": "Spezia", "shortName": "SPE", "competitionCode": "ITA_B", "countryCode": "ITA" },
-  { "name": "Juve Stabia", "shortName": "JST", "competitionCode": "ITA_B", "countryCode": "ITA" },
-  { "name": "Catanzaro", "shortName": "CAT", "competitionCode": "ITA_B", "countryCode": "ITA" },
-  { "name": "Cesena", "shortName": "CES", "competitionCode": "ITA_B", "countryCode": "ITA" },
-  { "name": "Palermo", "shortName": "PAL", "competitionCode": "ITA_B", "countryCode": "ITA" },
-  { "name": "Bari", "shortName": "BAR", "competitionCode": "ITA_B", "countryCode": "ITA" },
-  { "name": "Südtirol", "shortName": "SUD", "competitionCode": "ITA_B", "countryCode": "ITA" },
-  { "name": "Modena", "shortName": "MOD", "competitionCode": "ITA_B", "countryCode": "ITA" },
-  { "name": "Reggiana", "shortName": "REG", "competitionCode": "ITA_B", "countryCode": "ITA" },
-  { "name": "Mantova", "shortName": "MAN", "competitionCode": "ITA_B", "countryCode": "ITA" },
-  { "name": "Frosinone", "shortName": "FRO", "competitionCode": "ITA_B", "countryCode": "ITA" },
-  { "name": "Sampdoria", "shortName": "SAM", "competitionCode": "ITA_B", "countryCode": "ITA" },
-  { "name": "Venezia", "shortName": "VEN", "competitionCode": "ITA_B", "countryCode": "ITA" }
+  {
+    "name": "Padova",
+    "shortName": "PAD",
+    "competitionCode": "ITA_B",
+    "countryCode": "ITA",
+    "popularity": 52
+  },
+  {
+    "name": "Virtus Entella",
+    "shortName": "ENT",
+    "competitionCode": "ITA_B",
+    "countryCode": "ITA",
+    "popularity": 48
+  },
+  {
+    "name": "Avellino",
+    "shortName": "AVE",
+    "competitionCode": "ITA_B",
+    "countryCode": "ITA",
+    "popularity": 50
+  },
+  {
+    "name": "Pescara",
+    "shortName": "PES",
+    "competitionCode": "ITA_B",
+    "countryCode": "ITA",
+    "popularity": 55
+  },
+  {
+    "name": "Empoli",
+    "shortName": "EMP",
+    "competitionCode": "ITA_B",
+    "countryCode": "ITA",
+    "popularity": 65
+  },
+  {
+    "name": "Venezia",
+    "shortName": "VEN",
+    "competitionCode": "ITA_B",
+    "countryCode": "ITA",
+    "popularity": 60
+  },
+  {
+    "name": "Monza",
+    "shortName": "MON",
+    "competitionCode": "ITA_B",
+    "countryCode": "ITA",
+    "popularity": 62
+  },
+  {
+    "name": "Spezia",
+    "shortName": "SPE",
+    "competitionCode": "ITA_B",
+    "countryCode": "ITA",
+    "popularity": 58
+  },
+  {
+    "name": "Juve Stabia",
+    "shortName": "JST",
+    "competitionCode": "ITA_B",
+    "countryCode": "ITA",
+    "popularity": 49
+  },
+  {
+    "name": "Catanzaro",
+    "shortName": "CAT",
+    "competitionCode": "ITA_B",
+    "countryCode": "ITA",
+    "popularity": 51
+  },
+  {
+    "name": "Cesena",
+    "shortName": "CES",
+    "competitionCode": "ITA_B",
+    "countryCode": "ITA",
+    "popularity": 54
+  },
+  {
+    "name": "Palermo",
+    "shortName": "PAL",
+    "competitionCode": "ITA_B",
+    "countryCode": "ITA",
+    "popularity": 70
+  },
+  {
+    "name": "Bari",
+    "shortName": "BAR",
+    "competitionCode": "ITA_B",
+    "countryCode": "ITA",
+    "popularity": 68
+  },
+  {
+    "name": "Südtirol",
+    "shortName": "SUD",
+    "competitionCode": "ITA_B",
+    "countryCode": "ITA",
+    "popularity": 47
+  },
+  {
+    "name": "Modena",
+    "shortName": "MOD",
+    "competitionCode": "ITA_B",
+    "countryCode": "ITA",
+    "popularity": 56
+  },
+  {
+    "name": "Reggiana",
+    "shortName": "REG",
+    "competitionCode": "ITA_B",
+    "countryCode": "ITA",
+    "popularity": 53
+  },
+  {
+    "name": "Mantova",
+    "shortName": "MAN",
+    "competitionCode": "ITA_B",
+    "countryCode": "ITA",
+    "popularity": 50
+  },
+  {
+    "name": "Frosinone",
+    "shortName": "FRO",
+    "competitionCode": "ITA_B",
+    "countryCode": "ITA",
+    "popularity": 64
+  },
+  {
+    "name": "Sampdoria",
+    "shortName": "SAM",
+    "competitionCode": "ITA_B",
+    "countryCode": "ITA",
+    "popularity": 75
+  },
+  {
+    "name": "Venezia",
+    "shortName": "VEN",
+    "competitionCode": "ITA_B",
+    "countryCode": "ITA",
+    "popularity": 60
+  }
 ]

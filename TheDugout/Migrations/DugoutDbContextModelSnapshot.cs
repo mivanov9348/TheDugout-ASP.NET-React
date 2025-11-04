@@ -2008,6 +2008,9 @@ namespace TheDugout.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("GameSaveId")
+                        .HasColumnType("int");
+
                     b.Property<bool>("IsPromoted")
                         .HasColumnType("bit");
 
@@ -2018,6 +2021,8 @@ namespace TheDugout.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("GameSaveId");
 
                     b.HasIndex("PlayerId")
                         .IsUnique();
@@ -2233,8 +2238,8 @@ namespace TheDugout.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<double>("PopularityValue")
-                        .HasColumnType("float");
+                    b.Property<int>("Popularity")
+                        .HasColumnType("int");
 
                     b.Property<int>("TemplateId")
                         .HasColumnType("int");
@@ -2321,6 +2326,9 @@ namespace TheDugout.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("Popularity")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -3575,6 +3583,12 @@ namespace TheDugout.Migrations
 
             modelBuilder.Entity("TheDugout.Models.Players.YouthPlayer", b =>
                 {
+                    b.HasOne("TheDugout.Models.Game.GameSave", "GameSave")
+                        .WithMany("YouthPlayers")
+                        .HasForeignKey("GameSaveId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("TheDugout.Models.Players.Player", "Player")
                         .WithOne("YouthProfile")
                         .HasForeignKey("TheDugout.Models.Players.YouthPlayer", "PlayerId")
@@ -3586,6 +3600,8 @@ namespace TheDugout.Migrations
                         .HasForeignKey("YouthAcademyId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("GameSave");
 
                     b.Navigation("Player");
 
@@ -4042,6 +4058,8 @@ namespace TheDugout.Migrations
                     b.Navigation("Transfers");
 
                     b.Navigation("YouthAcademies");
+
+                    b.Navigation("YouthPlayers");
                 });
 
             modelBuilder.Entity("TheDugout.Models.Game.User", b =>

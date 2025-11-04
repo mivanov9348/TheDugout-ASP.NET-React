@@ -11,7 +11,8 @@
 
         List<Player> GenerateTeamPlayers(GameSave save, Models.Teams.Team team);
         public Player? GenerateFreeAgent(GameSave save, Agency? agency = null);
-        Player CreateBasePlayer(GameSave save, Team? team, Country country, Position position, Agency? agency = null);
+        Player CreateBasePlayer(GameSave save, Team? team, Country country, Position position,
+    Agency? agency = null, int? minAge = null, int? maxAge = null);
         Task GeneratePlayersForAgenciesAsync(GameSave save, List<Agency> agencies, CancellationToken ct = default);
         void UpdateCurrentAbility(Player player, PlayerSeasonStats stats);
         Task UpdatePlayerPriceAsync(Player player);

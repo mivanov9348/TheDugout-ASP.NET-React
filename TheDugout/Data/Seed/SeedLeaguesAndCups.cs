@@ -156,7 +156,8 @@
                             Abbreviation = t.ShortName,
                             CountryId = countryId,
                             LeagueId = null,
-                            CountryCode = countryCode // Записваме само ако е зададен
+                            Popularity = t.Popularity,
+                            CountryCode = countryCode 
                         });
                     }
                     else
@@ -190,7 +191,6 @@
                     continue;
                 }
 
-                // Нормален отбор с лига
                 if (!leaguesByCode.TryGetValue(t.CompetitionCode, out var league))
                 {
                     logger.LogWarning("Team {Team} references missing league {LeagueCode}", t.Name, t.CompetitionCode);
@@ -200,10 +200,8 @@
                 var existingLeagueTeam = dbTeams
                     .FirstOrDefault(x => x.Abbreviation == t.ShortName && x.LeagueId == league.Id);
 
-                // 👉 ЛОГИКА ЗА ОТБОРИ С ЛИГА — ПРИОРИТЕТ НА country-code ОТ JSON
                 if (!string.IsNullOrWhiteSpace(t.CountryCode))
                 {
-                    // Ако има валиден countryCode в JSON — използвай го
                     countryCode = t.CountryCode.Trim().ToUpper();
                     if (countriesByCode.TryGetValue(countryCode, out var country))
                     {
@@ -213,7 +211,6 @@
                     {
                         logger.LogWarning("Team '{Team}' has invalid or unknown country code: {CountryCode} (league: {League})",
                             t.Name, t.CountryCode, t.CompetitionCode);
-                        // Не падаме на лигата — просто оставяме countryId = null и ще паднем по-долу
                     }
                 }
 
@@ -231,7 +228,8 @@
                         Abbreviation = t.ShortName,
                         CountryId = countryId,
                         LeagueId = league.Id,
-                        CountryCode = countryCode
+                        CountryCode = countryCode,
+                        Popularity = t.Popularity,
                     });
                 }
                 else

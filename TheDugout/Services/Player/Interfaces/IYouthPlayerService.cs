@@ -5,7 +5,7 @@
     using TheDugout.Models.Players;
     public interface IYouthPlayerService
     {
-        Task GenerateYouthIntakeAsync(YouthAcademy academy, GameSave save);
+        Task GenerateAllYouthIntakesAsync(YouthAcademy academy, GameSave gameSave, CancellationToken ct = default);
         Task<List<Player>> GetYouthPlayersByTeamAsync(int teamId);
     }
 }

@@ -38,9 +38,8 @@
         public YouthAcademy? YouthAcademy { get; set; }
 
         public decimal Balance { get; set; }
-        public double PopularityValue { get; set; } = 10; 
-        [NotMapped]
-        public int Popularity => (int)Math.Round(PopularityValue);
+     
+        public int Popularity { get; set; }
 
         public virtual ICollection<Player> Players { get; set; } = new List<Player>();
         public ICollection<Fixture> HomeFixtures { get; set; } = new List<Fixture>();

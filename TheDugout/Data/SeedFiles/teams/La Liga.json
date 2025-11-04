@@ -1,22 +1,142 @@
 [
-  { "name": "Alavés", "shortName": "ALA", "competitionCode": "ESP_1", "countryCode": "ESP" },
-  { "name": "Athletic Bilbao", "shortName": "ATH", "competitionCode": "ESP_1", "countryCode": "ESP" },
-  { "name": "Atlético Madrid", "shortName": "ATM", "competitionCode": "ESP_1", "countryCode": "ESP" },
-  { "name": "Barcelona", "shortName": "BAR", "competitionCode": "ESP_1", "countryCode": "ESP" },
-  { "name": "Celta Vigo", "shortName": "CEL", "competitionCode": "ESP_1", "countryCode": "ESP" },
-  { "name": "Elche", "shortName": "ELC", "competitionCode": "ESP_1", "countryCode": "ESP" },
-  { "name": "Espanyol", "shortName": "ESPY", "competitionCode": "ESP_1", "countryCode": "ESP" },
-  { "name": "Getafe", "shortName": "GET", "competitionCode": "ESP_1", "countryCode": "ESP" },
-  { "name": "Girona", "shortName": "GIR", "competitionCode": "ESP_1", "countryCode": "ESP" },
-  { "name": "Levante", "shortName": "LEV", "competitionCode": "ESP_1", "countryCode": "ESP" },
-  { "name": "Mallorca", "shortName": "MAL", "competitionCode": "ESP_1", "countryCode": "ESP" },
-  { "name": "Osasuna", "shortName": "OSA", "competitionCode": "ESP_1", "countryCode": "ESP" },
-  { "name": "Oviedo", "shortName": "OVI", "competitionCode": "ESP_1", "countryCode": "ESP" },
-  { "name": "Rayo Vallecano", "shortName": "RAY", "competitionCode": "ESP_1", "countryCode": "ESP" },
-  { "name": "Real Betis", "shortName": "BET", "competitionCode": "ESP_1", "countryCode": "ESP" },
-  { "name": "Real Madrid", "shortName": "RMA", "competitionCode": "ESP_1", "countryCode": "ESP" },
-  { "name": "Real Sociedad", "shortName": "RSO", "competitionCode": "ESP_1", "countryCode": "ESP" },
-  { "name": "Sevilla", "shortName": "SEV", "competitionCode": "ESP_1", "countryCode": "ESP" },
-  { "name": "Valencia", "shortName": "VAL", "competitionCode": "ESP_1", "countryCode": "ESP" },
-  { "name": "Villarreal", "shortName": "VIL", "competitionCode": "ESP_1", "countryCode": "ESP" }
+  {
+    "name": "Alavés",
+    "shortName": "ALA",
+    "competitionCode": "ESP_1",
+    "countryCode": "ESP",
+    "popularity": 60
+  },
+  {
+    "name": "Athletic Bilbao",
+    "shortName": "ATH",
+    "competitionCode": "ESP_1",
+    "countryCode": "ESP",
+    "popularity": 82
+  },
+  {
+    "name": "Atlético Madrid",
+    "shortName": "ATM",
+    "competitionCode": "ESP_1",
+    "countryCode": "ESP",
+    "popularity": 94
+  },
+  {
+    "name": "Barcelona",
+    "shortName": "BAR",
+    "competitionCode": "ESP_1",
+    "countryCode": "ESP",
+    "popularity": 99
+  },
+  {
+    "name": "Celta Vigo",
+    "shortName": "CEL",
+    "competitionCode": "ESP_1",
+    "countryCode": "ESP",
+    "popularity": 68
+  },
+  {
+    "name": "Elche",
+    "shortName": "ELC",
+    "competitionCode": "ESP_1",
+    "countryCode": "ESP",
+    "popularity": 58
+  },
+  {
+    "name": "Espanyol",
+    "shortName": "ESPY",
+    "competitionCode": "ESP_1",
+    "countryCode": "ESP",
+    "popularity": 65
+  },
+  {
+    "name": "Getafe",
+    "shortName": "GET",
+    "competitionCode": "ESP_1",
+    "countryCode": "ESP",
+    "popularity": 62
+  },
+  {
+    "name": "Girona",
+    "shortName": "GIR",
+    "competitionCode": "ESP_1",
+    "countryCode": "ESP",
+    "popularity": 70
+  },
+  {
+    "name": "Levante",
+    "shortName": "LEV",
+    "competitionCode": "ESP_1",
+    "countryCode": "ESP",
+    "popularity": 59
+  },
+  {
+    "name": "Mallorca",
+    "shortName": "MAL",
+    "competitionCode": "ESP_1",
+    "countryCode": "ESP",
+    "popularity": 64
+  },
+  {
+    "name": "Osasuna",
+    "shortName": "OSA",
+    "competitionCode": "ESP_1",
+    "countryCode": "ESP",
+    "popularity": 66
+  },
+  {
+    "name": "Oviedo",
+    "shortName": "OVI",
+    "competitionCode": "ESP_1",
+    "countryCode": "ESP",
+    "popularity": 55
+  },
+  {
+    "name": "Rayo Vallecano",
+    "shortName": "RAY",
+    "competitionCode": "ESP_1",
+    "countryCode": "ESP",
+    "popularity": 63
+  },
+  {
+    "name": "Real Betis",
+    "shortName": "BET",
+    "competitionCode": "ESP_1",
+    "countryCode": "ESP",
+    "popularity": 78
+  },
+  {
+    "name": "Real Madrid",
+    "shortName": "RMA",
+    "competitionCode": "ESP_1",
+    "countryCode": "ESP",
+    "popularity": 100
+  },
+  {
+    "name": "Real Sociedad",
+    "shortName": "RSO",
+    "competitionCode": "ESP_1",
+    "countryCode": "ESP",
+    "popularity": 75
+  },
+  {
+    "name": "Sevilla",
+    "shortName": "SEV",
+    "competitionCode": "ESP_1",
+    "countryCode": "ESP",
+    "popularity": 85
+  },
+  {
+    "name": "Valencia",
+    "shortName": "VAL",
+    "competitionCode": "ESP_1",
+    "countryCode": "ESP",
+    "popularity": 80
+  },
+  {
+    "name": "Villarreal",
+    "shortName": "VIL",
+    "competitionCode": "ESP_1",
+    "countryCode": "ESP",
+    "popularity": 76
+  }
 ]

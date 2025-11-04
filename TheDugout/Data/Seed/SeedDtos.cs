@@ -34,7 +34,8 @@ namespace TheDugout.Data.Seed
             string Name,
             string ShortName,
             string? CompetitionCode,
-            string? CountryCode
+            string? CountryCode,
+            int Popularity
         );
 
         public record PositionWeightDto(

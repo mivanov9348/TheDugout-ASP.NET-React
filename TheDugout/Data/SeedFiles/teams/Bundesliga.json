@@ -1,20 +1,128 @@
 [
-  { "name": "Bayern Munich", "shortName": "FCB", "competitionCode": "GER_1", "countryCode": "GER" },
-  { "name": "Bayer Leverkusen", "shortName": "LEV", "competitionCode": "GER_1", "countryCode": "GER" },
-  { "name": "Borussia Dortmund", "shortName": "BVB", "competitionCode": "GER_1", "countryCode": "GER" },
-  { "name": "RB Leipzig", "shortName": "RBL", "competitionCode": "GER_1", "countryCode": "GER" },
-  { "name": "Eintracht Frankfurt", "shortName": "SGE", "competitionCode": "GER_1", "countryCode": "GER" },
-  { "name": "SC Freiburg", "shortName": "SCF", "competitionCode": "GER_1", "countryCode": "GER" },
-  { "name": "1. FSV Mainz 05", "shortName": "M05", "competitionCode": "GER_1", "countryCode": "GER" },
-  { "name": "Werder Bremen", "shortName": "SVW", "competitionCode": "GER_1", "countryCode": "GER" },
-  { "name": "VfB Stuttgart", "shortName": "VFB", "competitionCode": "GER_1", "countryCode": "GER" },
-  { "name": "Borussia Mönchengladbach", "shortName": "BMG", "competitionCode": "GER_1", "countryCode": "GER" },
-  { "name": "TSG Hoffenheim", "shortName": "TSG", "competitionCode": "GER_1", "countryCode": "GER" },
-  { "name": "1. FC Heidenheim", "shortName": "FCH", "competitionCode": "GER_1", "countryCode": "GER" },
-  { "name": "1. FC Köln", "shortName": "KOE", "competitionCode": "GER_1", "countryCode": "GER" },
-  { "name": "Hamburger SV", "shortName": "HSV", "competitionCode": "GER_1", "countryCode": "GER" },
-  { "name": "FC St. Pauli", "shortName": "SPA", "competitionCode": "GER_1", "countryCode": "GER" },
-  { "name": "1. FC Union Berlin", "shortName": "FCU", "competitionCode": "GER_1", "countryCode": "GER" },
-  { "name": "VfL Wolfsburg", "shortName": "WOB", "competitionCode": "GER_1", "countryCode": "GER" },
-  { "name": "FC Augsburg", "shortName": "FCA", "competitionCode": "GER_1", "countryCode": "GER" }
+  {
+    "name": "Bayern Munich",
+    "shortName": "FCB",
+    "competitionCode": "GER_1",
+    "countryCode": "GER",
+    "popularity": 95
+  },
+  {
+    "name": "Bayer Leverkusen",
+    "shortName": "LEV",
+    "competitionCode": "GER_1",
+    "countryCode": "GER",
+    "popularity": 78
+  },
+  {
+    "name": "Borussia Dortmund",
+    "shortName": "BVB",
+    "competitionCode": "GER_1",
+    "countryCode": "GER",
+    "popularity": 92
+  },
+  {
+    "name": "RB Leipzig",
+    "shortName": "RBL",
+    "competitionCode": "GER_1",
+    "countryCode": "GER",
+    "popularity": 75
+  },
+  {
+    "name": "Eintracht Frankfurt",
+    "shortName": "SGE",
+    "competitionCode": "GER_1",
+    "countryCode": "GER",
+    "popularity": 68
+  },
+  {
+    "name": "SC Freiburg",
+    "shortName": "SCF",
+    "competitionCode": "GER_1",
+    "countryCode": "GER",
+    "popularity": 58
+  },
+  {
+    "name": "1. FSV Mainz 05",
+    "shortName": "M05",
+    "competitionCode": "GER_1",
+    "countryCode": "GER",
+    "popularity": 55
+  },
+  {
+    "name": "Werder Bremen",
+    "shortName": "SVW",
+    "competitionCode": "GER_1",
+    "countryCode": "GER",
+    "popularity": 72
+  },
+  {
+    "name": "VfB Stuttgart",
+    "shortName": "VFB",
+    "competitionCode": "GER_1",
+    "countryCode": "GER",
+    "popularity": 70
+  },
+  {
+    "name": "Borussia Mönchengladbach",
+    "shortName": "BMG",
+    "competitionCode": "GER_1",
+    "countryCode": "GER",
+    "popularity": 74
+  },
+  {
+    "name": "TSG Hoffenheim",
+    "shortName": "TSG",
+    "competitionCode": "GER_1",
+    "countryCode": "GER",
+    "popularity": 52
+  },
+  {
+    "name": "1. FC Heidenheim",
+    "shortName": "FCH",
+    "competitionCode": "GER_1",
+    "countryCode": "GER",
+    "popularity": 48
+  },
+  {
+    "name": "1. FC Köln",
+    "shortName": "KOE",
+    "competitionCode": "GER_1",
+    "countryCode": "GER",
+    "popularity": 73
+  },
+  {
+    "name": "Hamburger SV",
+    "shortName": "HSV",
+    "competitionCode": "GER_1",
+    "countryCode": "GER",
+    "popularity": 76
+  },
+  {
+    "name": "FC St. Pauli",
+    "shortName": "SPA",
+    "competitionCode": "GER_1",
+    "countryCode": "GER",
+    "popularity": 65
+  },
+  {
+    "name": "1. FC Union Berlin",
+    "shortName": "FCU",
+    "competitionCode": "GER_1",
+    "countryCode": "GER",
+    "popularity": 67
+  },
+  {
+    "name": "VfL Wolfsburg",
+    "shortName": "WOB",
+    "competitionCode": "GER_1",
+    "countryCode": "GER",
+    "popularity": 66
+  },
+  {
+    "name": "FC Augsburg",
+    "shortName": "FCA",
+    "competitionCode": "GER_1",
+    "countryCode": "GER",
+    "popularity": 50
+  }
 ]

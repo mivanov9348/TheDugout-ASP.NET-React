@@ -52,6 +52,7 @@
         public ICollection<PlayerSeasonStats> PlayerSeasonStats { get; set; } = new List<PlayerSeasonStats>();
         public ICollection<PlayerAttribute> PlayerAttributes { get; set; } = new List<PlayerAttribute>();
         public ICollection<PlayerCompetitionStats> PlayerCompetitionStats { get; set; } = new List<PlayerCompetitionStats>();
+        public ICollection<YouthPlayer> YouthPlayers { get; set; } = new List<YouthPlayer>();
 
         // Seasons
         public ICollection<Season> Seasons { get; set; } = new List<Season>();

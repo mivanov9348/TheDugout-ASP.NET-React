@@ -3,444 +3,518 @@
     "name": "Ajax",
     "shortName": "AJA",
     "competitionCode": "",
-    "countryCode": "NED"
+    "countryCode": "NED",
+    "popularity": 92
   },
   {
     "name": "PSV Eindhoven",
     "shortName": "PSV",
     "competitionCode": "",
-    "countryCode": "NED"
+    "countryCode": "NED",
+    "popularity": 88
   },
   {
     "name": "Feyenoord",
     "shortName": "FEY",
     "competitionCode": "",
-    "countryCode": "NED"
+    "countryCode": "NED",
+    "popularity": 85
   },
   {
     "name": "AZ Alkmaar",
     "shortName": "AZ",
     "competitionCode": "",
-    "countryCode": "NED"
+    "countryCode": "NED",
+    "popularity": 70
   },
   {
     "name": "Club Brugge",
     "shortName": "CLU",
     "competitionCode": "",
-    "countryCode": "BEL"
+    "countryCode": "BEL",
+    "popularity": 78
   },
   {
     "name": "Anderlecht",
     "shortName": "AND",
     "competitionCode": "",
-    "countryCode": "BEL"
+    "countryCode": "BEL",
+    "popularity": 80
   },
   {
     "name": "Genk",
     "shortName": "GNK",
     "competitionCode": "",
-    "countryCode": "BEL"
+    "countryCode": "BEL",
+    "popularity": 68
   },
   {
     "name": "Gent",
     "shortName": "GNT",
     "competitionCode": "",
-    "countryCode": "BEL"
+    "countryCode": "BEL",
+    "popularity": 66
   },
   {
     "name": "Standard Liège",
     "shortName": "STL",
     "competitionCode": "",
-    "countryCode": "BEL"
+    "countryCode": "BEL",
+    "popularity": 72
   },
   {
     "name": "Royal Antwerp",
     "shortName": "ANT",
     "competitionCode": "",
-    "countryCode": "BEL"
+    "countryCode": "BEL",
+    "popularity": 67
   },
   {
     "name": "Red Bull Salzburg",
     "shortName": "RBS",
     "competitionCode": "",
-    "countryCode": "AUT"
+    "countryCode": "AUT",
+    "popularity": 75
   },
   {
     "name": "Rapid Wien",
     "shortName": "RAP",
     "competitionCode": "",
-    "countryCode": "AUT"
+    "countryCode": "AUT",
+    "popularity": 70
   },
   {
     "name": "Austria Wien",
     "shortName": "AUS",
     "competitionCode": "",
-    "countryCode": "AUT"
+    "countryCode": "AUT",
+    "popularity": 68
   },
   {
     "name": "Sturm Graz",
     "shortName": "STU",
     "competitionCode": "",
-    "countryCode": "AUT"
+    "countryCode": "AUT",
+    "popularity": 65
   },
   {
     "name": "LASK Linz",
     "shortName": "LAS",
     "competitionCode": "",
-    "countryCode": "AUT"
+    "countryCode": "AUT",
+    "popularity": 62
   },
   {
     "name": "Celtic",
     "shortName": "CEL",
     "competitionCode": "",
-    "countryCode": "SCO"
+    "countryCode": "SCO",
+    "popularity": 90
   },
   {
     "name": "Rangers",
     "shortName": "RAN",
     "competitionCode": "",
-    "countryCode": "SCO"
+    "countryCode": "SCO",
+    "popularity": 89
   },
   {
     "name": "Dinamo Zagreb",
     "shortName": "DIN",
     "competitionCode": "",
-    "countryCode": "CRO"
+    "countryCode": "CRO",
+    "popularity": 74
   },
   {
     "name": "Hajduk Split",
     "shortName": "HAJ",
     "competitionCode": "",
-    "countryCode": "CRO"
+    "countryCode": "CRO",
+    "popularity": 72
   },
   {
     "name": "Shakhtar Donetsk",
     "shortName": "SHA",
     "competitionCode": "",
-    "countryCode": "UKR"
+    "countryCode": "UKR",
+    "popularity": 82
   },
   {
     "name": "Dynamo Kyiv",
     "shortName": "DYN",
     "competitionCode": "",
-    "countryCode": "UKR"
+    "countryCode": "UKR",
+    "popularity": 84
   },
   {
     "name": "Zorya Luhansk",
     "shortName": "ZOR",
     "competitionCode": "",
-    "countryCode": "UKR"
+    "countryCode": "UKR",
+    "popularity": 60
   },
   {
     "name": "Sparta Praha",
     "shortName": "SPA",
     "competitionCode": "",
-    "countryCode": "CZE"
+    "countryCode": "CZE",
+    "popularity": 73
   },
   {
     "name": "Slavia Praha",
     "shortName": "SLP",
     "competitionCode": "",
-    "countryCode": "CZE"
+    "countryCode": "CZE",
+    "popularity": 76
   },
   {
     "name": "Viktoria Plzeň",
     "shortName": "PLZ",
     "competitionCode": "",
-    "countryCode": "CZE"
+    "countryCode": "CZE",
+    "popularity": 70
   },
   {
     "name": "FC Copenhagen",
     "shortName": "COP",
     "competitionCode": "",
-    "countryCode": "DEN"
+    "countryCode": "DEN",
+    "popularity": 71
   },
   {
     "name": "Brøndby IF",
     "shortName": "BRO",
     "competitionCode": "",
-    "countryCode": "DEN"
+    "countryCode": "DEN",
+    "popularity": 68
   },
   {
     "name": "Midtjylland",
     "shortName": "MID",
     "competitionCode": "",
-    "countryCode": "DEN"
+    "countryCode": "DEN",
+    "popularity": 66
   },
   {
     "name": "Olympiacos",
     "shortName": "OLY",
     "competitionCode": "",
-    "countryCode": "GRE"
+    "countryCode": "GRE",
+    "popularity": 78
   },
   {
     "name": "Panathinaikos",
     "shortName": "PAN",
     "competitionCode": "",
-    "countryCode": "GRE"
+    "countryCode": "GRE",
+    "popularity": 76
   },
   {
     "name": "PAOK",
     "shortName": "PAO",
     "competitionCode": "",
-    "countryCode": "GRE"
+    "countryCode": "GRE",
+    "popularity": 74
   },
   {
     "name": "AEK Athens",
     "shortName": "AEK",
     "competitionCode": "",
-    "countryCode": "GRE"
+    "countryCode": "GRE",
+    "popularity": 77
   },
   {
     "name": "Aris Thessaloniki",
     "shortName": "ARI",
     "competitionCode": "",
-    "countryCode": "GRE"
+    "countryCode": "GRE",
+    "popularity": 65
   },
   {
     "name": "Galatasaray",
     "shortName": "GAL",
     "competitionCode": "",
-    "countryCode": "TUR"
+    "countryCode": "TUR",
+    "popularity": 88
   },
   {
     "name": "Fenerbahçe",
     "shortName": "FEN",
     "competitionCode": "",
-    "countryCode": "TUR"
+    "countryCode": "TUR",
+    "popularity": 89
   },
   {
     "name": "Beşiktaş",
     "shortName": "BES",
     "competitionCode": "",
-    "countryCode": "TUR"
+    "countryCode": "TUR",
+    "popularity": 87
   },
   {
     "name": "Trabzonspor",
     "shortName": "TRA",
     "competitionCode": "",
-    "countryCode": "TUR"
+    "countryCode": "TUR",
+    "popularity": 80
   },
   {
     "name": "Başakşehir",
     "shortName": "BAS",
     "competitionCode": "",
-    "countryCode": "TUR"
+    "countryCode": "TUR",
+    "popularity": 68
   },
   {
     "name": "Young Boys",
     "shortName": "YB",
     "competitionCode": "",
-    "countryCode": "SUI"
+    "countryCode": "SUI",
+    "popularity": 70
   },
   {
     "name": "Basel",
     "shortName": "BASL",
     "competitionCode": "",
-    "countryCode": "SUI"
+    "countryCode": "SUI",
+    "popularity": 75
   },
   {
     "name": "Zürich",
     "shortName": "ZUR",
     "competitionCode": "",
-    "countryCode": "SUI"
+    "countryCode": "SUI",
+    "popularity": 65
   },
   {
     "name": "Legia Warszawa",
     "shortName": "LEG",
     "competitionCode": "",
-    "countryCode": "POL"
+    "countryCode": "POL",
+    "popularity": 72
   },
   {
     "name": "Lech Poznań",
     "shortName": "LPO",
     "competitionCode": "",
-    "countryCode": "POL"
+    "countryCode": "POL",
+    "popularity": 70
   },
   {
     "name": "Raków Częstochowa",
     "shortName": "RAK",
     "competitionCode": "",
-    "countryCode": "POL"
+    "countryCode": "POL",
+    "popularity": 62
   },
   {
     "name": "Śląsk Wrocław",
     "shortName": "SLA",
     "competitionCode": "",
-    "countryCode": "POL"
+    "countryCode": "POL",
+    "popularity": 60
   },
   {
     "name": "Partizan Belgrade",
     "shortName": "PAR",
     "competitionCode": "",
-    "countryCode": "SRB"
+    "countryCode": "SRB",
+    "popularity": 78
   },
   {
     "name": "Crvena Zvezda",
     "shortName": "CZV",
     "competitionCode": "",
-    "countryCode": "SRB"
+    "countryCode": "SRB",
+    "popularity": 80
   },
   {
     "name": "Molde FK",
     "shortName": "MOL",
     "competitionCode": "",
-    "countryCode": "NOR"
+    "countryCode": "NOR",
+    "popularity": 68
   },
   {
     "name": "Rosenborg",
     "shortName": "ROS",
     "competitionCode": "",
-    "countryCode": "NOR"
+    "countryCode": "NOR",
+    "popularity": 70
   },
   {
     "name": "Bodø/Glimt",
     "shortName": "BOD",
     "competitionCode": "",
-    "countryCode": "NOR"
+    "countryCode": "NOR",
+    "popularity": 66
   },
   {
     "name": "Malmö FF",
     "shortName": "MAL",
     "competitionCode": "",
-    "countryCode": "SWE"
+    "countryCode": "SWE",
+    "popularity": 72
   },
   {
     "name": "AIK",
     "shortName": "AIK",
     "competitionCode": "",
-    "countryCode": "SWE"
+    "countryCode": "SWE",
+    "popularity": 68
   },
   {
     "name": "Hammarby",
     "shortName": "HAM",
     "competitionCode": "",
-    "countryCode": "SWE"
+    "countryCode": "SWE",
+    "popularity": 65
   },
   {
     "name": "Djurgårdens IF",
     "shortName": "DJU",
     "competitionCode": "",
-    "countryCode": "SWE"
+    "countryCode": "SWE",
+    "popularity": 64
   },
   {
     "name": "Steaua București (FCSB)",
     "shortName": "FCSB",
     "competitionCode": "",
-    "countryCode": "ROU"
+    "countryCode": "ROU",
+    "popularity": 74
   },
   {
     "name": "CFR Cluj",
     "shortName": "CFR",
     "competitionCode": "",
-    "countryCode": "ROU"
+    "countryCode": "ROU",
+    "popularity": 70
   },
   {
     "name": "Universitatea Craiova",
     "shortName": "CRA",
     "competitionCode": "",
-    "countryCode": "ROU"
+    "countryCode": "ROU",
+    "popularity": 62
   },
   {
     "name": "Rapid București",
     "shortName": "RBU",
     "competitionCode": "",
-    "countryCode": "ROU"
+    "countryCode": "ROU",
+    "popularity": 65
   },
   {
     "name": "APOEL Nicosia",
     "shortName": "APO",
     "competitionCode": "",
-    "countryCode": "CYP"
+    "countryCode": "CYP",
+    "popularity": 60
   },
   {
     "name": "Omonia Nicosia",
     "shortName": "OMO",
     "competitionCode": "",
-    "countryCode": "CYP"
+    "countryCode": "CYP",
+    "popularity": 58
   },
   {
     "name": "AEL Limassol",
     "shortName": "AEL",
     "competitionCode": "",
-    "countryCode": "CYP"
+    "countryCode": "CYP",
+    "popularity": 55
   },
   {
     "name": "Ferencváros",
     "shortName": "FER",
     "competitionCode": "",
-    "countryCode": "HUN"
+    "countryCode": "HUN",
+    "popularity": 68
   },
   {
     "name": "Fehérvár",
     "shortName": "VID",
     "competitionCode": "",
-    "countryCode": "HUN"
+    "countryCode": "HUN",
+    "popularity": 60
   },
   {
     "name": "Debrecen",
     "shortName": "DEB",
     "competitionCode": "",
-    "countryCode": "HUN"
+    "countryCode": "HUN",
+    "popularity": 58
   },
   {
     "name": "Slovan Bratislava",
     "shortName": "SLO",
     "competitionCode": "",
-    "countryCode": "SVK"
+    "countryCode": "SVK",
+    "popularity": 62
   },
   {
     "name": "Žilina",
     "shortName": "ZIL",
     "competitionCode": "",
-    "countryCode": "SVK"
+    "countryCode": "SVK",
+    "popularity": 55
   },
   {
     "name": "Olimpija Ljubljana",
     "shortName": "OLJ",
     "competitionCode": "",
-    "countryCode": "SVN"
+    "countryCode": "SVN",
+    "popularity": 52
   },
   {
     "name": "Maribor",
     "shortName": "MAR",
     "competitionCode": "",
-    "countryCode": "SVN"
+    "countryCode": "SVN",
+    "popularity": 58
   },
   {
     "name": "Astana",
     "shortName": "AST",
     "competitionCode": "",
-    "countryCode": "KAZ"
+    "countryCode": "KAZ",
+    "popularity": 50
   },
   {
     "name": "Kairat Almaty",
     "shortName": "KAI",
     "competitionCode": "",
-    "countryCode": "KAZ"
+    "countryCode": "KAZ",
+    "popularity": 48
   },
   {
     "name": "Maccabi Haifa",
     "shortName": "MHA",
     "competitionCode": "",
-    "countryCode": "ISR"
+    "countryCode": "ISR",
+    "popularity": 65
   },
   {
     "name": "Maccabi Tel Aviv",
     "shortName": "MTA",
     "competitionCode": "",
-    "countryCode": "ISR"
+    "countryCode": "ISR",
+    "popularity": 68
   },
   {
     "name": "Hapoel Be'er Sheva",
     "shortName": "HBS",
     "competitionCode": "",
-    "countryCode": "ISR"
+    "countryCode": "ISR",
+    "popularity": 60
   },
   {
     "name": "Beitar Jerusalem",
     "shortName": "BEI",
     "competitionCode": "",
-    "countryCode": "ISR"
+    "countryCode": "ISR",
+    "popularity": 58
   }
 ]

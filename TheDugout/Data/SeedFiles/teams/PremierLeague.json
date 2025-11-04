@@ -1,22 +1,142 @@
 [
-  { "name": "Arsenal", "shortName": "ARS", "competitionCode": "EPL", "countryCode": "ENG" },
-  { "name": "Aston Villa", "shortName": "AVL", "competitionCode": "EPL", "countryCode": "ENG" },
-  { "name": "Bournemouth", "shortName": "BOU", "competitionCode": "EPL", "countryCode": "ENG" },
-  { "name": "Brentford", "shortName": "BRE", "competitionCode": "EPL", "countryCode": "ENG" },
-  { "name": "Brighton & Hove Albion", "shortName": "BHA", "competitionCode": "EPL", "countryCode": "ENG" },
-  { "name": "Chelsea", "shortName": "CHE", "competitionCode": "EPL", "countryCode": "ENG" },
-  { "name": "Crystal Palace", "shortName": "CRY", "competitionCode": "EPL", "countryCode": "ENG" },
-  { "name": "Everton", "shortName": "EVE", "competitionCode": "EPL", "countryCode": "ENG" },
-  { "name": "Fulham", "shortName": "FUL", "competitionCode": "EPL", "countryCode": "ENG" },
-  { "name": "Ipswich Town", "shortName": "IPS", "competitionCode": "EPL", "countryCode": "ENG" },
-  { "name": "Leicester City", "shortName": "LEI", "competitionCode": "EPL", "countryCode": "ENG" },
-  { "name": "Liverpool", "shortName": "LIV", "competitionCode": "EPL", "countryCode": "ENG" },
-  { "name": "Manchester City", "shortName": "MCI", "competitionCode": "EPL", "countryCode": "ENG" },
-  { "name": "Manchester United", "shortName": "MUN", "competitionCode": "EPL", "countryCode": "ENG" },
-  { "name": "Newcastle United", "shortName": "NEW", "competitionCode": "EPL", "countryCode": "ENG" },
-  { "name": "Nottingham Forest", "shortName": "NFO", "competitionCode": "EPL", "countryCode": "ENG" },
-  { "name": "Southampton", "shortName": "SOU", "competitionCode": "EPL", "countryCode": "ENG" },
-  { "name": "Tottenham Hotspur", "shortName": "TOT", "competitionCode": "EPL", "countryCode": "ENG" },
-  { "name": "West Ham United", "shortName": "WHU", "competitionCode": "EPL", "countryCode": "ENG" },
-  { "name": "Wolverhampton Wanderers", "shortName": "WOL", "competitionCode": "EPL", "countryCode": "ENG" }
+  {
+    "name": "Arsenal",
+    "shortName": "ARS",
+    "competitionCode": "EPL",
+    "countryCode": "ENG",
+    "popularity": 95
+  },
+  {
+    "name": "Aston Villa",
+    "shortName": "AVL",
+    "competitionCode": "EPL",
+    "countryCode": "ENG",
+    "popularity": 80
+  },
+  {
+    "name": "Bournemouth",
+    "shortName": "BOU",
+    "competitionCode": "EPL",
+    "countryCode": "ENG",
+    "popularity": 65
+  },
+  {
+    "name": "Brentford",
+    "shortName": "BRE",
+    "competitionCode": "EPL",
+    "countryCode": "ENG",
+    "popularity": 68
+  },
+  {
+    "name": "Brighton & Hove Albion",
+    "shortName": "BHA",
+    "competitionCode": "EPL",
+    "countryCode": "ENG",
+    "popularity": 70
+  },
+  {
+    "name": "Chelsea",
+    "shortName": "CHE",
+    "competitionCode": "EPL",
+    "countryCode": "ENG",
+    "popularity": 96
+  },
+  {
+    "name": "Crystal Palace",
+    "shortName": "CRY",
+    "competitionCode": "EPL",
+    "countryCode": "ENG",
+    "popularity": 72
+  },
+  {
+    "name": "Everton",
+    "shortName": "EVE",
+    "competitionCode": "EPL",
+    "countryCode": "ENG",
+    "popularity": 82
+  },
+  {
+    "name": "Fulham",
+    "shortName": "FUL",
+    "competitionCode": "EPL",
+    "countryCode": "ENG",
+    "popularity": 70
+  },
+  {
+    "name": "Ipswich Town",
+    "shortName": "IPS",
+    "competitionCode": "EPL",
+    "countryCode": "ENG",
+    "popularity": 62
+  },
+  {
+    "name": "Leicester City",
+    "shortName": "LEI",
+    "competitionCode": "EPL",
+    "countryCode": "ENG",
+    "popularity": 78
+  },
+  {
+    "name": "Liverpool",
+    "shortName": "LIV",
+    "competitionCode": "EPL",
+    "countryCode": "ENG",
+    "popularity": 98
+  },
+  {
+    "name": "Manchester City",
+    "shortName": "MCI",
+    "competitionCode": "EPL",
+    "countryCode": "ENG",
+    "popularity": 99
+  },
+  {
+    "name": "Manchester United",
+    "shortName": "MUN",
+    "competitionCode": "EPL",
+    "countryCode": "ENG",
+    "popularity": 100
+  },
+  {
+    "name": "Newcastle United",
+    "shortName": "NEW",
+    "competitionCode": "EPL",
+    "countryCode": "ENG",
+    "popularity": 85
+  },
+  {
+    "name": "Nottingham Forest",
+    "shortName": "NFO",
+    "competitionCode": "EPL",
+    "countryCode": "ENG",
+    "popularity": 75
+  },
+  {
+    "name": "Southampton",
+    "shortName": "SOU",
+    "competitionCode": "EPL",
+    "countryCode": "ENG",
+    "popularity": 73
+  },
+  {
+    "name": "Tottenham Hotspur",
+    "shortName": "TOT",
+    "competitionCode": "EPL",
+    "countryCode": "ENG",
+    "popularity": 92
+  },
+  {
+    "name": "West Ham United",
+    "shortName": "WHU",
+    "competitionCode": "EPL",
+    "countryCode": "ENG",
+    "popularity": 79
+  },
+  {
+    "name": "Wolverhampton Wanderers",
+    "shortName": "WOL",
+    "competitionCode": "EPL",
+    "countryCode": "ENG",
+    "popularity": 74
+  }
 ]

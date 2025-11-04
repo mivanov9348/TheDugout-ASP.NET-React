@@ -48,7 +48,7 @@
                     Name = tt.Name,
                     Abbreviation = tt.Abbreviation,
                     CountryId = tt.CountryId,
-                    PopularityValue = 10,
+                    Popularity = tt.Popularity,
                     LogoFileName = GenerateLogoFileName(tt.Name)
                 };
 
@@ -59,7 +59,6 @@
                     gameSave.Players.Add(player);
                 }
 
-                team.PopularityValue = CalculateTeamPopularity(team);
                 teams.Add(team);
             }
 
@@ -86,43 +85,13 @@
             return teams;
         }
 
-        private int CalculateTeamPopularity(Team team)
-        {
-            if (team.Players == null || !team.Players.Any())
-                return 5;
-
-            var allValues = team.Players
-                .SelectMany(p => p.Attributes)
-                .Select(pa => pa.Value);
-
-            double avgSkill = allValues.Any() ? allValues.Average() : 30;
-
-            int leagueTier = team.League?.Tier ?? 4;
-            int basePopularity = leagueTier switch
-            {
-                1 => 70,
-                2 => 50,
-                3 => 35,
-                _ => 20
-            };
-
-
-            int skillBonus = (int)((avgSkill - 40) / 2);
-
-            int randomVariance = new Random().Next(-5, 6);
-
-            int popularity = basePopularity + skillBonus + randomVariance;
-
-            return Math.Clamp(popularity, 1, 100);
-        }
-
         public async Task UpdatePopularityAsync(Team team, TeamEventType eventType)
         {
-            double delta = eventType switch
+            int delta = eventType switch
             {
-                TeamEventType.Win => 0.3,
-                TeamEventType.Draw => 0.1,
-                TeamEventType.Loss => -0.3,
+                TeamEventType.Win => 1,
+                TeamEventType.Draw => 0,
+                TeamEventType.Loss => -1,
                 TeamEventType.TitleWin => 5,
                 TeamEventType.CupWin => 3,
                 TeamEventType.Promotion => 4,
@@ -132,7 +101,7 @@
                 _ => 0
             };
 
-            team.PopularityValue = Math.Clamp(team.PopularityValue + delta, 1, 100);
+            team.Popularity = Math.Clamp(team.Popularity + delta, 1, 100);
 
             _context.Update(team);
             await _context.SaveChangesAsync();
@@ -154,28 +123,34 @@
 
         public async Task<List<Team>> GenerateIndependentTeamsAsync(GameSave gameSave)
         {
+            // 🟢 1. Вземи шаблоните на отбори без лига И от неактивни лиги
             var templates = await _context.TeamTemplates
-                .Where(tt => tt.LeagueId == null)
+                .Include(tt => tt.League)
+                .Where(tt =>
+                    tt.LeagueId == null || // отбор без лига
+                    (tt.League != null && !tt.League.IsActive)) // или от неактивна лига
                 .ToListAsync();
 
             var teams = new List<Team>();
 
             foreach (var tt in templates)
             {
+                // 🟡 2. Ако отборът идва от неактивна лига — правим го независим (League = null)
                 var team = new Team
                 {
                     TemplateId = tt.Id,
                     GameSaveId = gameSave.Id,
                     League = null,
+                    LeagueId = null,
                     Name = tt.Name,
                     Abbreviation = tt.Abbreviation,
                     CountryId = tt.CountryId,
                     Country = tt.Country,
-                    PopularityValue = 10,
+                    Popularity = tt.Popularity,
                     LogoFileName = GenerateLogoFileName(tt.Name)
                 };
 
-                // Генерираме играчи
+                // 🔹 Генерираме играчи
                 var players = _playerGenerator.GenerateTeamPlayers(gameSave, team);
                 foreach (var player in players)
                 {
@@ -183,15 +158,14 @@
                     team.Players.Add(player);
                 }
 
-                team.PopularityValue = CalculateTeamPopularity(team);
                 teams.Add(team);
             }
 
-            // Първо записваме отборите, за да получат ID
+            // 🟢 3. Записваме отборите
             _context.Teams.AddRange(teams);
             await _context.SaveChangesAsync();
 
-            // Сега вече имаме team.Id, можем да добавим съоръжения
+            // 🏟️ 4. Добавяме съоръжения
             foreach (var team in teams)
             {
                 await _stadiumService.AddStadiumAsync(team.Id);
@@ -201,11 +175,12 @@
 
             return teams;
         }
+
         public async Task EnsureTeamRostersAsync(int gameSaveId)
         {
             var teams = await _context.Teams
                 .Include(t => t.Players)
-                .Include(t=>t.Country)
+                .Include(t => t.Country)
                 .Where(t => t.GameSaveId == gameSaveId)
                 .ToListAsync();
 
