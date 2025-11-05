@@ -87,26 +87,14 @@ function AppInner() {
               <StartScreen
                 username={username}
                 isAdmin={isAdmin}
-                onNewGame={async (setLoadingMessage) => {
+                onNewGame={async (newGame) => {
                   try {
-                    setLoadingMessage("Създаваме нова игра...");
-
-                    const res = await fetch("/api/games/new", {
-                      method: "POST",
-                      credentials: "include",
-                    });
-
-                    if (!res.ok) throw new Error("Failed to create new game");
-
-                    const newGameSave = await res.json();
-
-                    // 🔹 Показваме TeamSelectionModal вместо да навигираме
-                    setPendingSaveId(newGameSave.id);
+                    Swal.close();
+                    setPendingSaveId(newGame.id);
                     setShowTeamSelection(true);
-
                   } catch (err) {
                     console.error("Error starting new game:", err);
-                    Swal.fire("Грешка", "Възникна проблем при стартирането на нова игра.", "error");
+                    Swal.fire("Error", "There was a problem starting a new game.", "error");
                   }
                 }}
 
@@ -124,6 +112,7 @@ function AppInner() {
                 }}
                 onLogout={() => setIsAuthenticated(false)}
               />
+
 
             )
           }
@@ -226,29 +215,31 @@ function AppInner() {
 
           onDeleteSave={async (id) => {
             try {
-              // 1. Изпращаме заявка към правилния API endpoint
-              const res = await fetch(`/api/games/${id}`, {
-                method: "DELETE",
-                credentials: "include", // Важно, защото endpoint-ът е [Authorize]
+              Swal.fire({
+                title: "Deleting...",
+                text: "Deleting...",
+                didOpen: () => Swal.showLoading(),
+                allowOutsideClick: false,
+                allowEscapeKey: false,
               });
 
-              if (!res.ok) {
-                // 2. Хващаме грешки от сървъра
-                throw new Error("Failed to delete save");
-              }
+              const res = await fetch(`/api/games/${id}`, {
+                method: "DELETE",
+                credentials: "include",
+              });
 
-              // 3. Обновяваме локалния state САМО ако изтриването е успешно
+              if (!res.ok) throw new Error("Failed to delete save");
+
               setUserSaves((prev) => prev.filter((s) => s.id !== id));
 
-              // 4. (Опционално) Показваме съобщение за успех
-              Swal.fire("Изтрито!", "Сейфът беше изтрит успешно.", "success");
+              Swal.fire("Deleted!", "The save has been deleted!", "success");
 
             } catch (err) {
-              // 5. Показваме съобщение при грешка
               console.error("Error deleting save:", err);
-              Swal.fire("Грешка", "Не успяхме да изтрием сейфа.", "error");
+              Swal.fire("Error", "Error while deleting....", "error");
             }
           }}
+
         />
       )}
       {showTeamSelection && pendingSaveId && (

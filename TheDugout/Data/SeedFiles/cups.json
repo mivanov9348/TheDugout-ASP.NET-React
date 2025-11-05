@@ -9,28 +9,28 @@
   {
     "Name": "FA Cup",
     "CountryCode": "ENG",
-    "IsActive": true,
+    "IsActive": false,
     "MinTeams": 32,
     "MaxTeams": 128
   },
   {
     "Name": "DFB-Pokal",
     "CountryCode": "GER",
-    "IsActive": true,
+    "IsActive": false,
     "MinTeams": 32,
     "MaxTeams": 64
   },
   {
     "Name": "Coppa Italia",
     "CountryCode": "ITA",
-    "IsActive": true,
+    "IsActive": false,
     "MinTeams": 32,
     "MaxTeams": 64
   },
   {
     "Name": "Copa del Rey",
     "CountryCode": "ESP",
-    "IsActive": true,
+    "IsActive": false,
     "MinTeams": 32,
     "MaxTeams": 128
   },

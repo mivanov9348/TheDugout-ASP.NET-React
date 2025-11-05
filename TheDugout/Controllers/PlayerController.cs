@@ -34,22 +34,8 @@
             if (players == null || !players.Any())
                 return Ok(new List<object>());
 
-            var result = players.Select(p => new
-            {
-                Id = p.Id,
-                Name = p.FirstName + " " + p.LastName,
-                Age = p.Age,
-                Position = p.Position?.Name ?? "N/A",
-                Nationality = p.Country,
-                Country = p.Country?.Name ?? "Unknown",
-                CurrentAbility = p.CurrentAbility,
-                PotentialAbility = p.PotentialAbility,
-                Photo = $"/images/players/{p.AvatarFileName}",
-                Goals = p.SeasonStats?.Sum(s => s.Goals) ?? 0,
-            });
-
-            return Ok(result);
+            return Ok(players);
         }
-     
+
     }
 }

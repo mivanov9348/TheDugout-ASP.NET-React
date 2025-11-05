@@ -67,31 +67,87 @@
                            : NotFound(new { message = "Save not found" });
         }
 
+        //[Authorize]
+        //[HttpPost("new")]
+        //public async Task<IActionResult> StartNewGame()
+        //{
+        //    var userId = _userContext.GetUserId(User);
+        //    if (userId == null) return Unauthorized();
+
+        //    try
+        //    {
+        //        var save = await _gameSaveService.StartNewGameAsync(userId.Value, default);
+        //        var user = await _context.Users.FirstAsync(u => u.Id == userId.Value);
+        //        user.CurrentSaveId = null;
+        //        await _context.SaveChangesAsync();
+        //        return Ok(save.ToDto());
+        //    }
+        //    catch (InvalidOperationException ex)
+        //    {
+        //        return BadRequest(new { message = ex.Message });
+        //    }
+        //    catch
+        //    {
+        //        return StatusCode(500, new { message = "Failed to create new game" });
+        //    }
+        //}
+
         [Authorize]
-        [HttpPost("new")]
-        public async Task<IActionResult> StartNewGame()
+        [HttpGet("start-stream")]
+        public async Task StartNewGameStream(CancellationToken ct)
         {
+            Response.Headers.Add("Content-Type", "text/event-stream");
+            Response.Headers.Add("Cache-Control", "no-cache");
+            Response.Headers.Add("Connection", "keep-alive");
+            Response.Headers.Add("X-Accel-Buffering", "no");
+            await Response.Body.FlushAsync();
+
             var userId = _userContext.GetUserId(User);
-            if (userId == null) return Unauthorized();
+            if (userId == null)
+            {
+                await Response.WriteAsync("data: ❌ Unauthorized\n\n", ct);
+                await Response.Body.FlushAsync(ct);
+                return;
+            }
+
+            // 👉 Създаваме Task за heartbeat-а
+            var heartbeatTask = Task.Run(async () =>
+            {
+                while (!ct.IsCancellationRequested)
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(20), ct);
+                    await Response.WriteAsync(": keep-alive\n\n", ct); // ":" = коментар, не се вижда в клиента
+                    await Response.Body.FlushAsync(ct);
+                }
+            }, ct);
 
             try
             {
-                var save = await _gameSaveService.StartNewGameAsync(userId.Value, default);
-                var user = await _context.Users.FirstAsync(u => u.Id == userId.Value);
-                user.CurrentSaveId = null;
-                await _context.SaveChangesAsync();
-                return Ok(save.ToDto());
+                await foreach (var log in _gameSaveService.StartNewGameStreamAsync(userId, ct))
+                {
+                    if (log.StartsWith("RESULT|"))
+                    {
+                        var saveId = log.Split('|')[1];
+                        await Response.WriteAsync($"event: result\ndata: {saveId}\n\n", ct);
+                    }
+                    else
+                    {
+                        await Response.WriteAsync($"data: {log}\n\n", ct);
+                    }
+                    await Response.Body.FlushAsync(ct);
+                }
+
+                await Response.WriteAsync("event: done\ndata: done\n\n", ct);
+                await Response.Body.FlushAsync(ct);
             }
-            catch (InvalidOperationException ex)
+            finally
             {
-                return BadRequest(new { message = ex.Message });
-            }
-            catch
-            {
-                return StatusCode(500, new { message = "Failed to create new game" });
+                // когато приключи или прекъсне, прекратяваме heartbeat-а
+                try { await heartbeatTask; } catch { /* ignore */ }
             }
         }
-       
+
+
         [Authorize]
         [HttpPost("{saveId}/select-team/{teamId}")]
         public async Task<IActionResult> SelectTeam(int saveId, int teamId)
@@ -181,7 +237,7 @@
             .FirstOrDefaultAsync(u => u.Id == userId.Value);
 
             if (user?.CurrentSave == null)
-                return Ok(null);
+                return Ok(new { save = (object?)null });
 
             return Ok(user.CurrentSave.ToDto());
         }

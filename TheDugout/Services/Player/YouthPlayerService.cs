@@ -4,6 +4,7 @@
     using Microsoft.EntityFrameworkCore;
     using System;
     using TheDugout.Data;
+    using TheDugout.DTOs.Player;
     using TheDugout.Models.Facilities;
     using TheDugout.Models.Game;
     using TheDugout.Models.Players;
@@ -72,7 +73,7 @@
         }
 
 
-        public async Task<List<Player>> GetYouthPlayersByTeamAsync(int teamId)
+        public async Task<List<PlayerDto>> GetYouthPlayersByTeamAsync(int teamId)
         {
             if (teamId <= 0)
                 throw new ArgumentException("Invalid team id.", nameof(teamId));
@@ -81,9 +82,36 @@
                 .Include(y => y.Player)
                     .ThenInclude(p => p.Country)
                 .Include(y => y.Player.Position)
+                .Include(y => y.Player.Attributes)
+                    .ThenInclude(a => a.Attribute)
                 .Include(y => y.Player.SeasonStats)
                 .Where(y => y.YouthAcademy.TeamId == teamId && !y.IsPromoted)
-                .Select(y => y.Player)
+                .Select(y => new PlayerDto
+                {
+                    Id = y.Player.Id,
+                    FullName = y.Player.FirstName + " " + y.Player.LastName,
+                    Age = y.Player.Age,
+                    Country = y.Player.Country != null ? y.Player.Country.Name : "Unknown",
+                    Position = y.Player.Position != null ? y.Player.Position.Name : "N/A",
+                    HeightCm = y.Player.HeightCm,
+                    WeightKg = y.Player.WeightKg,
+                    AvatarFileName = y.Player.AvatarFileName,
+
+                    Attributes = y.Player.Attributes.Select(a => new PlayerAttributeDto
+                    {
+                        AttributeId = a.AttributeId,
+                        Name = a.Attribute.Name,
+                        Value = a.Value,
+                        Category = a.Attribute.Category
+                    }).ToList(),
+
+                    SeasonStats = y.Player.SeasonStats.Select(s => new PlayerSeasonStatsDto
+                    {
+                        SeasonId = s.SeasonId,
+                        MatchesPlayed = s.MatchesPlayed,
+                        Goals = s.Goals
+                    }).ToList()
+                })
                 .ToListAsync();
 
             return players;

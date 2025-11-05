@@ -77,7 +77,7 @@
                             t.LeagueId == null ||
 
                             // 2️⃣ Има лига, но лигата не е активна
-                            (t.League != null && !activeLeagueTemplateIds.Contains(t.League.TemplateId)) ||
+                            (t.League != null && !activeLeagueTemplateIds.Contains(t.League.TemplateId) && t.Popularity > 60) ||
 
                             // 3️⃣ Има активна лига, но е достатъчно популярен
                             (t.League != null && activeLeagueTemplateIds.Contains(t.League.TemplateId) && t.Popularity > 60)

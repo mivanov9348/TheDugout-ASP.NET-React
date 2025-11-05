@@ -1,31 +1,68 @@
 import React, { useState } from "react";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
+import { EventSourcePolyfill } from "event-source-polyfill";
 
 function StartScreen({ username, onNewGame, onLoadGame, onLogout, isAdmin }) {
   const [loading, setLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
   const navigate = useNavigate();
 
-  // 🔹 Засега твърдо — после ще идва от бекенда
+  const startNewGameStream = async () => {
+    setLoading(true);
 
-  const confirmNewGame = () => {
     Swal.fire({
-      title: "Започни нова игра?",
-      text: "Сигурен ли си?",
-      icon: "question",
-      showCancelButton: true,
-      confirmButtonText: "Да",
-      cancelButtonText: "Не",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        setLoading(true);
-        setLoadingMessage("Стартиране на нова игра...");
+      title: "Starting new game...",
+      html: "<pre id='log-box' style='text-align:left;max-height:250px;overflow:auto;font-family:monospace;'></pre>",
+      allowOutsideClick: false,
+      showConfirmButton: false,
+      didOpen: () => {
+        const logBox = Swal.getHtmlContainer().querySelector("#log-box");
 
-        onNewGame((msg) => setLoadingMessage(msg)).finally(() => {
+        const eventSource = new EventSourcePolyfill("/api/games/start-stream", {
+          withCredentials: true,
+        });
+
+        eventSource.onmessage = (e) => {
+          const p = document.createElement("div");
+          p.textContent = e.data;
+          logBox.appendChild(p);
+          logBox.scrollTop = logBox.scrollHeight;
+        };
+
+        let createdSaveId = null;
+
+        eventSource.addEventListener("result", (e) => {
+          createdSaveId = e.data;
+        });
+
+        eventSource.addEventListener("done", async () => {
+          eventSource.close();
+          Swal.update({
+            icon: "success",
+            title: "✅ Game Created!",
+            html: "<p>Loading team selection...</p>",
+            showConfirmButton: false,
+          });
+
+          if (createdSaveId) {
+            // подаваме на App id-то директно
+            if (onNewGame) onNewGame({ id: createdSaveId });
+          } else {
+            Swal.fire("Error", "Game created, but no save ID received.", "error");
+          }
+
           setLoading(false);
         });
-      }
+
+
+        eventSource.onerror = (err) => {
+          eventSource.close();
+          setLoading(false);
+          Swal.fire("Error", "Stream connection failed.", "error");
+          console.error("SSE error", err);
+        };
+      },
     });
   };
 
@@ -38,9 +75,8 @@ function StartScreen({ username, onNewGame, onLoadGame, onLogout, isAdmin }) {
 
       <div className="space-y-6 flex flex-col">
         <button
-          onClick={confirmNewGame}
+          onClick={startNewGameStream}
           className="px-8 py-3 bg-green-600 rounded-2xl hover:bg-green-500 transition"
-          disabled={loading}
         >
           New Game
         </button>
@@ -52,7 +88,6 @@ function StartScreen({ username, onNewGame, onLoadGame, onLogout, isAdmin }) {
           Load Game
         </button>
 
-        {/* 🔹 Покажи бутона само ако е админ */}
         {isAdmin && (
           <button
             onClick={() => navigate("/admin")}
@@ -70,18 +105,6 @@ function StartScreen({ username, onNewGame, onLoadGame, onLogout, isAdmin }) {
           Logout
         </button>
       </div>
-
-      {loading && (
-        <div className="mt-8 flex flex-col items-center space-y-3">
-          <div className="w-64 bg-gray-700 rounded-full h-4">
-            <div
-              className="bg-green-500 h-4 rounded-full animate-pulse"
-              style={{ width: "70%" }}
-            />
-          </div>
-          <p className="text-sm text-gray-300">{loadingMessage}</p>
-        </div>
-      )}
     </div>
   );
 }

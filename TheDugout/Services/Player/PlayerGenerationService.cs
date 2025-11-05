@@ -20,9 +20,15 @@
         private readonly ITeamPlanService _teamPlan;
         private readonly DugoutDbContext _context;
         private readonly Random _rng = new();
-
         private readonly string[] _avatarFiles;
         private readonly string _avatarFolder;
+        private record CachedCountry(int Id, string Code, string RegionCode);
+        private record CachedPosition(string Code, int Id);
+
+        private List<CachedCountry> _cachedCountries;
+        private Dictionary<string, CachedPosition> _cachedPositions;
+        private Dictionary<string, List<string>> _cachedFirstNamesByRegion;
+        private Dictionary<string, List<string>> _cachedLastNamesByRegion;
 
         public PlayerGenerationService(ITeamPlanService teamPlan, DugoutDbContext context, IWebHostEnvironment env)
         {
@@ -45,100 +51,42 @@
                 throw new InvalidOperationException($"No avatar files found in {_avatarFolder}");
             }
         }
-        //public List<Player> GenerateTeamPlayers(GameSave save, Team team)
-        //{
-        //    if (save == null)
-        //        throw new ArgumentNullException(nameof(save), "GameSave cannot be null.");
-        //    if (team == null)
-        //        throw new ArgumentNullException(nameof(team), "Team cannot be null.");
-
-        //    var players = new List<Player>();
-        //    var plan = _teamPlan.GetDefaultRosterPlan();
-
-        //    if (plan == null || plan.Count == 0)
-        //        throw new InvalidOperationException("Roster plan is null or empty.");
-
-        //    var countries = _context.Countries.ToList();
-        //    if (countries == null || countries.Count == 0)
-        //        throw new InvalidOperationException("No countries found in the database.");
-
-        //    foreach (var kv in plan)
-        //    {
-        //        var positionCode = kv.Key;
-        //        var count = kv.Value;
-
-        //        if (string.IsNullOrWhiteSpace(positionCode))
-        //            throw new InvalidOperationException("Position code in roster plan is null or empty.");
-        //        if (count <= 0)
-        //            throw new InvalidOperationException($"Invalid player count for position '{positionCode}'.");
-
-        //        for (int i = 0; i < count; i++)
-        //        {
-        //            string selectedPositionCode = positionCode;
-        //            if (positionCode == "ANY")
-        //            {
-        //                string[] options = { "GK", "DF", "MID", "ATT" };
-        //                selectedPositionCode = options[_rng.Next(options.Length)];
-        //            }
-
-        //            var position = _context.Positions.FirstOrDefault(p => p.Code == selectedPositionCode);
-        //            if (position == null)
-        //                throw new InvalidOperationException($"Position with code '{selectedPositionCode}' not found in database.");
-
-        //            Country selectedCountry;
-        //            if (team != null && team.Country != null && countries.Any())
-        //            {
-        //                if (_rng.NextDouble() < 0.8)
-        //                {
-        //                    selectedCountry = team.Country;
-        //                }
-        //                else
-        //                {
-        //                    selectedCountry = countries[_rng.Next(countries.Count)];
-        //                }
-        //            }
-        //            else
-        //            {
-        //                selectedCountry = countries[_rng.Next(countries.Count)];
-        //            }
-
-        //            if (selectedCountry == null)
-        //                throw new InvalidOperationException("Selected country is null.");
-
-        //            var player = CreateBasePlayer(save, team, selectedCountry, position);
-        //            players.Add(player);
-        //        }
-        //    }
-
-        //    return players;
-        //}
-
+        
         public List<Player> GenerateTeamPlayers(GameSave save, Team team)
         {
-            if (save == null)
-                throw new ArgumentNullException(nameof(save), "GameSave cannot be null.");
-            if (team == null)
-                throw new ArgumentNullException(nameof(team), "Team cannot be null.");
+            if (save == null) throw new ArgumentNullException(nameof(save));
+            if (team == null) throw new ArgumentNullException(nameof(team));
 
             var plan = _teamPlan.GetDefaultRosterPlan();
             if (plan == null || plan.Count == 0)
                 throw new InvalidOperationException("Roster plan is null or empty.");
 
-            var countries = _context.Countries.ToList();
-            if (countries == null || countries.Count == 0)
-                throw new InvalidOperationException("No countries found in the database.");
+            // ✅ Кешираме само чисти DTO-та, не EF entities
+            _cachedCountries ??= _context.Countries
+                .AsNoTracking()
+                .Select(c => new CachedCountry(c.Id, c.Code, c.RegionCode))
+                .ToList();
 
-            // ⚡ Оптимизация: зареждаме всички позиции само веднъж и ги слагаме в речник за бърз достъп
-            var positionsDict = _context.Positions.ToDictionary(p => p.Code, StringComparer.OrdinalIgnoreCase);
+            _cachedPositions ??= _context.Positions
+                .AsNoTracking()
+                .Select(p => new CachedPosition(p.Code, p.Id))
+                .ToDictionary(p => p.Code, StringComparer.OrdinalIgnoreCase);
 
-            var players = new List<Player>(plan.Values.Sum()); // предварително задаваме капацитет
-            var anyOptions = new[] { "GK", "DF", "MID", "ATT" }; // кеширана константа
+            _cachedFirstNamesByRegion ??= _context.FirstNames
+                .AsNoTracking()
+                .GroupBy(fn => fn.RegionCode)
+                .ToDictionary(g => g.Key, g => g.Select(x => x.Name).ToList());
 
-            foreach (var kv in plan)
+            _cachedLastNamesByRegion ??= _context.LastNames
+                .AsNoTracking()
+                .GroupBy(ln => ln.RegionCode)
+                .ToDictionary(g => g.Key, g => g.Select(x => x.Name).ToList());
+
+            var players = new List<Player>(plan.Values.Sum());
+            var anyOptions = new[] { "GK", "DF", "MID", "ATT" };
+
+            foreach (var (positionCode, count) in plan)
             {
-                var positionCode = kv.Key;
-                var count = kv.Value;
-
                 if (string.IsNullOrWhiteSpace(positionCode))
                     throw new InvalidOperationException("Position code in roster plan is null or empty.");
                 if (count <= 0)
@@ -150,34 +98,23 @@
                         ? anyOptions[_rng.Next(anyOptions.Length)]
                         : positionCode;
 
-                    if (!positionsDict.TryGetValue(selectedPositionCode, out var position) || position == null)
-                        throw new InvalidOperationException($"Position with code '{selectedPositionCode}' not found in database.");
+                    if (!_cachedPositions.TryGetValue(selectedPositionCode, out var cachedPos))
+                        throw new InvalidOperationException($"Position '{selectedPositionCode}' not found.");
 
-                    Country selectedCountry;
+                    var position = _context.Positions.Find(cachedPos.Id);
 
-                    // ⚡ Оптимизация: премахваме излишни проверки и повторни условия
-                    if (team.Country != null)
-                    {
-                        selectedCountry = _rng.NextDouble() < 0.8
-                            ? team.Country
-                            : countries[_rng.Next(countries.Count)];
-                    }
-                    else
-                    {
-                        selectedCountry = countries[_rng.Next(countries.Count)];
-                    }
+                    var cachedCountry = team.Country != null && _rng.NextDouble() < 0.8
+                        ? new CachedCountry(team.Country.Id, team.Country.Code, team.Country.RegionCode)
+                        : _cachedCountries[_rng.Next(_cachedCountries.Count)];
 
-                    if (selectedCountry == null)
-                        throw new InvalidOperationException("Selected country is null.");
+                    var country = _context.Countries.Find(cachedCountry.Id);
 
-                    players.Add(CreateBasePlayer(save, team, selectedCountry, position));
+                    players.Add(CreateBasePlayer(save, team, country, position));
                 }
             }
 
             return players;
         }
-
-
         public Player? GenerateFreeAgent(GameSave save, Agency agency)
         {
             if (save == null) throw new ArgumentNullException(nameof(save));
@@ -201,8 +138,7 @@
 
             return player;
         }
-
-        public async Task GeneratePlayersForAgenciesAsync(GameSave save, List<Agency> agencies, CancellationToken ct = default)
+                public async Task GeneratePlayersForAgenciesAsync(GameSave save, List<Agency> agencies, CancellationToken ct = default)
         {
             if (save == null) throw new ArgumentNullException(nameof(save));
             if (agencies == null || agencies.Count == 0) return;
@@ -235,34 +171,31 @@
             if (string.IsNullOrWhiteSpace(regionCode))
                 throw new InvalidOperationException($"Country {country.Code} няма RegionCode.");
 
-            var firstNames = _context.FirstNames
-                .Where(fn => fn.RegionCode == regionCode)
-                .Select(fn => fn.Name)
-                .ToList();
+            // --- 🔥 Lazy кеширане на имената (само при първи достъп) ---
+            if (_cachedFirstNamesByRegion == null || _cachedLastNamesByRegion == null)
+            {
+                _cachedFirstNamesByRegion = _context.FirstNames.AsNoTracking()
+                    .GroupBy(fn => fn.RegionCode)
+                    .ToDictionary(g => g.Key, g => g.Select(x => x.Name).ToList());
 
-            var lastNames = _context.LastNames
-                .Where(ln => ln.RegionCode == regionCode)
-                .Select(ln => ln.Name)
-                .ToList();
+                _cachedLastNamesByRegion = _context.LastNames.AsNoTracking()
+                    .GroupBy(ln => ln.RegionCode)
+                    .ToDictionary(g => g.Key, g => g.Select(x => x.Name).ToList());
+            }
 
-            if (!firstNames.Any())
+            if (!_cachedFirstNamesByRegion.TryGetValue(regionCode, out var firstNames) || firstNames.Count == 0)
                 throw new InvalidOperationException($"No First Names For {regionCode}");
-            if (!lastNames.Any())
-                throw new InvalidOperationException($"No First Names For {regionCode}");
+            if (!_cachedLastNamesByRegion.TryGetValue(regionCode, out var lastNames) || lastNames.Count == 0)
+                throw new InvalidOperationException($"No Last Names For {regionCode}");
 
             var firstName = firstNames[_rng.Next(firstNames.Count)];
             var lastName = lastNames[_rng.Next(lastNames.Count)];
 
             DateTime birthDate;
-
             if (minAge.HasValue && maxAge.HasValue)
-            {
                 birthDate = RandomBirthDateWithinAgeRange(save.CurrentSeason.CurrentDate, minAge.Value, maxAge.Value);
-            }
             else
-            {
-                birthDate = RandomBirthDate(); // оригиналното поведение
-            }
+                birthDate = RandomBirthDate();
 
             var player = new Player
             {
@@ -271,7 +204,6 @@
                 BirthDate = birthDate,
                 Team = team,
                 TeamId = team?.Id,
-                //GameSave = save,
                 GameSaveId = save.Id,
                 Position = position,
                 HeightCm = _rng.Next(165, 200),
@@ -287,7 +219,7 @@
             player.Price = CalculatePlayerPrice(player);
 
             return player;
-        }
+        }        
 
         private DateTime RandomBirthDateWithinAgeRange(DateTime currentDate, int minAge, int maxAge)
         {
@@ -296,8 +228,6 @@
             var range = (maxBirthDate - minBirthDate).Days;
             return minBirthDate.AddDays(_rng.Next(range));
         }
-
-
         private void AssignAttributes(Player player, Position position)
         {
             if (player == null)
@@ -336,22 +266,18 @@
                 sum += value;
             }
 
-            // CurrentAbility = сбор, скалиран към 200
             player.CurrentAbility = (int)Math.Clamp(Math.Round(sum * scaleFactor), 1, 200);
 
-            // PotentialAbility = CA + възраст + позиционен фактор
             player.PotentialAbility = CalculatePotentialAbility(player, position);
         }
         private int GenerateWeightedAttribute(double weight, double totalWeight, int age)
         {
-            // базово разпределение – играчите с важен атрибут за позицията да получават по-високи стойности
-            double baseValue = 5 + _rng.NextDouble() * 15; // 5–20
-            double importanceFactor = 0.5 + (weight / totalWeight) * 1.5; // по-висока тежест = по-голям шанс за висок атрибут
+            double baseValue = 5 + _rng.NextDouble() * 15;
+            double importanceFactor = 0.5 + (weight / totalWeight) * 1.5; 
 
-            // възрастов фактор (млади са по-непостоянни, пик 24–28, спад след 32)
             double ageFactor = age switch
             {
-                <= 20 => 0.7 + _rng.NextDouble() * 0.4, // непостоянни, някои добри, други слаби
+                <= 20 => 0.7 + _rng.NextDouble() * 0.4, 
                 <= 24 => 0.9 + _rng.NextDouble() * 0.3,
                 <= 28 => 1.1 + _rng.NextDouble() * 0.2,
                 <= 32 => 1.0,
@@ -359,7 +285,6 @@
                 _ => 0.6 + _rng.NextDouble() * 0.2
             };
 
-            // финална стойност
             double final = baseValue * importanceFactor * ageFactor;
             return Math.Clamp((int)Math.Round(final), 1, 20);
         }
@@ -394,7 +319,6 @@
             int newAbility = (int)Math.Clamp(player.CurrentAbility + growth, 1, player.PotentialAbility);
             player.CurrentAbility = newAbility;
         }
-
         private int CalculatePotentialAbility(Player player, Position position)
         {
             int maxGrowth = player.Age switch
@@ -419,14 +343,12 @@
 
             return Math.Min(potential, 200);
         }
-
         private DateTime RandomBirthDate()
         {
             int age = _rng.Next(18, 36);
             var today = DateTime.Today;
             return today.AddYears(-age).AddDays(-_rng.Next(0, 365));
         }
-
         private decimal CalculatePlayerPrice(Player player)
         {
             if (player == null) throw new ArgumentNullException(nameof(player));
@@ -462,7 +384,6 @@
 
             return Math.Round((decimal)price, 0);
         }
-
         public async Task UpdatePlayerPriceAsync(Player player)
         {
             var stats = await _context.PlayerSeasonStats
@@ -475,7 +396,6 @@
             _context.Update(player);
             await _context.SaveChangesAsync();
         }
-
         private decimal CalculateUpdatedPlayerPrice(Player player, PlayerSeasonStats? stats)
         {
             if (player == null) throw new ArgumentNullException(nameof(player));
@@ -536,7 +456,6 @@
 
             return Math.Round((decimal)smoothed, 0);
         }
-
         public string GetRandomAvatarFileName()
         {
             var randomFile = _avatarFiles[_rng.Next(_avatarFiles.Length)];
