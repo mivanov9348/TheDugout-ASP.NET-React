@@ -36,7 +36,7 @@
             _context = context;
             _messageOrchestrator = messageOrchestrator;
         }
-       
+
         [HttpGet("teamtemplates")]
         public async Task<IActionResult> GetTeamTemplates()
         {
@@ -67,30 +67,50 @@
                            : NotFound(new { message = "Save not found" });
         }
 
-        //[Authorize]
-        //[HttpPost("new")]
-        //public async Task<IActionResult> StartNewGame()
-        //{
-        //    var userId = _userContext.GetUserId(User);
-        //    if (userId == null) return Unauthorized();
+        [HttpGet("countries")]
+        public async Task<IActionResult> GetCountriesWithLeagueAndCup()
+        {
+            var countries = await _context.Countries
+                .Where(c => _context.LeagueTemplates.Any(l => l.CountryId == c.Id) &&
+                            _context.CupTemplates.Any(cu => cu.CountryCode == c.Code))
+                .Select(c => new
+                {
+                    c.Id,
+                    c.Name,
+                    c.Code
+                })
+                .ToListAsync();
 
-        //    try
-        //    {
-        //        var save = await _gameSaveService.StartNewGameAsync(userId.Value, default);
-        //        var user = await _context.Users.FirstAsync(u => u.Id == userId.Value);
-        //        user.CurrentSaveId = null;
-        //        await _context.SaveChangesAsync();
-        //        return Ok(save.ToDto());
-        //    }
-        //    catch (InvalidOperationException ex)
-        //    {
-        //        return BadRequest(new { message = ex.Message });
-        //    }
-        //    catch
-        //    {
-        //        return StatusCode(500, new { message = "Failed to create new game" });
-        //    }
-        //}
+            return Ok(countries);
+        }
+        [HttpPost("activate")]
+        public async Task<IActionResult> ActivateSelectedCountries([FromBody] List<int> countryIds)
+        {
+            if (countryIds == null || !countryIds.Any())
+                return BadRequest("At least one country must be selected.");
+
+            var allLeagues = await _context.LeagueTemplates.ToListAsync();
+            var allCups = await _context.CupTemplates.ToListAsync();
+
+            var activeLeagues = allLeagues.Where(l => countryIds.Contains(l.CountryId)).ToList();
+            var activeCups = allCups.Where(c => countryIds.Contains(
+                _context.Countries
+                    .Where(cc => cc.Code == c.CountryCode)
+                    .Select(cc => cc.Id)
+                    .FirstOrDefault()
+            )).ToList();
+
+            foreach (var league in allLeagues)
+                league.IsActive = activeLeagues.Contains(league);
+
+            foreach (var cup in allCups)
+                cup.IsActive = activeCups.Contains(cup);
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { success = true, activated = countryIds.Count });
+        }
+
 
         [Authorize]
         [HttpGet("start-stream")]

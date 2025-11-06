@@ -8,5 +8,9 @@
     {
         Task GenerateAllYouthIntakesAsync(YouthAcademy academy, GameSave gameSave, CancellationToken ct = default);
         Task<List<PlayerDto>> GetYouthPlayersByTeamAsync(int teamId);
+        Task<YouthPlayer?> GetYouthPlayerByIdAsync(int playerId);
+        Task UpdateYouthPlayerAsync(YouthPlayer youthPlayer);
+        Task DeleteYouthPlayerAsync(int id);
+
     }
 }

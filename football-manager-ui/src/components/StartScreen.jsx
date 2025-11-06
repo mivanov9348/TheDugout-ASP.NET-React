@@ -2,10 +2,11 @@ import React, { useState } from "react";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 import { EventSourcePolyfill } from "event-source-polyfill";
+import CustomizeGame from "./CustomizeGame";
 
 function StartScreen({ username, onNewGame, onLoadGame, onLogout, isAdmin }) {
   const [loading, setLoading] = useState(false);
-  const [loadingMessage, setLoadingMessage] = useState("");
+  const [showCustomize, setShowCustomize] = useState(false);
   const navigate = useNavigate();
 
   const startNewGameStream = async () => {
@@ -46,7 +47,6 @@ function StartScreen({ username, onNewGame, onLoadGame, onLogout, isAdmin }) {
           });
 
           if (createdSaveId) {
-            // подаваме на App id-то директно
             if (onNewGame) onNewGame({ id: createdSaveId });
           } else {
             Swal.fire("Error", "Game created, but no save ID received.", "error");
@@ -54,7 +54,6 @@ function StartScreen({ username, onNewGame, onLoadGame, onLogout, isAdmin }) {
 
           setLoading(false);
         });
-
 
         eventSource.onerror = (err) => {
           eventSource.close();
@@ -75,11 +74,12 @@ function StartScreen({ username, onNewGame, onLoadGame, onLogout, isAdmin }) {
 
       <div className="space-y-6 flex flex-col">
         <button
-          onClick={startNewGameStream}
+          onClick={() => setShowCustomize(true)}
           className="px-8 py-3 bg-green-600 rounded-2xl hover:bg-green-500 transition"
         >
           New Game
         </button>
+
         <button
           onClick={onLoadGame}
           className="px-8 py-3 bg-blue-600 rounded-2xl hover:bg-blue-500 transition"
@@ -105,6 +105,18 @@ function StartScreen({ username, onNewGame, onLoadGame, onLogout, isAdmin }) {
           Logout
         </button>
       </div>
+
+      {/* 👉 Модалът за настройка на нова игра */}
+      {showCustomize && (
+        <CustomizeGame
+          onClose={() => setShowCustomize(false)}
+          onStart={(options) => {
+            console.log("Selected options:", options);
+            setShowCustomize(false);
+            startNewGameStream(); // Тук стартира оригиналната логика
+          }}
+        />
+      )}
     </div>
   );
 }

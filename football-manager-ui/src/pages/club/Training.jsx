@@ -9,12 +9,13 @@ const Training = ({ gameSaveId }) => {
   const [trainingProgress, setTrainingProgress] = useState([]);
   const [loadingAuto, setLoadingAuto] = useState(false);
   const [autoProposals, setAutoProposals] = useState({});
+  const [glowIds, setGlowIds] = useState(new Set()); // track who’s glowing
 
   const showError = (message) => {
     Swal.fire({
       icon: "error",
-      title: "Грешка",
-      text: message || "Възникна проблем",
+      title: "Error",
+      text: message || "Something went wrong.",
       confirmButtonColor: "#ef4444",
     });
   };
@@ -26,7 +27,7 @@ const Training = ({ gameSaveId }) => {
         const res = await fetch(`/api/team/by-save/${gameSaveId}`, {
           credentials: "include",
         });
-        if (!res.ok) throw new Error("Грешка при зареждане на отбора");
+        if (!res.ok) throw new Error("Failed to load team data.");
         const data = await res.json();
         setTeam(data);
         const sortedPlayers = (data.players ?? []).sort(
@@ -47,7 +48,7 @@ const Training = ({ gameSaveId }) => {
 
   const handleAutoComplete = async () => {
     if (!team || !players.length) {
-      showError("Играчите или отборът не са заредени още.");
+      showError("Players or team not loaded yet.");
       return;
     }
     try {
@@ -60,9 +61,7 @@ const Training = ({ gameSaveId }) => {
         try {
           errData = JSON.parse(errText);
         } catch {}
-        throw new Error(
-          errData?.message || "Грешка при авто-назначаване на уменията"
-        );
+        throw new Error(errData?.message || "Auto-assignment failed.");
       }
       const data = await res.json();
       const autoSelected = {};
@@ -83,7 +82,7 @@ const Training = ({ gameSaveId }) => {
 
   const handleStartTraining = async () => {
     if (!team || !players.length) {
-      showError("Играчите или отборът не са заредени още.");
+      showError("Players or team not loaded yet.");
       return;
     }
 
@@ -96,7 +95,7 @@ const Training = ({ gameSaveId }) => {
         }));
 
       if (assignments.length === 0) {
-        showError("Моля, избери поне един играч и умение за трениране.");
+        showError("Please select at least one player and skill to train.");
         return;
       }
 
@@ -117,46 +116,73 @@ const Training = ({ gameSaveId }) => {
 
       if (!res.ok) {
         const errData = await res.json();
-        throw new Error(
-          errData.message || "Грешка при стартиране на тренировката"
-        );
+        throw new Error(errData.message || "Failed to start training.");
       }
 
       const data = await res.json();
 
-      setTrainingProgress(
-        data.map((result) => ({
+      const newProgress = data.map((result) => {
+        const efficiency = result.newValue - result.oldValue;
+
+        if (efficiency >= 1) {
+          // trigger glow animation for this player
+          setGlowIds((prev) => new Set([...prev, result.playerId]));
+          setTimeout(() => {
+            setGlowIds((prev) => {
+              const updated = new Set(prev);
+              updated.delete(result.playerId);
+              return updated;
+            });
+          }, 2000);
+        }
+
+        return {
           playerId: result.playerId,
           name: result.playerName,
           skill: result.attributeName,
-          efficiency: result.newValue - result.oldValue,
+          efficiency,
           progressGain: result.progressGain,
           totalProgress: result.totalProgress,
           currentValue: result.newValue,
           sessions: 1,
-        }))
-      );
+        };
+      });
+
+      setTrainingProgress(newProgress);
 
       Swal.fire({
         icon: "success",
-        title: "Тренировката е успешна!",
+        title: "Training completed successfully!",
         showConfirmButton: false,
         timer: 1500,
       });
     } catch (err) {
       console.error(err);
-      showError(err.message || "Неуспешно стартиране на тренировката");
+      showError(err.message || "Failed to start training.");
     }
   };
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-gray-100 p-8 overflow-hidden">
-      {/* Текстура за фон */}
+      {/* background texture */}
       <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/football-no-lines.png')] opacity-10 pointer-events-none"></div>
+
+      <style>
+        {`
+        @keyframes glowPulse {
+          0%, 100% { text-shadow: 0 0 5px #22c55e, 0 0 10px #16a34a, 0 0 20px #4ade80; }
+          50% { text-shadow: 0 0 20px #86efac, 0 0 40px #4ade80, 0 0 60px #22c55e; }
+        }
+        .glow-text {
+          animation: glowPulse 1.5s ease-in-out infinite;
+          color: #4ade80;
+        }
+      `}
+      </style>
 
       <div className="relative z-10 max-w-7xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-          {/* Лява част */}
+          {/* Left section */}
           <div className="bg-white/10 hover:bg-white/15 backdrop-blur-md rounded-2xl border border-white/10 shadow-xl p-6 transition-all duration-300">
             <h2 className="text-2xl font-semibold mb-6 text-white flex items-center gap-2">
               <Sparkles className="text-green-400" /> Assign Training
@@ -172,10 +198,7 @@ const Training = ({ gameSaveId }) => {
                 </thead>
                 <tbody>
                   {players.map((player) => (
-                    <tr
-                      key={player.id}
-                      className="hover:bg-gray-800/40 transition"
-                    >
+                    <tr key={player.id} className="hover:bg-gray-800/40 transition">
                       <td className="px-4 py-3">{player.fullName}</td>
                       <td className="px-4 py-3">{player.position}</td>
                       <td className="px-4 py-3">
@@ -235,7 +258,7 @@ const Training = ({ gameSaveId }) => {
             </div>
           </div>
 
-          {/* Дясна част */}
+          {/* Right section */}
           <div className="bg-white/10 hover:bg-white/15 backdrop-blur-md rounded-2xl border border-white/10 shadow-xl p-6 transition-all duration-300">
             <h2 className="text-2xl font-semibold mb-6 text-white flex items-center gap-2">
               <Dumbbell className="text-blue-400" /> Training Progress
@@ -254,16 +277,30 @@ const Training = ({ gameSaveId }) => {
                   {trainingProgress.map((progress) => (
                     <tr
                       key={progress.playerId}
-                      className="hover:bg-gray-800/40 transition"
+                      className={`hover:bg-gray-800/40 transition ${
+                        glowIds.has(progress.playerId) ? "animate-pulse" : ""
+                      }`}
                     >
                       <td className="px-4 py-3 font-medium">{progress.name}</td>
                       <td className="px-4 py-3">
                         {progress.skill}{" "}
-                        <span className="text-gray-400">
+                        <span
+                          className={
+                            glowIds.has(progress.playerId)
+                              ? "glow-text font-semibold"
+                              : "text-gray-400"
+                          }
+                        >
                           ({progress.currentValue})
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-green-400 font-semibold">
+                      <td
+                        className={`px-4 py-3 font-semibold ${
+                          glowIds.has(progress.playerId)
+                            ? "glow-text"
+                            : "text-green-400"
+                        }`}
+                      >
                         +{progress.efficiency}
                         {progress.progressGain > 0 && (
                           <span className="text-sm text-gray-400">

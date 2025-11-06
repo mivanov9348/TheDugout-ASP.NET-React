@@ -106,9 +106,6 @@
             _context.Update(team);
             await _context.SaveChangesAsync();
         }
-
-
-
         private string GenerateLogoFileName(string teamName)
         {
 
@@ -120,15 +117,14 @@
 
             return $"{cleanName}.png";
         }
-
         public async Task<List<Team>> GenerateIndependentTeamsAsync(GameSave gameSave)
         {
             // 🟢 1. Вземи шаблоните на отбори без лига И от неактивни лиги
             var templates = await _context.TeamTemplates
                 .Include(tt => tt.League)
                 .Where(tt =>
-                    tt.LeagueId == null || // отбор без лига
-                    (tt.League != null && !tt.League.IsActive)) // или от неактивна лига
+                    tt.LeagueId == null ||
+                    (tt.League != null && !tt.League.IsActive) && tt.Popularity > 60)
                 .ToListAsync();
 
             var teams = new List<Team>();
@@ -175,7 +171,6 @@
 
             return teams;
         }
-
         public async Task EnsureTeamRostersAsync(int gameSaveId)
         {
             var teams = await _context.Teams
@@ -226,7 +221,6 @@
 
             await _context.SaveChangesAsync();
         }
-
 
     }
 }

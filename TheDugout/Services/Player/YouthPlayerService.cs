@@ -46,7 +46,7 @@
             for (int i = 0; i < numberOfPlayers; i++)
             {
                 var position = positions[_random.Next(positions.Count)];
-                var player = _playerGenerationService.CreateBasePlayer(gameSave, null, country, position, minAge:15,maxAge:17);
+                var player = _playerGenerationService.CreateBasePlayer(gameSave, null, country, position, minAge: 15, maxAge: 17);
 
                 player.CurrentAbility = _random.Next(level * 5, level * 10 + 1);
                 player.PotentialAbility = _random.Next(level * 15, level * 20 + 1);
@@ -54,10 +54,8 @@
                 players.Add(player);
             }
 
-            // 1️⃣ Първо записваме играчите, за да получат реални ID-та
             await _context.BulkInsertAsync(players, new BulkConfig { SetOutputIdentity = true }, cancellationToken: ct);
 
-            // 2️⃣ После генерираме youth записи с PlayerId
             foreach (var player in players)
             {
                 youthPlayers.Add(new YouthPlayer
@@ -71,8 +69,6 @@
 
             await _context.BulkInsertAsync(youthPlayers, cancellationToken: ct);
         }
-
-
         public async Task<List<PlayerDto>> GetYouthPlayersByTeamAsync(int teamId)
         {
             if (teamId <= 0)
@@ -117,6 +113,44 @@
             return players;
         }
 
+        public async Task<YouthPlayer?> GetYouthPlayerByIdAsync(int playerId)
+        {
+            if (playerId <= 0)
+                throw new ArgumentException("Invalid player ID.", nameof(playerId));
+
+            return await _context.YouthPlayers
+                .Include(y => y.Player)
+                    .ThenInclude(p => p.Country)
+                .Include(y => y.Player.Position)
+                .Include(y => y.YouthAcademy)
+                .FirstOrDefaultAsync(y => y.PlayerId == playerId);
+        }
+
+        public async Task UpdateYouthPlayerAsync(YouthPlayer youthPlayer)
+        {
+            if (youthPlayer == null)
+                throw new ArgumentNullException(nameof(youthPlayer));
+
+            _context.YouthPlayers.Update(youthPlayer);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task DeleteYouthPlayerAsync(int id)
+        {
+            var player = await _context.YouthPlayers
+                .Include(y => y.Player)
+                .FirstOrDefaultAsync(y => y.Id == id);
+
+            if (player != null)
+            {
+                // Изтриваме и Player, ако е обвързан директно само с академията
+                if (player.Player != null)
+                    _context.Players.Remove(player.Player);
+
+                _context.YouthPlayers.Remove(player);
+                await _context.SaveChangesAsync();
+            }
+        }
 
     }
 }
