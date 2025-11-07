@@ -2,6 +2,7 @@
 {
     using Microsoft.EntityFrameworkCore;
     using TheDugout.Data;
+    using TheDugout.Services.Transfer.Interfaces;
 
     public class TransferQueryService : ITransferQueryService
     {

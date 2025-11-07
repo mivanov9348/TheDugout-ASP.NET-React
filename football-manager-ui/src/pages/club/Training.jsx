@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Swal from "sweetalert2";
-import { Dumbbell, PlayCircle, Sparkles } from "lucide-react";
+import { Dumbbell, Save, Sparkles } from "lucide-react";
 
 const Training = ({ gameSaveId }) => {
   const [team, setTeam] = useState(null);
@@ -9,7 +9,7 @@ const Training = ({ gameSaveId }) => {
   const [trainingProgress, setTrainingProgress] = useState([]);
   const [loadingAuto, setLoadingAuto] = useState(false);
   const [autoProposals, setAutoProposals] = useState({});
-  const [glowIds, setGlowIds] = useState(new Set()); // track who’s glowing
+  const [glowIds, setGlowIds] = useState(new Set());
 
   const showError = (message) => {
     Swal.fire({
@@ -80,7 +80,7 @@ const Training = ({ gameSaveId }) => {
     }
   };
 
-  const handleStartTraining = async () => {
+  const handleSaveTraining = async () => {
     if (!team || !players.length) {
       showError("Players or team not loaded yet.");
       return;
@@ -95,7 +95,7 @@ const Training = ({ gameSaveId }) => {
         }));
 
       if (assignments.length === 0) {
-        showError("Please select at least one player and skill to train.");
+        showError("Please select at least one player and skill to save.");
         return;
       }
 
@@ -107,7 +107,7 @@ const Training = ({ gameSaveId }) => {
         assignments,
       };
 
-      const res = await fetch(`/api/training/start`, {
+      const res = await fetch(`/api/training/save`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -116,55 +116,23 @@ const Training = ({ gameSaveId }) => {
 
       if (!res.ok) {
         const errData = await res.json();
-        throw new Error(errData.message || "Failed to start training.");
+        throw new Error(errData.message || "Failed to save training data.");
       }
-
-      const data = await res.json();
-
-      const newProgress = data.map((result) => {
-        const efficiency = result.newValue - result.oldValue;
-
-        if (efficiency >= 1) {
-          // trigger glow animation for this player
-          setGlowIds((prev) => new Set([...prev, result.playerId]));
-          setTimeout(() => {
-            setGlowIds((prev) => {
-              const updated = new Set(prev);
-              updated.delete(result.playerId);
-              return updated;
-            });
-          }, 2000);
-        }
-
-        return {
-          playerId: result.playerId,
-          name: result.playerName,
-          skill: result.attributeName,
-          efficiency,
-          progressGain: result.progressGain,
-          totalProgress: result.totalProgress,
-          currentValue: result.newValue,
-          sessions: 1,
-        };
-      });
-
-      setTrainingProgress(newProgress);
 
       Swal.fire({
         icon: "success",
-        title: "Training completed successfully!",
+        title: "Training saved successfully!",
         showConfirmButton: false,
         timer: 1500,
       });
     } catch (err) {
       console.error(err);
-      showError(err.message || "Failed to start training.");
+      showError(err.message || "Failed to save training.");
     }
   };
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-gray-100 p-8 overflow-hidden">
-      {/* background texture */}
       <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/football-no-lines.png')] opacity-10 pointer-events-none"></div>
 
       <style>
@@ -184,9 +152,12 @@ const Training = ({ gameSaveId }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
           {/* Left section */}
           <div className="bg-white/10 hover:bg-white/15 backdrop-blur-md rounded-2xl border border-white/10 shadow-xl p-6 transition-all duration-300">
-            <h2 className="text-2xl font-semibold mb-6 text-white flex items-center gap-2">
-              <Sparkles className="text-green-400" /> Assign Training
-            </h2>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-semibold text-white flex items-center gap-2">
+                <Sparkles className="text-green-400" /> Assign Training
+              </h2>
+            </div>
+
             <div className="overflow-hidden rounded-xl border border-white/10">
               <table className="min-w-full text-sm text-gray-200">
                 <thead className="bg-gray-800/60 text-gray-100">
@@ -250,10 +221,10 @@ const Training = ({ gameSaveId }) => {
               </button>
 
               <button
-                onClick={handleStartTraining}
+                onClick={handleSaveTraining}
                 className="flex-1 px-4 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold flex items-center justify-center gap-2 shadow-md transition-all duration-300"
               >
-                <PlayCircle className="w-5 h-5" /> Start Training
+                <Save className="w-5 h-5" /> Save Training
               </button>
             </div>
           </div>

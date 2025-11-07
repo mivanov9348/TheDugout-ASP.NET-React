@@ -3,29 +3,35 @@
     using Microsoft.EntityFrameworkCore;
     using TheDugout.Data;
     using TheDugout.DTOs.Transfer;
+    using TheDugout.Models.Enums;
     using TheDugout.Models.Messages;
+    using TheDugout.Models.Players;
     using TheDugout.Models.Seasons;
     using TheDugout.Models.Teams;
-    using TheDugout.Models.Players;
     using TheDugout.Models.Transfers;
     using TheDugout.Services.Finance.Interfaces;
+    using TheDugout.Services.GameSettings;
+    using TheDugout.Services.GameSettings.Interfaces;
     using TheDugout.Services.Message.Interfaces;
-    using TheDugout.Models.Enums;
+    using TheDugout.Services.Transfer.Interfaces;
 
     public class ClubToClubTransferService : IClubToClubTransferService
     {
         private readonly DugoutDbContext _context;
         private readonly ITeamFinanceService _teamFinanceService;
         private readonly IMessageOrchestrator _messageOrchestrator;
+        private readonly IGameSettingsService _gameSettingsService;
 
         public ClubToClubTransferService(
             DugoutDbContext context,
             ITeamFinanceService teamFinanceService,
-            IMessageOrchestrator messageOrchestrator)
+            IMessageOrchestrator messageOrchestrator,
+            IGameSettingsService gameSettingsService)
         {
             _context = context;
             _teamFinanceService = teamFinanceService;
             _messageOrchestrator = messageOrchestrator;
+            _gameSettingsService = gameSettingsService;
         }
 
         public async Task<(bool Success, string ErrorMessage)> SendOfferAsync(TransferOfferRequest request)
@@ -55,6 +61,11 @@
 
             bool inTransferWindow = season.Events.Any(e => e.Type == SeasonEventType.TransferWindow && e.Date.Date == season.CurrentDate.Date);
             if (!inTransferWindow) return (false, "Outside transfer window.");
+
+            // 🧠 ПРОВЕРКА: дали продавачът ще остане с достатъчно играчи
+            bool canSell = await SellerHasEnoughPlayersAsync(toTeam.Id, player.Position);
+            if (!canSell)
+                return (false, $"{toTeam.Name} cannot sell {player.FirstName} {player.LastName} — not enough players left on that position.");
 
             bool sellerIsCpu = toTeam.GameSave.UserTeamId != toTeam.Id;
 
@@ -87,12 +98,13 @@
             }
         }
 
-        private async Task<bool> CpuDecideToSell(
-           Player player,
-           Team buyer,
-           Team seller,
-            decimal offer)
+        private async Task<bool> CpuDecideToSell(Player player, Team buyer, Team seller, decimal offer)
         {
+            // 🚫 CPU не може да продава, ако ще остане без достатъчно играчи
+            bool canSell = await SellerHasEnoughPlayersAsync(seller.Id, player.Position);
+            if (!canSell)
+                return false;
+
             decimal ratio = offer / player.Price;
             double baseChance = ratio switch
             {
@@ -109,18 +121,16 @@
 
         private async Task<(bool, string)> FinalizeTransferAsync(
             int gameSaveId,
-            Models.Teams.Team buyer,
-            Models.Teams.Team seller,
-            Models.Players.Player player,
+            Team buyer,
+            Team seller,
+            Player player,
             Season season,
             decimal fee)
         {
-            var bank = await _context.Banks
-                .FirstOrDefaultAsync(b => b.GameSaveId == gameSaveId);
+            var bank = await _context.Banks.FirstOrDefaultAsync(b => b.GameSaveId == gameSaveId);
             if (bank == null)
                 return (false, "Bank not found.");
 
-            // 💸 1️⃣ Финансова операция с 10% такса за банката
             var (ok, err) = await _teamFinanceService.ClubToClubWithFeeAsync(
                 buyer,
                 seller,
@@ -131,10 +141,8 @@
             if (!ok)
                 return (false, err);
 
-            // ⚽ 2️⃣ Прехвърляме играча към новия клуб
             player.TeamId = buyer.Id;
 
-            // 📋 3️⃣ Записваме трансфера
             var transfer = new Transfer
             {
                 GameSaveId = gameSaveId,
@@ -151,10 +159,10 @@
             await _context.SaveChangesAsync();
 
             var fullTransfer = await _context.Transfers
-                              .Include(t => t.Player)
-                              .Include(t => t.FromTeam)
-                              .Include(t => t.ToTeam)
-                              .FirstAsync(t => t.Id == transfer.Id);
+                .Include(t => t.Player)
+                .Include(t => t.FromTeam)
+                .Include(t => t.ToTeam)
+                .FirstAsync(t => t.Id == transfer.Id);
 
             await _messageOrchestrator.SendMessageAsync(
                 MessageCategory.Transfer,
@@ -163,5 +171,36 @@
 
             return (true, "");
         }
+
+        private async Task<bool> SellerHasEnoughPlayersAsync(int teamId, Position position)
+        {
+            var teamPlayers = await _context.Players
+                .Include(p => p.Position)
+                .Where(p => p.TeamId == teamId)
+                .ToListAsync();
+
+            string posCode = position.Code.ToLower();
+
+            int count = posCode switch
+            {
+                var s when s.Contains("gk") => teamPlayers.Count(p => p.Position.Code.Contains("GK")),
+                var s when s.Contains("def") => teamPlayers.Count(p => p.Position.Code.Contains("DEF")),
+                var s when s.Contains("mid") => teamPlayers.Count(p => p.Position.Code.Contains("MID")),
+                var s when s.Contains("att") || s.Contains("st") => teamPlayers.Count(p => p.Position.Code.Contains("ATT") || p.Position.Code.Contains("ST")),
+                _ => 0
+            };
+
+            int minNeeded = posCode switch
+            {
+                var s when s.Contains("gk") => await _gameSettingsService.GetIntAsync("startingGoalkeepers") ?? 1,
+                var s when s.Contains("def") => await _gameSettingsService.GetIntAsync("startingDefenders") ?? 4,
+                var s when s.Contains("mid") => await _gameSettingsService.GetIntAsync("startingMidfielders") ?? 4,
+                var s when s.Contains("att") || s.Contains("st") => await _gameSettingsService.GetIntAsync("startingAttackers") ?? 2,
+                _ => 1
+            };
+
+            return count - 1 >= minNeeded;
+        }
+
     }
 }

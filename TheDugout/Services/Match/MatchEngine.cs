@@ -94,7 +94,6 @@
                     var player = ps.Player;
                     if (player == null) continue;
 
-                    // Зареждаме текущия сезонен запис
                     var stats = await _context.PlayerSeasonStats
                         .Where(s => s.PlayerId == player.Id)
                         .OrderByDescending(s => s.SeasonId)
@@ -102,10 +101,8 @@
 
                     if (stats != null)
                     {
-                        // 🧠 Актуализирай текущия ability
                         _playerGenerationService.UpdateCurrentAbility(player, stats);
 
-                        // 💰 Пресметни новата цена
                         await _playerGenerationService.UpdatePlayerPriceAsync(player);
                     }
                 }
@@ -163,7 +160,6 @@
             sw.Stop();
             _logger.LogInformation("🔧 Created/Loaded match + stats in {Elapsed} ms", sw.ElapsedMilliseconds);
 
-            // Кеширане на lineup-и
             var homeLineup = (await _teamPlanService.GetStartingLineupAsync(dbFixture.HomeTeam, false))
                                 .Where(p => p.Position.Code != "GK").ToList();
             var awayLineup = (await _teamPlanService.GetStartingLineupAsync(dbFixture.AwayTeam, false))

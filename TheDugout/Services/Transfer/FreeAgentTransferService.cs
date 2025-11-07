@@ -10,6 +10,7 @@
     using TheDugout.Services.Finance.Interfaces;
     using TheDugout.Services.GameSettings.Interfaces;
     using TheDugout.Services.Message.Interfaces;
+    using TheDugout.Services.Transfer.Interfaces;
 
     public class FreeAgentTransferService : IFreeAgentTransferService
     {

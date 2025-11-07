@@ -61,5 +61,6 @@
         public ICollection<TransferOffer> ReceivedTransferOffers { get; set; } = new List<TransferOffer>();
 
         public TeamTactic? TeamTactic { get; set; }
+
     }
 }

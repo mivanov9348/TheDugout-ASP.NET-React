@@ -59,6 +59,7 @@
         public DbSet<Fixture> Fixtures { get; set; }
         public DbSet<Tactic> Tactics { get; set; }
         public DbSet<TeamTactic> TeamTactics { get; set; }
+        public DbSet <TeamTrainingPlan> TeamTrainingPlans { get; set; }
         public DbSet<TrainingSession> TrainingSessions { get; set; }
         public DbSet<PlayerTraining> PlayerTrainings { get; set; }
         public DbSet<Transfer> Transfers { get; set; }

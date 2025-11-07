@@ -1,4 +1,4 @@
-﻿namespace TheDugout.Services.Transfer
+﻿namespace TheDugout.Services.Transfer.Interfaces
 {
     public interface IFreeAgentTransferService
     {

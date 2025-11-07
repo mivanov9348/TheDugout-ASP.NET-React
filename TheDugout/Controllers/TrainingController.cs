@@ -3,6 +3,7 @@
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.EntityFrameworkCore;
+    using TheDugout.Models.Training;
     using TheDugout.Services.Training;
     using TheDugout.Services.Training.Interfaces;
 
@@ -47,27 +48,23 @@
             }
         }
 
-
-        [HttpPost("start")]
-        public async Task<IActionResult> StartTraining([FromBody] TrainingRequestDto request)
+        [HttpPost("save")]
+        public async Task<IActionResult> SaveTraining([FromBody] TrainingRequestDto request)
         {
-            if (request.Assignments == null || !request.Assignments.Any())
-                return BadRequest("No training assignments provided.");
-
             try
             {
-                var results = await _trainingService.RunTrainingSessionAsync(
-                    request.GameSaveId,
-                    request.TeamId ?? -1,
-                    request.Assignments
-                );
-
-                return Ok(results);
+                await _trainingService.SaveTrainingAsync(request);
+                return Ok(new { message = "Training plan saved successfully." });
             }
-            catch (InvalidOperationException ex)
+            catch (ArgumentException ex)
             {
                 return BadRequest(new { message = ex.Message });
             }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Internal server error while saving training." });
+            }
         }
+
     }
 }

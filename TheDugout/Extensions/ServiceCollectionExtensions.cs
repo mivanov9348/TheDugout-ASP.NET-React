@@ -39,6 +39,7 @@
     using TheDugout.Services.Game.Interfaces;
     using TheDugout.Services.Staff.Interfaces;
     using TheDugout.Services.Training.Interfaces;
+    using TheDugout.Services.Transfer.Interfaces;
 
     public static class ServiceCollectionExtensions
     {

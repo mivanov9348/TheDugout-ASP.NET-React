@@ -35,7 +35,6 @@
                 .Include(tt => tt.Tactic)
                 .FirstOrDefaultAsync(tt => tt.TeamId == teamId && tt.Team.GameSaveId == gameSaveId);
         }
-
         public async Task<TeamTactic> SetTeamTacticAsync(
             int teamId,
             int tacticId,
@@ -96,8 +95,7 @@
 
             await _context.SaveChangesAsync();
             return team.TeamTactic!;
-        }
-        
+        }        
         public async Task<TeamTactic> AutoPickTacticAsync(int teamId, int gameSaveId)
         {
             var team = await _context.Teams

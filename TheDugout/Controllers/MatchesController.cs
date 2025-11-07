@@ -10,6 +10,7 @@
     using TheDugout.Models.Fixtures;
     using TheDugout.Services.Match.Interfaces;
     using TheDugout.Services.Player.Interfaces;
+    using TheDugout.Services.Team;
 
     [ApiController]
     [Route("api/matches")]
@@ -289,6 +290,61 @@
                 }
             }
 
+            // 🧠 Проверка и автогенериране на тактики за всички отбори
+            var teamPlanService = new TeamPlanService(_context);
+
+            foreach (var fixture in fixtures)
+            {
+                var homeTeam = await _context.Teams
+                    .Include(t => t.TeamTactic)
+                    .Include(t => t.Players)
+                    .FirstOrDefaultAsync(t => t.Id == fixture.HomeTeamId);
+
+                var awayTeam = await _context.Teams
+                    .Include(t => t.TeamTactic)
+                    .Include(t => t.Players)
+                    .FirstOrDefaultAsync(t => t.Id == fixture.AwayTeamId);
+
+                foreach (var team in new[] { homeTeam, awayTeam })
+                {
+                    if (team == null) continue;
+
+                    var tactic = team.TeamTactic;
+
+                    // 🛠 Ако няма тактика → създаваме автоматично
+                    if (tactic == null)
+                    {
+                        await teamPlanService.AutoPickTacticAsync(team.Id, gameSaveId);
+                        await Response.WriteAsync($"data: {{\"message\":\"Auto-picked tactic for {team.Name}\"}}\n\n");
+                        await Response.Body.FlushAsync();
+                        continue;
+                    }
+
+                    // 🧩 Проверка за липсващи титуляри
+                    var lineup = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string?>>(tactic.LineupJson ?? "{}")
+                                 ?? new Dictionary<string, string?>();
+
+                    bool missingPlayers = false;
+                    foreach (var kvp in lineup)
+                    {
+                        if (string.IsNullOrEmpty(kvp.Value)) { missingPlayers = true; break; }
+
+                        if (!int.TryParse(kvp.Value, out var pid)) continue;
+                        bool exists = await _context.Players.AnyAsync(p => p.Id == pid && p.TeamId == team.Id);
+                        if (!exists) { missingPlayers = true; break; }
+                    }
+
+                    if (missingPlayers)
+                    {
+                        Console.WriteLine($"⚠️ Team {team.Name} has invalid or missing players in tactic – repicking automatically.");
+                        await teamPlanService.AutoPickTacticAsync(team.Id, gameSaveId);
+                        await Response.WriteAsync($"data: {{\"message\":\"Auto-fixed tactic for {team.Name}\"}}\n\n");
+                        await Response.Body.FlushAsync();
+                    }
+                }
+            }
+
+            // ⚽ Симулация на мачовете
             foreach (var fixture in fixtures)
             {
                 var match = fixture.Match ?? await _matchService.GetOrCreateMatchAsync(fixture, gameSave);
@@ -333,6 +389,122 @@
             await Response.WriteAsync("data: {\"message\":\"done\"}\n\n");
             await Response.Body.FlushAsync();
         }
+
+
+        //[HttpGet("simulate-stream/{gameSaveId}")]
+        //public async Task SimulateMatchesStream(int gameSaveId)
+        //{
+        //    Response.Headers.Add("Content-Type", "text/event-stream");
+        //    Response.Headers.Add("Cache-Control", "no-cache");
+        //    Response.Headers.Add("Connection", "keep-alive");
+
+        //    var gameSave = await _context.GameSaves
+        //        .Include(gs => gs.Fixtures)
+        //            .ThenInclude(f => f.Match)
+        //        .Include(gs => gs.Seasons)
+        //        .Include(gs => gs.UserTeam)
+        //        .FirstOrDefaultAsync(gs => gs.Id == gameSaveId);
+
+        //    if (gameSave == null)
+        //    {
+        //        await Response.WriteAsync("data: {\"error\":\"GameSave not found\"}\n\n");
+        //        await Response.Body.FlushAsync();
+        //        return;
+        //    }
+
+        //    var currentSeason = gameSave.Seasons
+        //        .OrderByDescending(s => s.StartDate)
+        //        .FirstOrDefault();
+
+        //    if (currentSeason == null)
+        //    {
+        //        await Response.WriteAsync("data: {\"error\":\"No active season\"}\n\n");
+        //        await Response.Body.FlushAsync();
+        //        return;
+        //    }
+
+        //    var currentDate = currentSeason.CurrentDate.Date;
+        //    var fixtures = gameSave.Fixtures
+        //        .Where(f => f.Date.Date == currentDate)
+        //        .ToList();
+
+        //    if (!fixtures.Any())
+        //    {
+        //        await Response.WriteAsync("data: {\"message\":\"No fixtures to simulate.\"}\n\n");
+        //        await Response.Body.FlushAsync();
+        //        return;
+        //    }
+
+        //    if (gameSave.UserTeamId.HasValue)
+        //    {
+        //        var userTeamId = gameSave.UserTeamId.Value;
+        //        var userFixturesToday = fixtures
+        //            .Where(f => f.HomeTeamId == userTeamId || f.AwayTeamId == userTeamId)
+        //            .ToList();
+
+        //        if (userFixturesToday.Any())
+        //        {
+        //            bool hasTactic = await _context.TeamTactics
+        //                .AnyAsync(tt => tt.TeamId == userTeamId && tt.GameSaveId == gameSaveId);
+
+        //            if (!hasTactic)
+        //            {
+        //                var errorJson = JsonSerializer.Serialize(new
+        //                {
+        //                    error = "Your team has a scheduled match today but no tactic is saved. Please create one before simulating."
+        //                });
+        //                await Response.WriteAsync($"data: {errorJson}\n\n");
+        //                await Response.Body.FlushAsync();
+        //                return;
+        //            }
+        //        }
+        //    }
+
+
+        //    foreach (var fixture in fixtures)
+        //    {
+        //        var match = fixture.Match ?? await _matchService.GetOrCreateMatchAsync(fixture, gameSave);
+        //        fixture.Match = match;
+
+        //        await _matchEngine.SimulateMatchAsync(fixture, gameSave);
+
+        //        match.Status = MatchStageEnum.Played;
+        //        fixture.Status = MatchStageEnum.Played;
+
+        //        await _context.SaveChangesAsync();
+
+        //        var competitionName = GetCompetitionDisplayName(fixture);
+        //        var homeName = fixture.HomeTeam?.Name ?? "Home";
+        //        var awayName = fixture.AwayTeam?.Name ?? "Away";
+        //        var homeGoals = fixture.HomeTeamGoals ?? 0;
+        //        var awayGoals = fixture.AwayTeamGoals ?? 0;
+
+        //        var message = $"{competitionName}: {homeName} - {awayName} {homeGoals}:{awayGoals}";
+
+        //        var json = JsonSerializer.Serialize(new
+        //        {
+        //            message,
+        //            match = new
+        //            {
+        //                fixture.Id,
+        //                Competition = competitionName,
+        //                Home = homeName,
+        //                Away = awayName,
+        //                HomeGoals = homeGoals,
+        //                AwayGoals = awayGoals,
+        //                fixture.Date
+        //            }
+        //        });
+
+        //        await Response.WriteAsync($"data: {json}\n\n");
+        //        await Response.Body.FlushAsync();
+
+        //        await Task.Delay(500);
+        //    }
+
+        //    await Response.WriteAsync("data: {\"message\":\"done\"}\n\n");
+        //    await Response.Body.FlushAsync();
+        //}
 
         [HttpGet("{fixtureId}")]
         public async Task<IActionResult> GetMatchDetails(int fixtureId)

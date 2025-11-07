@@ -3,10 +3,16 @@
     public class TrainingRequestDto
     {
         public int GameSaveId { get; set; }
-        public int? TeamId { get; set; }
+        public int TeamId { get; set; }
         public int SeasonId { get; set; }
         public DateTime Date { get; set; } = DateTime.UtcNow;
-        public List<PlayerTrainingAssignmentDto> Assignments { get; set; } = new();
+        public List<TrainingAssignmentDto> Assignments { get; set; } = new();
+    }
+
+    public class TrainingAssignmentDto
+    {
+        public int PlayerId { get; set; }
+        public int AttributeId { get; set; }
     }
 
     public class PlayerTrainingAssignmentDto

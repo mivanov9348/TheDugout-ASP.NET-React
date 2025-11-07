@@ -4,7 +4,7 @@
     using Microsoft.EntityFrameworkCore;
     using TheDugout.Data;
     using TheDugout.DTOs.Transfer;
-    using TheDugout.Services.Transfer;
+    using TheDugout.Services.Transfer.Interfaces;
 
     [ApiController]
     [Route("api/[controller]")]
