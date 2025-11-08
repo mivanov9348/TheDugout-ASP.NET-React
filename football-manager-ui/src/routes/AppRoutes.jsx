@@ -21,6 +21,7 @@ import SeasonReview from "../pages/season/SeasonReview";
 import TodayMatches from "../pages/season/TodayMatches";
 import Match from "../pages/season/Match";
 import AllTimeStats from "../pages/AllTimeStats";
+import Shortlist from "../pages/players/Shortlist";
 
 import Competitions from "../pages/competitions/Competitions";
 import Cup from "../pages/competitions/Cup";
@@ -102,6 +103,8 @@ export const AppRoutes = (gameSaveId, userTeamId, seasonId) => (
       <Route path="search" element={<SearchPlayers gameSaveId={gameSaveId} />} />
       <Route path="negotiations" element={<Negotiations gameSaveId={gameSaveId} />} />
       <Route path="history" element={<TransferHistory gameSaveId={gameSaveId} />} />
+      <Route path="shortlist" element={<Shortlist gameSaveId={gameSaveId} />} />
+
     </Route>
 
     {/* Season */}

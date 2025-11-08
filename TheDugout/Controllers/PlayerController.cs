@@ -1,6 +1,8 @@
 ﻿namespace TheDugout.Controllers
 {
     using Microsoft.AspNetCore.Mvc;
+    using Microsoft.EntityFrameworkCore;
+    using TheDugout.Data;
     using TheDugout.Services.Player.Interfaces;
 
     [ApiController]
@@ -9,11 +11,15 @@
     {
         private readonly IPlayerInfoService _playerService;
         private readonly IYouthPlayerService _youthPlayerService;
+        private readonly IShortlistPlayerService _shortlistService;
+        private readonly DugoutDbContext _context;
 
-        public PlayerController(IPlayerInfoService playerService, IYouthPlayerService youthPlayerService)
+        public PlayerController(IPlayerInfoService playerService, IYouthPlayerService youthPlayerService, IShortlistPlayerService shortlistService, DugoutDbContext context)
         {
             _playerService = playerService;
             _youthPlayerService = youthPlayerService;
+            _shortlistService = shortlistService;
+            _context = context;
         }
 
         [HttpGet("{id}")]
@@ -70,6 +76,49 @@
             await _youthPlayerService.DeleteYouthPlayerAsync(playerId);
 
             return Ok(new { message = $"Player {player.Player.FirstName} {player.Player.LastName} has been released from the academy." });
+        }
+
+        [HttpPost("{playerId}/shortlist")]
+        public async Task<IActionResult> AddToShortlist(int playerId, [FromQuery] int gameSaveId)
+        {
+            var gameSave = await _context.GameSaves
+                .Include(g => g.User)
+                .Include(g => g.UserTeam)
+                .FirstOrDefaultAsync(g => g.Id == gameSaveId);
+
+            if (gameSave == null)
+                return NotFound("Game save not found.");
+
+            var userId = gameSave.UserId;
+            var teamId = gameSave.UserTeamId;
+
+            await _shortlistService.AddToShortlistAsync(gameSaveId, playerId, userId, teamId);
+            return Ok(new { message = "Player added to shortlist." });
+        }
+
+        [HttpDelete("{playerId}/shortlist")]
+        public async Task<IActionResult> RemoveFromShortlist(int playerId, [FromQuery] int gameSaveId)
+        {
+            var gameSave = await _context.GameSaves
+                .Include(g => g.User)
+                .Include(g => g.UserTeam)
+                .FirstOrDefaultAsync(g => g.Id == gameSaveId);
+
+            if (gameSave == null)
+                return NotFound("Game save not found.");
+
+            var userId = gameSave.UserId;
+            var teamId = gameSave.UserTeamId;
+
+            await _shortlistService.RemoveFromShortlistAsync(gameSaveId, playerId, userId, teamId);
+            return Ok(new { message = "Player removed from shortlist." });
+        }
+
+        [HttpGet("GetShortlist")]
+        public async Task<IActionResult> GetShortlist([FromQuery] int gameSaveId)
+        {
+            var players = await _shortlistService.GetShortlistPlayersAsync(gameSaveId);
+            return Ok(players);
         }
 
     }

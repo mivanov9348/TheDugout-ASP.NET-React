@@ -44,6 +44,11 @@
                     return;
                 }
 
+                // 2️⃣.1️⃣ Зареждаме нивата на тренировъчните съоръжения
+                var facilities = await _context.TrainingFacilities
+                    .Where(f => f.GameSaveId == gameSaveId)
+                    .ToDictionaryAsync(f => f.TeamId, f => f.TrainingQuality);
+
                 // 3️⃣ Зареждаме позиционните тежести
                 var weights = await _context.PositionWeights
                     .AsNoTracking()
@@ -140,7 +145,16 @@
                             double baseGain = 0.03;
                             double ageFactor = player.Age < 21 ? 1.3 : player.Age > 28 ? 0.7 : 1.0;
                             double randomFactor = random.NextDouble() * 0.3 + 0.85;
-                            double gain = baseGain * ageFactor * randomFactor;
+
+                            // 🎯 Ефект от тренировъчното съоръжение
+                            double facilityBonus = 1.0;
+                            if (facilities.TryGetValue(teamId, out var trainingQuality))
+                            {
+                                // Всяка точка TrainingQuality = +3% ефективност
+                                facilityBonus += (trainingQuality - 1) * 0.03;
+                            }
+
+                            double gain = baseGain * ageFactor * randomFactor * facilityBonus;
 
                             var paData = player.Attributes.First(a => a.AttributeId == trainedAttrId);
                             double progress = paData.Progress + gain;
@@ -218,7 +232,6 @@
                 throw;
             }
         }
-
 
         public async Task<List<AutoAssignResultDto>> AutoAssignAttributesAsync(int teamId, int gameSaveId)
         {

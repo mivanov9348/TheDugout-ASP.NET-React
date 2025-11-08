@@ -13,27 +13,28 @@ const Transfers = () => {
       {/* Content with tabs */}
       <div className="bg-gray-800 rounded-2xl border border-gray-700 shadow-lg flex flex-col flex-1 overflow-hidden">
         <nav className="flex gap-3 px-4 pt-3 border-b border-gray-700">
-          {[
-            { path: "/transfers/search", label: "Search Players" },
-            { path: "/transfers/negotiations", label: "Negotiations" },
-            { path: "/transfers/history", label: "Transfer History" },
-          ].map((tab) => (
-            <NavLink
-              key={tab.path}
-              to={tab.path}
-              end
-              className={({ isActive }) =>
-                `px-4 py-2 text-sm font-medium rounded-t-lg transition-all duration-200 ${isActive
-                  ? "bg-blue-600 text-white shadow-md"
-                  : "text-gray-400 hover:bg-gray-700 hover:text-white"
-                }`
-              }
-            >
-              {tab.label}
-            </NavLink>
-          ))}
-
-        </nav>
+  {[
+    { path: "/transfers/search", label: "Search Players" },
+    { path: "/transfers/negotiations", label: "Negotiations" },
+    { path: "/transfers/history", label: "Transfer History" },
+    { path: "/transfers/shortlist", label: "Shortlist" },
+  ].map((tab) => (
+    <NavLink
+      key={tab.path}
+      to={tab.path}
+      end
+      className={({ isActive }) =>
+        `px-4 py-2 text-sm font-medium rounded-t-lg transition-all duration-200 ${
+          isActive
+            ? "bg-blue-600 text-white shadow-md"
+            : "text-gray-400 hover:bg-gray-700 hover:text-white"
+        }`
+      }
+    >
+      {tab.label}
+    </NavLink>
+  ))}
+</nav>
 
         {/* Outlet content */}
         <div className="flex-1 overflow-auto p-4 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">

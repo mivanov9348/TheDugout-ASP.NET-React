@@ -59,6 +59,7 @@
         public ICollection<MatchEvent> MatchEvents { get; set; } = new List<MatchEvent>();
         public ICollection<TransferOffer> SentTransferOffers { get; set; } = new List<TransferOffer>();
         public ICollection<TransferOffer> ReceivedTransferOffers { get; set; } = new List<TransferOffer>();
+        public ICollection<Shortlist> Shortlist { get; set; } = new List<Shortlist>();
 
         public TeamTactic? TeamTactic { get; set; }
 

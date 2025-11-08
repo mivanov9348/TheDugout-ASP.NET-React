@@ -1,7 +1,7 @@
 // src/pages/PlayerProfile.jsx
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Flag, Activity, TrendingUp, Star } from "lucide-react";
+import { ArrowLeft, Flag, Activity, Star, Heart } from "lucide-react";
 import PlayerAvatar from "../../components/PlayerAvatar";
 
 const categoryLabels = {
@@ -18,12 +18,13 @@ const getAttributeColor = (value) => {
   return "bg-gradient-to-r from-blue-500 to-indigo-600";
 };
 
-const PlayerProfile = () => {
+const PlayerProfile = ({ gameSaveId }) => {
   const { playerId } = useParams();
   const navigate = useNavigate();
   const [player, setPlayer] = useState(null);
-  const [imgError, setImgError] = useState(false);
+  const [inShortlist, setInShortlist] = useState(false);
 
+  // 🔹 Зареждане на играча
   useEffect(() => {
     const fetchPlayer = async () => {
       try {
@@ -40,6 +41,38 @@ const PlayerProfile = () => {
     fetchPlayer();
   }, [playerId]);
 
+  // 🔹 Проверка дали играчът е в shortlist (според GameSave)
+  useEffect(() => {
+    const checkShortlist = async () => {
+      try {
+        const res = await fetch(
+          `/api/player/${playerId}/shortlist/check?gameSaveId=${gameSaveId}`,
+          { credentials: "include" }
+        );
+        if (res.ok) {
+          const isInShortlist = await res.json();
+          setInShortlist(isInShortlist === true);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    checkShortlist();
+  }, [gameSaveId, playerId]);
+
+  // 🔹 Добавяне / махане от shortlist
+  const toggleShortlist = async () => {
+    try {
+      const method = inShortlist ? "DELETE" : "POST";
+      const url = `/api/player/${playerId}/shortlist?gameSaveId=${gameSaveId}`;
+      const res = await fetch(url, { method, credentials: "include" });
+      if (!res.ok) throw new Error("Shortlist action failed");
+      setInShortlist(!inShortlist);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   if (!player)
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-900 text-white text-lg animate-pulse">
@@ -53,23 +86,18 @@ const PlayerProfile = () => {
     return acc;
   }, {});
 
-  // Среден рейтинг (пример)
-const avgRating =
-  player.seasonStats?.length > 0
-    ? player.seasonStats.reduce((a, b) => a + (b.seasonRating || 0), 0) /
-      player.seasonStats.length
-    : null;
-
-
+  const avgRating =
+    player.seasonStats?.length > 0
+      ? player.seasonStats.reduce((a, b) => a + (b.seasonRating || 0), 0) /
+        player.seasonStats.length
+      : null;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-800 text-gray-100 flex justify-center items-start py-14 px-6 relative overflow-hidden">
-      {/* Background stadium lights */}
       <div className="absolute inset-0 bg-[url('https://i.imgur.com/Wv1Z0hO.jpg')] bg-cover bg-center opacity-10 blur-sm"></div>
       <div className="absolute inset-0 bg-gradient-to-b from-slate-900/80 via-slate-800/60 to-blue-900/90"></div>
 
       <div className="relative z-10 bg-white/10 backdrop-blur-lg shadow-2xl rounded-3xl max-w-6xl w-full p-10 border border-white/20 transition-all text-gray-50">
-        {/* Back Button */}
         <button
           onClick={() => navigate(-1)}
           className="absolute top-6 left-6 flex items-center text-gray-300 hover:text-white transition-colors"
@@ -78,9 +106,8 @@ const avgRating =
           <span className="hidden sm:inline font-medium">Back</span>
         </button>
 
-        {/* Header */}
         <div className="flex flex-col lg:flex-row items-start gap-10 mt-10">
-          {/* Player Info */}
+          {/* Лява част - инфо и бутон */}
           <div className="flex flex-col items-center lg:items-start flex-1">
             <div className="relative group">
               <PlayerAvatar
@@ -88,7 +115,6 @@ const avgRating =
                 imageFileName={player.avatarFileName}
                 className="w-44 h-44 border-4 border-blue-400 shadow-[0_0_25px_rgba(59,130,246,0.8)] group-hover:scale-105 transition-transform duration-500"
               />
-
               <div className="absolute -bottom-2 -right-2 bg-blue-600 text-white text-xs px-3 py-1 rounded-md shadow-lg font-semibold">
                 {player.position}
               </div>
@@ -120,14 +146,31 @@ const avgRating =
                 <div className="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-xl border border-white/20 shadow-lg">
                   <Star className="text-yellow-400 w-5 h-5" />
                   <span className="font-semibold text-lg">
-  Avg Rating: {avgRating ? avgRating.toFixed(2) : "N/A"}
-</span>
+                    Avg Rating: {avgRating ? avgRating.toFixed(2) : "N/A"}
+                  </span>
                 </div>
+
+                {/* ❤️ Shortlist Button */}
+                <button
+                  onClick={toggleShortlist}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl border border-white/20 shadow-lg transition-all ${
+                    inShortlist
+                      ? "bg-red-600/80 hover:bg-red-700 text-white"
+                      : "bg-blue-600/80 hover:bg-blue-700 text-white"
+                  }`}
+                >
+                  <Heart
+                    className={`w-5 h-5 ${
+                      inShortlist ? "fill-current text-pink-300" : "text-white"
+                    }`}
+                  />
+                  {inShortlist ? "Remove from Shortlist" : "Add to Shortlist"}
+                </button>
               </div>
             </div>
           </div>
 
-          {/* Attributes */}
+          {/* Дясна част - атрибути */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 flex-1">
             {Object.keys(groupedAttributes || {}).map((catKey) => (
               <div
@@ -160,9 +203,8 @@ const avgRating =
           </div>
         </div>
 
-        {/* Competition Stats */}
+        {/* 📊 Competition Stats */}
         <div className="mt-14">
-
           <div className="overflow-x-auto rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm shadow-lg">
             <table className="min-w-full text-sm text-gray-200">
               <thead className="bg-white/10 text-gray-100">
@@ -178,8 +220,12 @@ const avgRating =
                     key={stat.competitionId}
                     className="border-t border-white/10 hover:bg-white/10 transition"
                   >
-                    <td className="px-4 py-2 font-medium">{stat.competitionName}</td>
-                    <td className="px-4 py-2 text-right">{stat.matchesPlayed}</td>
+                    <td className="px-4 py-2 font-medium">
+                      {stat.competitionName}
+                    </td>
+                    <td className="px-4 py-2 text-right">
+                      {stat.matchesPlayed}
+                    </td>
                     <td className="px-4 py-2 text-right text-blue-400 font-semibold">
                       {stat.goals}
                     </td>
@@ -190,10 +236,16 @@ const avgRating =
                   <tr className="border-t border-white/20 bg-white/10 font-bold">
                     <td className="px-4 py-3 text-right">Total</td>
                     <td className="px-4 py-3 text-right">
-                      {player.competitionStats.reduce((a, b) => a + b.matchesPlayed, 0)}
+                      {player.competitionStats.reduce(
+                        (a, b) => a + b.matchesPlayed,
+                        0
+                      )}
                     </td>
                     <td className="px-4 py-3 text-right text-emerald-400">
-                      {player.competitionStats.reduce((a, b) => a + b.goals, 0)}
+                      {player.competitionStats.reduce(
+                        (a, b) => a + b.goals,
+                        0
+                      )}
                     </td>
                   </tr>
                 )}
@@ -201,7 +253,6 @@ const avgRating =
             </table>
           </div>
         </div>
-
       </div>
     </div>
   );

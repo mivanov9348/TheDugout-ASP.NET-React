@@ -69,6 +69,7 @@
             services.AddScoped<IPlayerInfoService, PlayerInfoService>();
             services.AddScoped<IPlayerStatsService, PlayerStatsService>();
             services.AddScoped<IYouthPlayerService, YouthPlayerService>();
+            services.AddScoped<IShortlistPlayerService, ShortlistPlayerService>();
 
             // Team
             services.AddScoped<ITeamPlanService, TeamPlanService>();
