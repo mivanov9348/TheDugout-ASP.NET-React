@@ -4,7 +4,7 @@
     using TheDugout.Data;
     using TheDugout.DTOs.DtoGameSave;
     using TheDugout.Models.Enums;
-    using TheDugout.Services.CPUManager;
+    using TheDugout.Services.CPUManager.Interfaces;
     using TheDugout.Services.Game.Interfaces;
     using TheDugout.Services.Season.Interfaces;
 

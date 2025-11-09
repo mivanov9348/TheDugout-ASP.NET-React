@@ -1,6 +1,6 @@
 ﻿using System.Security.Claims;
 
-namespace TheDugout.Services.User
+namespace TheDugout.Services.User.Interfaces
 {
 
     public interface IUserContextService

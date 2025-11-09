@@ -10,7 +10,7 @@
     using TheDugout.Services.Competition.Interfaces;
     using TheDugout.Services.Game.Interfaces;
     using TheDugout.Services.Season.Interfaces;
-    using TheDugout.Services.User;
+    using TheDugout.Services.User.Interfaces;
 
     [ApiController]
     [Route("api/[controller]")]

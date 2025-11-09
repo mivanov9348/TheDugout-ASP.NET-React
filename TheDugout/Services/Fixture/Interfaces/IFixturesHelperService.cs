@@ -5,7 +5,7 @@ using TheDugout.Models.Cups;
 using TheDugout.Models.Enums;
 using TheDugout.Models.Fixtures;
 
-namespace TheDugout.Services.Fixture
+namespace TheDugout.Services.Fixture.Interfaces
 {
     public interface IFixturesHelperService
     {

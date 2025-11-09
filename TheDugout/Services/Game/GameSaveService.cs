@@ -1,8 +1,6 @@
 ﻿namespace TheDugout.Services.Game
 {
-    using Microsoft.AspNetCore.Routing;
     using Microsoft.EntityFrameworkCore;
-    using System.Diagnostics;
     using System.Linq;
     using System.Runtime.CompilerServices;
     using TheDugout.Data;
@@ -224,7 +222,6 @@ WHERE T.{Quote("GameSaveId")} = @p0;";
                 Console.WriteLine($"❌ ERROR deleting GameSave {saveId}: {ex.Message}");
                 Console.WriteLine(ex.StackTrace);
 
-                // Връщаме constraint-ите, дори при грешка
                 try
                 {
                     await _context.Database.ExecuteSqlRawAsync("EXEC sp_msforeachtable 'ALTER TABLE ? WITH CHECK CHECK CONSTRAINT all'");

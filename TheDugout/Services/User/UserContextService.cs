@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using TheDugout.Services.User.Interfaces;
 
 namespace TheDugout.Services.User
 {

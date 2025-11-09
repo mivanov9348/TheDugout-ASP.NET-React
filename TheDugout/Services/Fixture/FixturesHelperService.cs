@@ -5,6 +5,7 @@
     using TheDugout.Models.Cups;
     using TheDugout.Models.Enums;
     using TheDugout.Models.Fixtures;
+    using TheDugout.Services.Fixture.Interfaces;
 
     public class FixturesHelperService : IFixturesHelperService
     {
@@ -28,7 +29,7 @@
             int? leagueId = null,
             int? europeanCupPhaseId = null)
         {
-            return new Models.Fixtures.Fixture
+            return new Fixture
             {
                 GameSaveId = gameSaveId,
                 SeasonId = seasonId,
@@ -79,7 +80,6 @@
                 if (ok) return pairs;
             }
 
-            // не успяхме да намерим без повторение
             return null;
         }
 
@@ -138,7 +138,6 @@
             if (adjustedRound == totalRounds - 2)
                 return "Quarter Final";
 
-            // teams left in this round: 2^(totalRounds - adjustedRound + 1)
             int teamsInThisRound = (int)Math.Pow(2, totalRounds - adjustedRound + 1);
             return $"Round of {teamsInThisRound}";
         }

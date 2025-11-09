@@ -7,7 +7,7 @@
     using TheDugout.Models.Enums;
     using TheDugout.Models.Fixtures;
     using TheDugout.Services.EuropeanCup.Interfaces;
-    using TheDugout.Services.Fixture;
+    using TheDugout.Services.Fixture.Interfaces;
     using TheDugout.Services.Season.Interfaces;
     public class EurocupFixturesService : IEurocupFixturesService
     {

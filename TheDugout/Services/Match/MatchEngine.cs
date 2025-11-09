@@ -12,7 +12,7 @@
     using TheDugout.Services.League.Interfaces;
     using TheDugout.Services.Match.Interfaces;
     using TheDugout.Services.Player.Interfaces;
-    using TheDugout.Services.Standings;
+    using TheDugout.Services.Standings.Interfaces;
     using TheDugout.Services.Team.Interfaces;
 
     public class MatchEngine : IMatchEngine

@@ -1,4 +1,4 @@
-﻿namespace TheDugout.Services.CPUManager
+﻿namespace TheDugout.Services.CPUManager.Interfaces
 {
     public interface ICPUManagerService
     {

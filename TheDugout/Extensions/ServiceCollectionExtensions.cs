@@ -2,7 +2,6 @@
 {
     using Microsoft.Extensions.DependencyInjection;
     using TheDugout.Services;
-    using TheDugout.Services.CPUManager;
     using TheDugout.Services.Cup;
     using TheDugout.Services.EuropeanCup;
     using TheDugout.Services.Facilities;
@@ -40,6 +39,11 @@
     using TheDugout.Services.Staff.Interfaces;
     using TheDugout.Services.Training.Interfaces;
     using TheDugout.Services.Transfer.Interfaces;
+    using TheDugout.Services.CPUManager.Interfaces;
+    using TheDugout.Services.Fixture.Interfaces;
+    using TheDugout.Services.Standings.Interfaces;
+    using TheDugout.Services.Template.Interfaces;
+    using TheDugout.Services.User.Interfaces;
 
     public static class ServiceCollectionExtensions
     {

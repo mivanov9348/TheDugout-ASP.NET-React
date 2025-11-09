@@ -1,6 +1,3 @@
-// Frontend: Inbox.jsx
-// React component using Tailwind and lucide-react.
-
 import React, { useEffect, useState } from "react";
 import { Mail, MailOpen, ChevronLeft, Trash2 } from "lucide-react";
 
@@ -72,7 +69,7 @@ const Inbox = ({ gameSaveId }) => {
   if (!gameSaveId)
     return (
       <div className="p-6 text-gray-400 bg-gradient-to-br from-gray-900 to-gray-800 h-screen flex items-center justify-center">
-        Зареждане...
+        Loading...
       </div>
     );
 
@@ -80,8 +77,8 @@ const Inbox = ({ gameSaveId }) => {
     <div className="flex h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-gray-100">
       {/* Sidebar */}
       {sidebarOpen && (
-        <div className="w-80 bg-gray-850/80 backdrop-blur-md border-r border-gray-700 shadow-lg flex flex-col">
-          <div className="flex items-center justify-between p-4 border-b border-gray-700 bg-gray-900/70">
+        <div className="w-80 bg-gray-800/50 backdrop-blur-md border-r border-gray-700 shadow-xl flex flex-col transition-all duration-300">
+          <div className="flex items-center justify-between p-4 border-b border-gray-700 bg-gray-900/70 sticky top-0 z-10">
             <h2 className="text-lg font-bold text-gray-100 flex items-center gap-2">
               <Mail className="w-5 h-5 text-blue-400" /> Inbox
             </h2>
@@ -102,21 +99,24 @@ const Inbox = ({ gameSaveId }) => {
             {messages.map((msg) => (
               <li
                 key={msg.id}
-                className={`px-4 py-3 border-b border-gray-700 hover:bg-gray-800/70 transition-all flex justify-between items-center cursor-pointer ${
-                  selectedMessage?.id === msg.id ? "bg-gray-800/90" : ""
+                onClick={() => handleSelectMessage(msg)}
+                className={`px-4 py-3 border-b border-gray-700 hover:bg-gray-800/70 transition-all duration-200 cursor-pointer flex justify-between items-center ${
+                  selectedMessage?.id === msg.id ? "bg-gray-800/90 border-gray-600" : ""
                 }`}
               >
-                <div onClick={() => handleSelectMessage(msg)} className="flex-1">
+                <div className="flex-1">
                   <div className="flex justify-between items-center">
                     <span
                       className={`truncate ${
-                        msg.isRead ? "text-gray-400" : "font-semibold text-white"
+                        msg.isRead
+                          ? "text-gray-400"
+                          : "font-semibold text-white"
                       }`}
                     >
                       {msg.subject}
                     </span>
                     {!msg.isRead && (
-                      <span className="w-2 h-2 bg-blue-400 rounded-full ml-2 shadow-glow"></span>
+                      <span className="w-2 h-2 bg-blue-400 rounded-full ml-2 shadow-[0_0_6px_#3b82f6]" />
                     )}
                   </div>
                   <div className="text-xs text-gray-500">
@@ -127,10 +127,10 @@ const Inbox = ({ gameSaveId }) => {
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    if (!window.confirm("Сигурни ли сте че искате да изтриете съобщението?")) return;
+                    if (!window.confirm("Сигурни ли сте, че искате да изтриете съобщението?")) return;
                     handleDeleteMessage(msg.id);
                   }}
-                  className="ml-3 text-gray-500 hover:text-red-500 transition"
+                  className="ml-3 text-gray-500 hover:text-red-500 transition duration-150"
                   aria-label={`Delete message ${msg.subject}`}
                 >
                   <Trash2 className="w-4 h-4" />
@@ -146,10 +146,10 @@ const Inbox = ({ gameSaveId }) => {
       )}
 
       {/* Message content */}
-      <div className="flex-1 p-8 overflow-y-auto">
+      <div className="flex-1 p-10 overflow-y-auto relative">
         {selectedMessage ? (
-          <div className="max-w-3xl mx-auto bg-gray-850/80 backdrop-blur-md shadow-lg rounded-xl p-6 border border-gray-700">
-            <h3 className="text-2xl font-bold mb-2 flex items-center gap-2 text-blue-300">
+          <div className="max-w-3xl mx-auto bg-gray-800/40 backdrop-blur-md border border-gray-700 rounded-2xl shadow-xl p-8 transition-all duration-300 hover:border-gray-600 hover:shadow-2xl">
+            <h3 className="text-2xl font-bold mb-2 flex items-center gap-3 text-blue-300">
               {selectedMessage.isRead ? (
                 <MailOpen className="w-6 h-6 text-gray-400" />
               ) : (
@@ -157,17 +157,16 @@ const Inbox = ({ gameSaveId }) => {
               )}
               {selectedMessage.subject}
             </h3>
-            <p className="text-sm text-gray-500 mb-4">
+            <p className="text-xs text-gray-500 mb-6 border-b border-gray-700 pb-2">
               {new Date(selectedMessage.date).toLocaleString()}
             </p>
-            <hr className="mb-4 border-gray-700" />
-            <p className="text-gray-200 leading-relaxed whitespace-pre-line">
+            <div className="text-gray-200 leading-relaxed whitespace-pre-line tracking-wide">
               {selectedMessage.body}
-            </p>
+            </div>
           </div>
         ) : (
           <div className="h-full flex items-center justify-center text-gray-500 text-sm italic">
-            Избери съобщение, за да го прочетеш
+            Choose a message from the inbox to read it.
           </div>
         )}
       </div>

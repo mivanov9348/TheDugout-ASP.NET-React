@@ -7,8 +7,6 @@
     using System.Security.Claims;
     using TheDugout.Data;
     using TheDugout.Models.Enums;
-    using TheDugout.Models.Fixtures;
-    using TheDugout.Models.Seasons;
 
     [ApiController]
     [Route("api/calendar")]

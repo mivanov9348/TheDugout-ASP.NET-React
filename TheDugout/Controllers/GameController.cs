@@ -8,8 +8,8 @@
     using TheDugout.Models.Messages;
     using TheDugout.Services.Game.Interfaces;
     using TheDugout.Services.Message.Interfaces;
-    using TheDugout.Services.Template;
-    using TheDugout.Services.User;
+    using TheDugout.Services.Template.Interfaces;
+    using TheDugout.Services.User.Interfaces;
 
     [ApiController]
     [Route("api/games")]

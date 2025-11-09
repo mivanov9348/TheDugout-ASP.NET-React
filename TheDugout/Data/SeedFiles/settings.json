@@ -1,7 +1,7 @@
 [
   {
     "Key": "bankInitial",
-    "Value": "5000000000",
+    "Value": "500000000",
     "Category": "Finance",
     "Description": "Initial balance of the banking system in the game."
   },

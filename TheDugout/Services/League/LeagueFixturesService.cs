@@ -5,7 +5,7 @@
     using TheDugout.Models.Enums;
     using TheDugout.Models.Fixtures;
     using TheDugout.Models.Teams;
-    using TheDugout.Services.Fixture;
+    using TheDugout.Services.Fixture.Interfaces;
     using TheDugout.Services.League.Interfaces;
     using TheDugout.Services.Season.Interfaces;
     public class LeagueFixturesService : ILeagueFixturesService

@@ -4,7 +4,7 @@
     using TheDugout.Data;
     using TheDugout.Models.Enums;
     using TheDugout.Models.Seasons;
-    using TheDugout.Services.CPUManager;
+    using TheDugout.Services.CPUManager.Interfaces;
     using TheDugout.Services.Team.Interfaces;
     using TheDugout.Services.Training.Interfaces;
 

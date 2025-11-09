@@ -72,7 +72,7 @@ function Home({ gameSaveId }) {
             <div className="text-lg font-bold text-gray-100">
               {m.homeTeam} <span className="text-gray-400">vs</span> {m.awayTeam}
             </div>
-            <div className="text-sm text-gray-100 font-semibold bg-gray-700 px-2 py-1 rounded-md">
+            <div className="text-sm text-gray-100 font-semibold bg-gray-700/60 px-3 py-1 rounded-md border border-gray-600">
               {m.competition}
             </div>
           </div>
@@ -87,7 +87,7 @@ function Home({ gameSaveId }) {
             {dashboard.lastFixtures.map((f, idx) => (
               <li
                 key={idx}
-                className="bg-gray-700 px-3 py-2 rounded-xl shadow-sm hover:shadow-md transition flex justify-between items-center"
+                className="bg-gray-700/60 px-3 py-2 rounded-xl shadow-sm hover:shadow-md transition flex justify-between items-center border border-gray-600 hover:border-gray-500"
               >
                 <div>
                   <span className="font-medium text-gray-100">
@@ -110,7 +110,9 @@ function Home({ gameSaveId }) {
         const s = dashboard.standing;
         return (
           <div className="flex flex-col gap-2 text-sm">
-            <div className="font-semibold text-gray-100">{s.league}</div>
+            <div className="font-semibold text-gray-100 text-center bg-gray-700/50 py-1 rounded-md border border-gray-600">
+              {s.league}
+            </div>
             <div className="grid grid-cols-2 gap-2 text-gray-300">
               <span>Position: <strong className="text-gray-100">{s.ranking}</strong></span>
               <span>Points: <strong className="text-gray-100">{s.points}</strong></span>
@@ -144,10 +146,10 @@ function Home({ gameSaveId }) {
                 key={idx}
                 className={`px-3 py-1 rounded-lg font-semibold shadow-sm ${
                   res === "W"
-                    ? "bg-green-900 text-green-100"
+                    ? "bg-green-900/80 text-green-100"
                     : res === "D"
-                    ? "bg-gray-700 text-gray-300"
-                    : "bg-red-900 text-red-100"
+                    ? "bg-gray-700/70 text-gray-300"
+                    : "bg-red-900/80 text-red-100"
                 }`}
               >
                 {res}
@@ -162,18 +164,20 @@ function Home({ gameSaveId }) {
 
         return (
           <div className="flex flex-col gap-3">
-            <div className="text-2xl font-bold text-green-400">
+            <div className="text-2xl font-bold text-green-400 text-center">
               💰 {dashboard.finance.currentBalance.toLocaleString()} €
             </div>
-            <div className="text-sm text-gray-400 font-semibold">Recent transactions:</div>
+            <div className="text-sm text-gray-400 font-semibold text-center">
+              Recent transactions
+            </div>
             <ul className="space-y-2 text-sm">
               {dashboard.finance.recentTransactions.length === 0 ? (
-                <li className="italic text-gray-400">No transactions</li>
+                <li className="italic text-gray-400 text-center">No transactions</li>
               ) : (
                 dashboard.finance.recentTransactions.map((t, idx) => (
                   <li
                     key={idx}
-                    className="flex justify-between items-center bg-gray-700 px-3 py-2 rounded-lg shadow-sm hover:shadow-md transition"
+                    className="flex justify-between items-center bg-gray-700/60 px-3 py-2 rounded-lg shadow-sm hover:shadow-md border border-gray-600 hover:border-gray-500 transition"
                   >
                     <div className="flex flex-col">
                       <span className="font-medium text-gray-100">{t.description || "—"}</span>
@@ -205,7 +209,7 @@ function Home({ gameSaveId }) {
             {dashboard.transfers.slice(0, 10).map((tr, idx) => (
               <li
                 key={idx}
-                className="bg-gray-700 px-3 py-2 rounded-lg shadow-sm hover:shadow-md transition flex justify-between items-center"
+                className="bg-gray-700/60 px-3 py-2 rounded-lg shadow-sm hover:shadow-md border border-gray-600 hover:border-gray-500 transition flex justify-between items-center"
               >
                 <div>
                   <span className="font-medium text-gray-100">{tr.player}</span>
@@ -227,21 +231,24 @@ function Home({ gameSaveId }) {
   };
 
   return (
-    <div className="p-8 bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 text-gray-100 min-h-screen">
-      <h2 className="text-3xl font-bold mb-8 text-center text-gray-100 drop-shadow-sm">
+    <div className="p-10 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-gray-100 min-h-screen">
+      <h2 className="text-4xl font-extrabold mb-10 text-center text-gray-100 drop-shadow-lg tracking-wide">
         🏟️ Dashboard
       </h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
         {sections.map((section, index) => (
           <div
             key={index}
-            className="bg-gray-700 backdrop-blur-md rounded-2xl shadow-lg p-5 flex flex-col h-64 overflow-y-auto border border-gray-600 hover:border-gray-500 hover:shadow-xl hover:scale-[1.02] transition duration-200"
+            className="bg-gray-800/40 backdrop-blur-md rounded-2xl shadow-lg border border-gray-700 hover:border-gray-500 hover:shadow-2xl hover:scale-[1.03] transition-all duration-200 p-6 flex flex-col overflow-hidden"
           >
-            <h3 className="text-lg font-semibold mb-3 text-gray-100 flex items-center gap-2">
-              {section.icon} {section.title}
-            </h3>
-            {renderSection(section.title)}
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-lg font-semibold text-gray-100 flex items-center gap-2">
+                {section.icon} {section.title}
+              </h3>
+              <div className="h-[2px] bg-gray-600 w-10 rounded-full"></div>
+            </div>
+            <div className="flex-1 overflow-y-auto pr-1">{renderSection(section.title)}</div>
           </div>
         ))}
       </div>

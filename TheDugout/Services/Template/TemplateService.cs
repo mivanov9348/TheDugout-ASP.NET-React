@@ -3,6 +3,8 @@
     using Microsoft.EntityFrameworkCore;
     using TheDugout.Data;
     using TheDugout.DTOs.DtoNewGame;
+    using TheDugout.Services.Template.Interfaces;
+
     public class TemplateService : ITemplateService
     {
         private readonly DugoutDbContext _context;

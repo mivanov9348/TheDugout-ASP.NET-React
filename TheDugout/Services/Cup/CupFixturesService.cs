@@ -6,11 +6,11 @@
     using TheDugout.Models.Cups;
     using TheDugout.Models.Enums;
     using TheDugout.Models.Fixtures;
-    using TheDugout.Models.Seasons;
     using TheDugout.Services.Cup.Interfaces;
-    using TheDugout.Services.Fixture;
     using TheDugout.Services.Season.Interfaces;
     using TheDugout.Models.Teams;
+    using TheDugout.Services.Fixture.Interfaces;
+
     public class CupFixturesService : ICupFixturesService
     {
         private readonly DugoutDbContext _context;
@@ -95,7 +95,6 @@
 
             if (cup == null) return;
 
-            // филтрираме вече в паметта
             cup.Teams = cup.Teams.ToList();
 
             cup.Rounds = cup.Rounds
@@ -108,7 +107,6 @@
 
             if (lastRound == null) return;
 
-            // Ако някой мач няма победител → не правим кръг
             if (lastRound.Fixtures.Any(f => f.WinnerTeamId == null))
                 return;
 
@@ -129,7 +127,6 @@
             }
             await _context.SaveChangesAsync();
 
-            // Ако имаме само 1 победител → шампион
             if (winners.Count < 2 && cup.Teams.Count(t => !t.IsEliminated) == 1)
             {
                 var championId = winners.FirstOrDefault();
@@ -137,7 +134,6 @@
                 return;
             }
 
-            // Взимаме участниците за следващия кръг
             var nextRoundTeams = GetNextRoundTeams(cup, lastRound, winners);
 
             var totalRounds = cup.RoundsCount;
@@ -200,11 +196,6 @@
         {
             return round.Fixtures.All(f => f.WinnerTeamId != null);
         }
-
-        // ---------------------------
-        // Helpers
-        // ---------------------------
-
         private List<Fixture> GenerateFirstRoundFixtures(
             Cup cup,
             List<Team> teams,
@@ -218,7 +209,6 @@
 
             if (needsPrelim && prelimTeamsCount > 0)
             {
-                // Прелим рунд
                 var prelimTeams = teams.Take(prelimTeamsCount * 2).ToList();
                 var prelimRound = new CupRound
                 {
@@ -233,7 +223,6 @@
             }
             else
             {
-                // Няма прелим → директно първи кръг
                 var round = new CupRound
                 {
                     CupId = cup.Id,
