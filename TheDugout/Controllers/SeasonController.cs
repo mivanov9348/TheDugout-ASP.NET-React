@@ -367,53 +367,25 @@
             }
         }
 
+        [HttpGet("current/{gameSaveId}")]
+        public async Task<IActionResult> GetCurrentSeason(int gameSaveId)
+        {
+            var season = await _context.Seasons
+                .Where(s => s.GameSaveId == gameSaveId && s.IsActive)
+                .FirstOrDefaultAsync();
 
-        //[HttpGet("current/next-day-stream")]
-        //public async Task NextDayStream()
-        //{
-        //    Response.ContentType = "text/event-stream";
+            if (season == null)
+                return NotFound();
 
-        //    async Task Send(string type, string msg, object? extra = null)
-        //    {
-        //        var payload = JsonConvert.SerializeObject(new { type, message = msg, extra });
-        //        await Response.WriteAsync($"data: {payload}\n\n");
-        //        await Response.Body.FlushAsync();
-        //    }
+            return Ok(new
+            {
+                season.Id,
+                season.StartDate,
+                season.EndDate,
+                season.CurrentDate
+            });
+        }
 
-        //    try
-        //    {
-        //        var userId = _userContext.GetUserId(User);
-        //        if (userId == null)
-        //        {
-        //            await Send("error", "Unauthorized");
-        //            return;
-        //        }
-
-        //        var user = await _context.Users
-        //            .Include(u => u.CurrentSave)
-        //            .FirstOrDefaultAsync(u => u.Id == userId.Value);
-
-        //        if (user?.CurrentSave == null)
-        //        {
-        //            await Send("error", "No current save selected.");
-        //            return;
-        //        }
-
-        //        var saveId = user.CurrentSave.Id;
-
-        //        await Send("progress", "Advancing to next day...");
-
-        //        await _gameDayService.ProcessNextDayAsync(saveId, msg => Send("progress", msg));
-
-        //        var result = await _gameDayService.ProcessNextDayAndGetResultAsync(saveId);
-
-        //        await Send("done", "Finished!", result);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        await Send("error", $"Error: {ex.Message}");
-        //    }
-        //}
 
         [Authorize]
         [HttpGet("active/{gameSaveId}")]

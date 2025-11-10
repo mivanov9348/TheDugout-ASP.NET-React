@@ -45,11 +45,16 @@
             }
         }
 
-        public async Task<List<Player>> GetShortlistPlayersAsync(int gameSaveId, int? userId = null, int? teamId = null)
+        public async Task<List<object>> GetShortlistPlayersAsync(int gameSaveId, int? userId = null, int? teamId = null)
         {
             var query = _context.Shortlists
                 .Where(s => s.GameSaveId == gameSaveId)
                 .Include(s => s.Player)
+                    .ThenInclude(p => p.Position)
+                .Include(s => s.Player)
+                    .ThenInclude(p => p.Team)
+                .Include(s => s.Player)
+                    .ThenInclude(p => p.Country)
                 .AsQueryable();
 
             if (userId.HasValue)
@@ -58,8 +63,27 @@
             if (teamId.HasValue)
                 query = query.Where(s => s.TeamId == teamId);
 
-            return await query.Select(s => s.Player).ToListAsync();
+            var players = await query
+                .Select(s => new
+                {
+                    s.Player.Id,
+                    s.Player.FirstName,
+                    s.Player.LastName,
+                    s.Player.Age,
+                    Position = s.Player.Position != null ? s.Player.Position.Name : null,
+                    TeamName = s.Player.Team != null ? s.Player.Team.Name : null,
+                    Country = s.Player.Country != null ? s.Player.Country.Name : null,
+                    s.Player.Price,
+                    s.Player.CurrentAbility,
+                    s.Player.PotentialAbility,
+                    s.Player.HeightCm,
+                    s.Player.WeightKg
+                })
+                .ToListAsync();
+
+            return players.Cast<object>().ToList();
         }
+
 
 
     }

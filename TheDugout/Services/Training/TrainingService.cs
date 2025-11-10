@@ -217,8 +217,12 @@
 
                     if (attr != null)
                     {
-                        attr.Value += ua.Gain;
+                        if (attr.Value < 20)
+                        {
+                            attr.Value = Math.Min(20, attr.Value + ua.Gain);
+                        }
                         attr.Progress = Math.Min(1, attr.Progress + 0.03);
+
                     }
                 }
 

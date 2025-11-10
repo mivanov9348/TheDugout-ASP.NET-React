@@ -7,6 +7,6 @@
 
         Task RemoveFromShortlistAsync(int gameSaveId, int playerId, int? userId = null, int? teamId = null);
 
-        Task<List<Player>> GetShortlistPlayersAsync(int gameSaveId, int? userId = null, int? teamId = null);
+        Task<List<object>> GetShortlistPlayersAsync(int gameSaveId, int? userId = null, int? teamId = null);
     }
 }

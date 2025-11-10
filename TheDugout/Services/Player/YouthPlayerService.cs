@@ -56,6 +56,18 @@
 
             await _context.BulkInsertAsync(players, new BulkConfig { SetOutputIdentity = true }, cancellationToken: ct);
 
+            // След това:
+            var allAttributes = players
+                .SelectMany(p =>
+                {
+                    foreach (var attr in p.Attributes)
+                        attr.PlayerId = p.Id; // много важно — след BulkInsert EF не знае PlayerId
+                    return p.Attributes;
+                })
+                .ToList();
+
+            await _context.BulkInsertAsync(allAttributes, cancellationToken: ct);
+
             foreach (var player in players)
             {
                 youthPlayers.Add(new YouthPlayer

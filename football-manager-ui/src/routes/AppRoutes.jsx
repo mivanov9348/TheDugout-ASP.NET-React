@@ -22,6 +22,7 @@ import TodayMatches from "../pages/season/TodayMatches";
 import Match from "../pages/season/Match";
 import AllTimeStats from "../pages/AllTimeStats";
 import Shortlist from "../pages/players/Shortlist";
+import Settings from "../pages/Settings";
 
 import Competitions from "../pages/competitions/Competitions";
 import Cup from "../pages/competitions/Cup";
@@ -123,6 +124,8 @@ export const AppRoutes = (gameSaveId, userTeamId, seasonId) => (
 
     {/* Misc */}
     <Route path="/inbox" element={<Inbox gameSaveId={gameSaveId} />} />
+    <Route path="/settings" element={<Settings />} />
+
     <Route path="*" element={<div>404 Not Found</div>} />
   </>
 );

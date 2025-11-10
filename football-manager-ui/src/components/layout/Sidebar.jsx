@@ -2,7 +2,7 @@
 import { NavLink } from "react-router-dom";
 import {
   Home, Mail, Users, Activity, Dumbbell, Calendar,
-  Trophy, ShoppingCart, Building, Wallet, Calendar1, LogOut, BarChart
+  Trophy, ShoppingCart, Building, Wallet, Calendar1, LogOut, BarChart, Settings as SettingsIcon  
 } from "lucide-react";
 
 function Sidebar({ onExitGame }) {
@@ -21,6 +21,8 @@ function Sidebar({ onExitGame }) {
     { name: "Finances", path: "/finances", icon: <Wallet size={18} /> },
     { name: "Stats", path: "/all-time-stats", icon: <BarChart size={18} /> },
     { name: "Academy", path: "/academy", icon: <Users size={18} /> },
+      { name: "Settings", path: "/settings", icon: <SettingsIcon size={18} /> },
+
 
   ];
 

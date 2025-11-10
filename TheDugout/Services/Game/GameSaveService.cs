@@ -167,7 +167,7 @@ WHERE T.{Quote("GameSaveId")} = @p0;";
             "PlayerSeasonStats",
             "PlayerTrainings",
             "TeamTrainingPlans",
-
+            "Shortlists",
              "TransferOffers",
             "Transfers",
             "SeasonEvents",

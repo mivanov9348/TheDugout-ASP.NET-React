@@ -549,5 +549,79 @@
 
             return baseName;
         }
+
+        [HttpPost("simulate-to/{gameSaveId}")]
+        public async Task<IActionResult> SimulateToDate(
+    int gameSaveId, [FromQuery] DateTime to)
+        {
+            var gameSave = await _context.GameSaves
+                .Include(gs => gs.Seasons)
+                .FirstOrDefaultAsync(gs => gs.Id == gameSaveId);
+
+            if (gameSave == null)
+                return NotFound($"GameSave {gameSaveId} not found.");
+
+            var season = gameSave.Seasons
+                .OrderByDescending(s => s.StartDate)
+                .FirstOrDefault(s => s.IsActive);
+
+            if (season == null)
+                return BadRequest("No active season found.");
+
+            var from = season.CurrentDate.Date;
+            var endDate = season.EndDate.Date;
+
+            if (to.Date < from)
+                return BadRequest("Cannot simulate to a past date.");
+            if (to.Date > endDate)
+                to = endDate;
+
+            int totalSimulatedMatches = 0;
+            int totalDays = 0;
+
+            var current = from;
+            while (current <= to.Date)
+            {
+                season.CurrentDate = current;
+                await _context.SaveChangesAsync();
+
+                var fixtures = await _context.Fixtures
+                    .Include(f => f.HomeTeam)
+                    .Include(f => f.AwayTeam)
+                    .Where(f => f.GameSaveId == gameSaveId
+                                && f.Date.Date == current
+                                && f.SeasonId == season.Id
+                                && f.Status != MatchStageEnum.Played)
+                    .ToListAsync();
+
+                if (fixtures.Any())
+                {
+                    foreach (var fixture in fixtures)
+                    {
+                        var match = fixture.Match ?? await _matchService.GetOrCreateMatchAsync(fixture, gameSave);
+                        fixture.Match = match;
+
+                        await _matchEngine.SimulateMatchAsync(fixture, gameSave);
+
+                        match.Status = MatchStageEnum.Played;
+                        fixture.Status = MatchStageEnum.Played;
+                        totalSimulatedMatches++;
+                    }
+
+                    await _context.SaveChangesAsync();
+                }
+
+                totalDays++;
+                current = current.AddDays(1);
+            }
+
+            return Ok(new
+            {
+                message = $"Simulation completed from {from:yyyy-MM-dd} to {to:yyyy-MM-dd}.",
+                totalSimulatedMatches,
+                totalDays
+            });
+        }
+
     }
 }
