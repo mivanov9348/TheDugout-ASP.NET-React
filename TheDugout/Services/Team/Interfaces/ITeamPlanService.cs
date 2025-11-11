@@ -8,13 +8,9 @@
     {
         Dictionary<string, int> GetDefaultRosterPlan();
         Task<TeamTactic?> GetTeamTacticAsync(int teamId, int gameSaveId);
-        Task<TeamTactic> SetTeamTacticAsync(
-    int teamId,
-    int tacticId,
-    string? customName,
-    Dictionary<string, string?> lineup,
-    Dictionary<string, string?>? substitutes = null);
+        Task<TeamTactic> SetTeamTacticAsync(int teamId, int tacticId, string? customName, Dictionary<string, string?> lineup, Dictionary<string, string?>? substitutes = null);
         Task<TeamTactic> AutoPickTacticAsync(int teamId, int gameSaveId);
-        Task<List<Models.Players.Player>> GetStartingLineupAsync(Models.Teams.Team team, bool includeDetails = true);
+        Task<List<Player>> GetStartingLineupAsync(Models.Teams.Team team, bool includeDetails = true);
+
     }
 }

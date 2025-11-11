@@ -92,6 +92,7 @@
             services.AddScoped<ITransferQueryService, TransferQueryService>();
             services.AddScoped<IFreeAgentTransferService, FreeAgentTransferService>();
             services.AddScoped<IClubToClubTransferService, ClubToClubTransferService>();
+            services.AddScoped<ICPUTransferService, CPUTransferService>();
 
             // Finances
             services.AddScoped<IBankService, BankService>();

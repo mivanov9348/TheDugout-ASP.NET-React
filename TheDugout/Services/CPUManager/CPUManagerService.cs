@@ -1,28 +1,35 @@
 ﻿namespace TheDugout.Services
 {
     using Microsoft.EntityFrameworkCore;
+    using System;
     using TheDugout.Data;
     using TheDugout.Models.Enums;
     using TheDugout.Models.Seasons;
     using TheDugout.Services.CPUManager.Interfaces;
     using TheDugout.Services.Team.Interfaces;
     using TheDugout.Services.Training.Interfaces;
+    using TheDugout.Services.Transfer;
 
     public class CpuManagerService : ICPUManagerService
     {
         private readonly ITrainingService _trainingService;
         private readonly ITeamPlanService _teamPlanService;
+        private readonly ICPUTransferService _transferService;
         private readonly DugoutDbContext _context;
+        private readonly Random _random;
         private readonly ILogger<CpuManagerService> _logger;
 
         public CpuManagerService(
             ITrainingService trainingService,
             ITeamPlanService teamPlanService,
+            ICPUTransferService transferService,
             DugoutDbContext context,
             ILogger<CpuManagerService> logger)
         {
             _trainingService = trainingService;
             _teamPlanService = teamPlanService;
+            _transferService = transferService;
+            _random = new Random();
             _context = context;
             _logger = logger;
         }
@@ -60,21 +67,27 @@
                 switch (ev.Type)
                 {
                     case SeasonEventType.TransferWindow:
-                        foreach (var team in cpuTeams)
                         {
-                            try
+                            var activeTeams = cpuTeams
+                                .Where(t => t.Balance > 50_000 && _random.NextDouble() > 0.3) // 30% шанс да пропусне пазара
+                                .ToList();
+
+                            foreach (var team in activeTeams)
                             {
-                                if (progress != null) await progress($"🔄 CPU team {team.Name} is checking transfers...");
-                                //await _transferService.RunCpuTransfersAsync(gameSaveId, seasonId, date, team.Id);
-                                if (progress != null) await progress($"✅ CPU team {team.Name} finished transfer checks");
+                                try
+                                {
+                                    if (progress != null) await progress($"🔄 {team.Name} is analyzing market...");
+                                    await _transferService.RunCpuTransfersAsync(gameSaveId, seasonId, date, team.Id);
+                                }
+                                catch (Exception ex)
+                                {
+                                    _logger.LogError(ex, "❌ Transfer error for {TeamId}", team.Id);
+                                }
                             }
-                            catch (Exception ex)
-                            {
-                                _logger.LogError(ex, "❌ CPU transfer logic error for team {TeamId}", team.Id);
-                                if (progress != null) await progress($"❌ Transfer error for team {team.Name}");
-                            }
+                            break;
                         }
-                        break;
+
+
 
                     case SeasonEventType.TrainingDay:
                         try
